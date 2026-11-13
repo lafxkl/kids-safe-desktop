@@ -26,7 +26,8 @@ function Fail($t) { Write-Host "[X] $t" -ForegroundColor Red; exit 1 }
 $Root = Split-Path -Parent $PSScriptRoot
 $Csproj = Join-Path $Root 'KidsSafeDesktop.csproj'
 $Iss = Join-Path $Root 'Installer\KidsSafeDesktop.iss'
-$BuildRoot = Join-Path $Root 'bin\Release\net10.0-windows10.0.19041.0\win-x64'
+$BuildRoot = Join-Path $Root 'bin\Release\publish-win-x64'
+
 
 # ── 1. 版本号 ────────────────────────────────────────────────
 Step '读取版本号'
@@ -44,7 +45,12 @@ if (-not (Test-Path $BuildRoot)) {
 }
 $exe = Join-Path $BuildRoot 'KidsSafeDesktop.exe'
 if (-not (Test-Path $exe)) { Fail '产物目录里没有 KidsSafeDesktop.exe' }
-Ok 'Windows 产物存在'
+# 安装包必须来自自包含发布目录：缺 coreclr.dll 说明是 framework-dependent 输出，
+# 装到没装 .NET 桌面运行时的电脑上会起不来
+if (-not (Test-Path (Join-Path $BuildRoot 'coreclr.dll'))) {
+    Fail "产物目录不是自包含发布（缺 coreclr.dll）：$BuildRoot，请先跑 Scripts\release.ps1"
+}
+Ok 'Windows 自包含产物存在'
 
 # Inno Setup 不自带中文语言文件，这个 .isl 是随项目一起提交的
 $isl = Join-Path $Root 'Installer\ChineseSimplified.isl'

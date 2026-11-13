@@ -14,6 +14,11 @@ $ErrorActionPreference = 'Stop'
 
 $Root = Split-Path -Parent $PSScriptRoot
 $Source = Join-Path $Root 'Models\ComplianceContent.cs'
+# 合规正文已经拆到 KidsSafeShared（孩子端与家长端共用），老路径留作兜底，
+# 免得以后又把脚本改回单工程结构时这里静默失效。
+if (-not (Test-Path $Source)) {
+    $Source = Join-Path (Split-Path -Parent $Root) 'KidsSafeShared\Models\ComplianceContent.cs'
+}
 $OutDir = Join-Path $Root 'Installer'
 $OutFile = Join-Path $OutDir 'PrivacyPolicy.txt'
 

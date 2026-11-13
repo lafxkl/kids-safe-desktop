@@ -171,11 +171,15 @@ $ZipPath = Join-Path $DownloadsDir $ZipName
 
 $AndroidOut = Join-Path $Root 'bin\Release\net10.0-android'
 $WindowsOut = Join-Path $Root 'bin\Release\net10.0-windows10.0.19041.0\win-x64'
+# 自包含发布单独放一个目录，避免和 dotnet build 的 framework-dependent 输出混在一起
+$WindowsPublishDir = Join-Path $Root 'bin\Release\publish-win-x64'
 
 if ($SkipBuild) {
     Step '跳过构建（-SkipBuild）'
     if (-not (Test-Path $AndroidOut)) { Fail "没有可用的 Android 产物：$AndroidOut" }
-    if (-not (Test-Path $WindowsOut)) { Fail "没有可用的 Windows 产物：$WindowsOut" }
+    if (-not (Test-Path (Join-Path $WindowsPublishDir 'coreclr.dll'))) {
+        Fail "没有可用的 Windows 自包含产物（缺 coreclr.dll）：$WindowsPublishDir，先跑一次完整 release"
+    }
 } else {
     if ($Clean) {
         Step '清理 bin / obj'
@@ -196,14 +200,36 @@ if ($SkipBuild) {
     $sw = [Diagnostics.Stopwatch]::StartNew()
     & dotnet build $CsprojPath -f net10.0-windows10.0.19041.0 -c Release -v m
     if ($LASTEXITCODE -ne 0) { Fail 'Windows 构建失败，往上翻日志找 error' }
-    Ok ("Windows 完成，用时 " + [int]$sw.Elapsed.TotalSeconds + " 秒")
-
-    if (-not (Test-Path $WindowsOut)) {
-        Step '补一次 Windows 自包含发布'
-        & dotnet publish $CsprojPath -f net10.0-windows10.0.19041.0 -c Release -r win-x64 --self-contained -v m
-        if ($LASTEXITCODE -ne 0) { Fail 'Windows 发布失败' }
-    }
 }
+
+# 免安装版必须是「自包含」的：家长机器上不一定装了 .NET 桌面运行时，
+# 依赖系统运行时的包双击就是没反应。
+#
+# 这里曾经踩过一次：先 dotnet build 已经建好了 bin\...\win-x64 目录，
+# 后面「目录不存在才补一次 publish」的判断永远为假，于是悄悄打出 framework-dependent 的包
+# —— 安装包小了几十 MB，但在没装运行时的电脑上根本起不来。所以现在只要有构建，
+# 就无条件 publish 到独立目录，并且把「有没有 coreclr.dll」当作发布成功的硬标准。
+#
+# -p:UseMonoRuntime=false 不能省：MAUI 的 workload 会把 RID 解析成 Mono 运行时包
+# （Microsoft.NETCore.App.Runtime.Mono.win-x64），那个版本在 nuget.org 上根本不存在，
+# 于是 publish 直接 NU1102 失败。Windows 本来就走 CoreCLR，显式关掉即可。
+if (-not $SkipBuild) {
+    Step '发布 Windows（自包含，免安装即用）'
+    if (Test-Path $WindowsPublishDir) { Remove-Item $WindowsPublishDir -Recurse -Force }
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    & dotnet publish $CsprojPath -f net10.0-windows10.0.19041.0 -c Release -r win-x64 `
+        --self-contained true -p:WindowsPackageType=None -p:UseMonoRuntime=false -o $WindowsPublishDir -v m
+    if ($LASTEXITCODE -ne 0) { Fail 'Windows 自包含发布失败，往上翻日志找 error' }
+    if (-not (Test-Path (Join-Path $WindowsPublishDir 'coreclr.dll'))) {
+        Fail "Windows 发布目录里没有 coreclr.dll（$WindowsPublishDir），不是自包含包，不能发"
+    }
+    if (-not (Test-Path (Join-Path $WindowsPublishDir 'KidsSafeDesktop.exe'))) {
+        Fail "Windows 发布目录里没有 KidsSafeDesktop.exe（$WindowsPublishDir）"
+    }
+    Ok ("Windows 自包含发布完成，用时 " + [int]$sw.Elapsed.TotalSeconds + " 秒")
+}
+
+$WindowsOut = $WindowsPublishDir
 
 # ── 3. 取出安卓 APK ─────────────────────────────────────────
 Step '收集安装包'

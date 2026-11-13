@@ -144,6 +144,24 @@
   .note-box{background:#FFF8E1;border-left:4px solid #FFB300;border-radius:0 12px 12px 0;
             padding:14px 18px;font-size:14px;color:#7A5B00;margin-top:16px}
   .note-box b{color:#5D4300}
+  /* 体积对比：默认收起，家长想追究「为什么变小」时再展开 */
+  .size-box{margin-top:16px;background:#fff;border:1px solid #F1E2CE;border-radius:18px;overflow:hidden}
+  .size-box summary{cursor:pointer;list-style:none;padding:15px 18px;font-size:15px;font-weight:800;
+                    color:#B4552F;display:flex;align-items:center;gap:9px}
+  .size-box summary::-webkit-details-marker{display:none}
+  .size-box summary::after{content:"展开";margin-left:auto;font-size:12.5px;font-weight:700;
+                           color:#A98B72;background:#FDF6EC;border-radius:10px;padding:4px 10px}
+  .size-box[open] summary::after{content:"收起"}
+  .size-box .sb-body{padding:0 18px 18px;font-size:13.8px;color:#6B5748;line-height:1.85}
+  .size-table{width:100%;border-collapse:collapse;margin:2px 0 16px}
+  .size-table th,.size-table td{padding:9px 8px;border-bottom:1px solid #F3E7D7;text-align:left;font-size:13.5px}
+  .size-table th{color:#A98B72;font-weight:700;font-size:12.5px;letter-spacing:.03em}
+  .size-table td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .size-table td.down{color:#2E7D32;font-weight:800}
+  .sb-body ol{margin:0 0 14px 18px;padding:0}
+  .sb-body ol li{margin-bottom:9px}
+  .sb-body .keep{background:#F2FAF4;border:1px solid #D6EBDD;border-radius:12px;padding:12px 14px;
+                 font-size:13.2px;color:#2E7D32;line-height:1.8}
   .warn-box{background:#FFEBEE;border-left:4px solid #E5484D;border-radius:0 12px 12px 0;
             padding:14px 18px;font-size:14px;color:#8C1D22;margin-top:16px}
   .warn-box b{color:#6E1418}
@@ -210,7 +228,7 @@
       只有当你想在另一台设备上远程改设置、看使用情况时才需要。
     </p>
     <div class="pills">
-      <span class="pill live">🆕 最新 v1.19</span>
+      <span class="pill live">🆕 最新 v1.20</span>
       <span class="pill">Android 8.0+</span>
       <span class="pill">Windows 10 / 11</span>
       <span class="pill">服务端 · 源码部署</span>
@@ -253,7 +271,7 @@
     <p class="sec-sub" style="--i:1">手机、平板、Windows 电脑都能装，同一个版本、同一套内容</p>
 
     <div class="verline" style="--i:2">
-      <b>v1.19</b>（versionCode 20）　·　约 116 MB　·　2026-11-11 更新<br/>
+      <b>v1.20</b>（versionCode 21）　·　约 93 MB　·　2026-11-13 更新<br/>
       安卓与 Windows 同版本；签名未变更，可直接覆盖安装
     </div>
 
@@ -261,22 +279,22 @@
       <div class="dl" style="--i:3">
         <div class="top"><span class="ico">📱</span><h3>Android</h3></div>
         <div class="sub">手机 / 折叠屏 / 平板 · Android 8.0 及以上</div>
-        <div class="meta"><b>约 116 MB</b> · APK</div>
-        <a class="btn" href="downloads/KidsSafeDesktop-1.19.apk">下载 APK</a>
+        <div class="meta"><b>约 93 MB</b> · APK</div>
+        <a class="btn" href="downloads/KidsSafeDesktop-1.20.apk">下载 APK</a>
         <div class="note">首次安装需在系统设置里允许「安装未知来源应用」。若之前装过旧签名版本，先卸载再装。</div>
       </div>
       <div class="dl" style="--i:4">
         <div class="top"><span class="ico">💻</span><h3>Windows 安装版</h3></div>
         <div class="sub">Windows 10 / 11 · 64 位 · 可正常卸载</div>
-        <div class="meta"><b>约 138 MB</b> · setup.exe</div>
-        <a class="btn" href="downloads/KidsSafeDesktop-1.19-setup.exe">下载安装包</a>
+        <div class="meta"><b>约 111 MB</b> · setup.exe</div>
+        <a class="btn" href="downloads/KidsSafeDesktop-1.20-setup.exe">下载安装包</a>
         <div class="note">装进「开始菜单」，并在<b>桌面空白处右键</b>加一个启动项，可从系统设置正常卸载。</div>
       </div>
       <div class="dl" style="--i:5">
         <div class="top"><span class="ico">🗂️</span><h3>Windows 免安装版</h3></div>
         <div class="sub">解压即用 · 不写注册表</div>
-        <div class="meta"><b>约 166 MB</b> · zip</div>
-        <a class="btn alt" href="downloads/KidsSafeDesktop-1.19-win.zip">下载压缩包</a>
+        <div class="meta"><b>约 140 MB</b> · zip</div>
+        <a class="btn alt" href="downloads/KidsSafeDesktop-1.20-win.zip">下载压缩包</a>
         <div class="note">解压到任意目录后双击主程序；因为不写注册表，所以没有右键启动项。</div>
       </div>
     </div>
@@ -306,6 +324,30 @@
       <b>关于杀毒软件误报：</b>安装包没有购买代码签名证书，部分国产杀软会把「未知发布者」的新包标成可疑。
       本项目全部源码在 Gitee 公开，可以自行比对、自行编译。介意的话建议用免安装版，用完直接删目录。
     </div>
+
+    <details class="size-box" id="size">
+      <summary>📦 安装包比 v1.19 小了 23 MB，为什么？</summary>
+      <div class="sb-body">
+        <table class="size-table">
+          <thead>
+            <tr><th>安装包</th><th class="num">v1.19</th><th class="num">v1.20</th><th class="num">变化</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Android APK</td><td class="num">116 MB</td><td class="num">93 MB</td><td class="num down">−23 MB</td></tr>
+            <tr><td>Windows 安装版（setup.exe）</td><td class="num">138 MB</td><td class="num">111 MB</td><td class="num down">−27 MB</td></tr>
+            <tr><td>Windows 免安装版（zip）</td><td class="num">166 MB</td><td class="num">140 MB</td><td class="num down">−26 MB</td></tr>
+          </tbody>
+        </table>
+        <ol>
+          <li><b>插画按手机屏幕的尺寸重存。</b>内置插画原来一律按 1024×1024 存，可在手机上显示宽度不到 300 像素，多出来的像素是白占地方。这一版按 512×512 重新导出，安卓安装包里的图片从 21.8 MB 降到 7.5 MB，Windows 包里从 42.7 MB 降到 13.7 MB，肉眼看不出差别。</li>
+          <li><b>网页游戏里重复的角色图只留一份。</b>雷霆战机那几个页面，每个角色同时放了 jpg 和 png 两份，代码实际只引用 png。删掉 7 个没被任何页面引用的 jpg，省下 4.1 MB。</li>
+          <li><b>程序本体编译得更紧凑。</b>界面代码抽成共享库之后，重复的部分只编译一份。安卓包里编译后的机器码从 33.6 MB 降到 21.5 MB。</li>
+        </ol>
+        <div class="keep">
+          <b>功能没有删减。</b>21 款原生小游戏、15 款网页游戏、儿歌故事音频（9.8 MB，与上一版分毫不差）全都在，家长课还从 4 节加到了 10 节。
+        </div>
+      </div>
+    </details>
   </div>
 </section>
 
@@ -436,7 +478,7 @@ dotnet out/KidsSafeServer.dll</pre>
 
 <footer>
   <div class="wrap">
-    © 2026 儿童安全桌面 · v1.19 ·
+    © 2026 儿童安全桌面 · v1.20 ·
     <a href="/">首页</a>
     <a href="download.html">下载部署</a>
     <a href="changelog.html">更新日志</a>

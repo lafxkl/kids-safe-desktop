@@ -23,7 +23,7 @@
 #define AppExeName "KidsSafeDesktop.exe"
 #define AppPublisher "四光博客"
 #define AppUrl "https://kids.siguangblog.cc/"
-#define BuildRoot "..\bin\Release\net10.0-windows10.0.19041.0\win-x64"
+#define BuildRoot "..\bin\Release\publish-win-x64"
 
 [Setup]
 ; AppId 一旦发布就不要改：它是"同一个应用"的身份，改了会变成并存的两个程序
