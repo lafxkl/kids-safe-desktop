@@ -84,8 +84,8 @@ if (-not (Test-Path $WebDir)) { Fail "找不到 Website 目录：$WebDir" }
 
 # 站点根目录必备的文件。少一个就是线上 404，宁可在这里拦住
 $CoreFiles = @(
-    'index.html', 'changelog.html', 'permissions.html', 'privacy.html', 'about.html',
-    '404.html', 'robots.txt', 'sitemap.xml', 'favicon.ico'
+    'index.html', 'download.html', 'changelog.html', 'permissions.html', 'privacy.html',
+    'about.html', 'care-sources.html', '404.html', 'robots.txt', 'sitemap.xml', 'favicon.ico'
 )
 foreach ($f in $CoreFiles) {
     if (-not (Test-Path (Join-Path $WebDir $f))) { Fail "缺少 $f（站点根目录必备）" }
@@ -226,22 +226,29 @@ if (-not $SkipVerify) {
         @{ Path = '/favicon.ico';  Must = $null }
     )
 
+    # 用 WebClient 并按 UTF-8 解码：Invoke-WebRequest 在响应头没有 charset 时会按
+    # ISO-8859-1 解，中文关键词永远匹配不上（nginx 静态页就是这种头），
+    # 于是每页都报「内容检查未命中」，实际页面是好的。别再改回 Invoke-WebRequest。
+    function Get-PageText([string]$u) {
+        $wc = New-Object System.Net.WebClient
+        $wc.Encoding = [System.Text.Encoding]::UTF8
+        $wc.Headers.Add('User-Agent', 'KidsSafeDeployCheck/1.0')
+        $wc.Headers.Add('Cache-Control', 'no-cache')
+        try { return $wc.DownloadString($u) } finally { $wc.Dispose() }
+    }
+
     $bad = 0
     foreach ($c in $checks) {
         $url = "https://$Domain$($c.Path)?v=$stamp"
         try {
-            $r = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 20
-            $okStatus = ($r.StatusCode -eq 200)
-            $okBody   = $true
-            if ($c.Must) {
-                $body = [string]$r.Content
-                $okBody = $body.Contains($c.Must)
-            }
-            if ($okStatus -and $okBody) {
+            $body   = Get-PageText $url
+            $okBody = $true
+            if ($c.Must) { $okBody = $body.Contains($c.Must) }
+            if ($okBody) {
                 Ok ("{0,-22} 200" -f $c.Path)
             } else {
                 $bad++
-                Warn ("{0,-22} 状态 {1}，内容检查{2}" -f $c.Path, $r.StatusCode, $(if ($okBody) { '通过' } else { '未命中「' + $c.Must + '」' }))
+                Warn ("{0,-22} 200 但内容未命中「{1}」（页面可能是旧版）" -f $c.Path, $c.Must)
             }
         } catch {
             $bad++

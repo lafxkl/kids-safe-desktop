@@ -82,7 +82,7 @@
 server {
     listen 443 ssl http2;                 # ① 开 HTTP/2（nginx ≥ 1.25.1 改用独立的 http2 on;）
     server_name kids.siguangblog.cc;
-    root /var/www/kids;
+    root /www/wwwroot/kids.siguangblog.cc;
     charset utf-8;                        # ② Content-Type 带上 charset
 
     location = /index.html { return 301 https://$host/; }   # ③ 去掉重复入口
@@ -286,7 +286,7 @@ deploy.bat -DryRun                          → 只打印计划，不连服务�
 先用一次性配置免得每次敲参数，`Scripts/deploy.config.json`：
 
 ```json
-{ "server": "root@1.2.3.4", "port": 22, "remotePath": "/var/www/kids", "key": "C:\\Users\\Administrator\\.ssh\\id_ed25519" }
+{ "server": "root@1.2.3.4", "port": 22, "remotePath": "/www/wwwroot/kids.siguangblog.cc", "key": "C:\\Users\\Administrator\\.ssh\\id_ed25519" }
 ```
 
 脚本做的事（`Scripts/deploy.ps1`）：
