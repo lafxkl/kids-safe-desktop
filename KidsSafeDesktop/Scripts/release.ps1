@@ -77,6 +77,7 @@ Set-Location $Root
 $CsprojPath    = Join-Path $Root 'KidsSafeDesktop.csproj'
 $WebsiteDir    = Join-Path $Root 'Website'
 $IndexPath     = Join-Path $WebsiteDir 'index.html'
+$DownloadPath  = Join-Path $WebsiteDir 'download.html'
 $ChangelogPath = Join-Path $WebsiteDir 'changelog.html'
 $DownloadsDir  = Join-Path $WebsiteDir 'downloads'
 $ServerDlDir   = Join-Path (Split-Path -Parent $Root) 'KidsSafeServer\wwwroot\downloads'
@@ -285,30 +286,41 @@ $sizeMb  = [int][math]::Round($apkLen / 1MB)
 Ok ("APK  " + $apkLen.ToString('N0') + " 字节 / " + $sizeMb + " MB")
 Ok ("ZIP  " + $zipLen.ToString('N0') + " 字节")
 
-# ── 7. 回填官网首页 ─────────────────────────────────────────
-Step '回填 index.html'
+# ── 7. 回填官网首页与下载页 ─────────────────────────────────
+Step '回填 index.html / download.html'
 
-$html = Read-Text $IndexPath
-$before = $html
+# 两个页面都写版本行与下载链接，规则完全一样，一起处理，避免下载页停在上一个版本
+foreach ($page in @(
+    @{ Path = $IndexPath;    Name = 'index.html' },
+    @{ Path = $DownloadPath; Name = 'download.html' }
+)) {
+    if (-not (Test-Path $page.Path)) {
+        Warn ("没有 " + $page.Name + '，跳过（官网缺少该页）')
+        continue
+    }
 
-$html = $html -replace '🆕 最新 v\d+\.\d+', "🆕 最新 v$Version"
-$html = $html -replace '<b>v\d+\.\d+</b>（versionCode \d+）　·　约 \d+ MB　·　\d{4}-\d{2}-\d{2} 更新',
-                       "<b>v$Version</b>（versionCode $Build）　·　约 $sizeMb MB　·　$Today 更新"
-$html = $html -replace 'downloads/KidsSafeDesktop-\d+\.\d+\.apk',     "downloads/KidsSafeDesktop-$Version.apk"
-$html = $html -replace 'downloads/KidsSafeDesktop-\d+\.\d+-win\.zip', "downloads/KidsSafeDesktop-$Version-win.zip"
-# 安装版链接同样跟着版本走（安装包由 build-installer.bat 产出）
-$html = $html -replace 'downloads/KidsSafeDesktop-\d+\.\d+-setup\.exe', "downloads/KidsSafeDesktop-$Version-setup.exe"
-$html = $html -replace '© 2026 儿童安全桌面 · v\d+\.\d+ ·',         "© 2026 儿童安全桌面 · v$Version ·"
+    $html   = Read-Text $page.Path
+    $before = $html
 
-# 先确认锚点还在：如果连版本行都匹配不到，说明模板被改过，静默跳过最坑人
-if ($html -notmatch '<b>v\d+\.\d+</b>（versionCode \d+）') {
-    Write-Text $IndexPath $html
-    Warn 'index.html 里找不到「v1.x（versionCode N）」版本行，模板可能改过，请手工检查'
-} elseif ($html -eq $before) {
-    Ok 'index.html 已是目标版本，无需改动'
-} else {
-    Write-Text $IndexPath $html
-    Ok "已更新徽章、版本行（约 $sizeMb MB / $Today）、两个下载链接、页脚"
+    $html = $html -replace '🆕 最新 v\d+\.\d+', "🆕 最新 v$Version"
+    $html = $html -replace '<b>v\d+\.\d+</b>（versionCode \d+）　·　约 \d+ MB　·　\d{4}-\d{2}-\d{2} 更新',
+                           "<b>v$Version</b>（versionCode $Build）　·　约 $sizeMb MB　·　$Today 更新"
+    $html = $html -replace 'downloads/KidsSafeDesktop-\d+\.\d+\.apk',     "downloads/KidsSafeDesktop-$Version.apk"
+    $html = $html -replace 'downloads/KidsSafeDesktop-\d+\.\d+-win\.zip', "downloads/KidsSafeDesktop-$Version-win.zip"
+    # 安装版链接同样跟着版本走（安装包由 build-installer.bat 产出）
+    $html = $html -replace 'downloads/KidsSafeDesktop-\d+\.\d+-setup\.exe', "downloads/KidsSafeDesktop-$Version-setup.exe"
+    $html = $html -replace '© 2026 儿童安全桌面 · v\d+\.\d+ ·',         "© 2026 儿童安全桌面 · v$Version ·"
+
+    # 先确认锚点还在：如果连版本行都匹配不到，说明模板被改过，静默跳过最坑人
+    if ($html -notmatch '<b>v\d+\.\d+</b>（versionCode \d+）') {
+        Write-Text $page.Path $html
+        Warn ($page.Name + ' 里找不到「v1.x（versionCode N）」版本行，模板可能改过，请手工检查')
+    } elseif ($html -eq $before) {
+        Ok ($page.Name + ' 已是目标版本，无需改动')
+    } else {
+        Write-Text $page.Path $html
+        Ok ($page.Name + ": 已更新徽章、版本行（约 $sizeMb MB / $Today）、下载链接、页脚")
+    }
 }
 
 # ── 8. 回填权限说明页的适用版本 ───────────────────────────
@@ -406,15 +418,15 @@ $SitemapPath = Join-Path $WebsiteDir 'sitemap.xml'
 if (Test-Path $SitemapPath) {
     $sm = Read-Text $SitemapPath
     $sm2 = $sm
-    # 首页、更新日志、权限页、关于页每次发版都会变；隐私政策不动，保持原 lastmod
-    foreach ($page in @('/', '/changelog.html', '/permissions.html', '/about.html')) {
+    # 首页、下载页、更新日志、权限页、关于页每次发版都会变；隐私政策不动，保持原 lastmod
+    foreach ($page in @('/', '/download.html', '/changelog.html', '/permissions.html', '/about.html')) {
         $esc  = [regex]::Escape("https://kids.siguangblog.cc$page")
         $expr = '(<loc>' + $esc + '</loc>\s*<lastmod>)\d{4}-\d{2}-\d{2}'
         $sm2  = [regex]::Replace($sm2, $expr, ('${1}' + $Today))
     }
     if ($sm2 -ne $sm) {
         Write-Text $SitemapPath $sm2
-        Ok "sitemap.xml lastmod → $Today（首页 / changelog / permissions）"
+        Ok "sitemap.xml lastmod → $Today（首页 / 下载页 / changelog / permissions）"
     } else {
         Ok 'sitemap.xml lastmod 已是今天'
     }

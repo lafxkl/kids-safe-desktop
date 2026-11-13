@@ -79,6 +79,9 @@
   .store-links{margin-top:18px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
   .store-links a{padding:11px 22px;border-radius:22px;font-weight:700;background:var(--grad);color:#fff}
   .dl-note{margin-top:16px;font-size:13px;color:#8D6E63;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8}
+  .dl-more{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .dl-more a{font-size:13.5px;font-weight:700;color:var(--purple);background:#F6F1FF;border:1px solid #EADDFB;border-radius:20px;padding:8px 16px}
+  .dl-more a:hover{background:#EFE6FF;border-color:#DCCBF6}
   /* 交流渠道：QQ 群 / 微信群 / 公众号 三卡 */
   .chan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:790px;margin:0 auto}
   .chan{background:#fff;border:1px solid #F1EAFF;border-radius:22px;padding:22px 18px 20px;text-align:center;
@@ -223,9 +226,9 @@
       <a href="#parent">家长守护</a>
       <a href="#safety">安全</a>
       <a href="changelog.html">更新日志</a>
-      <a href="#download">下载</a>
+      <a href="download.html">下载部署</a>
     </nav>
-    <a class="btn" href="#download">立即下载</a>
+    <a class="btn" href="download.html">立即下载</a>
   </div>
 </header>
 
@@ -236,7 +239,7 @@
       <h1>给孩子一个<br><span class="hl">安全、好玩</span>的成长空间</h1>
       <p class="lead">儿童安全桌面，用孩子熟悉的「手机桌面」方式组织一切：圆角图标 + 名称，点一点就能玩、能学。家长可控、护眼、离线可玩，纯净无广告。也支持视障、听障与社交情绪等特需儿童的分通道训练。</p>
       <div class="cta">
-        <a class="primary" href="#download">下载体验</a>
+        <a class="primary" href="download.html">下载体验</a>
         <a class="ghost" href="changelog.html">查看更新日志</a>
       </div>
       <div class="badges">
@@ -245,9 +248,10 @@
         <span class="badge">👁️ 护眼模式</span>
         <span class="badge">🚫 无广告无外链</span>
         <a class="badge" href="changelog.html" style="color:#5C6BC0">🆕 最新 v1.19</a>
+        <a class="badge" href="https://gitee.com/lafxluc/kids-safe-desktop" target="_blank" rel="noopener" style="color:#C0392B">📖 开源在 Gitee</a>
       </div>
     </div>
-    <div class="phone"><img src="assets/screenshot_home.png" alt="儿童安全桌面首页：圆角图标 + 文字名称的桌面式布局，适合 3–12 岁孩子" width="720" height="1280" fetchpriority="high" decoding="async"/></div>
+    <div class="phone"><img src="assets/screenshot_home.png" alt="儿童安全桌面真实首页截图：圆角图标 + 文字名称的桌面式布局，适合 3–12 岁孩子" width="540" height="1200" fetchpriority="high" decoding="async"/></div>
   </div>
 </section>
 
@@ -284,11 +288,12 @@
     <h2 class="sec-title">界面一览</h2>
     <p class="sec-sub">手机桌面式布局，折叠屏 / 平板自动适配更多列</p>
     <div class="shots">
-      <figure><img src="assets/screenshot_home.png" alt="儿童安全桌面首页：图标化入口，孩子点一点就能玩" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>桌面式首页</figcaption></figure>
-      <figure><img src="assets/screenshot_games.png" alt="小游戏乐园：20 个益智小游戏列表" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>小游戏乐园</figcaption></figure>
-      <figure><img src="assets/screenshot_science.png" alt="科学实验室：物理、化学、生命、太空、身体奥秘亲子小实验" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>科学实验室</figcaption></figure>
-      <figure><img src="assets/screenshot_player.png" alt="听一听播放器：旋转 CD 播放儿歌与故事，支持后台播放" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>听一听播放器</figcaption></figure>
-      <figure><img src="assets/screenshot_learn.png" alt="学习天地：口算练习、模拟考试、英语单词认读、古诗朗读" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>学习天地</figcaption></figure>
+      <figure><img src="assets/screenshot_home.png" alt="儿童安全桌面真实界面：顶部显示剩余可用时长与离线状态，下面是圆角图标桌面" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>桌面式首页</figcaption></figure>
+      <figure><img src="assets/screenshot_games.png" alt="游戏乐园真实界面：简单 / 中等 / 困难三档难度，内置与网页游戏分类，益智小游戏网格" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>游戏乐园</figcaption></figure>
+      <figure><img src="assets/screenshot_learn.png" alt="学习天地真实界面：一年级到初三的口算练习与模拟考试入口" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>学习天地</figcaption></figure>
+      <figure><img src="assets/screenshot_player.png" alt="媒体中心真实界面：听、看、故事、阅读四个分类，儿歌音乐盒与安睡摇篮" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>听一听 · 媒体中心</figcaption></figure>
+      <figure><img src="assets/screenshot_science.png" alt="星际科学实验室真实界面：物理、化学、天文等分类，18 个亲子小实验" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>科学实验室</figcaption></figure>
+      <figure><img src="assets/screenshot_care.png" alt="关爱中心真实界面：今天心情怎么样打卡、最近 7 天趋势、加密日记与家长课" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>关爱中心</figcaption></figure>
     </div>
   </div>
 </section>
@@ -348,6 +353,11 @@
       <a href="downloads/KidsSafeDesktop-1.19-win.zip">Windows 免安装版</a>
       <a href="changelog.html">更新日志</a>
     </div>
+    <div class="dl-more">
+      <a href="download.html">📥 全部下载与安装说明</a>
+      <a href="download.html#server">🖥️ 服务端部署（可选）</a>
+      <a href="https://gitee.com/lafxluc/kids-safe-desktop" target="_blank" rel="noopener">📖 Gitee 源码</a>
+    </div>
     <p class="dl-note">
       安卓首次安装需在系统设置里允许「安装未知来源应用」。若之前装过更早的旧签名的包，请先卸载再安装。<br/>
       Windows 两个版本内容一样，区别只有一处：<b>安装版</b>（约 138 MB）会装进「开始菜单」，并在<b>桌面空白处右键</b>加一个启动项，可从系统设置正常卸载；<b>免安装版</b>（约 166 MB）解压即用、不写注册表，因此没有右键菜单。
@@ -396,7 +406,8 @@
       <a href="#features">功能特性</a>
       <a href="#screens">界面展示</a>
       <a href="#parent">家长守护</a>
-      <a href="#download">下载安装</a>
+      <a href="download.html">下载安装</a>
+      <a href="download.html#server">服务端部署</a>
       <a href="changelog.html">更新日志</a>
     </div>
     <div>
@@ -408,6 +419,7 @@
       <a href="care-sources.html">关爱中心内容来源</a>
       <a href="privacy.html#sdk">第三方 SDK 清单</a>
       <a href="changelog.html">版本历史</a>
+      <a href="https://gitee.com/lafxluc/kids-safe-desktop" target="_blank" rel="noopener">Gitee 开源仓库</a>
       <a href="mailto:2279125469@qq.com">联系我们</a>
     </div>
     <div class="copy">© 2026 儿童安全桌面 · v1.19 · 保留所有权利 · 本页为产品展示页，最终解释权归开发者所有</div>
