@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.TextbookShelfPage"
+             Title="电子课本"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <!-- 主题背景大图 -->
+        <Image Grid.Row="0" Grid.RowSpan="5"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,20,16,12" Background="#00695C">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📚 电子课本" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" Text="🔄" FontSize="17" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnRefresh" />
+        </Grid>
+
+        <!-- 科目切换（语文 / 数学） -->
+        <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                    Padding="16,10,16,0">
+            <HorizontalStackLayout x:Name="SubjectBar" Spacing="8" />
+        </ScrollView>
+
+        <!-- 版本切换（人教版 / 北师大版 / … 数学有 9 个版本，必须能横向滚动） -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Padding="16,8,16,2">
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout x:Name="EditionBar" Spacing="8" />
+            </ScrollView>
+            <Label Grid.Column="1" x:Name="CountLabel" Text="" FontSize="13" TextColor="#00695C"
+                   VerticalOptions="Center" Margin="8,0,0,0" />
+        </Grid>
+
+        <!-- 年级芯片 -->
+        <ScrollView Grid.Row="3" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                    Padding="16,6,16,6">
+            <HorizontalStackLayout x:Name="GradeBar" Spacing="8" />
+        </ScrollView>
+
+        <!-- 课本网格 -->
+        <CollectionView Grid.Row="4" x:Name="BooksView" Margin="10,0,10,0"
+                        SelectionMode="Single" SelectionChanged="OnBookSelected">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="3"
+                                 HorizontalItemSpacing="8" VerticalItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:TextbookTile">
+                    <Border BackgroundColor="#FFFFFF" Stroke="#E0F2F1" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16" Padding="6">
+                        <VerticalStackLayout Spacing="4">
+                            <!-- 封面：等比缩放，避免把课本封面裁掉一块 -->
+                            <Grid HeightRequest="150">
+                                <Border BackgroundColor="#F5F5F5" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 10" VerticalOptions="Fill">
+                                    <Image Source="{Binding Cover}" Aspect="AspectFit" />
+                                </Border>
+                                <Border IsVisible="{Binding IsLegacy}" BackgroundColor="#FBE9E7"
+                                        Stroke="#FFCCBC" StrokeThickness="1" Padding="6,1"
+                                        StrokeShape="RoundRectangle 8"
+                                        HorizontalOptions="Start" VerticalOptions="Start">
+                                    <Label Text="旧版" FontSize="10" TextColor="#BF360C"
+                                           FontAttributes="Bold" />
+                                </Border>
+                            </Grid>
+                            <Label Text="{Binding Title}" FontSize="14" FontAttributes="Bold"
+                                   TextColor="#004D40" HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding SubTitle}" FontSize="11" TextColor="#607D8B"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- 空态 / 未联网提示 -->
+        <VerticalStackLayout Grid.Row="4" x:Name="EmptyPanel" IsVisible="False"
+                             VerticalOptions="Center" Padding="34" Spacing="10">
+            <Label x:Name="EmptyIcon" Text="📚" FontSize="44" HorizontalOptions="Center" />
+            <Label x:Name="EmptyText" Text="" FontSize="15" TextColor="#37474F"
+                   HorizontalTextAlignment="Center" LineHeight="1.5" />
+            <Button x:Name="EmptyAction" Text="重新加载" IsVisible="False"
+                    BackgroundColor="#00695C" TextColor="White" FontSize="15" CornerRadius="20"
+                    HeightRequest="44" HorizontalOptions="Center" Padding="26,0"
+                    Clicked="OnRefresh" />
+        </VerticalStackLayout>
+
+        <ActivityIndicator Grid.Row="4" x:Name="Busy" IsRunning="False" IsVisible="False"
+                           Color="#00695C" VerticalOptions="Center" HorizontalOptions="Center" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="儿童心理学与自闭症关怀：面向家长的公益科普。讲儿童心理发展的基本规律与各年龄段特点，以及孤独症谱系障碍（自闭症）的早期识别、国家筛查流程、干预治疗原则、家庭训练方法与救助政策。">
+<title>儿童心理学 · 自闭症关怀（公益项目）</title>
+<script>
+  /* 应用内是 WebView，Chromium 会记住上次滚动位置，重新打开时常停在半段。 */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+</script>
+<style>
+  :root{
+    --ink:#26353F;
+    --ink-2:#3E5461;
+    --muted:#6C818D;
+    --brand:#2E9E8F;
+    --brand-deep:#1F7A6E;
+    --brand-soft:#E8F6F2;
+    --warm:#E8894A;
+    --warm-soft:#FFF3E6;
+    --danger:#C0392B;
+    --danger-soft:#FDECEA;
+    --line:#E2EDEA;
+    --white:#fff;
+    --shadow:0 2px 10px rgba(31,90,80,.06);
+  }
+  *{box-sizing:border-box;}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    background:#F4FAF8;
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+    font-size:16.5px;
+    line-height:1.75;
+    letter-spacing:.01em;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px 90px;}
+
+  /* ===== 头部 ===== */
+  header{
+    background:linear-gradient(135deg,#2E9E8F 0%,#3FB3A0 55%,#57C4AE 100%);
+    color:#fff;
+    padding:34px 20px 30px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;right:-60px;top:-60px;width:260px;height:260px;
+    border-radius:50%;background:rgba(255,255,255,.10);
+  }
+  header .inner{max-width:880px;margin:0 auto;position:relative;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.95);
+    color:var(--brand-deep);
+    font-size:12.5px;font-weight:700;letter-spacing:.06em;
+    padding:5px 13px;border-radius:999px;
+    box-shadow:0 2px 8px rgba(0,0,0,.10);
+  }
+  header h1{font-size:1.9rem;line-height:1.35;margin:14px 0 8px;font-weight:800;letter-spacing:.01em;}
+  header .lead{margin:0;font-size:.95rem;color:rgba(255,255,255,.94);}
+  .meta-row{
+    margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;
+  }
+  .chip{
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.32);
+    border-radius:999px;padding:4px 12px;font-size:12.5px;color:#fff;
+  }
+
+  /* ===== 标签 ===== */
+  .tabs{
+    position:sticky;top:0;z-index:30;
+    background:rgba(244,250,248,.96);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:10px 20px;
+  }
+  .tab-inner{max-width:880px;margin:0 auto;display:flex;gap:10px;}
+  .tab-btn{
+    flex:1;
+    appearance:none;border:1px solid var(--line);background:#fff;
+    color:var(--ink-2);font-size:15.5px;font-weight:700;
+    padding:11px 8px;border-radius:14px;cursor:pointer;
+    transition:.18s ease;
+    font-family:inherit;
+  }
+  .tab-btn.active{
+    background:var(--brand);border-color:var(--brand);color:#fff;
+    box-shadow:0 4px 12px rgba(46,158,143,.28);
+  }
+
+  /* ===== 通用块 ===== */
+  section.view{padding-top:22px;}
+  .hidden{display:none!important;}
+
+  h2{
+    font-size:1.32rem;margin:34px 0 12px;font-weight:800;color:var(--brand-deep);
+    display:flex;align-items:center;gap:9px;
+  }
+  h2 .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;flex:0 0 30px;border-radius:9px;
+    background:var(--brand-soft);color:var(--brand-deep);
+    font-size:14px;font-weight:800;
+  }
+  h3{font-size:1.06rem;margin:22px 0 8px;font-weight:700;color:var(--ink);}
+  p{margin:9px 0;}
+  .muted{color:var(--muted);font-size:.92rem;}
+
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:16px 18px;margin:12px 0;box-shadow:var(--shadow);
+  }
+  .card.tight{padding:13px 16px;}
+  .card h3{margin-top:0;}
+
+  .note{
+    border-left:4px solid var(--brand);
+    background:var(--brand-soft);
+    border-radius:0 12px 12px 0;
+    padding:12px 16px;margin:14px 0;font-size:.95rem;
+  }
+  .note.warm{border-left-color:var(--warm);background:var(--warm-soft);}
+  .note.danger{border-left-color:var(--danger);background:var(--danger-soft);}
+  .note b{color:var(--brand-deep);}
+  .note.warm b{color:#A65A20;}
+  .note.danger b{color:var(--danger);}
+
+  ul,ol{margin:8px 0;padding-left:22px;}
+  li{margin:6px 0;}
+  li b{color:var(--ink);}
+  .lead-in{font-size:1rem;color:var(--ink-2);}
+
+  /* 四条规律 */
+  .rules{display:grid;gap:12px;margin-top:10px;}
+  .rule{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 17px;
+    border-left:5px solid var(--brand);box-shadow:var(--shadow);
+  }
+  .rule .t{font-weight:800;font-size:1.03rem;color:var(--brand-deep);margin-bottom:4px;}
+  .rule .q{font-size:.9rem;color:var(--muted);margin-bottom:6px;}
+
+  /* 年龄段时间轴 */
+  .stages{margin-top:8px;}
+  .stage{
+    position:relative;padding-left:26px;margin:0 0 14px;
+  }
+  .stage::before{
+    content:"";position:absolute;left:7px;top:8px;width:11px;height:11px;border-radius:50%;
+    background:var(--brand);box-shadow:0 0 0 4px rgba(46,158,143,.16);
+  }
+  .stage::after{
+    content:"";position:absolute;left:12px;top:24px;bottom:-14px;width:1px;background:var(--line);
+  }
+  .stage:last-child::after{display:none;}
+  .stage .age{font-size:.86rem;font-weight:800;color:var(--brand);letter-spacing:.04em;}
+  .stage .name{font-size:1.08rem;font-weight:800;margin:1px 0 3px;}
+  .stage .body{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 16px;box-shadow:var(--shadow);}
+  .stage .body p{margin:6px 0;}
+  .stage .body .lbl{font-size:.86rem;font-weight:800;color:var(--warm);letter-spacing:.03em;}
+
+  /* 表格 */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0;border-radius:14px;border:1px solid var(--line);background:#fff;}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem;}
+  thead th{
+    background:var(--brand-soft);color:var(--brand-deep);
+    font-weight:800;text-align:left;padding:10px 12px;white-space:nowrap;
+    border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:10px 12px;border-bottom:1px solid #F0F6F4;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody td:first-child{white-space:nowrap;font-weight:700;color:var(--brand-deep);}
+  .small{font-size:.86rem;}
+
+  /* 红旗清单 */
+  .flags{display:grid;gap:10px;margin-top:10px;}
+  .flag{
+    display:flex;gap:12px;align-items:flex-start;
+    background:#fff;border:1px solid var(--line);border-left:5px solid var(--warm);
+    border-radius:14px;padding:13px 16px;box-shadow:var(--shadow);
+  }
+  .flag .ico{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:var(--warm-soft);color:#A65A20;font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:center;line-height:1;}
+  .flag .txt{font-size:.95rem;}
+  .flag .txt b{display:block;font-size:1rem;color:var(--ink);margin-bottom:2px;}
+
+  /* 步骤 */
+  .steps{counter-reset:s;margin-top:10px;}
+  .step{
+    position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px 14px 54px;margin-bottom:10px;box-shadow:var(--shadow);
+  }
+  .step::before{
+    counter-increment:s;content:counter(s);
+    position:absolute;left:14px;top:14px;
+    width:26px;height:26px;border-radius:8px;
+    background:var(--brand);color:#fff;font-weight:800;font-size:13.5px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .step b{display:block;font-size:1rem;margin-bottom:2px;}
+
+  /* 双列表 */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:680px){ .two{grid-template-columns:1fr;} }
+
+  .pill-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .pill{
+    background:#fff;border:1px solid var(--line);border-radius:999px;
+    padding:6px 13px;font-size:.88rem;color:var(--ink-2);
+  }
+
+  .footer{
+    margin-top:40px;padding-top:18px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:.86rem;line-height:1.8;
+  }
+  .footer b{color:var(--ink-2);}
+
+  /* 回到顶部 */
+  #backTop{
+    position:fixed;right:20px;bottom:24px;
+    width:46px;height:46px;border:none;border-radius:50%;
+    background:var(--brand);color:#fff;font-size:22px;font-weight:700;
+    box-shadow:0 6px 18px rgba(46,158,143,.38);
+    opacity:0;pointer-events:none;transition:.2s;cursor:pointer;
+  }
+  #backTop.show{opacity:1;pointer-events:auto;}
+
+  @media (max-width:520px){
+    body{font-size:16px;}
+    header h1{font-size:1.5rem;}
+    h2{font-size:1.2rem;}
+    .wrap{padding:0 15px 80px;}
+    .tabs{padding:8px 15px;}
+    .tab-btn{font-size:14px;padding:10px 4px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <span class="badge">公益项目 · 永久免费</span>
+    <h1>儿童心理学 · 自闭症关怀</h1>
+    <p class="lead">给家长的一份科普手册：孩子每个阶段在想什么，以及怎样早一点看见那些需要帮助的孩子。</p>
+    <div class="meta-row">
+      <span class="chip">不涉及任何收费与推销</span>
+      <span class="chip">内容依据国家卫健委指南</span>
+      <span class="chip">离线可读</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab-inner">
+    <button class="tab-btn active" data-view="dev" aria-selected="true">心理发展</button>
+    <button class="tab-btn" data-view="asd" aria-selected="false">自闭症关怀</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============================================================ -->
+  <!--                        心理发展视图                           -->
+  <!-- ============================================================ -->
+  <section class="view" id="view-dev">
+
+    <div class="note">
+      <b>这一部分讲什么</b><br>
+      参照朱智贤《儿童心理学》（人民教育出版社）的框架，把「儿童心理发展的基本规律」和「六个年龄段的心理特点」讲成家长能用的话。
+      不追求术语准确到教材级别，只求你看完能判断：现在这个阶段，孩子这样表现是不是正常的，我该做什么、不该做什么。
+    </div>
+
+    <h2><span class="num">1</span>先记住四句话</h2>
+    <p class="lead-in">儿童心理学研究了上百年，落到家长身上，最有用的是四组关系。理解了它们，很多焦虑会自动消掉一半。</p>
+
+    <div class="rules">
+      <div class="rule">
+        <div class="t">先天给可能，后天定程度</div>
+        <div class="q">遗传与环境的关系</div>
+        <p>孩子的气质、智力潜能、某些特质有先天的底子，但底子只是「天花板的高度」，能不能长到那儿，取决于后天有没有人跟他说话、有没有机会练习。所以既不要相信「生下来就定了」，也不要相信「怎么养都能成才」。</p>
+      </div>
+      <div class="rule">
+        <div class="t">外因要通过内因起作用</div>
+        <div class="q">发展动力的关系</div>
+        <p>同样的教育，不同的孩子反应完全不同——因为孩子不是被动接收的容器。他自己想不想、准备好没有、觉得这件事有没有意义，决定了大人的努力能不能变成他的能力。<b>先连接，再纠正</b>：孩子情绪没接住的时候，讲道理基本无效。</p>
+      </div>
+      <div class="rule">
+        <div class="t">教育要走在发展前面，但不能离太远</div>
+        <div class="q">教育与发展的关系</div>
+        <p>略高于现有水平、跳一跳够得着的任务最能促进发展。太简单会无聊，太超前会挫败。这也是「超前学习」常常没效果的原因：不是知识不对，是时机不对。</p>
+      </div>
+      <div class="rule">
+        <div class="t">有共同规律，也有各自节奏</div>
+        <div class="q">年龄特征与个体差异的关系</div>
+        <p>「三岁左右语言爆发」是规律，但有的孩子两岁半就能说句子，有的到三岁半才开口——都在正常范围。规律用来判断「大概什么时候该出现」，不用来排名。</p>
+      </div>
+    </div>
+
+    <h2><span class="num">2</span>六个阶段，各有各的任务</h2>
+    <p class="lead-in">下面按教材的分期，把 0 到 18 岁拆成六段。每段写了「这个阶段在长什么」和「家长最该做的几件事」。</p>
+
+    <div class="stages">
+
+      <div class="stage">
+        <div class="age">0 — 1 岁</div>
+        <div class="name">乳儿期</div>
+        <div class="body">
+          <p><b>这个阶段在长什么：</b>这是人一生中发展最快的时期。动作上从抬头、翻身、坐、爬走到直立；感知觉先于语言发展，三个月就能追视人脸；六个月左右开始认生，一岁前后形成对主要照料者的<b>依恋</b>——这是以后所有亲密关系的底子。</p>
+          <p><b>家长最该做的：</b>及时回应。哭了就抱、饿了就喂，<b>不会惯坏</b>——这个年龄还不存在「用哭来控制大人」的心智。多面对面说话、模仿他的发音；每天安排俯卧练习；按时做儿保和接种。</p>
+          <p class="lbl">这个阶段最容易被忽略的</p>
+          <p>叫名字没反应、不看人脸、不追视——很多家长以为是「乖」，其实是需要留意的信号。第 3 到 12 个月，国家安排了 4 次发育筛查。</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="age">1 — 3 岁</div>
+        <div class="name">婴儿期（幼儿早期）</div>
+        <div class="body">
+          <p><b>这个阶段在长什么：</b>会走了，世界一下子变大，探索欲极强。语言从单词到短句，两岁前后词汇量猛增。自我意识萌芽，「我的」「不要」是他在练习「我是一个独立的人」。情绪来得快去得也快，发脾气是常态而不是坏脾气。</p>
+          <p><b>家长最该做的：</b>把家变成能安全探索的地方（收好危险品，而不是整天喊「不许」）；用描述代替提问（「你在搭积木」比「这是什么颜色」更能带语言）；发脾气时先接情绪再给界限；如厕训练看孩子准备好了没有，不硬来。</p>
+          <p class="lbl">这个阶段最容易被误解的</p>
+          <p>「不分享」「抢玩具」不是自私，是还分不清「你的」和「我的」。强迫分享会让他更护东西。</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="age">3 — 6 岁</div>
+        <div class="name">学前期</div>
+        <div class="body">
+          <p><b>这个阶段在长什么：</b>游戏成为主导活动，孩子通过假装游戏理解世界（拿棍当马、给娃娃看病）。想象力极其旺盛，有时分不清想象与现实。思维以自我为中心，很难站在别人角度看问题。开始在意规则和「公平」，但理解的是字面意思。</p>
+          <p><b>家长最该做的：</b>陪玩，别急着上课。这个年龄最好的学习藏在游戏和生活里；规则要少而稳定，说到的就要做到；允许他做不好，别抢过来代劳；每天户外和亲子阅读，比多上一门课更有用。</p>
+          <p class="lbl">这个阶段最容易被误解的</p>
+          <p>「说谎」有时是想象和现实混在一起，不是品德问题；「磨蹭」常常是因为没有时间概念，而不是故意对抗。</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="age">6 — 12 岁</div>
+        <div class="name">学龄初期</div>
+        <div class="body">
+          <p><b>这个阶段在长什么：</b>主导活动从游戏变成学习，有意注意开始发展（低年级能专注 15—20 分钟就是正常）。思维从具体形象向抽象过渡，所以需要实物、画图、例子。同伴关系变得重要，公平感极强。这一阶段的核心心理任务是建立「我能行」的感觉，反复受挫容易转向「我不行」。</p>
+          <p><b>家长最该做的：</b>抓习惯，别只盯分数；表扬要具体（「你今天自己检查了作业」而不是「你真聪明」）；保证睡眠和运动，这两样对学习的作用被严重低估；让孩子承担固定的家务；留意校园关系，包括被孤立和被欺负。</p>
+          <p class="lbl">这个阶段最容易被误解的</p>
+          <p>「粗心」多半是熟练度不够或注意力分配不过来，靠骂不会变细心，靠练和检查习惯才会。</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="age">12 — 15 岁</div>
+        <div class="name">少年期</div>
+        <div class="body">
+          <p><b>这个阶段在长什么：</b>青春期身体变化带来心理震荡；抽象逻辑思维迅速发展，开始能讨论观点、质疑权威；自我意识第二次飞跃，「别人怎么看我」被放大到极致；同伴影响力常常超过父母；情绪强度大、恢复也快。</p>
+          <p><b>家长最该做的：</b>少说教，多倾听，一次讲三分钟以内；在安全范围内给他自主（穿着、房间、部分时间安排）；尊重隐私，不翻手机、不翻书包——这会直接摧毁信任；就事论事，不翻旧账、不当众比较；关注情绪信号：长期失眠、不愿上学、自我否定，需要认真对待。</p>
+          <p class="lbl">这个阶段最容易被误解的</p>
+          <p>顶嘴和关门不是变坏，是他在练习分离和独立。冲突本身不可怕，可怕的是冲突之后没有修复。</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="age">15 — 18 岁</div>
+        <div class="name">青年初期</div>
+        <div class="body">
+          <p><b>这个阶段在长什么：</b>抽象思维趋于成熟，能进行假设和推理；开始形成自己的价值观和人生方向，思考「我要成为什么样的人」；同伴亲密关系加深，可能出现恋爱；面临升学压力，也是焦虑和抑郁容易出现的时期。</p>
+          <p><b>家长最该做的：</b>从「管理者」转成「顾问」——他问的时候给建议，不问的时候给空间；重大选择一起讨论，但把决定权逐步交出去；关注睡眠、食欲、社交退缩这三个最直观的信号；让他知道「考不好也可以回家」。</p>
+          <p class="lbl">这个阶段最容易被误解的</p>
+          <p>「不想说话」不等于「不需要你」。这个年龄的孩子常常用沉默保护自己，稳定的、不追问的陪伴比什么都重要。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <h2><span class="num">3</span>如果只能记住一件事</h2>
+    <div class="note">
+      心理学研究反复指向同一个结论：<b>稳定、温暖、有回应的关系，是所有发展的地基。</b>
+      早教课、益智玩具、识字量，都比不上「有人认真听他说话」。
+      孩子不需要一个完美的家长，只需要一个「我出错了他还在」的家长。
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!--                        自闭症视图                             -->
+  <!-- ============================================================ -->
+  <section class="view hidden" id="view-asd">
+
+    <div class="note warm">
+      <b>先说三件最重要的事</b><br>
+      ① 自闭症（孤独症谱系障碍）<b>不是父母冷漠、管教不当造成的</b>，也不是打骂、看屏幕多、接种疫苗造成的。它是先天的神经发育差异，家长没有任何需要自责的地方。<br>
+      ② 它<b>不是「治不好的绝症」</b>，也不是「长大就好了」。真正有用的是早发现、早干预、长期科学的康复训练。<br>
+      ③ 这份内容是<b>公益科普</b>，不卖课、不推荐机构、不收取任何费用。它不能替代医生的诊断。
+    </div>
+
+    <h2><span class="num">1</span>自闭症到底是什么</h2>
+
+    <div class="card">
+      <p><b>孤独症谱系障碍</b>（Autism Spectrum Disorder，ASD，中文也常叫自闭症）是一类起病于儿童早期的<b>神经发育障碍</b>，核心特征有三组：</p>
+      <ul>
+        <li><b>社交沟通障碍</b>——不太看人、不指、不分享兴趣，难以理解别人的表情和语气，对话常常「接不上」。</li>
+        <li><b>兴趣狭隘</b>——只对少数东西着迷（车轮、地图、数字、某种动画），很难被别的吸引。</li>
+        <li><b>行为重复刻板</b>——反复转圈、排列物品、开关门、走固定路线；改变会引发强烈不安。</li>
+      </ul>
+      <p class="muted">「谱系」两个字很重要：程度从需要大量支持到基本独立生活都有，每个人的表现都不一样。所以不要拿一个孩子的样子去套另一个。</p>
+    </div>
+
+    <div class="two">
+      <div class="card tight">
+        <h3>有多常见</h3>
+        <p>我国儿童孤独症患病率约为 <b>7‰</b>（约每 140 个孩子里有 1 个），男孩明显多于女孩。</p>
+        <p class="muted">来源：国家卫生健康委《0~6 岁儿童孤独症筛查干预服务规范（试行）》</p>
+      </div>
+      <div class="card tight">
+        <h3>关键时间窗</h3>
+        <p>最佳治疗期为 <b>6 岁前</b>，<b>3 岁前</b>开始科学干预效果更好。</p>
+        <p class="muted">大脑可塑性最强的几年，同样的投入回报完全不同。</p>
+      </div>
+    </div>
+
+    <div class="note danger">
+      <b>这些说法都是错的</b><br>
+      ✗ 「自闭症是妈妈太冷漠造成的」——上世纪已被推翻，是彻头彻尾的错误归因。<br>
+      ✗ 「打疫苗会得自闭症」——大规模研究反复否定，原论文已被撤稿。<br>
+      ✗ 「多陪陪就好了」——陪伴重要，但不能替代专业干预。<br>
+      ✗ 「等长大自然就好了」——语言和社交的窗口会过去，等待就是损失。
+    </div>
+
+    <h2><span class="num">2</span>家长怎么早一点发现</h2>
+
+    <p class="lead-in">这一步最值得花时间。自闭症没法靠抽血、拍片查出来，靠的是<b>看行为</b>——而家长是看得最多的人。</p>
+
+    <h3>国家给孩子安排了 11 次免费筛查</h3>
+    <p>按国家基本公共卫生服务，0~6 岁儿童在基层医疗卫生机构（社区卫生服务中心、乡镇卫生院）一共做 <b>11 次</b>心理行为发育筛查，用的是一张「预警征象」表：</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>时间点</th><th>检查这些</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3 月龄</td><td>对很大声音没反应 · 逗引时不发音或不会微笑 · 不注视人脸、不追视移动的人或物 · 俯卧时不会抬头</td></tr>
+          <tr><td>6 月龄</td><td>发音少、不会笑出声 · 不会伸手抓物 · 紧握拳松不开 · 不能扶坐</td></tr>
+          <tr><td>8 月龄</td><td>听到声音无应答 · 不会区分生人和熟人 · 双手间不会传递玩具 · 不会独坐</td></tr>
+          <tr><td>12 月龄</td><td>呼唤名字无反应 · 不会模仿「再见」「欢迎」 · 不会拇食指对捏小物品 · 不会扶物站立</td></tr>
+          <tr><td>18 月龄</td><td>不会有意识叫「爸爸」或「妈妈」 · 不会按要求指人或物 · <b>与人无目光交流</b> · 不会独走</td></tr>
+          <tr><td>24 月龄</td><td>不会说 3 个物品的名称 · 不会按吩咐做简单事 · 不会用勺吃饭 · 不会扶栏上楼梯</td></tr>
+          <tr><td>30 月龄</td><td>不会说 2—3 个字的短语 · <b>兴趣单一、刻板</b> · 不会示意大小便 · 不会跑</td></tr>
+          <tr><td>36 月龄</td><td>不会说自己的名字 · <b>不会玩「拿棍当马骑」等假想游戏</b> · 不会模仿画圆 · 不会双脚跳</td></tr>
+          <tr><td>4 岁</td><td>不会说带形容词的句子 · 不能按要求等待或轮流 · 不会独立穿衣 · 不会单脚站立</td></tr>
+          <tr><td>5 岁</td><td>不能简单叙说事情经过 · 不知道自己的性别 · 不会用筷子吃饭 · 不会单脚跳</td></tr>
+          <tr><td>6 岁</td><td>不会表达自己的感受或想法 · 不会玩角色扮演的集体游戏 · 不会画方形 · 不会奔跑</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">表格摘自《儿童心理行为发育问题预警征象筛查表》。<b>任何一个时间点，只要有一条对不上，就提示可能有发育偏异</b>，需要转诊复筛——注意，是「可能」，不是「确诊」。</p>
+
+    <h3>日常最该留心的六个信号</h3>
+    <div class="flags">
+      <div class="flag">
+        <div class="ico">1</div>
+        <div class="txt"><b>叫名字没反应</b>12 个月还不会应名，或者只有在他感兴趣时才应。先排除听力问题，再考虑社交动机。</div>
+      </div>
+      <div class="flag">
+        <div class="ico">2</div>
+        <div class="txt"><b>不会「指」</b>想要东西时直接拉着大人的手去够，而不是用手指给你看。这是社交沟通最典型的一个缺口。</div>
+      </div>
+      <div class="flag">
+        <div class="ico">3</div>
+        <div class="txt"><b>不分享兴趣</b>看到好玩的东西不会回头看你一眼、不会拿给你看。正常孩子会「炫耀」，他好像只自己看。</div>
+      </div>
+      <div class="flag">
+        <div class="ico">4</div>
+        <div class="txt"><b>语言晚，或者倒退</b>两岁还不会说词、不会组短句；或者<b>本来会说，后来不说了</b>。倒退是最需要马上就医的信号，不要等。</div>
+      </div>
+      <div class="flag">
+        <div class="ico">5</div>
+        <div class="txt"><b>玩得「不一样」</b>反复转圈、长时间看车轮、把玩具排成一排、反复开关门、走固定路线，玩法单调且难以打断。</div>
+      </div>
+      <div class="flag">
+        <div class="ico">6</div>
+        <div class="txt"><b>感觉异常</b>对某些声音（吹风机、冲水、鞭炮）恐惧到崩溃；或者对疼痛、冷热反应迟钝；挑食严重到只吃几种质地。</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>看到一两条不等于自闭症。</b>语言发育迟缓、听力问题、智力发育障碍、社交焦虑都可能表现相似。
+      <b>但「不像」不是不查的理由</b>——一次正规的发育评估，最坏的结果是虚惊一场，最好的结果是抢回几年时间。
+    </div>
+
+    <h2><span class="num">3</span>怎么确诊：三级流程，别自己下结论</h2>
+
+    <div class="steps">
+      <div class="step">
+        <b>初筛 · 社区卫生服务中心 / 乡镇卫生院</b>
+        用预警征象表 + 高危社交行为观察，结合常规儿保做。任何一条阳性，或出现语言、社交能力倒退，就算初筛异常。
+      </div>
+      <div class="step">
+        <b>复筛 · 县级妇幼保健机构</b>
+        做发育评估（儿心量表-II 等）；18~24 月龄加做 CHAT-23，24 月龄以上加做孤独症行为评定量表（ABC）。
+      </div>
+      <div class="step">
+        <b>诊断 · 有资质的专业医疗机构</b>
+        儿童精神科、发育行为儿科或儿童心理保健门诊。靠病史询问、行为观察、量表测评（如 ADOS、ADI-R）综合判断，同时排查听力、癫痫、遗传代谢等问题。
+      </div>
+    </div>
+
+    <p><b>要提前知道的两件事：</b></p>
+    <ul>
+      <li>目前<b>没有任何血液化验、影像检查能「测出自闭症」</b>。凡是说抽个血、做个基因就能确诊并开药的，都要警惕。</li>
+      <li>诊断不是贴标签，是为了<b>知道该从哪里开始帮孩子</b>。评估报告上写的是各个能区的水平，那才是干预的起点。</li>
+    </ul>
+
+    <h2><span class="num">4</span>干预治疗：什么真正有用</h2>
+
+    <div class="note warm">
+      <b>一句话原则：</b>目前没有能「治愈」自闭症的药物，<b>主要途径是康复训练</b>；越早越好、越密集越好、家长参与越多越好。
+    </div>
+
+    <h3>国家指南定的八个原则</h3>
+    <div class="pill-list">
+      <span class="pill">早干预</span>
+      <span class="pill">个体化</span>
+      <span class="pill">综合干预</span>
+      <span class="pill">科学循证</span>
+      <span class="pill">长程高强度</span>
+      <span class="pill">基层为主</span>
+      <span class="pill">家庭参与</span>
+      <span class="pill">社会融合</span>
+    </div>
+    <p>其中两个数字家长最该记住：<b>每周有效干预时间应在 20 小时以上</b>；<b>每 3~6 个月</b>做一次专业评估，据此调整计划。这里的 20 小时包含家庭里的训练，不只是机构课时。</p>
+
+    <h3>有循证依据的方法有哪些</h3>
+    <div class="card">
+      <p><b>以应用行为分析（ABA）原理为基础的策略：</b>强化、差别强化、消退、示范、辅助、塑造、泛化——听起来抽象，其实就是「把大目标拆成小步骤，做对了立刻给反馈」。</p>
+      <p><b>系统化的干预方法：</b>回合试验教学（DTT）、自然情境教学、结构化教学（TEACCH）、图片交换沟通系统（PECS）。</p>
+      <p><b>发展行为结合的模型：</b>早期介入丹佛模式（ESDM）、关键反应训练（PRT）、家长介导的社交沟通训练。</p>
+      <p><b>其他专项：</b>言语语言治疗、作业治疗、感觉统合训练（针对感觉处理问题）、社交故事、社交技能训练、同伴介导干预。</p>
+      <p class="muted">这些方法在不同的孩子身上效果不同，要靠评估来选，不存在「一种方法适合所有人」。</p>
+    </div>
+
+    <h3>药物能做什么，不能做什么</h3>
+    <p>目前<b>没有药物能改善自闭症的核心症状</b>。药物只在两种情况下使用：控制共患病（如严重的多动、焦虑、强迫、癫痫）和改善睡眠。必须由专科医生开、按医嘱用，<b>绝不能自行买来给孩子吃</b>。</p>
+
+    <h3>家庭里能做的四件事</h3>
+    <div class="two">
+      <div class="card tight">
+        <h3>把家变「可读」</h3>
+        <p>固定物品位置，用图片或文字做一张可视化日程表（起床—吃饭—玩—睡），提前告诉他接下来做什么。变化要提前预告。</p>
+      </div>
+      <div class="card tight">
+        <h3>把日常变训练</h3>
+        <p>吃饭、穿衣、洗手、出门，都是练习机会。在他愿意做的事情里插入目标，比坐下来「上课」有效得多。</p>
+      </div>
+      <div class="card tight">
+        <h3>学三个基本功</h3>
+        <p><b>强化</b>（做对了马上给好处）、<b>辅助</b>（不会时给一点点提示，再慢慢撤掉）、<b>消退</b>（不强化不当行为）。</p>
+      </div>
+      <div class="card tight">
+        <h3>全家说一致</h3>
+        <p>妈妈在训练、奶奶在拆台，等于白练。规则和回应方式要全家统一，并做简单记录，复诊时给医生看。</p>
+      </div>
+    </div>
+
+    <h3>挑机构时可以问的几个问题</h3>
+    <ul>
+      <li>有没有给孩子做<b>个别化干预计划</b>？能不能给我看？</li>
+      <li><b>多久做一次评估</b>？（正规做法是每 3~6 个月一次专业评估）</li>
+      <li>个训和团体的<b>师生配比</b>是多少？（指南要求每个训练单元专业人员与儿童比例不低于 1:3~1:4）</li>
+      <li>老师是什么专业背景？有没有<b>行为分析师、言语治疗师、作业治疗师</b>？</li>
+      <li>会不会要求我<b>停掉别的干预</b>、只信他一家？——这是危险信号。</li>
+    </ul>
+
+    <h2><span class="num">5</span>这些「疗法」不要碰</h2>
+    <div class="note danger">
+      自闭症领域是伪科学重灾区，因为家长愿意付出一切。下面这些<b>没有可靠证据支持，有的还会造成实质伤害</b>：
+      <ul style="margin-top:8px;">
+        <li><b>排毒、螯合、灌肠</b>——基于「重金属致病」的错误前提，螯合有致死风险。</li>
+        <li><b>干细胞、高压氧、免疫治疗</b>——被多家权威机构明确不推荐用于自闭症核心症状。</li>
+        <li><b>禁食、特殊饮食、大剂量维生素/补充剂</b>——没有证据能改善核心症状，长期限制饮食可能影响发育。</li>
+        <li><b>承诺「治愈」「摘帽」「三个月见效」</b>——正规机构不会做这种承诺。</li>
+        <li><b>收费极高、要求一次性预付大额、不让旁听</b>——先查资质，再谈钱。</li>
+      </ul>
+    </div>
+    <p class="muted">判断标准很简单：<b>凡是承诺治愈、要求你停掉正规康复、或者让你别再去看医生的，一律远离。</b></p>
+
+    <h2><span class="num">6</span>家长自己也要被照顾</h2>
+    <p>从怀疑到确诊，很多家长会经历否认、自责、愤怒、崩溃，再到慢慢接受。这是正常的过程，不是你不坚强。</p>
+    <ul>
+      <li><b>别自责。</b>这不是你带得不好，也不是你陪得太少。</li>
+      <li><b>别一个人扛。</b>和伴侣分工，明确谁负责接送、谁负责训练、谁负责和机构沟通；让老人也参与，但先统一方法。</li>
+      <li><b>找同类。</b>家长互助组织能提供的经验和支持，是医生给不了的。也可以拨打 <b>12385</b> 残疾人服务热线咨询本地资源。</li>
+      <li><b>允许自己休息。</b>长期高强度照护会耗尽一个人。有条件的地区有「喘息服务」，可以短期托管。</li>
+      <li><b>保留自己的生活。</b>你过得好，孩子才有稳定的依靠。</li>
+    </ul>
+
+    <h2><span class="num">7</span>能用上的政策与救助</h2>
+
+    <div class="card">
+      <ul>
+        <li><b>0~6 岁残疾儿童康复救助</b>——向户籍地或居住地<b>残联</b>申请，符合条件的孤独症儿童可获康复训练补贴。各地标准不同，直接问当地残联。</li>
+        <li><b>医保</b>——29 项医疗康复项目已纳入基本医疗保险支付范围，部分地区门诊也可报销。</li>
+        <li><b>教育安置</b>——义务教育阶段可随班就读、特教学校或送教上门，「一人一案」。入学遇到困难可以找当地教育局。</li>
+        <li><b>孤独症儿童关爱促进行动（2024—2028 年）</b>——由中国残联、教育部、民政部、国家卫健委等七部门联合推进，覆盖康复、教育、家庭支持。</li>
+        <li><b>4 月 2 日</b> 是世界孤独症关注日，各地通常有义诊和科普活动。</li>
+      </ul>
+      <p class="muted">政策以当地最新文件为准，最直接的办法是打 12385 或去社区、残联窗口问。</p>
+    </div>
+
+    <h2><span class="num">8</span>如果你在公共场合遇到这样的孩子</h2>
+    <div class="note">
+      他可能突然捂住耳朵尖叫、不肯排队、对招呼毫无反应。他大概率不是「没教养」，而是在和自己的神经系统艰难相处。
+      <b>不围观、不指责、不拍视频</b>；家长在安抚孩子时，默默让一让就好。
+      一个更宽容的环境，对这些家庭来说是实实在在的帮助。
+    </div>
+
+    <div class="footer">
+      <p><b>关于这份内容</b></p>
+      <p>本页是公益科普项目，永久免费，不含任何广告、课程推销或机构推荐，也不收集你的任何信息。</p>
+      <p><b>资料依据：</b>国家卫生健康委《0~6 岁儿童孤独症筛查干预服务规范（试行）》（2022）、《孤独症谱系障碍儿童干预康复指南（2026 年版）》；中国残联等七部门《孤独症儿童关爱促进行动实施方案（2024—2028 年）》；朱智贤《儿童心理学》（人民教育出版社）的学科框架。</p>
+      <p><b>重要提醒：</b>科普不能替代诊断。如果你对孩子的发展有疑虑，请到社区卫生服务中心、妇幼保健院或儿童精神科/发育行为儿科就诊。<b>越早一次评估，越少一分后悔。</b></p>
+    </div>
+
+  </section>
+
+</div>
+
+<button id="backTop" aria-label="回到顶部">↑</button>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.tab-btn');
+  var views = { dev: document.getElementById('view-dev'), asd: document.getElementById('view-asd') };
+
+  function show(which){
+    if (!views[which]) which = 'dev';
+    tabs.forEach(function(b){
+      var on = b.getAttribute('data-view') === which;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    Object.keys(views).forEach(function(k){
+      views[k].classList.toggle('hidden', k !== which);
+    });
+    window.scrollTo(0, 0);
+    // 两个标签的内容高度不同，切换瞬间滚动位置可能被 WebView 的滚动锚定拽回去，
+    // 延后再压一次才能真正回到顶部。
+    setTimeout(function(){ window.scrollTo(0, 0); }, 80);
+    try { history.replaceState(null, '', '#' + which); } catch (e) { }
+  }
+
+  tabs.forEach(function(btn){
+    btn.addEventListener('click', function(){ show(this.getAttribute('data-view')); });
+  });
+
+  // 支持 #asd 直接打开自闭症部分（家长之间可以整段转告「看自闭症那页」）
+  var initial = (location.hash || '').replace('#', '');
+  if (initial === 'asd') show('asd');
+
+  var top = document.getElementById('backTop');
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 480) top.classList.add('show');
+    else top.classList.remove('show');
+  });
+  top.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
+})();
+</script>
+
+</body>
+</html>

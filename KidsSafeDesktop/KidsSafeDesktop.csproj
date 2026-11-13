@@ -1,0 +1,182 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- 仅面向儿童模式所需的两个平台：Android + Windows -->
+		<TargetFrameworks>net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+
+		<!-- Note for MacCatalyst:
+		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
+		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
+		The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
+		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
+		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+
+		<OutputType>Exe</OutputType>
+		<RootNamespace>KidsSafeDesktop</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- Enable XAML source generation for faster build times and improved performance.
+		     This generates C# code from XAML at compile time instead of runtime inflation.
+		     To disable, remove this line.
+		     For individual files, you can override by setting Inflator metadata:
+		       <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
+		       <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+
+	<!-- Display name（安装后桌面图标显示的名称） -->
+	<ApplicationTitle>儿童安全桌面</ApplicationTitle>
+
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.kidssafedesktop</ApplicationId>
+
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.20</ApplicationDisplayVersion>
+		<ApplicationVersion>21</ApplicationVersion>
+
+		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+		<WindowsPackageType>None</WindowsPackageType>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+
+		<!-- 多语言资源：只保留简繁中文和英文。
+		     不加这一行，Windows 发布目录会带 120 多个语言子目录（af-ZA、am-ET、ar-SA……
+		     每个是一套 WinUI/.NET 的本地化资源库），全部原样打进安装包却永远不会被读到。
+		     Android 侧同样生效，APK 里的 res/values-xx 也随之收敛。 -->
+		<SatelliteResourceLanguages>zh-Hans;zh-Hant;en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.png" Color="#B388FF" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#B388FF" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Scripts/BookRender/winrt-render 是一个独立的小工具工程（把 PDF 渲成页图），
+		     有自己的入口点，不能被 App 一起编译，否则会和多平台入口冲突。 -->
+		<Compile Remove="Scripts\**\*.cs" />
+		<None Include="Scripts\BookRender\**\*" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+		<!-- 荣耀推送 SDK（Push Kit）。AAR 直接放在 Platforms/Android/libs 并随仓库提交：
+		     荣耀的 Maven 库（https://developer.honor.com/repo）不在 Maven Central 上，
+		     .NET 的 AndroidMavenLibrary 取不到，离线构建也不该依赖它。 -->
+		<AndroidLibrary Include="Platforms\Android\libs\*.aar" />
+
+		<!-- 调用荣耀 SDK 的 Java 桥：SDK 没有 C# 绑定，用 .java 编译进 APK，
+		     C# 侧通过 JNI 调（见 Platforms/Android/HonorPush.cs）。 -->
+		<AndroidJavaSource Include="Platforms\Android\Java\**\*.java" />
+
+		<!-- 开发者控制台下载的配置文件，按荣耀文档放进 assets 根目录 -->
+		<AndroidAsset Include="Platforms\Android\Assets\mcs-services.json" Link="mcs-services.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<!-- 仅 Debug 构建需要：AddDebug() 已在 #if DEBUG 内，Release 不再引用，故限定为 Debug 条件引用以免发布包带入调试日志库 -->
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" Condition="'$(Configuration)' == 'Debug'" />
+	</ItemGroup>
+
+	<!-- 界面与逻辑（Pages / ViewModels / Services / Models / Helpers / Controls / Converters）
+	     已整体迁入 KidsSafeShared，孩子端与家长端共用同一份实现。
+	     本工程只保留 App 外壳：App.xaml、MauiProgram、Platforms、Resources、打包配置。
+	     共享库里的 SQLite 等依赖会通过本引用传递过来，这里不再重复声明。 -->
+	<ItemGroup>
+		<ProjectReference Include="..\KidsSafeShared\KidsSafeShared.csproj" />
+	</ItemGroup>
+
+	<!-- 安卓签名（keystore 口令）：单独文件，Debug/Release 统一使用同一签名证书，
+	     否则荣耀推送会因签名指纹不一致报 10202。 -->
+	<Import Project="Signing.props" Condition="Exists('Signing.props')" />
+
+	<!-- ══ Windows 发布包瘦身 ══════════════════════════════════════════════════
+	     自包含发布会把整套 .NET 运行时和 Windows App SDK 原样复制出去，
+	     其中有一部分本应用永远用不到。这里是「按文件名精确剔除」的白名单，
+	     不涉及裁剪器（PublishTrimmed），不会因反射/序列化被裁坏。
+
+	     剔除分三类，每类都注明理由；加新条目请先确认全项目无引用。 -->
+	<Target Name="TrimWindowsPublish" AfterTargets="ComputeFilesToPublish"
+	        Condition="'$(Configuration)' == 'Release' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<ItemGroup>
+			<!-- ① 调试诊断类：只在「进程崩溃后解析 dump / 读取 pdb」时才被加载。
+			     createdump.exe 是运行时生成转储文件的工具，本应用没有崩溃上报，不打包 pdb，
+			     安装脚本也已排除 *.pdb，这几个文件没有使用场景。 -->
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+				Condition="'%(Filename)' == 'createdump'
+				        Or '%(Filename)' == 'mscordaccore'
+				        Or '%(Filename)' == 'mscordbi'
+				        Or '%(Filename)' == 'Microsoft.DiaSymReader.Native.amd64'
+				        Or $([System.String]::Copy('%(Filename)').StartsWith('mscordaccore_amd64'))" />
+
+			<!-- ② 框架里确定没用到的程序集：
+			     VisualBasic 运行时（本工程全 C#）、CSharp 动态绑定（代码里无 dynamic 关键字）、
+			     AsyncEnumerable/Dataflow/Tar/ServerSentEvents/CodePages/AccessControl
+			     —— 全局搜索均无引用，且没有 Encoding.RegisterProvider 调用。 -->
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+				Condition="'%(Filename)' == 'Microsoft.VisualBasic'
+				        Or '%(Filename)' == 'Microsoft.VisualBasic.Core'
+				        Or '%(Filename)' == 'Microsoft.CSharp'
+				        Or '%(Filename)' == 'System.Linq.AsyncEnumerable'
+				        Or '%(Filename)' == 'System.Threading.Tasks.Dataflow'
+				        Or '%(Filename)' == 'System.Text.Encoding.CodePages'
+				        Or '%(Filename)' == 'System.Formats.Tar'
+				        Or '%(Filename)' == 'System.Net.ServerSentEvents'
+				        Or '%(Filename)' == 'System.Threading.AccessControl'
+				        Or '%(Filename)' == 'System.ServiceModel.Web'" />
+
+			<!-- ③ WinUI 原生控件的本地化资源（.mui 文件）：
+			     SatelliteResourceLanguages 只管得到托管卫星程序集，管不到 Microsoft.UI.Xaml
+			     这一批 .mui。它们分布在 70 多个语言子目录里，每个 44K。
+			     只留简繁中文和英文，其余剔除；缺失时 WinUI 会自动回退到英文。 -->
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+				Condition="'%(Extension)' == '.mui'
+				        And !$([System.String]::Copy('%(RelativeDir)').Contains('zh-Hans'))
+				        And !$([System.String]::Copy('%(RelativeDir)').Contains('zh-Hant'))
+				        And !$([System.String]::Copy('%(RelativeDir)').Contains('zh-CN'))
+				        And !$([System.String]::Copy('%(RelativeDir)').Contains('zh-TW'))
+			        And !$([System.String]::Copy('%(RelativeDir)').Contains('en-us'))
+			        And !$([System.String]::Copy('%(RelativeDir)').Contains('en-GB'))" />
+
+			<!-- ④ MSIX 打包专用图标（仅 WindowsPackageType=None 时剔除）：
+			     SmallTile / MediumTile / LargeTile / WideTile / StoreLogo / Logo 这几组
+			     只被 Package.appxmanifest 引用 —— 开始菜单磁贴、应用商店列表用。
+			     本项目是免打包分发（WindowsPackageType=None，走 Inno Setup 安装），
+			     根本没有 appxmanifest，这些图永远不会被加载；共 40 个文件约 2MB，
+			     LargeTile 的 scale-400 单张就有 624K。
+			     保留 appicon.ico（窗口与任务栏图标）和 splashSplashScreen*（启动图）。
+			     将来若改成 MSIX 打包，把 WindowsPackageType 一改，本段自动失效。
+
+			     注意必须用 StartsWith：这些文件名形如 appiconLargeTile.scale-400.png，
+			     %(Filename) 是「appiconLargeTile.scale-400」，用 == 精确比较匹配不到。 -->
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+				Condition="'$(WindowsPackageType)' == 'None'
+				        And ($([System.String]::Copy('%(Filename)').StartsWith('appiconSmallTile'))
+				          Or $([System.String]::Copy('%(Filename)').StartsWith('appiconMediumTile'))
+				          Or $([System.String]::Copy('%(Filename)').StartsWith('appiconLargeTile'))
+				          Or $([System.String]::Copy('%(Filename)').StartsWith('appiconWideTile'))
+				          Or $([System.String]::Copy('%(Filename)').StartsWith('appiconStoreLogo'))
+				          Or $([System.String]::Copy('%(Filename)').StartsWith('appiconLogo')))" />
+		</ItemGroup>
+	</Target>
+
+</Project>

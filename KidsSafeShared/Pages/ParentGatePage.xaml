@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.ParentGatePage"
+             Title="家长验证"
+             BackgroundColor="#ECEFF1">
+
+    <VerticalStackLayout VerticalOptions="Center" Padding="40" Spacing="22">
+        <Label Text="🔒" FontSize="72" HorizontalOptions="Center" />
+        <Label Text="家长验证" FontSize="30" FontAttributes="Bold" TextColor="#263238"
+               HorizontalOptions="Center" />
+        <Label Text="请输入 4 位密码以进入家长设置" FontSize="16" TextColor="#607D8B"
+               HorizontalOptions="Center" />
+
+        <Entry x:Name="PinEntry" Keyboard="Numeric" IsPassword="True" MaxLength="4"
+               Placeholder="密码" FontSize="28" HorizontalTextAlignment="Center"
+               Text="{Binding Pin}" TextColor="#263238" />
+
+        <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontSize="15"
+               HorizontalOptions="Center" IsVisible="{Binding ShowError}" />
+
+        <Button Text="进入" FontSize="20" BackgroundColor="#3949AB" TextColor="White"
+                CornerRadius="14" HeightRequest="56" Clicked="OnSubmit" />
+
+        <Button Text="返回儿童桌面" FontSize="15" BackgroundColor="Transparent"
+                TextColor="#607D8B" BorderWidth="0" Clicked="OnBackToHome" />
+    </VerticalStackLayout>
+</ContentPage>

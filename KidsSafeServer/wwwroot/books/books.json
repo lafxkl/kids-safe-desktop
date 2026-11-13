@@ -1,0 +1,1266 @@
+{
+  "note": "电子课本清单：新增一本书时，把页图放到 wwwroot/books/pages/<id>/page-0001.jpg 起，再在这里加一条，重启无需重启服务（按文件时间缓存）。",
+  "subjects": [
+    {
+      "id": "chinese",
+      "name": "语文",
+      "icon": "📖"
+    },
+    {
+      "id": "math",
+      "name": "数学",
+      "icon": "🔢"
+    }
+  ],
+  "editions": [
+    {
+      "id": "rj",
+      "name": "人教版（六三制）",
+      "maxGrade": 6,
+      "subject": "chinese",
+      "short": "人教"
+    },
+    {
+      "id": "rj54",
+      "name": "人教版（五四制）",
+      "maxGrade": 5,
+      "subject": "chinese",
+      "short": "五四"
+    },
+    {
+      "id": "math-rj",
+      "name": "人教版",
+      "short": "人教",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-jj",
+      "name": "冀教版",
+      "short": "冀教",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-bj",
+      "name": "北京版",
+      "short": "北京",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-bsd",
+      "name": "北师大版",
+      "short": "北师大",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-hj54",
+      "name": "沪教版（五四制）",
+      "short": "沪教五四",
+      "subject": "math",
+      "maxGrade": 5
+    },
+    {
+      "id": "math-sj",
+      "name": "苏教版",
+      "short": "苏教",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-xndx",
+      "name": "西南大学版",
+      "short": "西大",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-qd",
+      "name": "青岛版",
+      "short": "青岛",
+      "subject": "math",
+      "maxGrade": 6
+    },
+    {
+      "id": "math-qd54",
+      "name": "青岛版（五四制）",
+      "short": "青岛五四",
+      "subject": "math",
+      "maxGrade": 5
+    }
+  ],
+  "books": [
+    {
+      "id": "rj-1a",
+      "edition": "rj",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-1b",
+      "edition": "rj",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-2a",
+      "edition": "rj",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-2b",
+      "edition": "rj",
+      "grade": 2,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-2b-old",
+      "edition": "rj",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": true,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-3a",
+      "edition": "rj",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-3b",
+      "edition": "rj",
+      "grade": 3,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-3b-old",
+      "edition": "rj",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": true,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-4a",
+      "edition": "rj",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-4b",
+      "edition": "rj",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-5a",
+      "edition": "rj",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-5b",
+      "edition": "rj",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-6a",
+      "edition": "rj",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj-6b",
+      "edition": "rj",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-1a",
+      "edition": "rj54",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-1b",
+      "edition": "rj54",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-2a",
+      "edition": "rj54",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-2b",
+      "edition": "rj54",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-3a",
+      "edition": "rj54",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-3b",
+      "edition": "rj54",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-4a",
+      "edition": "rj54",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-4b",
+      "edition": "rj54",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-5a",
+      "edition": "rj54",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "rj54-5b",
+      "edition": "rj54",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false,
+      "subject": "chinese"
+    },
+    {
+      "id": "math-rj-1a",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-1b",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-2a",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-2b",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 2,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-2b-old",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-rj-3a",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-3b",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 3,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-3b-old",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-rj-4a",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-4b",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-5a",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-5b",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-6a",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-rj-6b",
+      "subject": "math",
+      "edition": "math-rj",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-1a",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-1b",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-2a",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-2b",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-3a",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-3b",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-4a",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-4b",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-5a",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-5b",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-6a",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-jj-6b",
+      "subject": "math",
+      "edition": "math-jj",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-1a",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-1b",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-2a",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-2b",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-3a",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-3b",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-4a",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-4b",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-5a",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-5b",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-6a",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bj-6b",
+      "subject": "math",
+      "edition": "math-bj",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-1a",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 1,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-1b",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 1,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-2a",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 2,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-2b",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 2,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-2b-old",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-bsd-3a",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-3b",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 3,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-3b-old",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-bsd-4a",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-4b",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-5a",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-5b",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-6a",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-bsd-6b",
+      "subject": "math",
+      "edition": "math-bsd",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-hj54-1a",
+      "subject": "math",
+      "edition": "math-hj54",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-hj54-1b",
+      "subject": "math",
+      "edition": "math-hj54",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-hj54-2a",
+      "subject": "math",
+      "edition": "math-hj54",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-1a",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-1b",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-2a",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-2b",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 2,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-2b-old",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-sj-3a",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-3b",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 3,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-3b-old",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-sj-4a",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-4b",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-5a",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-5b",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-6a",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-sj-6b",
+      "subject": "math",
+      "edition": "math-sj",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-1a",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-1b",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-2a",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-2b",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 2,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-2b-old",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-xndx-3a",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-3b",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-4a",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-4b",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-5a",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-5b",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-6a",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-xndx-6b",
+      "subject": "math",
+      "edition": "math-xndx",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-1a",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-1b",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-2a",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-2b",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-3a",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-3b",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 3,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-3b-old",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-qd-4a",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-4b",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-5a",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-5b",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-6a",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 6,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd-6b",
+      "subject": "math",
+      "edition": "math-qd",
+      "grade": 6,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-1a",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 1,
+      "term": 1,
+      "year": "2024秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-1b",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 1,
+      "term": 2,
+      "year": "2025春版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-2a",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 2,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-2b",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 2,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-3a",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 3,
+      "term": 1,
+      "year": "2025秋版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-3b",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 3,
+      "term": 2,
+      "year": "2026春版",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-3b-old",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 3,
+      "term": 2,
+      "year": "",
+      "legacy": true
+    },
+    {
+      "id": "math-qd54-4a",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 4,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-4b",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 4,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-5a",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 5,
+      "term": 1,
+      "year": "",
+      "legacy": false
+    },
+    {
+      "id": "math-qd54-5b",
+      "subject": "math",
+      "edition": "math-qd54",
+      "grade": 5,
+      "term": 2,
+      "year": "",
+      "legacy": false
+    }
+  ]
+}

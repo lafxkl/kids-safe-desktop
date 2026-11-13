@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.StoryLoomPage"
+             Title="无限想象"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0.75,0" EndPoint="0.25,1">
+                <GradientStop Color="#2A2F6E" Offset="0" />
+                <GradientStop Color="#141A3F" Offset="0.42" />
+                <GradientStop Color="#0A0E2A" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- 顶部 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="14,12,14,6">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="#EEF1FF" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <VerticalStackLayout Grid.Column="1" Spacing="0" HorizontalOptions="Center">
+                <Label Text="🌙 无限想象" FontSize="19" FontAttributes="Bold" TextColor="#FFE9A8"
+                       HorizontalOptions="Center" />
+                <Label Text="你当导演，五个小伙伴当帮手" FontSize="11" TextColor="#AAB2D8"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+            <Border Grid.Column="2" StrokeShape="RoundRectangle 14" Stroke="#2A3568" BackgroundColor="#1C244E"
+                    Padding="9,5" VerticalOptions="Center">
+                <Label x:Name="StarLabel" Text="⭐ 0" FontSize="12" TextColor="#FFD60A" />
+            </Border>
+        </Grid>
+
+        <!-- 三个 Tab -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*" Padding="14,4,14,8" ColumnSpacing="8">
+            <Button Grid.Column="0" x:Name="TabCreative" Text="🌙 共创" FontSize="13.5"
+                    CornerRadius="16" HeightRequest="36" Padding="0" Clicked="OnTabCreative"
+                    BackgroundColor="#2A3568" TextColor="#FFE9A8" />
+            <Button Grid.Column="1" x:Name="TabLibrary" Text="📚 故事库" FontSize="13.5"
+                    CornerRadius="16" HeightRequest="36" Padding="0" Clicked="OnTabLibrary"
+                    BackgroundColor="Transparent" TextColor="#AAB2D8" />
+            <Button Grid.Column="2" x:Name="TabGrowth" Text="🌱 成长" FontSize="13.5"
+                    CornerRadius="16" HeightRequest="36" Padding="0" Clicked="OnTabGrowth"
+                    BackgroundColor="Transparent" TextColor="#AAB2D8" />
+        </Grid>
+
+        <!-- 三个视图 -->
+        <Grid Grid.Row="2">
+
+            <!-- ══════════ 共创 ══════════ -->
+            <ScrollView x:Name="CreativeScroll" VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Padding="16,4,16,28" Spacing="14">
+
+                    <VerticalStackLayout Spacing="3">
+                        <Label x:Name="GreetLabel" Text="晚上好，小星 🌟" FontSize="13" TextColor="#AAB2D8" />
+                        <Label Text="说一句只言片语" FontSize="23" FontAttributes="Bold" TextColor="#FFE9A8" />
+                        <Label Text="今晚的故事就从这里生长" FontSize="23" FontAttributes="Bold" TextColor="#FFE9A8" />
+                    </VerticalStackLayout>
+
+                    <!-- 输入 -->
+                    <Frame Padding="12,10" CornerRadius="18" HasShadow="False" BackgroundColor="#1C244E"
+                           BorderColor="#2A3568">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <Entry Grid.Column="0" x:Name="WishEntry" FontSize="14" TextColor="#EEF1FF"
+                                   PlaceholderColor="#7C86B8" BackgroundColor="Transparent"
+                                   Placeholder="小兔子、下雨了、想睡觉…" MaxLength="200"
+                                   ReturnType="Send" Completed="OnWishCompleted" />
+                            <Button Grid.Column="1" x:Name="VoiceBtn" Text="🎤" FontSize="16"
+                                    WidthRequest="42" HeightRequest="38" Padding="0" CornerRadius="14"
+                                    BackgroundColor="#1C244E" TextColor="#FFE9A8" Clicked="OnVoice" />
+                            <Button Grid.Column="2" x:Name="GenerateBtn" Text="✨ 生成" FontSize="13.5" FontAttributes="Bold"
+                                    CornerRadius="14" HeightRequest="38" Padding="14,0"
+                                    BackgroundColor="#FFD60A" TextColor="#2A2200" Clicked="OnGenerate" />
+                        </Grid>
+                    </Frame>
+
+                    <!-- 灵感词条 -->
+                    <Label Text="点一点，让灵感更具体 ↓" FontSize="12" TextColor="#8C95C4" />
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout x:Name="ChipBar" Spacing="8" />
+                    </ScrollView>
+
+                    <!-- 已选 -->
+                    <FlexLayout x:Name="PickedBar" Wrap="Wrap" JustifyContent="Start" AlignItems="Center" />
+
+                    <!-- 五个小伙伴的流水线 -->
+                    <VerticalStackLayout x:Name="PipelineBox" Spacing="8" IsVisible="False" />
+
+                    <!-- 故事卡 -->
+                    <Frame x:Name="StoryCard" IsVisible="False" Padding="16,14" CornerRadius="20"
+                           HasShadow="False" BackgroundColor="#182046" BorderColor="#33407A">
+                        <VerticalStackLayout Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" x:Name="StoryTitle" Text="" FontSize="18"
+                                       FontAttributes="Bold" TextColor="#FFE9A8" LineBreakMode="WordWrap" />
+                                <Border Grid.Column="1" StrokeShape="RoundRectangle 10" Stroke="#3A4680"
+                                        BackgroundColor="#232C58" Padding="8,3" VerticalOptions="Start">
+                                    <Label x:Name="StoryBadge" Text="内置模板" FontSize="10" TextColor="#C9D2F5" />
+                                </Border>
+                            </Grid>
+                            <Label x:Name="StoryMood" Text="" FontSize="12" TextColor="#8AB4FF" />
+                            <VerticalStackLayout x:Name="ParaBox" Spacing="10" />
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" Margin="0,4,0,0">
+                                <Button Grid.Column="0" x:Name="ReadBtn" Text="🔊 读一读" FontSize="13"
+                                        CornerRadius="14" HeightRequest="40" Padding="0"
+                                        BackgroundColor="#2A3568" TextColor="#FFE9A8" Clicked="OnReadStory" />
+                                <Button Grid.Column="1" x:Name="SaveBtn" Text="⭐ 收藏" FontSize="13"
+                                        CornerRadius="14" HeightRequest="40" Padding="0"
+                                        BackgroundColor="#2A3568" TextColor="#FFE9A8" Clicked="OnSaveStory" />
+                                <Button Grid.Column="2" Text="显示全文" FontSize="13"
+                                        CornerRadius="14" HeightRequest="40" Padding="0"
+                                        BackgroundColor="#1C244E" TextColor="#AAB2D8" Clicked="OnShowFull" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- ══════════ 故事库 ══════════ -->
+            <ScrollView x:Name="LibraryScroll" IsVisible="False" VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Padding="16,4,16,28" Spacing="10">
+                    <Label Text="📚 我的故事" FontSize="17" FontAttributes="Bold" TextColor="#FFE9A8" />
+                    <Label x:Name="LibraryHint" Text="生成一个故事，点「⭐ 收藏」就会飞到这里"
+                           FontSize="12" TextColor="#8C95C4" />
+                    <VerticalStackLayout x:Name="LibraryBox" Spacing="10" />
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- ══════════ 成长 ══════════ -->
+            <ScrollView x:Name="GrowthScroll" IsVisible="False" VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Padding="16,4,16,28" Spacing="14">
+
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="🌱 成长数据" FontSize="17" FontAttributes="Bold" TextColor="#FFE9A8" />
+                        <Label Text="六个维度随共创慢慢长，不是成绩，也没有排名"
+                               FontSize="11.5" TextColor="#8C95C4" />
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8" x:Name="StatsGrid">
+                        <Frame Grid.Column="0" Padding="6,10" CornerRadius="14" HasShadow="False"
+                               BackgroundColor="#1C244E" BorderColor="#2A3568">
+                            <VerticalStackLayout Spacing="2">
+                                <Label x:Name="StatStory" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#FFD60A" HorizontalOptions="Center" />
+                                <Label Text="故事收藏" FontSize="10" TextColor="#AAB2D8" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="1" Padding="6,10" CornerRadius="14" HasShadow="False"
+                               BackgroundColor="#1C244E" BorderColor="#2A3568">
+                            <VerticalStackLayout Spacing="2">
+                                <Label x:Name="StatSession" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#4DC4E1" HorizontalOptions="Center" />
+                                <Label Text="共创场次" FontSize="10" TextColor="#AAB2D8" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="2" Padding="6,10" CornerRadius="14" HasShadow="False"
+                               BackgroundColor="#1C244E" BorderColor="#2A3568">
+                            <VerticalStackLayout Spacing="2">
+                                <Label x:Name="StatRecord" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#FF6B9D" HorizontalOptions="Center" />
+                                <Label Text="世界记录" FontSize="10" TextColor="#AAB2D8" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="3" Padding="6,10" CornerRadius="14" HasShadow="False"
+                               BackgroundColor="#1C244E" BorderColor="#2A3568">
+                            <VerticalStackLayout Spacing="2">
+                                <Label x:Name="StatKeyword" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#34C759" HorizontalOptions="Center" />
+                                <Label Text="灵感元素" FontSize="10" TextColor="#AAB2D8" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+
+                    <Frame Padding="8,10" CornerRadius="18" HasShadow="False" BackgroundColor="#151C42"
+                           BorderColor="#2A3568">
+                        <VerticalStackLayout Spacing="4">
+                            <GraphicsView x:Name="RadarView" HeightRequest="252" />
+                            <Label Text="六维语言潜能 · 随着共创持续生长" FontSize="10.5" TextColor="#7C86B8"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <VerticalStackLayout x:Name="DimsBox" Spacing="10" />
+
+                    <VerticalStackLayout x:Name="TalentsBox" Spacing="10" />
+
+                    <Frame Padding="14,12" CornerRadius="18" HasShadow="False" BackgroundColor="#1C244E"
+                           BorderColor="#2A3568">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="📜 创作世界记录" FontSize="14" FontAttributes="Bold" TextColor="#EEF1FF" />
+                            <Label Text="五个小伙伴说过什么，都在这里" FontSize="11" TextColor="#7C86B8" />
+                            <VerticalStackLayout x:Name="RecordBox" Spacing="7" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- AI 引擎（家长可见、默认关闭） -->
+                    <Frame Padding="14,12" CornerRadius="18" HasShadow="False" BackgroundColor="#1C244E"
+                           BorderColor="#2A3568">
+                        <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="🤖 大模型故事引擎" FontSize="14" FontAttributes="Bold"
+                                           TextColor="#EEF1FF" />
+                                    <Label x:Name="AiStatusLabel" Text="未开启 · 用内置模板写故事"
+                                           FontSize="11" TextColor="#7C86B8" />
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="设置" FontSize="12" CornerRadius="12"
+                                        HeightRequest="32" Padding="12,0" VerticalOptions="Center"
+                                        BackgroundColor="#2A3568" TextColor="#FFE9A8" Clicked="OnAiSettings" />
+                            </Grid>
+                            <Label Text="开启后孩子说的话会发到所填服务器，请先确认你信任该服务；不开启时故事由内置模板完成，完全离线。"
+                                   FontSize="10.5" TextColor="#7C86B8" LineBreakMode="WordWrap" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Button Text="清空成长数据" FontSize="12.5" CornerRadius="14" HeightRequest="38"
+                            BackgroundColor="Transparent" BorderColor="#3A4680" BorderWidth="1"
+                            TextColor="#8C95C4" Clicked="OnClearGrowth" />
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

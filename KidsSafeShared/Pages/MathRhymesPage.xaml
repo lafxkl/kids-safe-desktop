@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.MathRhymesPage"
+             Title="口诀乐园"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📚 口诀乐园" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="🌈" FontSize="20" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 引导语 -->
+        <Label Grid.Row="1" Text="背熟口诀，算题又快又准！点一点下面的主题看一看吧～"
+               FontSize="16" TextColor="#6A1B9A" HorizontalOptions="Center"
+               Margin="20,10" HorizontalTextAlignment="Center" />
+
+        <!-- 分类卡片 -->
+        <ScrollView Grid.Row="2" Padding="20,8,20,80">
+            <CollectionView ItemsSource="{Binding Topics}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="1"
+                                    VerticalItemSpacing="16" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:RhymeTopic">
+                        <Frame CornerRadius="22" Padding="22" HasShadow="False" HeightRequest="120">
+                            <Frame.BackgroundColor>
+                                <Binding Path="Color" />
+                            </Frame.BackgroundColor>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTopicTapped" NumberOfTapsRequired="1" />
+                            </Frame.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="18" VerticalOptions="Center">
+                                <Frame WidthRequest="72" HeightRequest="72" CornerRadius="36" Padding="0"
+                                       HasShadow="False" BackgroundColor="#FFFFFF">
+                                    <Label Text="{Binding Emoji}" FontSize="40"
+                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Frame>
+                                <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}" FontSize="26" FontAttributes="Bold"
+                                           TextColor="White" />
+                                    <Label Text="点开看看吧～" FontSize="15" TextColor="#FFFFFF" Opacity="0.9" />
+                                </VerticalStackLayout>
+                            </HorizontalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
+</ContentPage>

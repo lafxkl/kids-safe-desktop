@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.NsfdPage">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部工具栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="6" BackgroundColor="#4A148C">
+            <Button x:Name="BtnBack" Text="← 返回" Clicked="OnBack"
+                    BackgroundColor="#6A1B9A" TextColor="White" FontSize="16" />
+            <Label Grid.Column="1" Text="🗣️ 语音训练" FontSize="20" FontAttributes="Bold"
+                   TextColor="White" VerticalOptions="Center" HorizontalOptions="Center" />
+            <Button x:Name="BtnHome" Grid.Column="2" Text="🏠 大厅" Clicked="OnHome"
+                    BackgroundColor="#6A1B9A" TextColor="White" FontSize="16" />
+        </Grid>
+
+        <!-- 语音训练网页 -->
+        <WebView x:Name="NsfdView" Grid.Row="1" />
+
+        <!-- 加载遮罩 -->
+        <ActivityIndicator x:Name="LoadingMask" Grid.Row="1" IsRunning="True" IsVisible="True"
+                           Color="#8E24AA" HorizontalOptions="Center" VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

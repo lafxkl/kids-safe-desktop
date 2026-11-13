@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             xmlns:controls="clr-namespace:KidsSafeDesktop.Controls"
+             x:Class="KidsSafeDesktop.Pages.EnglishWorldPage"
+             Title="英语学习"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- 主题背景大图 -->
+        <Image Grid.Row="0" Grid.RowSpan="3"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,20,16,12" Background="#7E57C2">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🔤 英语学习" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="🌈" FontSize="20" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 引导语 -->
+        <Label Grid.Row="1" Text="选一个年级（一年级到初三），先认单词，再做练习！"
+               FontSize="16" TextColor="#4527A0" HorizontalOptions="Center"
+               Margin="20,10" HorizontalTextAlignment="Center" />
+
+        <!-- 年级图标网格（与首页一致的桌面式图标布局，由 CollectionView 自身滚动） -->
+        <controls:LauncherGridView Grid.Row="2" x:Name="GradesGrid"
+                                  ItemTapped="OnGradeTapped" Padding="18,8,18,24" />
+    </Grid>
+</ContentPage>

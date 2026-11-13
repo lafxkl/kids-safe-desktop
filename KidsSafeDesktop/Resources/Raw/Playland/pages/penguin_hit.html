@@ -1,0 +1,3503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🐧 冰雪打企鹅 · 极地全垒打 - 经典雪人抛物线飞天游戏</title>
+  <style>
+    :root {
+      --bg-ice: #e0f2fe;
+      --primary-cyan: #0284c7;
+      --primary-blue: #0369a1;
+      --accent-gold: #f59e0b;
+      --accent-coral: #f43f5e;
+      --accent-green: #10b981;
+      --text-dark: #0f172a;
+      --text-light: #f8fafc;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #bae6fd 0%, #e0f2fe 45%, #f8fafc 100%);
+      font-family: var(--font-family);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px 14px 24px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* 顶部导航控制条 */
+    header {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      z-index: 20;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #0284c7, #2563eb, #d97706);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0369a1;
+      background: rgba(2, 132, 199, 0.12);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-top {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(203, 213, 225, 0.9);
+      color: #1e293b;
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      white-space: nowrap;
+    }
+
+    .btn-top:hover {
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.16);
+      border-color: #0284c7;
+      color: #0284c7;
+    }
+
+    .btn-top.active {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+
+    /* 全屏沉浸式适配样式 */
+    body.is-fullscreen {
+      padding: 0;
+      margin: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      justify-content: stretch;
+      align-items: stretch;
+    }
+
+    body.is-fullscreen header {
+      max-width: 100vw;
+      padding: 6px 16px;
+      margin-bottom: 0;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #bae6fd;
+      border-radius: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    body.is-fullscreen .game-wrapper {
+      max-width: 100vw;
+      width: 100vw;
+      flex: 1;
+      height: calc(100vh - 46px);
+      border-radius: 0;
+      box-shadow: none;
+      border: none;
+    }
+
+    body.is-fullscreen .canvas-container {
+      flex: 1;
+      height: 100% !important;
+      min-height: 0;
+    }
+
+    body.is-fullscreen .info-card {
+      display: none;
+    }
+
+    /* 游戏主窗口舞台容器 */
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 980px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 
+        0 18px 45px -10px rgba(15, 23, 42, 0.16),
+        0 0 0 1px rgba(226, 232, 240, 0.9);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 顶部仪表盘 HUD 信息栏 */
+    .hud-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 18px;
+      background: linear-gradient(90deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-bottom: 1px solid #bae6fd;
+      z-index: 10;
+    }
+
+    .hud-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0369a1;
+    }
+
+    .stat-badge {
+      background: #ffffff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid #bae6fd;
+      font-size: 15px;
+      font-weight: 900;
+      color: #0284c7;
+      min-width: 60px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.08);
+      font-family: "Segoe UI", Roboto, monospace;
+    }
+
+    .stat-badge.record {
+      color: #d97706;
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+
+    .wind-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      border: 1px solid #bae6fd;
+      font-size: 13px;
+      font-weight: 800;
+      color: #0284c7;
+    }
+
+    .wind-arrow {
+      display: inline-block;
+      font-size: 16px;
+      transition: transform 0.3s;
+    }
+
+    /* 核心 Canvas 画布视口 */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background: #60a5fa;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .canvas-container {
+        height: 380px;
+      }
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 画布外部独立指引条 (移出游戏画面，彻底不遮挡操作视线) */
+    .game-status-strip {
+      width: 100%;
+      padding: 9px 18px;
+      background: linear-gradient(90deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+      border-top: 1px solid #bae6fd;
+      border-bottom: 1px solid #bae6fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0369a1;
+      text-align: center;
+      box-shadow: inset 0 1px 3px rgba(2, 132, 199, 0.05);
+      z-index: 5;
+    }
+
+    .game-status-strip .status-icon {
+      font-size: 16px;
+      display: inline-block;
+      animation: gentleBounce 2s infinite ease-in-out;
+    }
+
+    @keyframes gentleBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    /* 击球瞬间判定横幅 (PERFECT! / GREAT! / BONK!) */
+    .hit-feedback-banner {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      opacity: 0;
+      font-size: 34px;
+      font-weight: 900;
+      padding: 10px 28px;
+      border-radius: 22px;
+      text-align: center;
+      pointer-events: none;
+      z-index: 25;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+      text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+      letter-spacing: 1px;
+    }
+
+    .hit-feedback-banner.show {
+      transform: translate(-50%, -50%) scale(1.1);
+      opacity: 1;
+    }
+
+    .hit-perfect {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #ffffff;
+      border: 3px solid #fef08a;
+    }
+    .hit-great {
+      background: linear-gradient(135deg, #10b981, #0284c7);
+      color: #ffffff;
+      border: 3px solid #bae6fd;
+    }
+    .hit-high {
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      color: #ffffff;
+      border: 3px solid #ddd6fe;
+    }
+    .hit-bonk {
+      background: linear-gradient(135deg, #ea580c, #b91c1c);
+      color: #ffffff;
+      border: 3px solid #fed7aa;
+    }
+    .hit-miss {
+      background: linear-gradient(135deg, #64748b, #334155);
+      color: #ffffff;
+      border: 3px solid #cbd5e1;
+    }
+
+    /* 底部操作面板与说明 */
+    .bottom-control-bar {
+      padding: 14px 20px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .mode-selector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 14px;
+    }
+
+    .mode-tab {
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-tab.active {
+      background: #ffffff;
+      color: #0284c7;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-main-action {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #ffffff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .btn-main-action:hover {
+      background: linear-gradient(135deg, #0369a1, #075985);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+    }
+
+    .btn-main-action:active {
+      transform: translateY(1px);
+    }
+
+    /* 历史成绩小标签 */
+    .round-history-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .round-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #cbd5e1;
+    }
+
+    .round-dot.done {
+      background: #e0f2fe;
+      color: #0284c7;
+      border-color: #7dd3fc;
+    }
+
+    .round-dot.current {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+      box-shadow: 0 0 8px rgba(2, 132, 199, 0.5);
+    }
+
+    /* 结算弹窗模态框 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 28px 24px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3);
+      border: 2px solid #e0f2fe;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+    }
+
+    .modal-icon {
+      font-size: 54px;
+      margin-bottom: -6px;
+      animation: bounceTrophy 1.5s infinite;
+    }
+
+    @keyframes bounceTrophy {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .modal-score-big {
+      font-size: 46px;
+      font-weight: 900;
+      color: #0284c7;
+      font-family: "Segoe UI", Roboto, monospace;
+      text-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+    }
+
+    .modal-score-sub {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: -8px;
+    }
+
+    .modal-stats-list {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13.5px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .stat-row strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .modal-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      border: none;
+      padding: 13px 20px;
+      border-radius: 18px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+      transition: all 0.2s;
+    }
+
+    .modal-btn:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      transform: translateY(-2px);
+    }
+
+    /* 双人对决专属比分面板样式 */
+    .vs-scoreboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .vs-team-card {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      border: 2px solid #e2e8f0;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .vs-team-card.winner {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.25);
+    }
+
+    .vs-team-card.p1-card.winner {
+      border-color: #ef4444;
+      background: #fef2f2;
+      box-shadow: 0 6px 18px rgba(239, 68, 68, 0.25);
+    }
+
+    .vs-team-card.p2-card.winner {
+      border-color: #3b82f6;
+      background: #eff6ff;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.25);
+    }
+
+    .vs-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .vs-team-tag {
+      font-size: 13px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .vs-team-tag.p1 {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .vs-team-tag.p2 {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .vs-crown {
+      font-size: 11px;
+      font-weight: 800;
+      color: #d97706;
+      background: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .vs-team-total {
+      font-size: 26px;
+      font-weight: 900;
+      font-family: monospace;
+      color: #0f172a;
+      margin: 4px 0 2px;
+    }
+
+    .vs-team-sub {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .vs-rounds-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      width: 100%;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 11.5px;
+      color: #475569;
+      font-family: monospace;
+    }
+
+    .vs-diff-banner {
+      width: 100%;
+      background: linear-gradient(135deg, #f0fdf4, #e0f2fe);
+      border: 1px solid #bae6fd;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #0369a1;
+      text-align: center;
+    }
+
+    /* 规则说明与起源小介绍卡片 */
+    .info-card {
+      width: 100%;
+      max-width: 980px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 16px 20px;
+      margin-top: 14px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.6;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+
+    .info-card h3 {
+      font-size: 15px;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tag-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 顶部导航控制条 -->
+  <header>
+    <div class="brand-group">
+      <h1 class="brand-title">🐧 冰雪打企鹅</h1>
+      <span class="brand-sub">Yeti Pingu Throw</span>
+    </div>
+
+    <div class="top-actions">
+      <a href="../index.html" class="btn-top" title="返回乐园大厅">
+        <span>🏠</span> 乐园大厅
+      </a>
+      <button id="btnFullscreen" class="btn-top" title="切换全屏显示 (快捷键 F)">
+        <span>⛶</span> 全屏
+      </button>
+      <button id="btnSound" class="btn-top">
+        <span>🔊</span> 音效
+      </button>
+      <button id="btnBgm" class="btn-top">
+        <span>🎵</span> 音乐开
+      </button>
+      <button id="btnHelp" class="btn-top">
+        <span>📖</span> 玩法技巧
+      </button>
+    </div>
+  </header>
+
+  <!-- 游戏主舞台容器 -->
+  <div class="game-wrapper">
+    
+    <!-- 顶部 HUD 仪表盘 -->
+    <div class="hud-bar">
+      <!-- 轮次/模式状态 -->
+      <div class="hud-stat">
+        <span id="lblModeTitle">🏆 5轮锦标赛</span>
+        <span id="lblRoundCount" class="stat-badge">第 1 / 5 轮</span>
+      </div>
+
+      <!-- 当前击打实时距离 -->
+      <div class="hud-stat">
+        <span>本次距离:</span>
+        <span id="lblCurrentDist" class="stat-badge">0.0 m</span>
+      </div>
+
+      <!-- 历史最佳纪录 -->
+      <div class="hud-stat">
+        <span>👑 历史最佳:</span>
+        <span id="lblBestDist" class="stat-badge record">0.0 m</span>
+      </div>
+
+      <!-- 实时风向与风力 -->
+      <div class="wind-display" id="windWidget">
+        <span>风向:</span>
+        <span id="windArrow" class="wind-arrow">➡️</span>
+        <span id="windSpeed">顺风 +2.4 m/s</span>
+      </div>
+    </div>
+
+    <!-- 游戏画布核心区域 (完全无常驻UI遮挡，干净沉浸) -->
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="gameCanvas"></canvas>
+      
+      <!-- 击球判定大浮标 (仅击球瞬间短暂高光闪烁) -->
+      <div class="hit-feedback-banner" id="hitBanner">
+        PERFECT!
+      </div>
+    </div>
+
+    <!-- 游戏状态与指引条 (移出游戏画面，彻底不遮挡操作视线) -->
+    <div class="game-status-strip" id="actionGuide">
+      <span class="status-icon">💡</span>
+      <span id="actionGuideText">点击屏幕任意位置 或 按空格键：让企鹅跳崖！</span>
+    </div>
+
+    <!-- 底部操作与控制条 -->
+    <div class="bottom-control-bar">
+      <!-- 模式切换 -->
+      <div class="mode-selector">
+        <button class="mode-tab active" id="tabTourney" data-mode="tourney">🏆 5轮锦标赛</button>
+        <button class="mode-tab" id="tabEndless" data-mode="endless">🚀 极限纪录赛</button>
+        <button class="mode-tab" id="tabVersus" data-mode="versus">👥 双人轮流比拼</button>
+      </div>
+
+      <!-- 锦标赛打点指示器 -->
+      <div class="round-history-dots" id="roundDots">
+        <div class="round-dot current" id="dot1">1</div>
+        <div class="round-dot" id="dot2">2</div>
+        <div class="round-dot" id="dot3">3</div>
+        <div class="round-dot" id="dot4">4</div>
+        <div class="round-dot" id="dot5">5</div>
+      </div>
+
+      <!-- 快速重玩/重启与对决结算按钮 -->
+      <div class="action-btn-group">
+        <button class="btn-main-action" id="btnVsSettle" style="display:none; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);">
+          <span>🏆</span> 结算胜负
+        </button>
+        <button class="btn-main-action" id="btnRestart">
+          <span>🔄</span> 重新开局
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 游戏起源与技巧科普卡片 -->
+  <div class="info-card">
+    <h3>💡 这款游戏叫什么名字？</h3>
+    <p>
+      这款家喻户晓的经典神作英文原名为 <strong>《YetiSports: Pingu Throw》</strong>（国内常译为<strong>《打企鹅》</strong>、<strong>《雪人打企鹅》</strong>或<strong>《野人打企鹅》</strong>）。
+      由奥地利独立游戏开发者 Chris Hilgert 于 2004 年创作，迅速风靡全球并掀起了极速挑战“看谁挥棒最远”的热潮！
+    </p>
+    <div class="info-tags">
+      <span class="tag-badge">🎯 击球技巧：最佳击球仰角约为 45°</span>
+      <span class="tag-badge">🦭 海豹肚皮：企鹅砸中海豹会再次反弹飞天</span>
+      <span class="tag-badge">🌬️ 风向系统：顺风能飞出惊人的超远距离</span>
+      <span class="tag-badge">⌨️ 操作方式：鼠标点击 / 键盘空格键 / 触屏轻击</span>
+    </div>
+  </div>
+
+  <!-- 结算弹窗 -->
+  <div class="modal-overlay" id="gameOverModal">
+    <div class="modal-box">
+      <div class="modal-icon" id="modalTrophyIcon">🏆</div>
+      <h2 class="modal-title" id="modalTitle">锦标赛完美落幕！</h2>
+      <div class="modal-score-big" id="modalFinalScore">1560.8 m</div>
+      <div class="modal-score-sub" id="modalScoreSub">5轮累计总距离</div>
+
+      <div class="modal-stats-list">
+        <div class="stat-row">
+          <span>🥇 本局单次最远:</span>
+          <strong id="modalStatBest">412.5 m</strong>
+        </div>
+        <div class="stat-row">
+          <span>🔥 完美击中次数:</span>
+          <strong id="modalStatPerfect">3 次</strong>
+        </div>
+        <div class="stat-row">
+          <span>🦭 肚皮借力反弹:</span>
+          <strong id="modalStatSeals">4 次</strong>
+        </div>
+        <div class="stat-row">
+          <span>👑 历史全服纪录:</span>
+          <strong id="modalStatRecord">488.0 m</strong>
+        </div>
+      </div>
+
+      <button class="modal-btn" id="btnModalPlayAgain">
+        <span>🚀</span> 再来一局，挑战新纪录！
+      </button>
+    </div>
+  </div>
+
+  <!-- 双人比拼专属胜负结算大弹窗 -->
+  <div class="modal-overlay" id="versusModal">
+    <div class="modal-box" style="max-width: 460px;">
+      <div class="modal-icon" id="vsModalIcon">👑</div>
+      <h2 class="modal-title" id="vsModalTitle" style="font-size: 24px; color: #b91c1c;">🏆 恭喜 🔴 1P 勇夺冠军！</h2>
+      <div class="modal-score-sub" id="vsModalSub" style="font-size: 14px; font-weight: 700; color: #0284c7; margin-bottom: 2px;">
+        1P 凭借更远的挥棒距离赢得最终荣耀！
+      </div>
+
+      <!-- 双人红蓝两队详细对比网格卡片 -->
+      <div class="vs-scoreboard-grid">
+        <!-- 1P 红队卡片 -->
+        <div class="vs-team-card p1-card winner" id="vsP1Card">
+          <div class="vs-card-header">
+            <span class="vs-team-tag p1">🔴 1P 选手</span>
+            <span class="vs-crown" id="vsP1Crown">👑 胜出</span>
+          </div>
+          <div class="vs-team-total" id="vsP1Total">982.5 m</div>
+          <div class="vs-team-sub" id="vsP1Wins">胜局: 2 胜 · 最远: 360m</div>
+          <div class="vs-rounds-breakdown" id="vsP1Rounds">
+            <div>局1: 340.0m (✅ 胜)</div>
+            <div>局2: 280.0m (❌ 负)</div>
+            <div>局3: 362.5m (✅ 胜)</div>
+          </div>
+        </div>
+
+        <!-- 2P 蓝队卡片 -->
+        <div class="vs-team-card p2-card" id="vsP2Card">
+          <div class="vs-card-header">
+            <span class="vs-team-tag p2">🔵 2P 选手</span>
+            <span class="vs-crown" id="vsP2Crown" style="display:none;">👑 胜出</span>
+          </div>
+          <div class="vs-team-total" id="vsP2Total">920.0 m</div>
+          <div class="vs-team-sub" id="vsP2Wins">胜局: 1 胜 · 最远: 330m</div>
+          <div class="vs-rounds-breakdown" id="vsP2Rounds">
+            <div>局1: 310.0m (❌ 负)</div>
+            <div>局2: 330.0m (✅ 胜)</div>
+            <div>局3: 280.0m (❌ 负)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 差异优势横条 -->
+      <div class="vs-diff-banner" id="vsDiffBanner">
+        🔥 1P 最终以 +62.5 米优势获胜！
+      </div>
+
+      <button class="modal-btn" id="btnVsPlayAgain" style="width: 100%;">
+        <span>⚔️</span> 再战一局 (重新对决)
+      </button>
+    </div>
+  </div>
+
+  <!-- 游戏玩法技巧说明弹窗 -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-box" style="text-align: left;">
+      <h2 class="modal-title" style="text-align: center; margin-bottom: 8px;">🎮 游戏玩法与技巧</h2>
+      
+      <div class="modal-stats-list" style="line-height: 1.6;">
+        <div><strong>1. 两次精准点击：</strong><br>• 第 1 次点击/按空格：小企鹅从冰崖纵身跳下。<br>• 第 2 次点击/按空格：大雪人挥舞狼牙木棒击打！</div>
+        <div><strong>2. 击球时机决定弹道：</strong><br>• 🌟 <strong>黄金甜点 (Sweet Spot)</strong>：在企鹅落到雪人腰部高度时挥棒，击出约 45° 黄金抛物线，初速爆表！<br>• 🚀 <strong>过早挥棒</strong>：击打企鹅下腹，仰角达 70°~80°，冲上云霄但平飞距离短。<br>• 📉 <strong>过迟挥棒</strong>：击打企鹅背部，贴地平飞甚至直接倒栽葱砸进雪堆！</div>
+        <div><strong>3. 场景奇遇元素：</strong><br>• 🦭 <strong>大肚皮海豹</strong>：分布在 140m~30000m+ 广袤雪原上，砸中即可享受强力高空回弹助推！<br>• 🚩 <strong>极地风向</strong>：顺风（向右）能让企鹅乘风破浪飞得更远。<br>• 🏰 <strong>无尽极地地标奇观</strong>：涵盖 100m起跑界、500m科考站、1000m国王王座、1500m极光城堡、2000m火箭发射台、2500m飞碟基地、3000m时空星门直至 5000m+ 银河金雕与宇宙信标，突破地标将触发专属声光荣耀！</div>
+      </div>
+
+      <button class="modal-btn" id="btnCloseHelp">
+        <span>👍</span> 我知道了，开始挥棒！
+      </button>
+    </div>
+  </div>
+
+  <!-- 游戏核心逻辑脚本 -->
+  <script>
+    /* ==========================================================================
+     *  🐧 冰雪打企鹅 (Yeti Pingu Throw) 纯原生单文件实现
+     *  - 拟真空气动力学、重力抛物线、冰雪摩擦力与海豹弹性反弹物理
+     *  - 智能平滑追踪摄像机 (Smooth Lerp + Dynamic Zoom-out)
+     *  - 完整 Web Audio API 合成音效与极地八音盒 BGM
+     *  - 3 种游戏模式 (5轮锦标赛、单发极限纪录、双人对战)
+     * ========================================================================== */
+
+    // 1. Web Audio 原生音效合成器
+    class SoundSynthesizer {
+      constructor() {
+        this.ctx = null;
+        this.soundEnabled = localStorage.getItem('yeti_sound') !== 'false';
+        this.bgmEnabled = localStorage.getItem('yeti_bgm') !== 'false';
+        this.bgmTimer = null;
+        this.bgmIndex = 0;
+        this.initButtons();
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      initButtons() {
+        const sBtn = document.getElementById('btnSound');
+        const bBtn = document.getElementById('btnBgm');
+        if (sBtn) {
+          sBtn.innerHTML = this.soundEnabled ? '<span>🔊</span> 音效' : '<span>🔇</span> 静音';
+          sBtn.addEventListener('click', () => {
+            this.initCtx();
+            this.soundEnabled = !this.soundEnabled;
+            localStorage.setItem('yeti_sound', this.soundEnabled);
+            sBtn.innerHTML = this.soundEnabled ? '<span>🔊</span> 音效' : '<span>🔇</span> 静音';
+            if (this.soundEnabled) this.playTone(520, 0.1, 'sine', 0.2);
+          });
+        }
+        if (bBtn) {
+          bBtn.innerHTML = this.bgmEnabled ? '<span>🎵</span> 音乐开' : '<span>🔇</span> 音乐关';
+          bBtn.addEventListener('click', () => {
+            this.initCtx();
+            this.bgmEnabled = !this.bgmEnabled;
+            localStorage.setItem('yeti_bgm', this.bgmEnabled);
+            bBtn.innerHTML = this.bgmEnabled ? '<span>🎵</span> 音乐开' : '<span>🔇</span> 音乐关';
+            if (this.bgmEnabled) this.startBgm();
+            else this.stopBgm();
+          });
+        }
+      }
+
+      playTone(freq, duration, type = 'sine', gainVal = 0.15) {
+        if (!this.soundEnabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+
+      // 企鹅跳跃叫声
+      playJump() {
+        if (!this.soundEnabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(680, now + 0.18);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(now + 0.22);
+        } catch(e) {}
+      }
+
+      // 挥棒破风声 (Whoosh)
+      playWhoosh() {
+        if (!this.soundEnabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          // 白噪滤波模拟呼啸
+          const bufferSize = this.ctx.sampleRate * 0.18;
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(400, this.ctx.currentTime);
+          filter.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.15);
+          filter.Q.value = 3.0;
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start();
+        } catch(e) {}
+      }
+
+      // 清脆击中重音 (CRACK / BAM!)
+      playHit(isPerfect = false) {
+        if (!this.soundEnabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          // 冲击爆破声
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(isPerfect ? 440 : 280, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.22);
+          gain.gain.setValueAtTime(isPerfect ? 0.45 : 0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(now + 0.25);
+
+          if (isPerfect) {
+            // 完美击中额外金属高音金币声
+            const osc2 = this.ctx.createOscillator();
+            const gain2 = this.ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1046, now);
+            osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.3);
+            gain2.gain.setValueAtTime(0.3, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc2.connect(gain2);
+            gain2.connect(this.ctx.destination);
+            osc2.start();
+            osc2.stop(now + 0.35);
+          }
+        } catch(e) {}
+      }
+
+      // 挥空落地摔倒搞笑声 (Splat / Thud)
+      playSplat() {
+        if (!this.soundEnabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(now + 0.25);
+        } catch(e) {}
+      }
+
+      // 海豹肚皮弹跳 (Boing!)
+      playBoing() {
+        if (!this.soundEnabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.28);
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(now + 0.35);
+        } catch(e) {}
+      }
+
+      // 冰面弹跳 (Bounce)
+      playBounce() {
+        if (!this.soundEnabled) return;
+        this.playTone(330, 0.08, 'triangle', 0.15);
+      }
+
+      // 飞越里程碑与地标音效 (Milestone Chime)
+      playMilestone() {
+        if (!this.soundEnabled) return;
+        const notes = [587, 740, 880, 1175]; // D5, F#5, A5, D6
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 0.16, 'triangle', 0.22);
+          }, idx * 75);
+        });
+      }
+
+      // 破纪录欢呼 (Fanfare)
+      playFanfare() {
+        if (!this.soundEnabled) return;
+        const notes = [523, 659, 784, 1046];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 0.2, 'triangle', 0.25);
+          }, idx * 90);
+        });
+      }
+
+      // 极地欢快背景八音盒 BGM
+      startBgm() {
+        if (this.bgmTimer) return;
+        const melody = [
+          { f: 523.25, d: 240 }, // C5
+          { f: 659.25, d: 240 }, // E5
+          { f: 783.99, d: 240 }, // G5
+          { f: 659.25, d: 240 }, // E5
+          { f: 880.00, d: 320 }, // A5
+          { f: 783.99, d: 400 }, // G5
+          { f: 698.46, d: 240 }, // F5
+          { f: 587.33, d: 240 }, // D5
+          { f: 523.25, d: 480 }, // C5
+          { f: 0,      d: 200 }, // 停顿
+        ];
+
+        const tick = () => {
+          if (!this.bgmEnabled) return;
+          const item = melody[this.bgmIndex];
+          if (item.f > 0) {
+            this.playTone(item.f, item.d / 1000, 'sine', 0.05);
+          }
+          this.bgmIndex = (this.bgmIndex + 1) % melody.length;
+          this.bgmTimer = setTimeout(tick, item.d + 60);
+        };
+        tick();
+      }
+
+      stopBgm() {
+        if (this.bgmTimer) {
+          clearTimeout(this.bgmTimer);
+          this.bgmTimer = null;
+        }
+      }
+    }
+
+    // 2. 游戏物理对象与渲染管理
+    class PenguinGame {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.container = document.getElementById('canvasContainer');
+        this.sound = new SoundSynthesizer();
+
+        // 响应式画布分辨率
+        this.width = 980;
+        this.height = 480;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+
+        // 物理坐标系统 (米与像素换算比例: 1米 = 7像素)
+        this.PX_PER_METER = 7.0;
+        this.GROUND_Y = 380; // 地面 Y 坐标
+        this.GRAVITY = 0.46; // 重力加速度
+        this.AIR_RESISTANCE = 0.997; // 空气阻力
+        this.ICE_FRICTION = 0.965; // 冰面滑动摩擦衰减
+        this.BOUNCE_RESTITUTION = 0.55; // 地面弹力系数
+
+        // 游戏模式与状态:
+        // 'tourney' (5轮锦标赛), 'endless' (单发极限), 'versus' (双人比拼)
+        this.mode = 'tourney';
+        this.round = 1;
+        this.maxRounds = 5;
+        this.tourneyDistances = [];
+        this.versusScores = { p1: [], p2: [] };
+        this.versusTurn = 1; // 1 或 2
+
+        // 本地最高分
+        this.bestRecord = parseFloat(localStorage.getItem('yeti_best_record')) || 0;
+        this.perfectCount = 0;
+        this.sealHits = 0;
+
+        // 状态机: 'IDLE' -> 'FALLING' -> 'SWINGING' -> 'FLYING' -> 'SLIDING' -> 'STOPPED'
+        this.state = 'IDLE';
+
+        // 摄像机镜头 (平滑追踪)
+        this.camera = {
+          x: 0,
+          y: 0,
+          targetX: 0,
+          targetY: 0,
+          zoom: 1.0,
+          targetZoom: 1.0
+        };
+
+        // 雪人参数
+        this.yeti = {
+          x: 170,
+          y: this.GROUND_Y - 30,
+          state: 'idle', // 'idle', 'ready', 'swing', 'cheer', 'facepalm'
+          swingProgress: 0,
+          armAngle: 0
+        };
+
+        // 企鹅参数
+        this.penguin = {
+          x: 95,
+          y: this.GROUND_Y - 260, // 初始在冰崖顶
+          vx: 0,
+          vy: 0,
+          angle: 0,
+          angularVel: 0,
+          state: 'cliff', // 'cliff', 'falling', 'flying', 'sliding', 'stuck', 'missed'
+          flyDistance: 0,
+          bounces: 0,
+          slideTime: 0,
+          trail: []
+        };
+
+        // 冰原环境道具 (海豹群、路标)
+        this.passedMilestones = new Set();
+        this.bannerTimer = null;
+        this.seals = [];
+        this.generateSeals();
+
+        // 粒子系统 (雪花、击中火花、烟尘、彩带)
+        this.particles = [];
+        this.initBackgroundSnow();
+
+        // 绑定的 UI 元素
+        this.ui = {
+          guide: document.getElementById('actionGuide'),
+          guideText: document.getElementById('actionGuideText'),
+          banner: document.getElementById('hitBanner'),
+          lblModeTitle: document.getElementById('lblModeTitle'),
+          lblRoundCount: document.getElementById('lblRoundCount'),
+          lblCurrentDist: document.getElementById('lblCurrentDist'),
+          lblBestDist: document.getElementById('lblBestDist'),
+          windArrow: document.getElementById('windArrow'),
+          windSpeed: document.getElementById('windSpeed'),
+          roundDots: document.getElementById('roundDots'),
+          modal: document.getElementById('gameOverModal'),
+          modalTitle: document.getElementById('modalTitle'),
+          modalFinalScore: document.getElementById('modalFinalScore'),
+          modalStatBest: document.getElementById('modalStatBest'),
+          modalStatPerfect: document.getElementById('modalStatPerfect'),
+          modalStatSeals: document.getElementById('modalStatSeals'),
+          modalStatRecord: document.getElementById('modalStatRecord'),
+          helpModal: document.getElementById('helpModal'),
+          btnVsSettle: document.getElementById('btnVsSettle'),
+          vsModal: document.getElementById('versusModal'),
+          vsModalTitle: document.getElementById('vsModalTitle'),
+          vsModalSub: document.getElementById('vsModalSub'),
+          vsP1Total: document.getElementById('vsP1Total'),
+          vsP1Wins: document.getElementById('vsP1Wins'),
+          vsP1Rounds: document.getElementById('vsP1Rounds'),
+          vsP2Total: document.getElementById('vsP2Total'),
+          vsP2Wins: document.getElementById('vsP2Wins'),
+          vsP2Rounds: document.getElementById('vsP2Rounds'),
+          vsP1Card: document.getElementById('vsP1Card'),
+          vsP2Card: document.getElementById('vsP2Card'),
+          vsDiffBanner: document.getElementById('vsDiffBanner'),
+          btnVsPlayAgain: document.getElementById('btnVsPlayAgain')
+        };
+
+        // 风向系统 (每次击球重置)
+        this.wind = 2.0; // 米/秒 (-3.5 到 +5.5)
+        this.randomizeWind();
+
+        this.initEventListeners();
+        this.updateHUD();
+
+        // 启动主循环
+        this.lastTime = performance.now();
+        this.loop = this.loop.bind(this);
+        requestAnimationFrame(this.loop);
+      }
+
+      resize() {
+        const rect = this.container.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.GROUND_Y = this.height - 90;
+        if (this.yeti) this.yeti.y = this.GROUND_Y - 30;
+        if (this.penguin && this.penguin.state === 'cliff') {
+          this.penguin.y = this.GROUND_Y - 240;
+        }
+        if (this.seals) {
+          this.seals.forEach(seal => {
+            seal.y = this.GROUND_Y - 14;
+          });
+        }
+      }
+
+      initBackgroundSnow() {
+        this.snowFlakes = [];
+        for (let i = 0; i < 70; i++) {
+          this.snowFlakes.push({
+            x: Math.random() * 1200,
+            y: Math.random() * 600,
+            radius: Math.random() * 2.2 + 0.8,
+            speedY: Math.random() * 1.2 + 0.6,
+            speedX: Math.random() * 0.8 - 0.4
+          });
+        }
+      }
+
+      generateSeals() {
+        this.seals = [];
+        // 从 140m 延伸至 30000m+ 全程规律散布呆萌大海豹
+        let curM = 140;
+        let sealIdx = 0;
+        const landmarkMeters = [100, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
+        while (curM < 30000) {
+          // 避开主要地标点以防重叠
+          for (const lm of landmarkMeters) {
+            if (Math.abs(curM - lm) < 22) {
+              curM += 30;
+            }
+          }
+          this.seals.push({
+            id: sealIdx++,
+            meter: curM,
+            x: 200 + curM * this.PX_PER_METER,
+            y: this.GROUND_Y - 14,
+            width: 52,
+            height: 28,
+            bounceTimer: 0
+          });
+          const step = 85 + ((sealIdx * 43) % 75);
+          curM += step;
+        }
+      }
+
+      randomizeWind() {
+        // -3.0 ~ +5.0 之间随机风速
+        this.wind = parseFloat(((Math.random() * 8.0) - 2.8).toFixed(1));
+        this.updateWindUI();
+      }
+
+      updateWindUI() {
+        if (!this.ui || !this.ui.windSpeed || !this.ui.windArrow) return;
+        const speedAbs = Math.abs(this.wind);
+        if (this.wind > 0.4) {
+          this.ui.windArrow.style.transform = 'rotate(0deg)';
+          this.ui.windArrow.textContent = '➡️';
+          this.ui.windSpeed.textContent = `顺风 +${speedAbs} m/s`;
+          this.ui.windSpeed.style.color = '#0284c7';
+        } else if (this.wind < -0.4) {
+          this.ui.windArrow.style.transform = 'rotate(180deg)';
+          this.ui.windArrow.textContent = '⬅️';
+          this.ui.windSpeed.textContent = `逆风 -${speedAbs} m/s`;
+          this.ui.windSpeed.style.color = '#ea580c';
+        } else {
+          this.ui.windArrow.textContent = '⏺️';
+          this.ui.windSpeed.textContent = '微风 0.0 m/s';
+          this.ui.windSpeed.style.color = '#64748b';
+        }
+      }
+
+      initEventListeners() {
+        // 画布点击响应
+        this.canvas.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          this.handleActionClick();
+        });
+
+        // 全屏切换处理函数
+        const btnFullscreen = document.getElementById('btnFullscreen');
+        const toggleFullscreen = () => {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            const root = document.documentElement;
+            if (root.requestFullscreen) {
+              root.requestFullscreen().catch(() => {});
+            } else if (root.webkitRequestFullscreen) {
+              root.webkitRequestFullscreen();
+            }
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            }
+          }
+        };
+
+        if (btnFullscreen) {
+          btnFullscreen.addEventListener('click', () => {
+            this.sound.initCtx();
+            toggleFullscreen();
+          });
+        }
+
+        const handleFsChange = () => {
+          const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+          document.body.classList.toggle('is-fullscreen', isFs);
+          if (btnFullscreen) {
+            btnFullscreen.innerHTML = isFs ? '<span>🗗</span> 退出全屏' : '<span>⛶</span> 全屏';
+            btnFullscreen.classList.toggle('active', isFs);
+          }
+          setTimeout(() => this.resize(), 50);
+          setTimeout(() => this.resize(), 200);
+        };
+        document.addEventListener('fullscreenchange', handleFsChange);
+        document.addEventListener('webkitfullscreenchange', handleFsChange);
+
+        // 键盘响应 (空格/Enter击球，F键全屏)
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'KeyF' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            toggleFullscreen();
+            return;
+          }
+          if (e.code === 'Space' || e.key === ' ' || e.code === 'Enter') {
+            e.preventDefault();
+            this.handleActionClick();
+          }
+        });
+
+        // 模式切换
+        const tabTourney = document.getElementById('tabTourney');
+        const tabEndless = document.getElementById('tabEndless');
+        const tabVersus = document.getElementById('tabVersus');
+
+        const switchMode = (m) => {
+          this.mode = m;
+          [tabTourney, tabEndless, tabVersus].forEach(t => t.classList.remove('active'));
+          if (m === 'tourney') tabTourney.classList.add('active');
+          if (m === 'endless') tabEndless.classList.add('active');
+          if (m === 'versus') tabVersus.classList.add('active');
+          this.restartGame();
+        };
+
+        tabTourney.addEventListener('click', () => switchMode('tourney'));
+        tabEndless.addEventListener('click', () => switchMode('endless'));
+        tabVersus.addEventListener('click', () => switchMode('versus'));
+
+        // 重启按钮
+        document.getElementById('btnRestart').addEventListener('click', () => {
+          this.restartGame();
+        });
+
+        // 玩法帮助弹窗
+        document.getElementById('btnHelp').addEventListener('click', () => {
+          this.ui.helpModal.classList.add('open');
+        });
+        document.getElementById('btnCloseHelp').addEventListener('click', () => {
+          this.ui.helpModal.classList.remove('open');
+        });
+
+        // 结算再来一局
+        document.getElementById('btnModalPlayAgain').addEventListener('click', () => {
+          this.ui.modal.classList.remove('open');
+          this.restartGame();
+        });
+
+        // 双人对决结算与再来一局
+        if (this.ui.btnVsSettle) {
+          this.ui.btnVsSettle.addEventListener('click', () => {
+            this.sound.initCtx();
+            this.showVersusSummary();
+          });
+        }
+        if (this.ui.btnVsPlayAgain) {
+          this.ui.btnVsPlayAgain.addEventListener('click', () => {
+            if (this.ui.vsModal) this.ui.vsModal.classList.remove('open');
+            this.restartGame();
+          });
+        }
+      }
+
+      // 核心操作分发 (Click / Space)
+      handleActionClick() {
+        this.sound.initCtx();
+        if (this.sound.bgmEnabled && !this.sound.bgmTimer) {
+          this.sound.startBgm();
+        }
+
+        if (this.state === 'IDLE') {
+          // 第 1 步：企鹅从冰崖跳下！
+          this.penguinJump();
+        } else if (this.state === 'FALLING') {
+          // 第 2 步：雪人挥棒击球！
+          this.yetiSwing();
+        } else if (this.state === 'STOPPED') {
+          // 已经停止，点击开始下一轮或下一局
+          this.nextRound();
+        }
+      }
+
+      // 企鹅跳崖
+      penguinJump() {
+        this.state = 'FALLING';
+        this.penguin.state = 'falling';
+        this.penguin.x = 95;
+        this.penguin.y = this.GROUND_Y - 240;
+        this.penguin.vx = 2.2; // 稍微向前跃出
+        this.penguin.vy = -1.8; // 小跃起
+        this.penguin.angularVel = 0.05;
+        this.yeti.state = 'ready'; // 雪人准备挥棒
+
+        this.sound.playJump();
+        this.updateGuideText('👀 盯紧企鹅！在落到雪人胸腰黄金位置时，再次点击挥棒！');
+      }
+
+      // 雪人挥棒
+      yetiSwing() {
+        this.state = 'SWINGING';
+        this.yeti.state = 'swing';
+        this.yeti.swingProgress = 0;
+        this.sound.playWhoosh();
+
+        // 碰撞核心算法计算：
+        // 企鹅与雪人击球核心区 (X 在 130~190 之间，Y 从 GROUND_Y-130 到 GROUND_Y-15)
+        const pX = this.penguin.x;
+        const pY = this.penguin.y;
+        const batX = this.yeti.x - 20;
+
+        // 距离判定
+        const distToBat = Math.abs(pX - batX);
+        const yOffset = pY - (this.GROUND_Y - 55); // 0 为最甜高度 (Sweet Spot)
+
+        if (distToBat < 55 && pY > this.GROUND_Y - 160 && pY < this.GROUND_Y - 10) {
+          // 成功击中企鹅！
+          this.calculateHitResult(yOffset);
+        } else {
+          // 挥空 (Missed)
+          this.handleMiss();
+        }
+      }
+
+      // 击中计算
+      calculateHitResult(yOffset) {
+        this.state = 'FLYING';
+        this.penguin.state = 'flying';
+        this.penguin.trail = [];
+        this.penguin.bounces = 0;
+        this.penguin.slideTime = 0;
+
+        let baseAngle = 45; // 最佳仰角 45 度
+        let speed = 33.0; // 基础速度
+        let hitQuality = 'PERFECT';
+
+        // yOffset 越接近 0 (企鹅在腰部高度)，仰角越趋近 45° 黄金角
+        if (Math.abs(yOffset) < 16) {
+          // 🌟 完美全垒打 (Sweet Spot!)
+          hitQuality = 'PERFECT';
+          baseAngle = 44 + (Math.random() * 4 - 2);
+          speed = 35.5 + Math.random() * 3.5;
+          this.perfectCount++;
+          this.sound.playHit(true);
+          this.showHitBanner('🔥 全垒打 PERFECT! 45° 爆射!', 'hit-perfect');
+          this.createExplosionParticles(this.penguin.x, this.penguin.y, '#f59e0b', 35);
+        } else if (yOffset < -16 && yOffset >= -55) {
+          // 🚀 挥早了：仰角偏高（高飞冲天球）
+          hitQuality = 'HIGH';
+          baseAngle = 65 + ((-yOffset - 16) / 40) * 16; // 65° ~ 81°
+          speed = 31.0;
+          this.sound.playHit(false);
+          this.showHitBanner('🚀 冲天高飞球! (仰角过高)', 'hit-high');
+          this.createExplosionParticles(this.penguin.x, this.penguin.y, '#38bdf8', 20);
+        } else if (yOffset > 16 && yOffset <= 45) {
+          // 📉 挥迟了：贴地低飞
+          hitQuality = 'LOW';
+          baseAngle = 18 + ((45 - yOffset) / 30) * 16; // 18° ~ 34°
+          speed = 28.5;
+          this.sound.playHit(false);
+          this.showHitBanner('⚡ 贴地低飞球! (仰角较低)', 'hit-great');
+          this.createExplosionParticles(this.penguin.x, this.penguin.y, '#10b981', 20);
+        } else if (yOffset > 45) {
+          // 💥 极迟挥棒：敲中头顶直接砸入雪地 (倒栽葱 Bonk!)
+          hitQuality = 'BONK';
+          baseAngle = -35;
+          speed = 18.0;
+          this.sound.playHit(false);
+          this.showHitBanner('💥 倒栽葱 BONK! 砸入雪地!', 'hit-bonk');
+          this.createExplosionParticles(this.penguin.x, this.penguin.y, '#ea580c', 25);
+        } else {
+          // 偏高偏早擦边球
+          baseAngle = 75;
+          speed = 22.0;
+          this.sound.playHit(false);
+          this.showHitBanner('💨 擦边轻击', 'hit-great');
+        }
+
+        // 计算水平和垂直初速度 (转弧度)
+        const rad = (baseAngle * Math.PI) / 180;
+        this.penguin.vx = Math.cos(rad) * speed;
+        this.penguin.vy = -Math.sin(rad) * speed;
+        this.penguin.angularVel = 0.15;
+
+        // 摄像机目标聚焦企鹅
+        this.updateGuideText('🐧 企鹅在空中翱翔！静候落点与冰面滑行...');
+      }
+
+      // 挥空处理
+      handleMiss() {
+        this.showHitBanner('💨 挥棒落空! STRIKE!', 'hit-miss');
+        this.updateGuideText('😅 哎呀挥空了！企鹅啪嗒摔在雪地上啦～点击继续');
+      }
+
+      showHitBanner(text, cssClass) {
+        if (this.bannerTimer) clearTimeout(this.bannerTimer);
+        this.ui.banner.className = `hit-feedback-banner show ${cssClass}`;
+        this.ui.banner.textContent = text;
+        this.bannerTimer = setTimeout(() => {
+          this.ui.banner.classList.remove('show');
+          this.bannerTimer = null;
+        }, 1800);
+      }
+
+      // 检测飞越地标与里程碑播报
+      checkMilestones(distMeters) {
+        if (!this.passedMilestones) this.passedMilestones = new Set();
+        const milestones = [
+          { m: 100, name: '起飞冲刺线 🏁' },
+          { m: 250, name: '极地探险营地 ⛺' },
+          { m: 500, name: '南极科考站 🔬' },
+          { m: 750, name: '雪人守护神像 ⛄' },
+          { m: 1000, name: '企鹅国王王座 👑' },
+          { m: 1250, name: '极地破冰船 🚢' },
+          { m: 1500, name: '极光水晶城堡 🏰' },
+          { m: 2000, name: '深空火箭发射台 🚀' },
+          { m: 2500, name: '外星飞碟基地 🛸' },
+          { m: 3000, name: '超空间星门 🌌' },
+          { m: 3500, name: '反重力方尖碑 🔮' },
+          { m: 4000, name: '极地轨道空港 🪐' },
+          { m: 4500, name: '引力光子环 ⚡' },
+          { m: 5000, name: '银河先锋丰碑 🏆' }
+        ];
+
+        for (const item of milestones) {
+          if (distMeters >= item.m && !this.passedMilestones.has(item.m)) {
+            this.passedMilestones.add(item.m);
+            this.sound.playMilestone();
+            this.showHitBanner(`🚩 突破地标：${item.name} (${item.m}m)！`, 'hit-perfect');
+            this.createExplosionParticles(this.penguin.x, this.penguin.y, '#38bdf8', 18);
+            return;
+          }
+        }
+
+        if (distMeters >= 6000) {
+          const kiloM = Math.floor(distMeters / 1000) * 1000;
+          if (!this.passedMilestones.has(kiloM)) {
+            this.passedMilestones.add(kiloM);
+            this.sound.playMilestone();
+            this.showHitBanner(`🌠 突破 ${kiloM}m 宇宙星际地标！`, 'hit-perfect');
+            this.createExplosionParticles(this.penguin.x, this.penguin.y, '#ec4899', 24);
+          }
+        }
+      }
+
+      createExplosionParticles(x, y, color, count = 20) {
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const spd = Math.random() * 8 + 2;
+          this.particles.push({
+            x, y,
+            vx: Math.cos(angle) * spd,
+            vy: Math.sin(angle) * spd,
+            color,
+            radius: Math.random() * 4 + 2,
+            alpha: 1.0,
+            decay: Math.random() * 0.03 + 0.02
+          });
+        }
+      }
+
+      // 更新企鹅与物理世界
+      updatePhysics(dt) {
+        // 雪人挥棒动画更新
+        if (this.yeti.state === 'swing') {
+          this.yeti.swingProgress += dt * 3.5;
+          if (this.yeti.swingProgress > 1.0) {
+            this.yeti.swingProgress = 1.0;
+            if (this.state === 'SWINGING') {
+              // 如果还在挥棒状态却没命中企鹅
+              this.state = 'FLYING'; // 让企鹅按摔倒处理
+            }
+          }
+        }
+
+        // 企鹅状态更新
+        if (this.penguin.state === 'falling') {
+          // 自然下落
+          this.penguin.vy += this.GRAVITY;
+          this.penguin.x += this.penguin.vx;
+          this.penguin.y += this.penguin.vy;
+          this.penguin.angle += this.penguin.angularVel;
+
+          // 掉到地面摔倒
+          if (this.penguin.y >= this.GROUND_Y) {
+            this.penguin.y = this.GROUND_Y;
+            this.penguin.state = 'missed';
+            this.penguin.vx = 0;
+            this.penguin.vy = 0;
+            this.state = 'STOPPED';
+            this.sound.playSplat();
+            this.yeti.state = 'facepalm';
+            this.showHitBanner('🙈 企鹅摔地上啦! 0.0m', 'hit-miss');
+            this.updateGuideText('企鹅摔倒了！点击屏幕开始下一轮～');
+            this.recordRoundScore(0);
+          }
+        } else if (this.penguin.state === 'flying' || this.penguin.state === 'sliding') {
+          // 记录尾迹点
+          if (Math.random() < 0.4) {
+            this.penguin.trail.push({
+              x: this.penguin.x,
+              y: this.penguin.y,
+              alpha: 0.8
+            });
+            if (this.penguin.trail.length > 35) this.penguin.trail.shift();
+          }
+
+          if (this.penguin.state === 'flying') {
+            // 空中飞行阶段：受风力影响
+            const windAcc = (this.wind * 0.032);
+            this.penguin.vx += windAcc;
+
+            // 空气阻力
+            this.penguin.vx *= this.AIR_RESISTANCE;
+            this.penguin.vy *= this.AIR_RESISTANCE;
+
+            // 重力
+            this.penguin.vy += this.GRAVITY;
+          } else if (this.penguin.state === 'sliding') {
+            // 地面滑行阶段：不再受风力推进，冰雪动摩擦力持续刹车
+            this.penguin.slideTime += dt;
+            this.penguin.vy = 0;
+            this.penguin.angle = 0;
+
+            // 比例阻尼
+            this.penguin.vx *= this.ICE_FRICTION;
+            // 线性动摩擦阻力刹车
+            const frictionDecel = 0.14;
+            if (this.penguin.vx > 0) {
+              this.penguin.vx = Math.max(0, this.penguin.vx - frictionDecel);
+            } else if (this.penguin.vx < 0) {
+              this.penguin.vx = Math.min(0, this.penguin.vx + frictionDecel);
+            }
+          }
+
+          // 位移
+          this.penguin.x += this.penguin.vx;
+          this.penguin.y += this.penguin.vy;
+          this.penguin.angle += this.penguin.angularVel;
+
+          // 计算当前米数
+          const distMeters = Math.max(0, (this.penguin.x - 200) / this.PX_PER_METER);
+          this.penguin.flyDistance = distMeters;
+          this.ui.lblCurrentDist.textContent = `${distMeters.toFixed(1)} m`;
+
+          // 检测飞越地标与里程碑
+          this.checkMilestones(distMeters);
+
+          // 海豹碰撞检测
+          this.checkSealCollisions();
+
+          // 地面碰撞与弹跳滑行判定
+          if (this.penguin.y >= this.GROUND_Y) {
+            this.penguin.y = this.GROUND_Y;
+
+            // 检查垂直落地撞击速度
+            if (Math.abs(this.penguin.vy) > 3.0) {
+              // 弹跳 (Bounce)
+              this.penguin.vy = -this.penguin.vy * this.BOUNCE_RESTITUTION;
+              this.penguin.vx *= 0.82; // 落地轻微减速
+              this.penguin.bounces++;
+              this.sound.playBounce();
+              this.createExplosionParticles(this.penguin.x, this.GROUND_Y, '#ffffff', 10);
+            } else {
+              // 进入滑行状态 (Slide)
+              if (this.penguin.state !== 'sliding') {
+                this.penguin.state = 'sliding';
+                this.penguin.slideTime = 0;
+              }
+              this.penguin.vy = 0;
+              this.penguin.angle = 0; // 滑行时平放
+
+              // 产生滑行冰雪碎屑
+              if (Math.abs(this.penguin.vx) > 1.2 && Math.random() < 0.35) {
+                this.particles.push({
+                  x: this.penguin.x - 10,
+                  y: this.GROUND_Y + 2,
+                  vx: -Math.random() * 3 - 1,
+                  vy: -Math.random() * 2,
+                  color: '#e0f2fe',
+                  radius: Math.random() * 3 + 1,
+                  alpha: 0.8,
+                  decay: 0.04
+                });
+              }
+
+              // 当滑行速度低于 0.6 或滑行时间超过 2.2 秒时，果断完全停下进入结算
+              if (Math.abs(this.penguin.vx) < 0.6 || this.penguin.slideTime > 2.2) {
+                this.penguin.vx = 0;
+                this.penguin.state = 'stuck';
+                this.state = 'STOPPED';
+                this.handlePenguinStop();
+              }
+            }
+          }
+        }
+
+        // 更新粒子
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= p.decay;
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+          }
+        }
+
+        // 更新尾迹
+        for (let i = 0; i < this.penguin.trail.length; i++) {
+          this.penguin.trail[i].alpha -= 0.015;
+        }
+
+        // 更新海豹动画计时
+        this.seals.forEach(seal => {
+          if (seal.bounceTimer > 0) seal.bounceTimer -= dt;
+        });
+
+        // 摄像机镜头平滑跟随 (Lerp Camera)
+        this.updateCamera(dt);
+      }
+
+      // 海豹碰撞反弹检测
+      checkSealCollisions() {
+        this.seals.forEach(seal => {
+          if (Math.abs(this.penguin.x - seal.x) > 50) return;
+          const dx = Math.abs(this.penguin.x - seal.x);
+          const dy = Math.abs(this.penguin.y - seal.y);
+          if (dx < 36 && dy < 32 && this.penguin.vy > 0) {
+            // 企鹅砸在海豹肚皮上！Duang!
+            seal.bounceTimer = 0.6;
+            this.sealHits++;
+            this.sound.playBoing();
+            this.penguin.vy = -16.5; // 大幅高弹
+            this.penguin.vx = Math.max(this.penguin.vx * 1.22, 14.0); // 增加向前冲力
+            this.showHitBanner('🦭 海豹肚皮超级大弹跳! BOING!', 'hit-perfect');
+            this.createExplosionParticles(seal.x, seal.y - 10, '#f43f5e', 22);
+          }
+        });
+      }
+
+      // 企鹅停下结算
+      handlePenguinStop() {
+        const finalDist = parseFloat(this.penguin.flyDistance.toFixed(1));
+        this.yeti.state = finalDist > 300 ? 'cheer' : 'idle';
+
+        // 刷新最高纪录
+        let isNewRecord = false;
+        if (finalDist > this.bestRecord) {
+          this.bestRecord = finalDist;
+          localStorage.setItem('yeti_best_record', this.bestRecord);
+          this.ui.lblBestDist.textContent = `${this.bestRecord} m`;
+          isNewRecord = true;
+          this.sound.playFanfare();
+          this.showHitBanner(`🎉 斩获新纪录! ${finalDist} m 👑`, 'hit-perfect');
+          this.createConfetti();
+        } else {
+          this.showHitBanner(`🏁 落地定格: ${finalDist} m`, 'hit-great');
+        }
+
+        this.updateGuideText(`本轮成绩: ${finalDist} m！点击屏幕进入下一轮～`);
+        this.recordRoundScore(finalDist);
+      }
+
+      // 记录成绩
+      recordRoundScore(score) {
+        if (this.mode === 'tourney') {
+          this.tourneyDistances.push(score);
+          this.updateRoundDots();
+
+          if (this.round >= this.maxRounds) {
+            // 锦标赛全部轮次完成，弹出结算弹窗
+            setTimeout(() => {
+              this.showTournamentSummary();
+            }, 1200);
+          }
+        } else if (this.mode === 'versus') {
+          if (this.versusTurn === 1) {
+            this.versusScores.p1.push(score);
+            this.versusTurn = 2;
+            this.sound.playTone(520, 0.18, 'triangle', 0.25);
+            this.showHitBanner(`🔴 1P 击出 ${score.toFixed(1)}m！轮到 2P 挑战！`, 'hit-great');
+            this.updateGuideText(`🔴 1P 成绩: ${score.toFixed(1)} m！请 🔵 2P 就位，点击屏幕任意位置或按空格挥棒！`);
+            this.updateHUD();
+          } else {
+            this.versusScores.p2.push(score);
+            const p1Score = this.versusScores.p1[this.round - 1] || 0;
+            const p2Score = score;
+            const diff = Math.abs(p1Score - p2Score).toFixed(1);
+
+            if (p1Score > p2Score) {
+              this.showHitBanner(`🏆 第 ${this.round} 局 🔴 1P 获胜！(领先 +${diff}m)`, 'hit-perfect');
+              this.updateGuideText(`本局 🔴 1P 胜出 (1P ${p1Score.toFixed(1)}m > 2P ${p2Score.toFixed(1)}m，领先 +${diff}m)！点击继续～`);
+              this.sound.playFanfare();
+              this.createConfetti();
+            } else if (p2Score > p1Score) {
+              this.showHitBanner(`🏆 第 ${this.round} 局 🔵 2P 逆转！(领先 +${diff}m)`, 'hit-perfect');
+              this.updateGuideText(`本局 🔵 2P 胜出 (2P ${p2Score.toFixed(1)}m > 1P ${p1Score.toFixed(1)}m，领先 +${diff}m)！点击继续～`);
+              this.sound.playFanfare();
+              this.createConfetti();
+            } else {
+              this.showHitBanner(`🤝 第 ${this.round} 局打平！(${p1Score.toFixed(1)}m)`, 'hit-great');
+              this.updateGuideText(`本局双方打平 (${p1Score.toFixed(1)}m)！点击继续～`);
+            }
+
+            this.versusTurn = 1;
+            this.round++;
+            this.updateHUD();
+
+            if (this.round > 3) {
+              setTimeout(() => {
+                this.showVersusSummary();
+              }, 1400);
+            }
+          }
+        }
+      }
+
+      // 下一轮重置
+      nextRound() {
+        if (this.mode === 'tourney') {
+          if (this.round < this.maxRounds) {
+            this.round++;
+            this.resetSingleThrow();
+          } else {
+            this.showTournamentSummary();
+          }
+        } else if (this.mode === 'versus') {
+          if (this.round <= 3) {
+            this.resetSingleThrow();
+          } else {
+            this.showVersusSummary();
+          }
+        } else {
+          // endless 模式无缝连打
+          this.round++;
+          this.resetSingleThrow();
+        }
+      }
+
+      // 重置单次击球
+      resetSingleThrow() {
+        this.state = 'IDLE';
+        this.yeti.state = 'idle';
+        this.yeti.swingProgress = 0;
+
+        this.penguin.x = 95;
+        this.penguin.y = this.GROUND_Y - 240;
+        this.penguin.vx = 0;
+        this.penguin.vy = 0;
+        this.penguin.angle = 0;
+        this.penguin.state = 'cliff';
+        this.penguin.trail = [];
+        this.penguin.flyDistance = 0;
+        this.penguin.slideTime = 0;
+        if (this.passedMilestones) this.passedMilestones.clear();
+
+        // 摄像机复位到原点
+        this.camera.targetX = 0;
+        this.camera.targetY = 0;
+        this.camera.targetZoom = 1.0;
+
+        this.randomizeWind();
+        this.updateHUD();
+        this.updateGuideText('点击屏幕任意位置 或 按空格键：让企鹅跳崖！');
+      }
+
+      // 重启整局
+      restartGame() {
+        this.round = 1;
+        this.tourneyDistances = [];
+        this.versusScores = { p1: [], p2: [] };
+        this.versusTurn = 1;
+        this.perfectCount = 0;
+        this.sealHits = 0;
+        this.ui.modal.classList.remove('open');
+        if (this.ui.vsModal) this.ui.vsModal.classList.remove('open');
+        this.resetSingleThrow();
+        this.updateRoundDots();
+      }
+
+      updateRoundDots() {
+        for (let i = 1; i <= 5; i++) {
+          const dot = document.getElementById(`dot${i}`);
+          if (!dot) continue;
+          dot.className = 'round-dot';
+          if (i < this.round) {
+            dot.classList.add('done');
+          } else if (i === this.round) {
+            dot.classList.add('current');
+          }
+        }
+      }
+
+      updateHUD() {
+        if (!this.ui) return;
+        if (this.mode === 'tourney') {
+          this.ui.lblModeTitle.textContent = '🏆 5轮锦标赛';
+          this.ui.lblRoundCount.textContent = `第 ${this.round} / 5 轮`;
+          this.ui.roundDots.style.display = 'flex';
+          if (this.ui.btnVsSettle) this.ui.btnVsSettle.style.display = 'none';
+        } else if (this.mode === 'endless') {
+          this.ui.lblModeTitle.textContent = '🚀 单发极限赛';
+          this.ui.lblRoundCount.textContent = `第 ${this.round} 次挑战`;
+          this.ui.roundDots.style.display = 'none';
+          if (this.ui.btnVsSettle) this.ui.btnVsSettle.style.display = 'none';
+        } else {
+          // 双人对决
+          const p1Scores = this.versusScores.p1;
+          const p2Scores = this.versusScores.p2;
+          let p1Wins = 0, p2Wins = 0;
+          for (let i = 0; i < Math.min(p1Scores.length, p2Scores.length); i++) {
+            if (p1Scores[i] > p2Scores[i]) p1Wins++;
+            else if (p2Scores[i] > p1Scores[i]) p2Wins++;
+          }
+          this.ui.lblModeTitle.textContent = `👥 双人对决 (🔴${p1Wins} : ${p2Wins}🔵)`;
+          const curTurn = this.versusTurn === 1 ? '🔴 1P' : '🔵 2P';
+          const displayRound = Math.min(this.round, 3);
+          this.ui.lblRoundCount.textContent = `第 ${displayRound} / 3 局 · ${curTurn}`;
+          this.ui.roundDots.style.display = 'none';
+          if (this.ui.btnVsSettle) {
+            this.ui.btnVsSettle.style.display = (p1Scores.length > 0) ? 'inline-flex' : 'none';
+          }
+        }
+
+        this.ui.lblBestDist.textContent = `${this.bestRecord.toFixed(1)} m`;
+        this.ui.lblCurrentDist.textContent = `${this.penguin.flyDistance.toFixed(1)} m`;
+      }
+
+      updateGuideText(text) {
+        if (this.ui.guideText) {
+          this.ui.guideText.textContent = text;
+        }
+      }
+
+      // 摄像机镜头算法
+      updateCamera(dt) {
+        if (this.penguin.state === 'flying' || this.penguin.state === 'sliding' || this.penguin.state === 'stuck') {
+          // 目标 X 为企鹅 X 减去视口偏左位置 (使企鹅保持在屏幕左 35% 位置，向前视野开阔)
+          this.camera.targetX = Math.max(0, this.penguin.x - this.width * 0.35);
+
+          // 目标 Y (企鹅飞得极高时向上看)
+          const highAltitude = (this.GROUND_Y - this.penguin.y);
+          if (highAltitude > 180) {
+            this.camera.targetY = -(highAltitude - 180) * 0.55;
+            this.camera.targetZoom = Math.max(0.72, 1.0 - (highAltitude / 800) * 0.3);
+          } else {
+            this.camera.targetY = 0;
+            this.camera.targetZoom = 1.0;
+          }
+        } else {
+          this.camera.targetX = 0;
+          this.camera.targetY = 0;
+          this.camera.targetZoom = 1.0;
+        }
+
+        // 平滑插值 (Lerp)
+        const lerpFactor = 0.12;
+        this.camera.x += (this.camera.targetX - this.camera.x) * lerpFactor;
+        this.camera.y += (this.camera.targetY - this.camera.y) * lerpFactor;
+        this.camera.zoom += (this.camera.targetZoom - this.camera.zoom) * lerpFactor;
+      }
+
+      createConfetti() {
+        const colors = ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'];
+        for (let i = 0; i < 60; i++) {
+          this.particles.push({
+            x: this.penguin.x + (Math.random() * 200 - 100),
+            y: this.penguin.y - 100 + (Math.random() * 100 - 50),
+            vx: (Math.random() * 8 - 4),
+            vy: -(Math.random() * 8 + 3),
+            color: colors[Math.floor(Math.random() * colors.length)],
+            radius: Math.random() * 5 + 3,
+            alpha: 1.0,
+            decay: 0.012
+          });
+        }
+      }
+
+      // 锦标赛结算弹窗
+      showTournamentSummary() {
+        const total = this.tourneyDistances.reduce((a, b) => a + b, 0);
+        const best = Math.max(0, ...this.tourneyDistances);
+
+        this.ui.modalTitle.textContent = '🏆 5轮锦标赛荣耀收官！';
+        this.ui.modalFinalScore.textContent = `${total.toFixed(1)} m`;
+        this.ui.modalFinalScore.style.color = '#0284c7';
+        document.getElementById('modalScoreSub').textContent = '5轮累计总距离';
+
+        this.ui.modalStatBest.textContent = `${best.toFixed(1)} m`;
+        this.ui.modalStatPerfect.textContent = `${this.perfectCount} 次`;
+        this.ui.modalStatSeals.textContent = `${this.sealHits} 次`;
+        this.ui.modalStatRecord.textContent = `${this.bestRecord.toFixed(1)} m`;
+
+        this.ui.modal.classList.add('open');
+      }
+
+      // 双人对决专属结算大颁奖台
+      showVersusSummary() {
+        const p1Scores = this.versusScores.p1;
+        const p2Scores = this.versusScores.p2;
+        const p1Total = p1Scores.reduce((a, b) => a + b, 0);
+        const p2Total = p2Scores.reduce((a, b) => a + b, 0);
+        const p1Best = p1Scores.length > 0 ? Math.max(...p1Scores) : 0;
+        const p2Best = p2Scores.length > 0 ? Math.max(...p2Scores) : 0;
+
+        let p1Wins = 0, p2Wins = 0;
+        const roundCount = Math.min(p1Scores.length, p2Scores.length);
+        for (let i = 0; i < roundCount; i++) {
+          if (p1Scores[i] > p2Scores[i]) p1Wins++;
+          else if (p2Scores[i] > p1Scores[i]) p2Wins++;
+        }
+
+        let winnerText = '';
+        let isP1Winner = false;
+        let isP2Winner = false;
+        let isTie = false;
+
+        if (p1Total > p2Total) {
+          isP1Winner = true;
+          winnerText = '🏆 恭喜 🔴 1P 勇夺总冠军！';
+        } else if (p2Total > p1Total) {
+          isP2Winner = true;
+          winnerText = '🏆 恭喜 🔵 2P 逆风夺得总冠军！';
+        } else {
+          isTie = true;
+          winnerText = '🤝 势均力敌！双方战成平局！';
+        }
+
+        this.sound.playFanfare();
+        this.createConfetti();
+
+        if (this.ui.vsModal) {
+          this.ui.vsModalTitle.textContent = winnerText;
+          this.ui.vsModalTitle.style.color = isP1Winner ? '#b91c1c' : (isP2Winner ? '#1d4ed8' : '#0284c7');
+
+          const diffDist = Math.abs(p1Total - p2Total).toFixed(1);
+          if (isTie) {
+            this.ui.vsModalSub.textContent = `双方总距离一致 (${p1Total.toFixed(1)} m)，难分高下！`;
+            this.ui.vsDiffBanner.textContent = `🤝 双方表现旗鼓相当，战成绝对平局！`;
+          } else {
+            const winTeam = isP1Winner ? '🔴 1P' : '🔵 2P';
+            this.ui.vsModalSub.textContent = `${winTeam} 凭借更远的挥棒距离赢得最终荣耀！`;
+            this.ui.vsDiffBanner.textContent = `🔥 ${winTeam} 最终以 +${diffDist} 米的优势击败对手！`;
+          }
+
+          // 填充 1P 卡片
+          this.ui.vsP1Total.textContent = `${p1Total.toFixed(1)} m`;
+          this.ui.vsP1Wins.textContent = `胜局: ${p1Wins} 胜 · 最远: ${p1Best.toFixed(1)}m`;
+          this.ui.vsP1Card.classList.toggle('winner', isP1Winner);
+          const p1Crown = document.getElementById('vsP1Crown');
+          if (p1Crown) p1Crown.style.display = isP1Winner ? 'inline-block' : 'none';
+
+          let p1RoundsHtml = '';
+          p1Scores.forEach((s, idx) => {
+            const vsOpp = p2Scores[idx] !== undefined ? p2Scores[idx] : 0;
+            const resTag = s > vsOpp ? '✅ 胜' : (s < vsOpp ? '❌ 负' : '➖ 平');
+            p1RoundsHtml += `<div>局${idx + 1}: ${s.toFixed(1)}m <small>(${resTag})</small></div>`;
+          });
+          this.ui.vsP1Rounds.innerHTML = p1RoundsHtml || '<div>暂无数据</div>';
+
+          // 填充 2P 卡片
+          this.ui.vsP2Total.textContent = `${p2Total.toFixed(1)} m`;
+          this.ui.vsP2Wins.textContent = `胜局: ${p2Wins} 胜 · 最远: ${p2Best.toFixed(1)}m`;
+          this.ui.vsP2Card.classList.toggle('winner', isP2Winner);
+          const p2Crown = document.getElementById('vsP2Crown');
+          if (p2Crown) p2Crown.style.display = isP2Winner ? 'inline-block' : 'none';
+
+          let p2RoundsHtml = '';
+          p2Scores.forEach((s, idx) => {
+            const vsOpp = p1Scores[idx] !== undefined ? p1Scores[idx] : 0;
+            const resTag = s > vsOpp ? '✅ 胜' : (s < vsOpp ? '❌ 负' : '➖ 平');
+            p2RoundsHtml += `<div>局${idx + 1}: ${s.toFixed(1)}m <small>(${resTag})</small></div>`;
+          });
+          this.ui.vsP2Rounds.innerHTML = p2RoundsHtml || '<div>暂无数据</div>';
+
+          this.ui.vsModal.classList.add('open');
+        }
+      }
+
+      // =========================================================================
+      // 3. 极速 Canvas 精灵与多层视差渲染
+      // =========================================================================
+      render() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        // 1. 远景天空背景与柔和极光
+        this.renderSky();
+
+        // 2. 视差远山与雪山冰川 (屏幕空间无缝循环平铺，永远不会缺失)
+        this.renderMountains();
+
+        // 3. 应用摄像机世界空间变换矩阵
+        this.ctx.save();
+        this.ctx.translate(this.width * 0.5, this.height * 0.5);
+        this.ctx.scale(this.camera.zoom, this.camera.zoom);
+        this.ctx.translate(-this.width * 0.5 - this.camera.x, -this.height * 0.5 - this.camera.y);
+
+        // 4. 起始冰崖 (Cliff)
+        this.renderCliff();
+
+        // 5. 广袤极地雪原地面与冰缝 (动态无限延伸)
+        this.renderGround();
+
+        // 6. 极地特色地标奇观建筑 (100m~5000m+ 无限覆盖)
+        this.renderLandmarks();
+
+        // 7. 动态距离路标桩与历史纪录旗 (50m~无限无界限)
+        this.renderDistanceMarkers();
+
+        // 8. 海豹群
+        this.renderSeals();
+
+        // 9. 角色绘制：大雪人
+        this.renderYeti();
+
+        // 10. 企鹅与其拖尾
+        this.renderPenguin();
+
+        // 11. 世界粒子 (爆炸冰花、彩带)
+        this.renderParticles();
+
+        this.ctx.restore();
+
+        // 12. 前景飘落小雪花 (屏幕固定空间)
+        this.renderSnowflakes();
+      }
+
+      // 天空渐变与柔和白云与极光带
+      renderSky() {
+        const grad = this.ctx.createLinearGradient(0, 0, 0, this.height);
+        grad.addColorStop(0, '#7dd3fc');
+        grad.addColorStop(0.55, '#bae6fd');
+        grad.addColorStop(1, '#e0f2fe');
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        // 远景柔和太阳光晕
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(this.width * 0.8, 80, 50, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'rgba(254, 240, 138, 0.45)';
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.arc(this.width * 0.8, 80, 26, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        this.ctx.fill();
+
+        // 柔和灵动极光微波带 (Aurora Ribbon)
+        const auroraShift = (performance.now() * 0.0008) % (Math.PI * 2);
+        this.ctx.fillStyle = 'rgba(52, 211, 153, 0.12)';
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, 45);
+        this.ctx.bezierCurveTo(
+          this.width * 0.35, 30 + Math.sin(auroraShift) * 16,
+          this.width * 0.65, 75 + Math.cos(auroraShift) * 16,
+          this.width, 40
+        );
+        this.ctx.lineTo(this.width, 115);
+        this.ctx.bezierCurveTo(
+          this.width * 0.6, 125 - Math.sin(auroraShift) * 14,
+          this.width * 0.25, 85 - Math.cos(auroraShift) * 14,
+          0, 95
+        );
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      // 视差雪山与冰川 (屏幕空间无缝循环平铺，支持任意距离无限飞行)
+      renderMountains() {
+        this.ctx.save();
+        const screenGroundY = (this.GROUND_Y - this.height * 0.5 - this.camera.y) * this.camera.zoom + this.height * 0.5;
+
+        // 1. 远景淡蓝雪山 (视差系数 0.10，周期 1200px 无缝平铺)
+        const farW = 1200;
+        const farOffset = ((this.camera.x * 0.10) % farW + farW) % farW;
+        this.ctx.fillStyle = '#bae6fd';
+        this.ctx.beginPath();
+        for (let x = -farOffset - farW; x < this.width + farW; x += farW) {
+          this.ctx.moveTo(x, screenGroundY);
+          this.ctx.lineTo(x + 220, screenGroundY - 210);
+          this.ctx.lineTo(x + 460, screenGroundY - 70);
+          this.ctx.lineTo(x + 780, screenGroundY - 250);
+          this.ctx.lineTo(x + 1020, screenGroundY - 110);
+          this.ctx.lineTo(x + farW, screenGroundY);
+        }
+        this.ctx.lineTo(this.width + farW, this.height);
+        this.ctx.lineTo(-farW, this.height);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // 远山雪峰皑皑积雪
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+        for (let x = -farOffset - farW; x < this.width + farW; x += farW) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(x + 220, screenGroundY - 210);
+          this.ctx.lineTo(x + 160, screenGroundY - 150);
+          this.ctx.lineTo(x + 280, screenGroundY - 150);
+          this.ctx.closePath();
+          this.ctx.fill();
+
+          this.ctx.beginPath();
+          this.ctx.moveTo(x + 780, screenGroundY - 250);
+          this.ctx.lineTo(x + 700, screenGroundY - 180);
+          this.ctx.lineTo(x + 860, screenGroundY - 180);
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
+
+        // 2. 近景冰川冰峰 (视差系数 0.26，周期 850px 无缝平铺)
+        const nearW = 850;
+        const nearOffset = ((this.camera.x * 0.26) % nearW + nearW) % nearW;
+        this.ctx.fillStyle = '#93c5fd';
+        this.ctx.beginPath();
+        for (let x = -nearOffset - nearW; x < this.width + nearW; x += nearW) {
+          this.ctx.moveTo(x, screenGroundY);
+          this.ctx.lineTo(x + 190, screenGroundY - 135);
+          this.ctx.lineTo(x + 390, screenGroundY - 50);
+          this.ctx.lineTo(x + 610, screenGroundY - 160);
+          this.ctx.lineTo(x + nearW, screenGroundY);
+        }
+        this.ctx.lineTo(this.width + nearW, this.height);
+        this.ctx.lineTo(-nearW, this.height);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        this.ctx.restore();
+      }
+
+      // 起始跳崖冰台
+      renderCliff() {
+        this.ctx.save();
+        this.ctx.fillStyle = '#e2e8f0';
+        this.ctx.strokeStyle = '#94a3b8';
+        this.ctx.lineWidth = 3;
+
+        // 巨型冰岩悬崖
+        this.ctx.beginPath();
+        this.ctx.moveTo(-80, this.GROUND_Y + 50);
+        this.ctx.lineTo(-80, this.GROUND_Y - 240);
+        this.ctx.lineTo(105, this.GROUND_Y - 240); // 崖顶跳台
+        this.ctx.lineTo(85, this.GROUND_Y - 140);
+        this.ctx.lineTo(60, this.GROUND_Y);
+        this.ctx.closePath();
+
+        const cliffGrad = this.ctx.createLinearGradient(0, this.GROUND_Y - 240, 0, this.GROUND_Y);
+        cliffGrad.addColorStop(0, '#ffffff');
+        cliffGrad.addColorStop(0.3, '#cbd5e1');
+        cliffGrad.addColorStop(1, '#64748b');
+        this.ctx.fillStyle = cliffGrad;
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // 崖顶积雪层
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.roundRect(-80, this.GROUND_Y - 248, 190, 12, 6);
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      // 地面与无限极地雪原 (动态无边界绘制)
+      renderGround() {
+        this.ctx.save();
+        const viewW = this.width / Math.min(0.5, this.camera.zoom);
+        const gLeft = Math.min(-600, this.camera.x - viewW);
+        const gRight = Math.max(3000, this.camera.x + viewW * 2);
+
+        const groundGrad = this.ctx.createLinearGradient(0, this.GROUND_Y, 0, this.GROUND_Y + 160);
+        groundGrad.addColorStop(0, '#f8fafc');
+        groundGrad.addColorStop(0.15, '#e2e8f0');
+        groundGrad.addColorStop(1, '#cbd5e1');
+
+        this.ctx.fillStyle = groundGrad;
+        this.ctx.fillRect(gLeft, this.GROUND_Y, gRight - gLeft, 450);
+
+        // 地面晶莹雪线
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 4;
+        this.ctx.beginPath();
+        this.ctx.moveTo(gLeft, this.GROUND_Y);
+        this.ctx.lineTo(gRight, this.GROUND_Y);
+        this.ctx.stroke();
+
+        // 晶莹冰晶反光微带
+        this.ctx.strokeStyle = 'rgba(186, 230, 253, 0.6)';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(gLeft, this.GROUND_Y + 4);
+        this.ctx.lineTo(gRight, this.GROUND_Y + 4);
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
+
+      // =========================================================================
+      // 极地特色地标奇观系统 (100m~5000m+ 全程覆盖，超过1500m拥有宏伟太空/星门/星际地标)
+      // =========================================================================
+      renderLandmarks() {
+        this.ctx.save();
+        const viewW = this.width / Math.min(0.5, this.camera.zoom);
+        const viewLeft = this.camera.x - viewW * 0.4 - 200;
+        const viewRight = this.camera.x + viewW * 1.4 + 200;
+
+        // 统一绘制精致地标铭牌
+        const drawPlaque = (x, y, text, bgColor, textColor, borderColor) => {
+          this.ctx.save();
+          this.ctx.font = 'bold 11px sans-serif';
+          const textW = this.ctx.measureText(text).width;
+          const boxW = textW + 16;
+          const boxH = 20;
+          this.ctx.fillStyle = bgColor || 'rgba(15, 23, 42, 0.88)';
+          this.ctx.strokeStyle = borderColor || '#38bdf8';
+          this.ctx.lineWidth = 1.5;
+          this.ctx.beginPath();
+          this.ctx.roundRect(x - boxW / 2, y - boxH, boxW, boxH, 5);
+          this.ctx.fill();
+          this.ctx.stroke();
+          this.ctx.fillStyle = textColor || '#ffffff';
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText(text, x, y - boxH / 2);
+          this.ctx.restore();
+        };
+
+        const fixedLandmarks = [
+          { m: 100, draw: (x) => this.drawLandmark100(x, drawPlaque) },
+          { m: 250, draw: (x) => this.drawLandmark250(x, drawPlaque) },
+          { m: 500, draw: (x) => this.drawLandmark500(x, drawPlaque) },
+          { m: 750, draw: (x) => this.drawLandmark750(x, drawPlaque) },
+          { m: 1000, draw: (x) => this.drawLandmark1000(x, drawPlaque) },
+          { m: 1250, draw: (x) => this.drawLandmark1250(x, drawPlaque) },
+          { m: 1500, draw: (x) => this.drawLandmark1500(x, drawPlaque) },
+          { m: 2000, draw: (x) => this.drawLandmark2000(x, drawPlaque) },
+          { m: 2500, draw: (x) => this.drawLandmark2500(x, drawPlaque) },
+          { m: 3000, draw: (x) => this.drawLandmark3000(x, drawPlaque) },
+          { m: 3500, draw: (x) => this.drawLandmark3500(x, drawPlaque) },
+          { m: 4000, draw: (x) => this.drawLandmark4000(x, drawPlaque) },
+          { m: 4500, draw: (x) => this.drawLandmark4500(x, drawPlaque) },
+          { m: 5000, draw: (x) => this.drawLandmark5000(x, drawPlaque) }
+        ];
+
+        // 1. 绘制固定特色地标
+        fixedLandmarks.forEach(item => {
+          const lmX = 200 + item.m * this.PX_PER_METER;
+          if (lmX >= viewLeft && lmX <= viewRight) {
+            item.draw(lmX);
+          }
+        });
+
+        // 2. 绘制 6000m+ 动态星际科技地标塔 (无限延展)
+        const minKilo = Math.max(6, Math.floor((viewLeft - 200) / this.PX_PER_METER / 1000));
+        const maxKilo = Math.ceil((viewRight - 200) / this.PX_PER_METER / 1000);
+        for (let k = minKilo; k <= maxKilo; k++) {
+          const kiloM = k * 1000;
+          if (kiloM < 6000) continue;
+          const kX = 200 + kiloM * this.PX_PER_METER;
+          if (kX >= viewLeft && kX <= viewRight) {
+            this.drawProceduralCosmicBeacon(kX, kiloM, drawPlaque);
+          }
+        }
+
+        this.ctx.restore();
+      }
+
+      // 100m 极地起飞冲刺加速界
+      drawLandmark100(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#0284c7';
+        this.ctx.fillRect(x - 26, y - 56, 5, 56);
+        this.ctx.fillRect(x + 21, y - 56, 5, 56);
+        this.ctx.fillStyle = '#38bdf8';
+        this.ctx.fillRect(x - 28, y - 56, 56, 7);
+        this.ctx.fillStyle = '#f8fafc';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 26, y - 56);
+        this.ctx.lineTo(x + 48, y - 46);
+        this.ctx.lineTo(x + 26, y - 36);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.font = 'bold 8px sans-serif';
+        this.ctx.fillText('START', x + 28, y - 44);
+        drawPlaque(x, y - 62, '🏁 100m 起跑冲刺界', '#0284c7', '#ffffff', '#38bdf8');
+        this.ctx.restore();
+      }
+
+      // 250m 探险先锋营地
+      drawLandmark250(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#ea580c';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 26, y);
+        this.ctx.lineTo(x, y - 38);
+        this.ctx.lineTo(x + 26, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#9a3412';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 10, y);
+        this.ctx.lineTo(x, y - 28);
+        this.ctx.lineTo(x + 10, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#78350f';
+        this.ctx.fillRect(x - 42, y - 18, 14, 18);
+        this.ctx.fillStyle = '#92400e';
+        this.ctx.fillRect(x - 39, y - 28, 10, 10);
+        this.ctx.fillStyle = '#64748b';
+        this.ctx.fillRect(x + 32, y - 46, 3, 46);
+        this.ctx.fillStyle = '#ef4444';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 35, y - 46);
+        this.ctx.lineTo(x + 50, y - 40);
+        this.ctx.lineTo(x + 35, y - 34);
+        this.ctx.closePath();
+        this.ctx.fill();
+        drawPlaque(x, y - 46, '⛺ 250m 探险先锋营地', '#ea580c', '#ffffff', '#fdba74');
+        this.ctx.restore();
+      }
+
+      // 500m 中国南极科考站
+      drawLandmark500(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#475569';
+        this.ctx.fillRect(x - 40, y - 10, 8, 10);
+        this.ctx.fillRect(x + 32, y - 10, 8, 10);
+        this.ctx.fillStyle = '#dc2626';
+        this.ctx.fillRect(x - 45, y - 48, 90, 38);
+        this.ctx.fillStyle = '#38bdf8';
+        this.ctx.fillRect(x - 35, y - 38, 16, 12);
+        this.ctx.fillRect(x + 19, y - 38, 16, 12);
+        this.ctx.fillStyle = '#f8fafc';
+        this.ctx.beginPath();
+        this.ctx.arc(x - 12, y - 48, 18, Math.PI, 0);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#ef4444';
+        this.ctx.beginPath();
+        this.ctx.arc(x - 12, y - 66, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#1e3a8a';
+        this.ctx.fillRect(x + 12, y - 58, 26, 10);
+        this.ctx.strokeStyle = '#94a3b8';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 38, y - 48);
+        this.ctx.lineTo(x - 38, y - 76);
+        this.ctx.stroke();
+        drawPlaque(x, y - 76, '🔬 500m 中国南极科考站', '#b91c1c', '#ffffff', '#fca5a5');
+        this.ctx.restore();
+      }
+
+      // 750m 雪人守护神像
+      drawLandmark750(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#f1f5f9';
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 28, 28, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 62, 19, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#f97316';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 5, y - 62);
+        this.ctx.lineTo(x + 24, y - 58);
+        this.ctx.lineTo(x + 5, y - 55);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.beginPath();
+        this.ctx.arc(x + 3, y - 67, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#ef4444';
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 72, 16, Math.PI, 0);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 84, 5, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#dc2626';
+        this.ctx.fillRect(x - 14, y - 48, 28, 7);
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 10, y - 48);
+        this.ctx.lineTo(x + 28, y - 36);
+        this.ctx.lineTo(x + 22, y - 32);
+        this.ctx.lineTo(x + 10, y - 41);
+        this.ctx.closePath();
+        this.ctx.fill();
+        drawPlaque(x, y - 90, '⛄ 750m 雪人守护神像', '#0f766e', '#ffffff', '#2dd4bf');
+        this.ctx.restore();
+      }
+
+      // 1000m 企鹅国王王座
+      drawLandmark1000(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#93c5fd';
+        this.ctx.fillRect(x - 48, y - 24, 96, 24);
+        this.ctx.fillStyle = '#bfdbfe';
+        this.ctx.fillRect(x - 38, y - 44, 76, 20);
+        this.ctx.fillStyle = '#60a5fa';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 28, y - 44);
+        this.ctx.lineTo(x - 28, y - 86);
+        this.ctx.lineTo(x, y - 96);
+        this.ctx.lineTo(x + 28, y - 86);
+        this.ctx.lineTo(x + 28, y - 44);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#7c3aed';
+        this.ctx.fillRect(x - 18, y - 48, 36, 8);
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 64, 14, 18, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 62, 9, 13, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.font = '22px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('👑', x, y - 82);
+        drawPlaque(x, y - 104, '👑 1000m 企鹅国王王座', '#4f46e5', '#fbbf24', '#f59e0b');
+        this.ctx.restore();
+      }
+
+      // 1250m 极地破冰船探索号
+      drawLandmark1250(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#991b1b';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 48, y);
+        this.ctx.lineTo(x - 20, y - 48);
+        this.ctx.lineTo(x + 45, y - 48);
+        this.ctx.lineTo(x + 48, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#f8fafc';
+        this.ctx.fillRect(x - 10, y - 68, 48, 20);
+        this.ctx.fillStyle = '#0284c7';
+        this.ctx.fillRect(x - 4, y - 64, 8, 8);
+        this.ctx.fillRect(x + 8, y - 64, 8, 8);
+        this.ctx.fillRect(x + 20, y - 64, 8, 8);
+        this.ctx.strokeStyle = '#475569';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 14, y - 68);
+        this.ctx.lineTo(x + 14, y - 86);
+        this.ctx.stroke();
+        this.ctx.fillStyle = '#e2e8f0';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x + 14, y - 86, 10, 4, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        drawPlaque(x, y - 92, '🚢 1250m 极地破冰船探索号', '#0369a1', '#ffffff', '#38bdf8');
+        this.ctx.restore();
+      }
+
+      // 1500m 梦幻极光水晶城堡
+      drawLandmark1500(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        const auraGrad = this.ctx.createRadialGradient(x, y - 75, 10, x, y - 75, 70);
+        auraGrad.addColorStop(0, 'rgba(168, 85, 247, 0.35)');
+        auraGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0.18)');
+        auraGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        this.ctx.fillStyle = auraGrad;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 75, 70, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#bae6fd';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 46, y);
+        this.ctx.lineTo(x - 46, y - 58);
+        this.ctx.lineTo(x - 34, y - 86);
+        this.ctx.lineTo(x - 22, y - 58);
+        this.ctx.lineTo(x - 22, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 22, y);
+        this.ctx.lineTo(x + 22, y - 58);
+        this.ctx.lineTo(x + 34, y - 86);
+        this.ctx.lineTo(x + 46, y - 58);
+        this.ctx.lineTo(x + 46, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#e0f2fe';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 22, y);
+        this.ctx.lineTo(x - 18, y - 72);
+        this.ctx.lineTo(x, y - 118);
+        this.ctx.lineTo(x + 18, y - 72);
+        this.ctx.lineTo(x + 22, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#7dd3fc';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, y - 118);
+        this.ctx.lineTo(x + 18, y - 72);
+        this.ctx.lineTo(x + 22, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#4f46e5';
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 14, 12, Math.PI, 0);
+        this.ctx.lineTo(x + 12, y);
+        this.ctx.lineTo(x - 12, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        drawPlaque(x, y - 126, '🏰 1500m 极光水晶城堡', '#7e22ce', '#ffffff', '#d8b4fe');
+        this.ctx.restore();
+      }
+
+      // 2000m 极地深空火箭发射台
+      drawLandmark2000(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#334155';
+        this.ctx.fillRect(x - 46, y - 14, 92, 14);
+        this.ctx.fillStyle = '#eab308';
+        for (let ix = x - 42; ix < x + 40; ix += 14) {
+          this.ctx.fillRect(ix, y - 12, 7, 10);
+        }
+        this.ctx.strokeStyle = '#dc2626';
+        this.ctx.lineWidth = 2.5;
+        this.ctx.strokeRect(x - 42, y - 132, 16, 118);
+        for (let gy = y - 120; gy < y - 20; gy += 20) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(x - 42, gy);
+          this.ctx.lineTo(x - 26, gy + 20);
+          this.ctx.stroke();
+        }
+        this.ctx.fillStyle = '#f8fafc';
+        this.ctx.fillRect(x - 11, y - 112, 22, 98);
+        this.ctx.fillStyle = '#ef4444';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 11, y - 112);
+        this.ctx.lineTo(x, y - 134);
+        this.ctx.lineTo(x + 11, y - 112);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#e2e8f0';
+        this.ctx.fillRect(x - 19, y - 76, 7, 62);
+        this.ctx.fillRect(x + 12, y - 76, 7, 62);
+        this.ctx.fillStyle = '#ef4444';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 19, y - 76);
+        this.ctx.lineTo(x - 15.5, y - 86);
+        this.ctx.lineTo(x - 12, y - 76);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 12, y - 76);
+        this.ctx.lineTo(x + 15.5, y - 86);
+        this.ctx.lineTo(x + 19, y - 76);
+        this.ctx.closePath();
+        this.ctx.fill();
+        drawPlaque(x, y - 142, '🚀 2000m 极地深空火箭发射台', '#991b1b', '#ffffff', '#f87171');
+        this.ctx.restore();
+      }
+
+      // 2500m 51号极地外星飞碟基地
+      drawLandmark2500(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 12, y - 72);
+        this.ctx.lineTo(x - 36, y);
+        this.ctx.lineTo(x + 36, y);
+        this.ctx.lineTo(x + 12, y - 72);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#38bdf8';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y, 32, 8, 0, 0, Math.PI * 2);
+        this.ctx.stroke();
+        const ufoY = y - 78;
+        this.ctx.fillStyle = '#94a3b8';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, ufoY, 36, 11, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#cbd5e1';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, ufoY - 3, 26, 7, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#10b981';
+        this.ctx.beginPath();
+        this.ctx.arc(x, ufoY - 4, 12, Math.PI, 0);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#064e3b';
+        this.ctx.beginPath();
+        this.ctx.arc(x, ufoY - 7, 4, 0, Math.PI * 2);
+        this.ctx.fill();
+        drawPlaque(x, y - 104, '🛸 2500m 51号外星飞碟基地', '#065f46', '#34d399', '#10b981');
+        this.ctx.restore();
+      }
+
+      // 3000m 超空间跃迁星门
+      drawLandmark3000(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        const gateCenterY = y - 56;
+        this.ctx.fillStyle = '#1e1b4b';
+        this.ctx.fillRect(x - 58, y - 80, 10, 80);
+        this.ctx.fillRect(x + 48, y - 80, 10, 80);
+        this.ctx.fillStyle = '#818cf8';
+        this.ctx.fillRect(x - 56, y - 65, 6, 8);
+        this.ctx.fillRect(x + 50, y - 65, 6, 8);
+        this.ctx.strokeStyle = '#334155';
+        this.ctx.lineWidth = 10;
+        this.ctx.beginPath();
+        this.ctx.arc(x, gateCenterY, 46, 0, Math.PI * 2);
+        this.ctx.stroke();
+        const vortex = this.ctx.createRadialGradient(x, gateCenterY, 4, x, gateCenterY, 41);
+        vortex.addColorStop(0, '#ffffff');
+        vortex.addColorStop(0.3, '#38bdf8');
+        vortex.addColorStop(0.7, '#6366f1');
+        vortex.addColorStop(1, '#0f172a');
+        this.ctx.fillStyle = vortex;
+        this.ctx.beginPath();
+        this.ctx.arc(x, gateCenterY, 41, 0, Math.PI * 2);
+        this.ctx.fill();
+        drawPlaque(x, y - 114, '🌌 3000m 超空间跃迁星门', '#1e1b4b', '#38bdf8', '#818cf8');
+        this.ctx.restore();
+      }
+
+      // 3500m 反重力悬浮方尖碑
+      drawLandmark3500(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#2e1065';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 6, 32, 10, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        const monoY = y - 62;
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, monoY - 48);
+        this.ctx.lineTo(x + 13, monoY - 26);
+        this.ctx.lineTo(x + 9, monoY + 38);
+        this.ctx.lineTo(x - 9, monoY + 38);
+        this.ctx.lineTo(x - 13, monoY - 26);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#c084fc';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, monoY - 44);
+        this.ctx.lineTo(x, monoY + 34);
+        this.ctx.stroke();
+        drawPlaque(x, y - 118, '🔮 3500m 反重力悬浮方尖碑', '#581c87', '#f472b6', '#c084fc');
+        this.ctx.restore();
+      }
+
+      // 4000m 极地轨道太空空港
+      drawLandmark4000(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.fillRect(x - 14, y - 140, 28, 140);
+        this.ctx.fillStyle = '#38bdf8';
+        this.ctx.fillRect(x - 4, y - 140, 8, 140);
+        this.ctx.strokeStyle = '#0284c7';
+        this.ctx.lineWidth = 4;
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 70, 36, 10, 0, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 120, 26, 8, 0, 0, Math.PI * 2);
+        this.ctx.stroke();
+        drawPlaque(x, y - 148, '🪐 4000m 极地轨道太空空港', '#0f172a', '#38bdf8', '#38bdf8');
+        this.ctx.restore();
+      }
+
+      // 4500m 戴森能量引力光环
+      drawLandmark4500(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#854d0e';
+        this.ctx.fillRect(x - 34, y - 78, 8, 78);
+        this.ctx.fillRect(x + 26, y - 78, 8, 78);
+        this.ctx.strokeStyle = '#eab308';
+        this.ctx.lineWidth = 5;
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 62, 36, 14, 0, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.strokeStyle = '#fef08a';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 30, y - 62);
+        this.ctx.lineTo(x, y - 65);
+        this.ctx.lineTo(x + 30, y - 62);
+        this.ctx.stroke();
+        drawPlaque(x, y - 102, '⚡ 4500m 戴森能量引力光环', '#854d0e', '#fef08a', '#eab308');
+        this.ctx.restore();
+      }
+
+      // 5000m 银河先锋终极金雕
+      drawLandmark5000(x, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#d97706';
+        this.ctx.fillRect(x - 52, y - 12, 104, 12);
+        this.ctx.fillStyle = '#f59e0b';
+        this.ctx.fillRect(x - 40, y - 24, 80, 12);
+        this.ctx.fillStyle = '#fbbf24';
+        this.ctx.fillRect(x - 28, y - 36, 56, 12);
+        this.ctx.fillStyle = '#fef08a';
+        this.ctx.beginPath();
+        this.ctx.ellipse(x, y - 64, 16, 26, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 14, y - 68);
+        this.ctx.lineTo(x - 38, y - 82);
+        this.ctx.lineTo(x - 12, y - 56);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 14, y - 68);
+        this.ctx.lineTo(x + 38, y - 82);
+        this.ctx.lineTo(x + 12, y - 56);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.font = '24px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('🏆', x, y - 96);
+        drawPlaque(x, y - 126, '🏆 5000m 银河先锋终极金雕', '#b45309', '#fef08a', '#f59e0b');
+        this.ctx.restore();
+      }
+
+      // 6000m+ 动态星际科技信标塔
+      drawProceduralCosmicBeacon(x, kiloM, drawPlaque) {
+        const y = this.GROUND_Y;
+        this.ctx.save();
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.fillRect(x - 32, y - 14, 64, 14);
+        const coreColors = ['#38bdf8', '#c084fc', '#facc15', '#4ade80', '#f43f5e'];
+        const colIdx = Math.floor(kiloM / 1000) % coreColors.length;
+        const curCol = coreColors[colIdx];
+        this.ctx.fillStyle = '#1e293b';
+        this.ctx.fillRect(x - 12, y - 110, 24, 96);
+        this.ctx.fillStyle = curCol;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - 70, 10, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+        this.ctx.fillRect(x - 6, y - 190, 12, 80);
+        const names = {
+          6000: '⚡ 6000m 戴森球能量信标',
+          7000: '🌀 7000m 反物质时空锚点',
+          8000: '🌟 8000m 光子深空灯塔',
+          9000: '🔮 9000m 量子多维观测站',
+          10000: '👑 10000m 宇宙终极企鹅万神殿'
+        };
+        const title = names[kiloM] || `🌌 ${kiloM}m 星际引力信标`;
+        drawPlaque(x, y - 124, title, '#0f172a', curCol, curCol);
+        this.ctx.restore();
+      }
+
+      // 距离路标桩与历史纪录旗 (50m 起无限动态按需渲染)
+      renderDistanceMarkers() {
+        this.ctx.save();
+        const viewW = this.width / Math.min(0.5, this.camera.zoom);
+        const viewLeft = this.camera.x - viewW * 0.4 - 150;
+        const viewRight = this.camera.x + viewW * 1.4 + 150;
+
+        const minM = Math.max(50, Math.floor((viewLeft - 200) / this.PX_PER_METER / 50) * 50);
+        const maxM = Math.max(minM + 50, Math.ceil((viewRight - 200) / this.PX_PER_METER / 50) * 50);
+
+        for (let m = minM; m <= maxM; m += 50) {
+          const mX = 200 + m * this.PX_PER_METER;
+          if (mX < viewLeft || mX > viewRight) continue;
+
+          const isGrand = (m % 500 === 0);
+          const isMajor = (m % 100 === 0);
+          const poleH = isGrand ? 58 : (isMajor ? 48 : 30);
+
+          if (isGrand) {
+            // 500m 黄金尊贵里程碑桩
+            this.ctx.fillStyle = '#d97706';
+            this.ctx.fillRect(mX - 4, this.GROUND_Y - poleH, 8, poleH);
+
+            this.ctx.fillStyle = '#fffbeb';
+            this.ctx.strokeStyle = '#f59e0b';
+            this.ctx.lineWidth = 3;
+            this.ctx.beginPath();
+            this.ctx.roundRect(mX - 38, this.GROUND_Y - poleH - 26, 76, 26, 8);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.font = '12px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('⭐', mX - 25, this.GROUND_Y - poleH - 13);
+            this.ctx.fillText('⭐', mX + 25, this.GROUND_Y - poleH - 13);
+
+            this.ctx.fillStyle = '#b45309';
+            this.ctx.font = 'bold 13px sans-serif';
+            this.ctx.fillText(`${m}m`, mX, this.GROUND_Y - poleH - 13);
+          } else if (isMajor) {
+            // 100m 醒目蓝白警示标桩
+            this.ctx.fillStyle = '#0284c7';
+            this.ctx.fillRect(mX - 3, this.GROUND_Y - poleH, 6, poleH);
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.strokeStyle = '#0284c7';
+            this.ctx.lineWidth = 2.5;
+            this.ctx.beginPath();
+            this.ctx.roundRect(mX - 28, this.GROUND_Y - poleH - 22, 56, 22, 6);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.fillStyle = '#0369a1';
+            this.ctx.font = 'bold 12px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(`${m}m`, mX, this.GROUND_Y - poleH - 11);
+          } else {
+            // 50m 精炼木桩
+            this.ctx.fillStyle = '#94a3b8';
+            this.ctx.fillRect(mX - 2.5, this.GROUND_Y - poleH, 5, poleH);
+
+            this.ctx.fillStyle = '#f8fafc';
+            this.ctx.strokeStyle = '#cbd5e1';
+            this.ctx.lineWidth = 1.5;
+            this.ctx.beginPath();
+            this.ctx.roundRect(mX - 20, this.GROUND_Y - poleH - 16, 40, 16, 4);
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.fillStyle = '#64748b';
+            this.ctx.font = 'bold 10px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(`${m}m`, mX, this.GROUND_Y - poleH - 8);
+          }
+        }
+
+        // 历史最高纪录红旗 (Record Flag)
+        if (this.bestRecord > 10) {
+          const recX = 200 + this.bestRecord * this.PX_PER_METER;
+          if (recX >= viewLeft && recX <= viewRight) {
+            this.ctx.fillStyle = '#f59e0b';
+            this.ctx.fillRect(recX - 3, this.GROUND_Y - 65, 6, 65);
+
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.beginPath();
+            this.ctx.moveTo(recX, this.GROUND_Y - 65);
+            this.ctx.lineTo(recX + 38, this.GROUND_Y - 50);
+            this.ctx.lineTo(recX, this.GROUND_Y - 35);
+            this.ctx.closePath();
+            this.ctx.fill();
+
+            this.ctx.font = '14px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('👑', recX, this.GROUND_Y - 72);
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = 'bold 9px sans-serif';
+            this.ctx.fillText('BEST', recX + 14, this.GROUND_Y - 48);
+          }
+        }
+
+        // 双人对决模式下的 1P 红旗与 2P 蓝旗标记
+        if (this.mode === 'versus') {
+          const p1Scores = this.versusScores.p1;
+          const p2Scores = this.versusScores.p2;
+
+          // 1P 最好成绩红旗
+          if (p1Scores.length > 0) {
+            const p1Best = Math.max(...p1Scores);
+            const p1X = 200 + p1Best * this.PX_PER_METER;
+            if (p1X >= viewLeft && p1X <= viewRight) {
+              this.ctx.fillStyle = '#ef4444';
+              this.ctx.fillRect(p1X - 2, this.GROUND_Y - 52, 4, 52);
+              this.ctx.beginPath();
+              this.ctx.moveTo(p1X, this.GROUND_Y - 52);
+              this.ctx.lineTo(p1X + 34, this.GROUND_Y - 40);
+              this.ctx.lineTo(p1X, this.GROUND_Y - 28);
+              this.ctx.closePath();
+              this.ctx.fill();
+              this.ctx.fillStyle = '#ffffff';
+              this.ctx.font = 'bold 10px sans-serif';
+              this.ctx.textAlign = 'center';
+              this.ctx.fillText('1P', p1X + 11, this.GROUND_Y - 37);
+            }
+          }
+
+          // 2P 最好成绩蓝旗
+          if (p2Scores.length > 0) {
+            const p2Best = Math.max(...p2Scores);
+            const p2X = 200 + p2Best * this.PX_PER_METER;
+            if (p2X >= viewLeft && p2X <= viewRight) {
+              this.ctx.fillStyle = '#2563eb';
+              this.ctx.fillRect(p2X - 2, this.GROUND_Y - 52, 4, 52);
+              this.ctx.beginPath();
+              this.ctx.moveTo(p2X, this.GROUND_Y - 52);
+              this.ctx.lineTo(p2X + 34, this.GROUND_Y - 40);
+              this.ctx.lineTo(p2X, this.GROUND_Y - 28);
+              this.ctx.closePath();
+              this.ctx.fill();
+              this.ctx.fillStyle = '#ffffff';
+              this.ctx.font = 'bold 10px sans-serif';
+              this.ctx.textAlign = 'center';
+              this.ctx.fillText('2P', p2X + 11, this.GROUND_Y - 37);
+            }
+          }
+        }
+
+        this.ctx.restore();
+      }
+
+      // 海豹绘制 (Cute Seals)
+      renderSeals() {
+        this.ctx.save();
+        const viewW = this.width / Math.min(0.5, this.camera.zoom);
+        const viewLeft = this.camera.x - 150;
+        const viewRight = this.camera.x + viewW + 150;
+        this.seals.forEach(seal => {
+          if (seal.x < viewLeft || seal.x > viewRight) return;
+
+          const isBouncing = seal.bounceTimer > 0;
+          const bounceScaleY = isBouncing ? 0.75 : 1.0;
+          const bounceScaleX = isBouncing ? 1.25 : 1.0;
+
+          this.ctx.save();
+          this.ctx.translate(seal.x, seal.y);
+          this.ctx.scale(bounceScaleX, bounceScaleY);
+
+          // 灰色圆润海豹身躯
+          this.ctx.fillStyle = '#64748b';
+          this.ctx.beginPath();
+          this.ctx.ellipse(0, 0, 28, 16, 0, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          // 浅灰大肚皮 (弹射点)
+          this.ctx.fillStyle = '#e2e8f0';
+          this.ctx.beginPath();
+          this.ctx.ellipse(0, 3, 20, 10, 0, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          // 小脑袋
+          this.ctx.fillStyle = '#64748b';
+          this.ctx.beginPath();
+          this.ctx.arc(-22, -6, 11, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          // 眼睛和胡须
+          this.ctx.fillStyle = '#0f172a';
+          this.ctx.beginPath();
+          this.ctx.arc(-25, -8, 2.2, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          // 小尾巴
+          this.ctx.fillStyle = '#475569';
+          this.ctx.beginPath();
+          this.ctx.moveTo(25, -2);
+          this.ctx.lineTo(34, -7);
+          this.ctx.lineTo(34, 3);
+          this.ctx.closePath();
+          this.ctx.fill();
+
+          // 弹跳光环
+          if (isBouncing) {
+            this.ctx.strokeStyle = '#f59e0b';
+            this.ctx.lineWidth = 3;
+            this.ctx.beginPath();
+            this.ctx.ellipse(0, -6, 32, 18, 0, 0, Math.PI * 2);
+            this.ctx.stroke();
+          }
+
+          this.ctx.restore();
+        });
+        this.ctx.restore();
+      }
+
+      // 大雪人 (Yeti) 绘制
+      renderYeti() {
+        this.ctx.save();
+        const yX = this.yeti.x;
+        const yY = this.yeti.y;
+
+        // 雪人硕大身躯 (蓬松白毛)
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.strokeStyle = '#cbd5e1';
+        this.ctx.lineWidth = 2.5;
+
+        // 身体
+        this.ctx.beginPath();
+        this.ctx.ellipse(yX, yY, 34, 42, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // 蓝色面部浅凹陷
+        this.ctx.fillStyle = '#bae6fd';
+        this.ctx.beginPath();
+        this.ctx.ellipse(yX - 6, yY - 18, 14, 11, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // 眼睛与呆萌表情
+        this.ctx.fillStyle = '#0f172a';
+        if (this.yeti.state === 'cheer') {
+          // 开心眯眯眼
+          this.ctx.lineWidth = 2.5;
+          this.ctx.beginPath();
+          this.ctx.arc(yX - 10, yY - 20, 3, Math.PI, 0);
+          this.ctx.stroke();
+          // 大笑嘴巴
+          this.ctx.beginPath();
+          this.ctx.arc(yX - 6, yY - 14, 6, 0, Math.PI);
+          this.ctx.fillStyle = '#ef4444';
+          this.ctx.fill();
+        } else if (this.yeti.state === 'facepalm') {
+          // 尴尬冒汗
+          this.ctx.font = '16px sans-serif';
+          this.ctx.fillText('💧', yX + 10, yY - 32);
+          this.ctx.beginPath();
+          this.ctx.arc(yX - 10, yY - 20, 2.5, 0, Math.PI * 2);
+          this.ctx.fill();
+        } else {
+          // 专注眼神
+          this.ctx.beginPath();
+          this.ctx.arc(yX - 10, yY - 20, 2.5, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.beginPath();
+          this.ctx.arc(yX - 2, yY - 20, 2.5, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+
+        // 挥棒手臂与狼牙木棒 (Bat)
+        this.ctx.save();
+        this.ctx.translate(yX - 10, yY - 5);
+
+        let batAngle = -1.2; // 默认抬棒蓄力角
+        if (this.yeti.state === 'ready') {
+          batAngle = -1.5; // 高举过头顶
+        } else if (this.yeti.state === 'swing') {
+          // 从 -1.5 挥到 +1.2
+          const p = this.yeti.swingProgress;
+          batAngle = -1.5 + p * 2.8;
+
+          // 挥棒白色刀光风弧 (Swing Arc Trail)
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+          this.ctx.lineWidth = 8;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, 75, -1.5, batAngle);
+          this.ctx.stroke();
+        } else if (this.yeti.state === 'cheer') {
+          batAngle = -2.2; // 挥棒朝天庆祝
+        }
+
+        this.ctx.rotate(batAngle);
+
+        // 手臂
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillRect(-6, -6, 26, 12);
+
+        // 大木棒
+        this.ctx.fillStyle = '#92400e';
+        this.ctx.beginPath();
+        this.ctx.moveTo(15, -4);
+        this.ctx.lineTo(82, -10);
+        this.ctx.lineTo(84, 10);
+        this.ctx.lineTo(15, 6);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // 狼牙钉刺
+        this.ctx.fillStyle = '#ffffff';
+        for (let spike = 40; spike <= 76; spike += 14) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(spike, -10);
+          this.ctx.lineTo(spike + 4, -16);
+          this.ctx.lineTo(spike + 8, -10);
+          this.ctx.fill();
+        }
+
+        this.ctx.restore();
+        this.ctx.restore();
+      }
+
+      // 呆萌小企鹅 (Penguin) 绘制
+      renderPenguin() {
+        this.ctx.save();
+        const pX = this.penguin.x;
+        const pY = this.penguin.y;
+
+        // 绘制飞行彩虹速度尾迹 (Trail)
+        if (this.penguin.trail.length > 1) {
+          this.ctx.save();
+          for (let i = 0; i < this.penguin.trail.length - 1; i++) {
+            const t1 = this.penguin.trail[i];
+            const t2 = this.penguin.trail[i + 1];
+            this.ctx.strokeStyle = `rgba(56, 189, 248, ${t1.alpha * 0.6})`;
+            this.ctx.lineWidth = 4 * t1.alpha + 1;
+            this.ctx.beginPath();
+            this.ctx.moveTo(t1.x, t1.y);
+            this.ctx.lineTo(t2.x, t2.y);
+            this.ctx.stroke();
+          }
+          this.ctx.restore();
+        }
+
+        this.ctx.translate(pX, pY);
+        this.ctx.rotate(this.penguin.angle);
+
+        // 企鹅黑白圆润身躯
+        if (this.penguin.state === 'stuck') {
+          // 倒栽葱头插雪地姿态：身体垂直，两只小脚丫在空中晃动
+          this.ctx.rotate(Math.PI * 0.9);
+        }
+
+        // 黑色外衣
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, 0, 16, 21, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // 白色肚皮
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.ellipse(3, 1, 9, 14, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // 橙黄色小嘴巴
+        this.ctx.fillStyle = '#ea580c';
+        this.ctx.beginPath();
+        this.ctx.moveTo(13, -4);
+        this.ctx.lineTo(24, 0);
+        this.ctx.lineTo(13, 4);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // 大眼睛
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.arc(8, -8, 4.5, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.beginPath();
+        this.ctx.arc(10, -8, 2.2, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // 小翅膀 (扑棱扑棱)
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.beginPath();
+        const wingY = (this.penguin.state === 'falling') ? Math.sin(performance.now() * 0.03) * 6 : 0;
+        this.ctx.ellipse(-8, wingY, 6, 12, 0.4, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // 橙色小脚丫
+        this.ctx.fillStyle = '#f97316';
+        this.ctx.beginPath();
+        this.ctx.ellipse(-6, 20, 6, 3, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(4, 20, 6, 3, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // 飞行极速火焰/护目镜特效
+        if (this.penguin.state === 'flying' && Math.abs(this.penguin.vx) > 26) {
+          this.ctx.fillStyle = '#0284c7';
+          this.ctx.fillRect(5, -11, 10, 4); // 酷炫小护目镜
+        }
+
+        this.ctx.restore();
+      }
+
+      // 世界粒子
+      renderParticles() {
+        this.ctx.save();
+        this.particles.forEach(p => {
+          this.ctx.fillStyle = p.color;
+          this.ctx.globalAlpha = Math.max(0, p.alpha);
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          this.ctx.fill();
+        });
+        this.ctx.restore();
+      }
+
+      // 前景飘雪
+      renderSnowflakes() {
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        this.snowFlakes.forEach(sf => {
+          sf.y += sf.speedY;
+          sf.x += sf.speedX;
+          if (sf.y > this.height) sf.y = -10;
+          if (sf.x > this.width) sf.x = -10;
+          if (sf.x < -10) sf.x = this.width;
+
+          this.ctx.beginPath();
+          this.ctx.arc(sf.x, sf.y, sf.radius, 0, Math.PI * 2);
+          this.ctx.fill();
+        });
+        this.ctx.restore();
+      }
+
+      // 主循环
+      loop(timestamp) {
+        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
+        this.lastTime = timestamp;
+
+        this.updatePhysics(dt);
+        this.render();
+
+        requestAnimationFrame(this.loop);
+      }
+    }
+
+    // 页面加载就绪自动启动游戏
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new PenguinGame();
+    });
+  </script>
+</body>
+</html>

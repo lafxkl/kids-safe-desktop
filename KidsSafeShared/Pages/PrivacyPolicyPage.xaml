@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.PrivacyPolicyPage"
+             Title="隐私政策"
+             Background="{StaticResource KidPageGradient}">
+
+    <ContentPage.Resources>
+        <DataTemplate x:Key="SectionCard" x:DataType="models:PolicySection">
+            <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="16,14"
+                    StrokeShape="RoundRectangle 20" Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="{Binding Emoji}" FontSize="17" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding Index}" FontSize="12" FontAttributes="Bold"
+                               TextColor="#A1887F" VerticalOptions="Center" />
+                        <Label Grid.Column="2" Text="{Binding Title}" FontSize="15.5" FontAttributes="Bold"
+                               TextColor="#33691E" VerticalOptions="Center" LineBreakMode="WordWrap" />
+                    </Grid>
+                    <Label Text="{Binding Body}" FontSize="13" TextColor="#37474F"
+                           LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#2E7D32">
+            <Button Grid.Column="0" Text="← 返回" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="16" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📄 隐私政策" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="v1.0" TextColor="#C8E6C9" FontSize="12"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,14,18,36">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- 摘要 -->
+                <Border BackgroundColor="#E8F5E9" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="儿童安全桌面 · 隐私政策" FontSize="18" FontAttributes="Bold"
+                               TextColor="#1B5E20" />
+                        <Label Text="版本 1.0　生效日期 2026 年 11 月 4 日　适用平台 安卓 / Windows"
+                               FontSize="12" TextColor="#558B2F" />
+                        <Label Text="摘要：孩子的信息默认只留在这台设备上，不收集身份信息，不投放广告，不向第三方提供。只有你主动开启家长端服务器时，配置才会同步到你自己填写的服务器。"
+                               FontSize="13" TextColor="#33691E" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 正文各节，由 ComplianceContent.PolicySections 提供 -->
+                <VerticalStackLayout x:Name="SectionHost" Spacing="0" />
+
+                <!-- 底部 -->
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="对这份政策有疑问？" FontSize="15" FontAttributes="Bold" TextColor="#33691E" />
+                        <Label Text="可在「家长面板 → 隐私与合规」里查看同意时间、撤回授权，或按第 13 节的方式联系我们。"
+                               FontSize="13" TextColor="#455A64" LineBreakMode="WordWrap" />
+                        <Button Text="🧩 查看第三方 SDK 清单" FontSize="14" BackgroundColor="#E3F2FD"
+                                TextColor="#0D47A1" CornerRadius="12" HeightRequest="46"
+                                Clicked="OnOpenSdk" Margin="0,4,0,0" />
+                        <Button Text="🔙 返回上一页" FontSize="14" BackgroundColor="#ECEFF1"
+                                TextColor="#455A64" CornerRadius="12" HeightRequest="44"
+                                Clicked="OnBack" />
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

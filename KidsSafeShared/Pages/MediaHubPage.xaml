@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             x:Class="KidsSafeDesktop.Pages.MediaHubPage"
+             Title="媒体中心"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,20,16,14"
+              BackgroundColor="#B3FFFFFF">
+            <Button Text="← 返回" TextColor="#5D4037" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🎬 媒体中心" TextColor="#5D4037" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label x:Name="OnlineBadge" Grid.Column="2" Text="📦 离线" FontSize="12" TextColor="#00897B"
+                   HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 四段切换 -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Padding="12,8" BackgroundColor="#CCFFFFFF">
+            <Button x:Name="TabAudio" Text="🎵 听" FontSize="14" FontAttributes="Bold"
+                    BackgroundColor="#FF7043" TextColor="White" Clicked="OnTabAudio" />
+            <Button x:Name="TabVideo" Grid.Column="1" Text="📺 看" FontSize="14"
+                    BackgroundColor="#E0E0E0" TextColor="#555" Clicked="OnTabVideo" Margin="5,0,0,0" />
+            <Button x:Name="TabStory" Grid.Column="2" Text="📚 故事" FontSize="14"
+                    BackgroundColor="#E0E0E0" TextColor="#555" Clicked="OnTabStory" Margin="5,0,0,0" />
+            <Button x:Name="TabArticle" Grid.Column="3" Text="📖 阅" FontSize="14"
+                    BackgroundColor="#E0E0E0" TextColor="#555" Clicked="OnTabArticle" Margin="5,0,0,0" />
+        </Grid>
+
+        <!-- 内容区 -->
+        <Grid Grid.Row="2">
+
+            <!-- 宝宝听 -->
+            <ScrollView x:Name="PanelAudio" Padding="16,12,16,90">
+                <VerticalStackLayout Spacing="18" BindableLayout.ItemsSource="{Binding AudioGroups}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:KidsAudioGroup">
+                            <Frame CornerRadius="24" HasShadow="False" Padding="14,12"
+                                   BackgroundColor="#CCFFFFFF" BorderColor="Transparent">
+                                <VerticalStackLayout Spacing="10">
+                                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                        <Frame WidthRequest="44" HeightRequest="44" CornerRadius="22" Padding="0"
+                                               HasShadow="False" BackgroundColor="{Binding Color}">
+                                            <Label Text="{Binding Emoji}" FontSize="24"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Frame>
+                                        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontSize="20" FontAttributes="Bold" TextColor="#5D4037" />
+                                            <Label Text="{Binding Desc}" FontSize="12" TextColor="#8D6E63" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                                        <HorizontalStackLayout Spacing="12" Padding="2,2">
+                                            <BindableLayout.ItemsSource>
+                                                <Binding Path="Items" />
+                                            </BindableLayout.ItemsSource>
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="models:KidsAudioItem">
+                                                    <Border StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                                                            BackgroundColor="{Binding Color}" WidthRequest="132" HeightRequest="126">
+                                                        <Border.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="OnAudioTapped" NumberOfTapsRequired="1" />
+                                                        </Border.GestureRecognizers>
+                                                        <VerticalStackLayout VerticalOptions="Center" Spacing="4" Padding="10">
+                                                            <Label Text="{Binding Emoji}" FontSize="36" HorizontalOptions="Center" />
+                                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" TextColor="White"
+                                                                   HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                            <Label Text="{Binding Desc}" FontSize="11" TextColor="#FFF3E0" HorizontalOptions="Center"
+                                                                   HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                        </VerticalStackLayout>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </HorizontalStackLayout>
+                                    </ScrollView>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- 宝宝看 -->
+            <ScrollView x:Name="PanelVideo" IsVisible="False" Padding="16,12,16,90">
+                <VerticalStackLayout Spacing="18" BindableLayout.ItemsSource="{Binding VideoGroups}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:ContentGroup">
+                            <Frame CornerRadius="24" HasShadow="False" Padding="14,12"
+                                   BackgroundColor="#CCFFFFFF" BorderColor="Transparent">
+                                <VerticalStackLayout Spacing="10">
+                                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                        <Frame WidthRequest="44" HeightRequest="44" CornerRadius="22" Padding="0"
+                                               HasShadow="False" BackgroundColor="{Binding Color}">
+                                            <Label Text="{Binding Emoji}" FontSize="24"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Frame>
+                                        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontSize="20" FontAttributes="Bold" TextColor="#5D4037" />
+                                            <Label Text="{Binding Desc}" FontSize="12" TextColor="#8D6E63" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                                        <HorizontalStackLayout Spacing="12" Padding="2,2">
+                                            <BindableLayout.ItemsSource>
+                                                <Binding Path="Items" />
+                                            </BindableLayout.ItemsSource>
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="models:ContentItem">
+                                                    <Border StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                                                            BackgroundColor="{Binding Color}" WidthRequest="132" HeightRequest="126">
+                                                        <Border.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="OnVideoTapped" NumberOfTapsRequired="1" />
+                                                        </Border.GestureRecognizers>
+                                                        <VerticalStackLayout VerticalOptions="Center" Spacing="4" Padding="10">
+                                                            <Label Text="{Binding Emoji}" FontSize="36" HorizontalOptions="Center" />
+                                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" TextColor="White"
+                                                                   HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                            <Label Text="{Binding Desc}" FontSize="11" TextColor="#FFF3E0" HorizontalOptions="Center"
+                                                                   HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                        </VerticalStackLayout>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </HorizontalStackLayout>
+                                    </ScrollView>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- 亲子阅 -->
+            <ScrollView x:Name="PanelArticle" IsVisible="False" Padding="16,12,16,90">
+                <VerticalStackLayout Spacing="18" BindableLayout.ItemsSource="{Binding ArticleGroups}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:ContentGroup">
+                            <Frame CornerRadius="24" HasShadow="False" Padding="14,12"
+                                   BackgroundColor="#CCFFFFFF" BorderColor="Transparent">
+                                <VerticalStackLayout Spacing="10">
+                                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                        <Frame WidthRequest="44" HeightRequest="44" CornerRadius="22" Padding="0"
+                                               HasShadow="False" BackgroundColor="{Binding Color}">
+                                            <Label Text="{Binding Emoji}" FontSize="24"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Frame>
+                                        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontSize="20" FontAttributes="Bold" TextColor="#5D4037" />
+                                            <Label Text="{Binding Desc}" FontSize="12" TextColor="#8D6E63" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                                        <HorizontalStackLayout Spacing="12" Padding="2,2">
+                                            <BindableLayout.ItemsSource>
+                                                <Binding Path="Items" />
+                                            </BindableLayout.ItemsSource>
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="models:ContentItem">
+                                                    <Border StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                                                            BackgroundColor="{Binding Color}" WidthRequest="132" HeightRequest="126">
+                                                        <Border.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="OnArticleTapped" NumberOfTapsRequired="1" />
+                                                        </Border.GestureRecognizers>
+                                                        <VerticalStackLayout VerticalOptions="Center" Spacing="4" Padding="10">
+                                                            <Label Text="{Binding Emoji}" FontSize="36" HorizontalOptions="Center" />
+                                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" TextColor="White"
+                                                                   HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                            <Label Text="{Binding Desc}" FontSize="11" TextColor="#FFF3E0" HorizontalOptions="Center"
+                                                                   HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                        </VerticalStackLayout>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </HorizontalStackLayout>
+                                    </ScrollView>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- 故事屋（在线故事，经家长服务器代理）-->
+            <ScrollView x:Name="PanelStory" IsVisible="False" Padding="16,12,16,90">
+                <VerticalStackLayout Spacing="14">
+                    <SearchBar x:Name="StorySearch" Placeholder="🔍 搜故事，如：月亮、勇敢、小兔子"
+                               CancelButtonColor="#8E24AA" TextColor="#4A148C"
+                               BackgroundColor="#F3E5F5" PlaceholderColor="#AB47BC"
+                               SearchButtonPressed="OnStorySearch" />
+                    <Label Text="📚 故事分类" FontSize="18" FontAttributes="Bold" TextColor="#4A148C" />
+                    <VerticalStackLayout x:Name="CategoryList" Spacing="10" />
+                    <ActivityIndicator x:Name="StoryLoading" IsRunning="False" IsVisible="False"
+                                       Color="#AB47BC" HorizontalOptions="Center" />
+                    <Label x:Name="StoryHint" Text="" FontSize="14" TextColor="#8D6E63"
+                           IsVisible="False" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- 迷你悬浮播放器（播放中显示，点击回到播放页）-->
+            <Border x:Name="MiniPlayer" IsVisible="False"
+                    StrokeShape="RoundRectangle 34" StrokeThickness="0"
+                    BackgroundColor="#7E57C2" WidthRequest="180" HeightRequest="54"
+                    HorizontalOptions="End" VerticalOptions="End" Margin="0,0,16,16">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnMiniTapped" NumberOfTapsRequired="1" />
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="8" Padding="12,0" VerticalOptions="Center">
+                    <Label x:Name="MiniIcon" Text="🎵" FontSize="26" VerticalOptions="Center" />
+                    <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                        <Label x:Name="MiniTitle" Text="" FontSize="13" TextColor="White" FontAttributes="Bold" />
+                        <Label x:Name="MiniState" Text="正在播放" FontSize="10" TextColor="#E1BEE7" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </Border>
+
+            <ActivityIndicator x:Name="LoadingRing" IsRunning="False" IsVisible="False"
+                               Color="#7E57C2" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.TetrisGamePage"
+             Title="俄罗斯方块"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#5E35B1">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🧱 俄罗斯方块" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <HorizontalStackLayout Grid.Column="2" Spacing="12" VerticalOptions="Center">
+                <Label Text="{Binding ScoreText}" TextColor="White" FontSize="15" FontAttributes="Bold" />
+                <Label Text="{Binding LevelText}" TextColor="#D1C4E9" FontSize="15" FontAttributes="Bold" />
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!-- 棋盘 -->
+        <Grid Grid.Row="1">
+            <GraphicsView x:Name="Canvas" />
+
+            <!-- 结束遮罩 -->
+            <Frame IsVisible="{Binding GameOver}" BackgroundColor="#00000070" Padding="0"
+                   HasShadow="False" BorderColor="Transparent" CornerRadius="0"
+                   HorizontalOptions="Fill" VerticalOptions="Fill">
+                <VerticalStackLayout Spacing="20" VerticalOptions="Center" HorizontalOptions="Center">
+                    <Label Text="🧱" FontSize="86" HorizontalOptions="Center" />
+                    <Label Text="堆满啦！" FontSize="24" FontAttributes="Bold" TextColor="White"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding ResultText}" FontSize="18" TextColor="#E1D8FF"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Button Text="🔄 再玩一次" FontSize="22" BackgroundColor="#7E57C2" TextColor="White"
+                            CornerRadius="18" HeightRequest="60" WidthRequest="240"
+                            HorizontalOptions="Center" Clicked="OnReplay" />
+                    <Button Text="🏠 回主页" FontSize="20" BackgroundColor="#FFFFFF" TextColor="#5E35B1"
+                            CornerRadius="18" HeightRequest="56" WidthRequest="240"
+                            HorizontalOptions="Center" Clicked="OnBack" />
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+
+        <!-- 操作区：三个方向键 + 直落 -->
+        <Grid Grid.Row="2" Padding="14,10,14,16"
+              ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto"
+              ColumnSpacing="12" RowSpacing="10">
+
+            <Button Grid.Column="0" Grid.Row="0" Text="◀" FontSize="28" FontAttributes="Bold"
+                    BackgroundColor="#FFFFFF" TextColor="#5E35B1" BorderColor="#D1C4E9" BorderWidth="1"
+                    CornerRadius="18" HeightRequest="64" Clicked="OnLeft" />
+            <Button Grid.Column="1" Grid.Row="0" Text="↻" FontSize="28" FontAttributes="Bold"
+                    BackgroundColor="#FFD54F" TextColor="#5D4037" BorderWidth="0"
+                    CornerRadius="18" HeightRequest="64" Clicked="OnRotate" />
+            <Button Grid.Column="2" Grid.Row="0" Text="▶" FontSize="28" FontAttributes="Bold"
+                    BackgroundColor="#FFFFFF" TextColor="#5E35B1" BorderColor="#D1C4E9" BorderWidth="1"
+                    CornerRadius="18" HeightRequest="64" Clicked="OnRight" />
+
+            <Button Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Text="⤓ 直接落下"
+                    FontSize="20" FontAttributes="Bold"
+                    BackgroundColor="#7E57C2" TextColor="White" BorderWidth="0"
+                    CornerRadius="18" HeightRequest="56" Clicked="OnHardDrop" />
+        </Grid>
+    </Grid>
+</ContentPage>

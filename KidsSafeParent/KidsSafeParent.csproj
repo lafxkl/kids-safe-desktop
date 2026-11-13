@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- 家长端：与孩子端（KidsSafeDesktop）分离的独立 App。
+	     界面与逻辑全部来自 ../KidsSafeShared，本工程只负责外壳（入口、图标、权限、打包）。
+	     孩子端仍保留 PIN 保护的家长入口，所以两端共用同一套家长中心页面，不存在两份实现。 -->
+	<PropertyGroup>
+		<TargetFrameworks>net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+
+		<OutputType>Exe</OutputType>
+		<RootNamespace>KidsSafeParent</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+
+		<ApplicationTitle>家长端</ApplicationTitle>
+		<ApplicationId>com.companyname.kidssafeparent</ApplicationId>
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<!-- 免打包分发（与孩子端一致，走安装包而不是 MSIX） -->
+		<WindowsPackageType>None</WindowsPackageType>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+
+		<SatelliteResourceLanguages>zh-Hans;zh-Hant;en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.png" Color="#B388FF" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#B388FF" BaseSize="128,128" />
+		<MauiFont Include="Resources\Fonts\*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<!-- 仅 Debug 构建需要（AddDebug），Release 不进包 -->
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" Condition="'$(Configuration)' == 'Debug'" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\KidsSafeShared\KidsSafeShared.csproj" />
+	</ItemGroup>
+
+	<!-- 安卓签名与孩子端共用同一份 keystore（荣耀推送按签名指纹校验） -->
+	<Import Project="..\KidsSafeDesktop\Signing.props" Condition="Exists('..\KidsSafeDesktop\Signing.props')" />
+
+</Project>

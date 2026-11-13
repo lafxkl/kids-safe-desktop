@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.WhackMoleGamePage"
+             Title="打地鼠"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🔨 打地鼠" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <HorizontalStackLayout Grid.Column="2" Spacing="12" VerticalOptions="Center">
+                <Label Text="{Binding ScoreText}" TextColor="White" FontSize="15" FontAttributes="Bold" />
+                <Label Text="{Binding TimeText}" TextColor="#FFF59D" FontSize="15" FontAttributes="Bold" />
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!-- 游戏区 -->
+        <Grid Grid.Row="1">
+            <GraphicsView x:Name="Canvas"
+                          StartInteraction="OnPointer" DragInteraction="OnPointer" />
+
+            <!-- 结束遮罩 -->
+            <Frame IsVisible="{Binding GameOver}" BackgroundColor="#00000059" Padding="0"
+                   HasShadow="False" BorderColor="Transparent" CornerRadius="0"
+                   HorizontalOptions="Fill" VerticalOptions="Fill">
+                <VerticalStackLayout Spacing="22" VerticalOptions="Center" HorizontalOptions="Center">
+                    <Label Text="💥" FontSize="90" HorizontalOptions="Center" />
+                    <Label Text="{Binding ResultText}" FontSize="22" TextColor="White"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Button Text="🔄 再玩一次" FontSize="22" BackgroundColor="#8D6E63" TextColor="White"
+                            CornerRadius="18" HeightRequest="60" WidthRequest="240" HorizontalOptions="Center"
+                            Clicked="OnReplay" />
+                    <Button Text="🏠 回主页" FontSize="20" BackgroundColor="#FFFFFF" TextColor="#8D6E63"
+                            CornerRadius="18" HeightRequest="56" WidthRequest="240" HorizontalOptions="Center"
+                            Clicked="OnBack" />
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </Grid>
+</ContentPage>

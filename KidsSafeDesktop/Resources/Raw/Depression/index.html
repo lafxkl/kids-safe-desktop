@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="抑郁症专区：面向家长的公益科普。讲青少年抑郁的早期识别信号、家庭预防方法、就医时机，依据《中国抑郁障碍防治指南（2025版）》，并汇总全国心理援助热线与自杀干预电话。">
+<title>抑郁症专区（公益项目）</title>
+<script>
+  /* 应用内是 WebView，Chromium 会记住上次滚动位置，重新打开时常停在半段。 */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+</script>
+<style>
+  :root{
+    --ink:#22313F;
+    --ink-2:#3C5164;
+    --muted:#6B8199;
+    --brand:#3F6FA8;
+    --brand-deep:#2C527E;
+    --brand-soft:#EDF3FA;
+    --warm:#D9822B;
+    --warm-soft:#FFF4E8;
+    --danger:#C0392B;
+    --danger-soft:#FDECEA;
+    --line:#DFE8F2;
+    --white:#fff;
+    --shadow:0 2px 10px rgba(44,82,126,.07);
+  }
+  *{box-sizing:border-box;}
+  /* 切换标签时其中一屏会整体隐藏，文档高度骤变，
+     Chromium 的滚动锚定会把视口"粘"在原来那个元素上，表现为跳到半中间。 */
+  html{ -webkit-text-size-adjust:100%; overflow-anchor:none; }
+  body{ overflow-anchor:none; }
+  body{
+    margin:0;
+    background:#F6F9FC;
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC",sans-serif;
+    font-size:16.5px;
+    line-height:1.78;
+    letter-spacing:.01em;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px 90px;}
+
+  /* ===== 头部 ===== */
+  header{
+    background:linear-gradient(135deg,#335C8E 0%,#3F6FA8 55%,#5B8FC9 100%);
+    color:#fff;
+    padding:34px 20px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;right:-70px;top:-70px;width:270px;height:270px;
+    border-radius:50%;background:rgba(255,255,255,.09);
+  }
+  header .inner{max-width:880px;margin:0 auto;position:relative;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.95);
+    color:var(--brand-deep);
+    font-size:12.5px;font-weight:700;letter-spacing:.06em;
+    padding:5px 13px;border-radius:999px;
+    box-shadow:0 2px 8px rgba(0,0,0,.10);
+  }
+  header h1{font-size:1.9rem;line-height:1.35;margin:14px 0 8px;font-weight:800;letter-spacing:.01em;}
+  header .lead{margin:0;font-size:.95rem;color:rgba(255,255,255,.94);max-width:620px;}
+  .meta-row{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    background:rgba(255,255,255,.17);
+    border:1px solid rgba(255,255,255,.30);
+    border-radius:999px;padding:4px 12px;font-size:12.5px;color:#fff;
+  }
+
+  /* ===== 标签 ===== */
+  .tabs{
+    position:sticky;top:0;z-index:30;
+    background:rgba(246,249,252,.96);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:10px 20px;
+  }
+  .tab-inner{max-width:880px;margin:0 auto;display:flex;gap:9px;}
+  .tab-btn{
+    flex:1;
+    appearance:none;border:1px solid var(--line);background:#fff;
+    color:var(--ink-2);font-size:15px;font-weight:700;
+    padding:11px 6px;border-radius:14px;cursor:pointer;
+    transition:.18s ease;
+    font-family:inherit;
+    white-space:nowrap;
+  }
+  .tab-btn.active{
+    background:var(--brand);border-color:var(--brand);color:#fff;
+    box-shadow:0 4px 12px rgba(63,111,168,.24);
+  }
+  .hidden{display:none !important;}
+
+  /* ===== 通用 ===== */
+  .view{padding-top:22px;}
+  .muted{color:var(--muted);font-size:.9rem;}
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    padding:20px 20px 18px;margin:0 0 16px;box-shadow:var(--shadow);
+  }
+  .card.tight{padding:16px 18px;}
+  .card h3{margin:0 0 10px;font-size:1.08rem;color:var(--brand-deep);font-weight:800;}
+  .card p:last-child{margin-bottom:0;}
+  h2{
+    font-size:1.28rem;margin:34px 0 12px;color:var(--brand-deep);
+    font-weight:800;letter-spacing:.01em;
+    padding-left:12px;border-left:5px solid var(--brand);line-height:1.45;
+  }
+  h2:first-child{margin-top:6px;}
+  p{margin:0 0 13px;}
+  b{color:var(--ink);}
+  .note{
+    border-radius:14px;padding:15px 17px;margin:16px 0;
+    background:var(--brand-soft);border:1px solid #CFE0F2;
+    font-size:.95rem;line-height:1.72;
+  }
+  .note b{color:var(--brand-deep);}
+  .note.warm{background:var(--warm-soft);border-color:#F3DCC0;}
+  .note.warm b{color:#A65A20;}
+  .note.danger{background:var(--danger-soft);border-color:#F5C9C4;}
+  .note.danger b{color:var(--danger);}
+  .lead-in{
+    font-size:1.02rem;color:var(--ink-2);background:#fff;
+    border-left:4px solid var(--brand);border-radius:0 12px 12px 0;
+    padding:13px 16px;margin:4px 0 18px;
+  }
+
+  /* 对照表 */
+  .table-wrap{overflow-x:auto;margin:14px 0 18px;-webkit-overflow-scrolling:touch;}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:.93rem;background:#fff;}
+  th,td{border:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--brand-soft);color:var(--brand-deep);font-weight:700;font-size:.9rem;}
+  td:first-child{font-weight:700;color:var(--ink-2);width:26%;background:#FBFDFF;}
+
+  /* 信号卡片 */
+  .flags{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0 6px;}
+  .flag{
+    display:flex;gap:12px;align-items:flex-start;
+    background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px 16px;
+  }
+  .flag .ico{
+    width:30px;height:30px;flex:0 0 30px;border-radius:50%;
+    background:var(--brand-soft);color:var(--brand-deep);
+    font-weight:800;font-size:14.5px;
+    display:flex;align-items:center;justify-content:center;line-height:1;
+  }
+  .flag .txt{font-size:.95rem;line-height:1.7;}
+  .flag .txt b{display:block;color:var(--brand-deep);margin-bottom:1px;font-size:.98rem;}
+  .flag .txt strong{color:var(--danger);font-weight:800;}
+
+  /* 步骤 */
+  .steps{margin:14px 0 6px;padding-left:6px;}
+  .step{
+    position:relative;padding:0 0 18px 30px;border-left:2px solid #D3E1F1;margin-left:6px;
+  }
+  .step:last-child{border-left-color:transparent;padding-bottom:0;}
+  .step::before{
+    content:"";position:absolute;left:-8px;top:6px;width:14px;height:14px;
+    border-radius:50%;background:var(--brand);border:3px solid #F6F9FC;
+  }
+  .step b{display:block;color:var(--brand-deep);font-size:1rem;margin-bottom:3px;}
+  .step span{font-size:.94rem;color:var(--ink-2);}
+
+  /* 全病程时间轴 */
+  .stages{margin:16px 0 8px;}
+  .stage{
+    position:relative;padding:0 0 20px 30px;border-left:2px solid #D3E1F1;margin-left:6px;
+  }
+  .stage:last-child{border-left-color:transparent;padding-bottom:0;}
+  .stage::before{
+    content:"";position:absolute;left:-8px;top:5px;width:14px;height:14px;
+    border-radius:50%;background:var(--brand);border:3px solid #F6F9FC;
+  }
+  .stage .age{
+    display:inline-block;background:var(--brand-soft);color:var(--brand-deep);
+    font-size:12.5px;font-weight:800;padding:2px 10px;border-radius:999px;margin-bottom:6px;
+  }
+  .stage .name{font-size:1.02rem;font-weight:800;color:var(--brand-deep);margin-left:6px;}
+  .stage .body{margin-top:5px;font-size:.95rem;color:var(--ink-2);}
+  .stage .body p{margin:0 0 6px;}
+
+  /* 两列 */
+  .two{display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0;}
+
+  /* 药丸列表 */
+  .pill-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;}
+  .pill{
+    background:var(--brand-soft);color:var(--brand-deep);
+    border:1px solid #D3E1F1;border-radius:999px;
+    padding:5px 13px;font-size:.86rem;font-weight:600;
+  }
+
+  /* 热线 */
+  .hot{
+    display:block;text-decoration:none;color:inherit;
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:15px 17px;margin-bottom:10px;box-shadow:var(--shadow);
+  }
+  .hot .n{
+    font-size:1.5rem;font-weight:800;color:var(--brand-deep);
+    letter-spacing:.02em;line-height:1.25;
+  }
+  .hot .t{font-size:.98rem;font-weight:700;color:var(--ink);margin-top:2px;}
+  .hot .d{font-size:.87rem;color:var(--muted);margin-top:3px;line-height:1.6;}
+  .hot.urgent{background:#FFF7F6;border-color:#F5C9C4;}
+  .hot.urgent .n{color:var(--danger);}
+
+  /* 页脚 */
+  .footer{
+    margin-top:36px;padding:22px;border-radius:18px;
+    background:#EDF3FA;border:1px solid #D3E1F1;font-size:.86rem;color:#4A6178;line-height:1.8;
+  }
+  .footer b{color:var(--brand-deep);display:block;margin-bottom:6px;font-size:.95rem;}
+  .footer ol{margin:6px 0 0;padding-left:20px;}
+  .footer li{margin-bottom:5px;}
+  .footer .src{margin-top:14px;padding-top:12px;border-top:1px dashed #C4D6E8;}
+
+  #backTop{
+    position:fixed;right:18px;bottom:22px;width:46px;height:46px;border-radius:50%;
+    background:var(--brand);color:#fff;font-size:22px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 16px rgba(44,82,126,.28);
+    cursor:pointer;opacity:0;pointer-events:none;transition:.2s ease;z-index:40;
+  }
+  #backTop.show{opacity:1;pointer-events:auto;}
+
+  @media(min-width:720px){
+    .flags{grid-template-columns:1fr 1fr;}
+    .two{grid-template-columns:1fr 1fr;}
+    header h1{font-size:2.15rem;}
+    body{font-size:17px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <span class="badge">公益项目 · 永久免费</span>
+    <h1>抑郁症专区</h1>
+    <p class="lead">给家长的一页纸：怎么早一点发现孩子的抑郁，怎么在日常里预防，什么时候必须去医院的，以及此刻就能打通的电话。</p>
+    <div class="meta-row">
+      <span class="chip">依据《中国抑郁障碍防治指南（2025版）》</span>
+      <span class="chip">无广告 · 无推销</span>
+      <span class="chip">离线可读</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab-inner">
+    <button class="tab-btn active" data-view="know" aria-selected="true">认识与发现</button>
+    <button class="tab-btn" data-view="care" aria-selected="false">预防与治疗</button>
+    <button class="tab-btn" data-view="data" aria-selected="false">数据与求助</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ==================== 一、认识与发现 ==================== -->
+<section class="view" id="view-know">
+
+  <div class="note">
+    <b>先说三件最重要的事：</b><br>
+    ① 抑郁症是一种<b>能被诊断、也能被治疗</b>的疾病，不是"矫情"、不是"想太多"、更不是"装病"。<br>
+    ② 直接问孩子"你是不是想过伤害自己"，<b>不会</b>把念头装进他脑子里，反而常常是孩子第一次被允许说出来。<br>
+    ③ 这一页只讲<b>怎么识别、怎么求助</b>，不描述任何具体做法——把注意力放在"活下去"和"有人接住"上。
+  </div>
+
+  <h2>一、抑郁症不是"心情不好"</h2>
+
+  <p>每个人都有难过的时候，正常的难过有原因、会过去、还能被哄好。抑郁症不一样：它持续得久、面积大、自己停不下来，而且会实实在在地改变一个人的睡眠、食欲、体力和思考速度。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>看什么</th><th>一般的情绪低落</th><th>需要警惕的抑郁</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>起因</td><td>考砸了、吵架了，说得清</td><td>常常说不清，或者小事就塌了</td></tr>
+        <tr><td>时长</td><td>几小时到几天，会慢慢缓和</td><td>几乎每天，持续两周以上</td></tr>
+        <tr><td>范围</td><td>难过，但还玩得进去、吃得下</td><td>兴趣整体消失，连最喜欢的也不想要了</td></tr>
+        <tr><td>身体</td><td>基本正常</td><td>失眠或嗜睡、吃不下或暴食、头痛肚子痛查不出原因</td></tr>
+        <tr><td>自我评价</td><td>"我这次没做好"</td><td>"我这个人就是废物""我消失了对大家都好"</td></tr>
+        <tr><td>能不能缓过来</td><td>安慰、陪伴、睡一觉有用</td><td>怎么劝都没用，越劝越封闭</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warm">
+    <b>一个关键区别：</b>孩子的抑郁，最常见的表情不是"哭"，而是<b>烦</b>。很多孩子不会说"我很难过"，只会变得易怒、顶嘴、摔门、一点就炸——这恰恰是最容易被当成"叛逆期"漏掉的一种。
+  </div>
+
+  <h2>二、孩子的抑郁，常常长这样</h2>
+
+  <p>下面这些信号来自临床观察和指南里对青少年表现的描述。单独一条不代表什么，但如果<b>同一类里同时出现好几条，并且持续两周以上</b>，就该认真对待。</p>
+
+  <div class="flags">
+    <div class="flag"><div class="ico">1</div><div class="txt"><b>情绪：不是悲伤，是空和烦</b>频繁哭泣、莫名发火、情绪起伏大；常说"没意思""无聊""我什么都做不好"；对批评异常敏感。</div></div>
+    <div class="flag"><div class="ico">2</div><div class="txt"><b>兴趣：连喜欢的事也不要了</b>以前最爱的球、画、游戏都提不起劲；退出社团、不回消息；把自己关在房间里。</div></div>
+    <div class="flag"><div class="ico">3</div><div class="txt"><b>学习：不是懒，是转不动</b>成绩突然下滑、作业拖着不写、注意力散、说"脑子像生锈了"；一到上学就肚子痛、头痛。</div></div>
+    <div class="flag"><div class="ico">4</div><div class="txt"><b>身体：查不出原因的疼</b>失眠、早醒、嗜睡；食欲明显变差或暴食、体重变化；反复头痛、胃痛、胸闷，检查却没毛病。</div></div>
+    <div class="flag"><div class="ico">5</div><div class="txt"><b>自我：把错都归到自己身上</b>过度自责、觉得拖累家里；说"我不配""没有我会更好"；对夸奖也不相信。</div></div>
+    <div class="flag"><div class="ico">6</div><div class="txt"><b>危险信号：出现伤害自己的痕迹</b>手臂、大腿上有不明划痕或遮挡；频繁说"活着没意义""想消失"；把心爱的东西送人、突然异常平静地道别。这一类要<strong>立刻</strong>处理，见下方红色提示。</div></div>
+  </div>
+
+  <h2>三、三条判断线，帮你决定要不要就医</h2>
+
+  <div class="steps">
+    <div class="step"><b>第一条：持续两周以上</b><span>不是今天心情差，而是几乎每天、大部分时间都这样，连续两周没有真正好过。</span></div>
+    <div class="step"><b>第二条：几乎每天都出现，且占了大半天</b><span>不是偶尔一节课走神，而是一整天都提不起劲。</span></div>
+    <div class="step"><b>第三条：已经影响到生活</b><span>上不了学、吃不下饭、睡不着、跟谁都处不来、成绩明显掉——功能受了损，就是需要帮忙的信号。</span></div>
+  </div>
+
+  <p class="muted" style="margin-top:10px;">三条同时成立，建议尽快到<b>儿童青少年精神科</b>或<b>心理门诊</b>做一次评估。只有一两条，也值得先跟学校心理老师聊聊。</p>
+
+  <h2>四、最容易被误读的五种表现</h2>
+
+  <div class="two">
+    <div class="card tight">
+      <h3>「他就是懒」</h3>
+      <p>抑郁会真实地降低行动力。孩子不是不想动，是"启动"这件事本身变难了。骂一顿只会让他更确认"我果然不行"。</p>
+    </div>
+    <div class="card tight">
+      <h3>「这就是叛逆期」</h3>
+      <p>叛逆是"我要自己说了算"，抑郁是"我怎么样都无所谓"。前者还有力气争，后者连争都懒得争——<b>突然不吵了</b>有时更危险。</p>
+    </div>
+    <div class="card tight">
+      <h3>「他是在装，想逃避上学」</h3>
+      <p>逃学和抑郁经常同时存在，但顺序常常是：先病了，才撑不住。先按"装"处理，往往把求助的门关上了。</p>
+    </div>
+    <div class="card tight">
+      <h3>「我们家条件这么好，他有什么可抑郁的」</h3>
+      <p>抑郁和"日子过得好不好"不是一回事。它有生物学基础，也和孩子承受的压力、被对待的方式有关，不是"不知足"。</p>
+    </div>
+    <div class="card tight">
+      <h3>「说说就好了，别去医院，去了就留档案」</h3>
+      <p>该看就得看。拖着不看，风险远大于就诊本身；正规医院对未成年人就诊信息有保护，不会随便"贴标签"。</p>
+    </div>
+  </div>
+
+  <div class="note danger">
+    <b>出现下面任何一条，今天就别等：</b><br>
+    ① 说出"不想活了""想消失""死了算了"，或在网上搜索、写相关内容；<br>
+    ② 身上有新的自伤痕迹，或在藏刀片、攒药；<br>
+    ③ 突然把珍视的东西送人、写告别的话、异常平静地道别；<br>
+    ④ 已经做过伤害自己的事——<b>立刻拨 120</b>，同时不要让他独处。
+  </div>
+
+  <div class="card">
+    <h3>想更确定一点，可以做两件事</h3>
+    <p><b>一是记录两周。</b>用手机备忘录，每天一句话记下睡眠、食欲、情绪、能不能上学。就诊时给医生看，比"最近好像不太对"有用得多。</p>
+    <p><b>二是做一次自评。</b>PHQ-9 是国际上常用的抑郁筛查量表，网上和医院都能找到。它<b>只用来提示"要不要去看医生"</b>，不能自己拿来下诊断，更不能据此自己买药吃。</p>
+  </div>
+
+</section>
+
+<!-- ==================== 二、预防与治疗 ==================== -->
+<section class="view hidden" id="view-care">
+
+  <div class="lead-in">
+    抑郁不是"防不住"的。遗传我们改不了，但睡眠、运动、家庭冲突、被对待的方式、学业压力——这些能改的部分，恰好占了大头。
+  </div>
+
+  <h2>一、预防：最值得做的六件事</h2>
+
+  <div class="flags">
+    <div class="flag"><div class="ico">1</div><div class="txt"><b>把睡眠守住</b>青少年需要 8–10 小时。长期熬夜本身就会推高情绪问题风险。固定起床时间，比逼着早睡更有效；睡前一小时把手机拿出卧室。</div></div>
+    <div class="flag"><div class="ico">2</div><div class="txt"><b>每天动一动，最好在户外</b>规律运动对情绪的改善有明确证据，对轻中度抑郁可作为治疗的一部分。不必报班，快走、骑车、打球，每天 30 分钟就够。</div></div>
+    <div class="flag"><div class="ico">3</div><div class="txt"><b>减少家里的"火药味"</b>家庭冲突是青少年情绪问题最可控的风险因素之一。有分歧避开孩子谈；已经吵了，就当着孩子面和好一次——让他看见冲突是可以修复的。</div></div>
+    <div class="flag"><div class="ico">4</div><div class="txt"><b>先听，再说</b>孩子说"我不想上学"，第一句别急着讲道理。把"别胡思乱想"换成"你最近好像不太开心，想跟我说说吗"——被听见本身就有缓解作用。</div></div>
+    <div class="flag"><div class="ico">5</div><div class="txt"><b>把期待调到孩子够得着的高度</b>长期"怎么努力都不够"会摧毁自我价值。和孩子一起定一个"跳一跳能到"的目标，进步就具体地夸，别只盯排名。</div></div>
+    <div class="flag"><div class="ico">6</div><div class="txt"><b>盯住校园关系和网络</b>被孤立、被欺凌是明确的风险因素，发现就要介入，别劝"忍忍就过去了"。同时留意深夜刷屏、只混某个圈子、情绪随网络内容大起大落。</div></div>
+  </div>
+
+  <div class="note">
+    <b>还有一件常被忽略的事：</b>家长自己的状态。父母长期焦虑、抑郁、失眠，孩子会跟着紧绷。你去看医生、去求助，本身就是在教孩子"难受了可以找人帮忙"。
+  </div>
+
+  <h2>二、已经病了：治疗是怎么走的</h2>
+
+  <p>2025 年 9 月发布的《中国抑郁障碍防治指南（2025版）》把治疗明确为<b>全病程管理</b>，分三个阶段。这三段一步都不能省，<b>症状好转不等于病好了</b>，这是复发最常见的原因。</p>
+
+  <div class="stages">
+    <div class="stage">
+      <span class="age">8–12 周</span><span class="name">急性期</span>
+      <div class="body">
+        <p><b>目标：先把症状压下来，保证安全。</b>抗抑郁药通常 2–4 周才起效，起效后还要再巩固 6–8 周。指南把这一期的目标从"临床治愈"改成了"临床缓解"——意思是：不难受了，只是第一步。</p>
+        <p>有明确自杀风险的孩子，这一期可能需要住院，以便 24 小时看护和快速调整方案。</p>
+      </div>
+    </div>
+    <div class="stage">
+      <span class="age">约 6 个月</span><span class="name">巩固期</span>
+      <div class="body">
+        <p><b>目标：防止"刚好一点又掉回去"（复燃）。</b>这一期通常<b>不加不减、不换药</b>，把急性期有效的方案原样维持住，同时处理残留症状、共病和睡眠。</p>
+        <p>数据显示，缓解后继续用药与停药相比，能把复燃风险降低一半以上。这一步最容易被家长自行中断。</p>
+      </div>
+    </div>
+    <div class="stage">
+      <span class="age">≥ 2 年</span><span class="name">维持期</span>
+      <div class="body">
+        <p><b>目标：防复发，把功能真正恢复回来。</b>首次发作缓解后 6 个月内约两成会复发；一生中至少复发一次的比例达 50%–85%。发作次数越多，维持期越长。</p>
+        <p>这一期看的不只是"心情好不好"，而是<b>能不能上学、有没有朋友、扛不扛得住压力</b>——功能回来了，才算真的好了。</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>三、治疗手段有哪些</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>方式</th><th>用在哪</th><th>要知道的</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>心理治疗</td>
+          <td>轻中度可单独使用；中重度与药物联合</td>
+          <td>认知行为治疗（CBT）、人际心理治疗（IPT）、行为激活都有明确证据。通常每周一次，需要坚持十几次以上才见效。</td>
+        </tr>
+        <tr>
+          <td>药物治疗</td>
+          <td>中度高风险及重度；轻中度评估后决定</td>
+          <td>新版指南一线口服药扩到 7 类 17 种。起效要 2–4 周，<b>不能自行加减或骤停</b>，骤停会有撤药反应和复发风险。</td>
+        </tr>
+        <tr>
+          <td>物理治疗</td>
+          <td>药物效果不佳，或有紧急情况</td>
+          <td>重复经颅磁刺激（rTMS）用于急性期；改良电休克（MECT）用于严重抑郁、拒食或有强烈自杀风险时，能较快缓解症状。</td>
+        </tr>
+        <tr>
+          <td>量化评估（MBC）</td>
+          <td>贯穿全程</td>
+          <td>用量表定期打分，把"症状"和"功能"分开看。启动用药 2 周做首次评估，4 周评估初始疗效——复诊时别只说"还行"。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warm">
+    <b>关于自杀风险，指南专门立了一章：</b>对高自杀风险的孩子，推荐快速起效的干预联合抗抑郁药，并在长期用锂盐等方式降低风险；对反复自伤的青少年，<b>辩证行为疗法（DBT）是证据最强的一线心理治疗</b>。这意味着——有自伤不等于没救，而是需要更对路的方案。
+  </div>
+
+  <h2>四、家长最常踩的四个坑</h2>
+
+  <div class="card tight">
+    <h3>坑一：好一点就停药</h3>
+    <p>这是复发最常见的原因。症状消失时，大脑并没恢复到能自己扛住的状态。减药、停药必须由医生按疗程决定。</p>
+  </div>
+  <div class="card tight">
+    <h3>坑二：只盯情绪，不管功能</h3>
+    <p>"他不哭了"不等于能回学校。指南把"社会功能全面恢复"写进治疗目标——能不能上课、能不能交朋友、能不能应对压力，同样要评估。</p>
+  </div>
+  <div class="card tight">
+    <h3>坑三：相信"包治、断根、不用吃药"</h3>
+    <p>抑郁障碍有明确的复发率，正规医生不会承诺"永不复发"。凡是打包票、让你停掉医院方案的，基本可以判定不靠谱。</p>
+  </div>
+  <div class="card tight">
+    <h3>坑四：把孩子当成"问题"来修</h3>
+    <p>抑郁常常是孩子对整个环境（家庭气氛、学校压力、人际关系）的反应。只改孩子、不改环境，效果有限；家庭一起调整，才是长期解。</p>
+  </div>
+
+  <h2>五、复学这一步，比想象中难</h2>
+
+  <p>很多孩子住院时恢复得不错，回家不到两周又崩了——因为症状缓解了，但<b>社会功能还没恢复</b>：同伴关系断了、落下半学期课、一进教室就恐慌。</p>
+
+  <p>比较稳的做法是分步走：先和学校沟通（班主任、心理老师），争取"半天课""先上喜欢的科目""暂缓考试"这类过渡安排；复学初期把目标定在"能到校"，而不是"跟上进度"；同时保持复诊，别把复学当成治疗的终点。</p>
+
+</section>
+
+<!-- ==================== 三、数据与求助 ==================== -->
+<section class="view hidden" id="view-data">
+
+  <div class="note">
+    <b>为什么把数字放在这里：</b>不是为了吓人，而是想说清楚一件事——<b>这不是别人家的事</b>。看清规模，才知道该早一点认真对待。所有数字都标了出处，网络上那些过分夸张的说法我也一并说明。
+  </div>
+
+  <h2>一、青少年抑郁有多常见</h2>
+
+  <div class="card">
+    <h3>24.6%</h3>
+    <p>《中国国民心理健康发展报告（2019—2020）》对青少年群体的调查显示，抑郁<b>检出率</b>为 24.6%，其中轻度 17.2%、重度 7.4%。分学段看：小学约一成，初中约三成，高中接近四成。</p>
+    <p class="muted">注意用词：这是量表筛查出的"检出率"，不等于临床确诊的"患病率"。筛查阳性的人里，一部分只是阶段性情绪问题。但它足以说明：一个班里，可能不止一个孩子正难受着。</p>
+  </div>
+
+  <h2>二、青少年自杀的官方数字</h2>
+
+  <p>我国官方<b>只公布自杀死亡率，不公布绝对人数</b>。下表是国家卫健委《中国卫生健康统计年鉴》公布的分年龄自杀死亡率（每 10 万人），是目前最可靠的公开数据：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>年龄组</th><th>城市（2021）</th><th>农村（2021）</th><th>趋势</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>5–9 岁</td><td>0.04</td><td>0.06</td><td>极低，但并非为零</td></tr>
+        <tr><td>10–14 岁</td><td>1.70</td><td>1.66</td><td>2016 年的约 1.7 倍，上升明显</td></tr>
+        <tr><td>15–19 岁</td><td>3.34</td><td>3.65</td><td>五年内接近翻倍，农村高于城市</td></tr>
+        <tr><td>全人群（参考）</td><td>4.31</td><td>7.09</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>换算成人数，大概是每年 4000 人左右</h3>
+    <p>按上表死亡率乘以对应年龄段人口数（2021 年）粗算：10–14 岁约 1400 人，15–19 岁约 2500 人，5–9 岁约几十人，<b>合计约 4000 人/年</b>。</p>
+    <p class="muted">这是按公开死亡率做的<b>估算</b>，不是官方发布的统计值。真实的数字可能因漏报、死因归类而偏低。</p>
+  </div>
+
+  <div class="note warm">
+    <b>顺带澄清一个流传很广的数字：</b>网上常说"中国每年约 10 万青少年死于自杀，每分钟 2 个"。这个说法出自一份非官方报告，与官方死亡率<b>差了一个数量级</b>——按官方数据推算，全人群（所有年龄）一年约 7–8 万人，5–19 岁约 4000 人。<br>
+    数字被夸大会让家长麻木或恐慌，反而帮不上忙。记住有官方依据的那一组就够了。
+  </div>
+
+  <h2>三、抑郁在自杀里占多大分量</h2>
+
+  <div class="card">
+    <h3>约六成</h3>
+    <p>多项针对青少年自杀死亡案例的心理回顾研究显示，<b>约六成的孩子在生前患有抑郁症</b>（不同研究在 40%–80% 之间）。也就是说，抑郁是青少年自杀最重要的可识别、可治疗的风险因素。</p>
+  </div>
+
+  <div class="card">
+    <h3>抑郁情绪让"自杀未遂"的风险升高约 6 倍</h3>
+    <p>2023 年《中国公共卫生》发表的一项研究，对江苏、广东、云南、甘肃、湖北 5 省 <b>20792 名</b>在校中学生做了调查：</p>
+    <ul style="margin:8px 0 10px;padding-left:22px;font-size:.96rem;line-height:1.8;">
+      <li>近一年有自杀行为者占 <b>23.54%</b>（自杀意念 10.41%、做过计划 8.03%、有过未遂 5.10%）</li>
+      <li>抑郁情绪检出率 <b>19.70%</b>，焦虑 <b>13.97%</b>；农村女生最高（抑郁 27.86%）</li>
+      <li>有抑郁情绪的孩子，自杀未遂风险是没抑郁者的 <b>5.99 倍</b>（95%CI 5.00–7.16）</li>
+    </ul>
+    <p class="muted">这条数据最有用：它说明<b>把抑郁治好了，风险会实打实地降下来</b>。抑郁不是"想不开"，是一个可以拆掉的引信。</p>
+  </div>
+
+  <h2>四、此刻就能打通的电话</h2>
+
+  <p>下面这些号码都是免费或按市话计费，24 小时有人接。存在手机里，比"需要时再搜"强得多。</p>
+
+  <a class="hot" href="tel:12356">
+    <div class="n">12356</div>
+    <div class="t">全国统一心理援助热线（国家卫健委）</div>
+    <div class="d">全国覆盖、24 小时、免费。情绪崩溃、睡不着、撑不住时都可以打，接听的是受过训练的专业人员，可以做初步评估和转介。</div>
+  </a>
+
+  <a class="hot" href="tel:12355">
+    <div class="n">12355</div>
+    <div class="t">青少年服务台（共青团中央）</div>
+    <div class="d">专门面向青少年，心理咨询 + 法律援助。微信搜"青听益站"小程序也能在线咨询、树洞倾诉。</div>
+  </a>
+
+  <a class="hot" href="tel:12338">
+    <div class="n">12338</div>
+    <div class="t">妇女维权公益服务热线（全国妇联）</div>
+    <div class="d">面向妇女、儿童和青少年，含心理疏导、法律咨询、反家暴。涉及家庭暴力、监护缺失时可以打。</div>
+  </a>
+
+  <a class="hot" href="tel:01082951332">
+    <div class="n">010-82951332</div>
+    <div class="t">北京心理危机研究与干预中心 · 自杀干预热线</div>
+    <div class="d">24 小时，面向全国。手机拨上面的号码；座机可拨 800-810-1117（免费）。这是国内做自杀干预最久的机构之一。</div>
+  </a>
+
+  <a class="hot" href="tel:4001619995">
+    <div class="n">400-161-9995</div>
+    <div class="t">希望 24 热线（生命教育与危机干预）</div>
+    <div class="d">24 小时。接通后按 1 是学生专线，按 2 是抑郁与自伤专线，按 3 是生命热线。</div>
+  </a>
+
+  <a class="hot urgent" href="tel:120">
+    <div class="n">120 / 110</div>
+    <div class="t">已经在伤害自己，或已经吃下东西</div>
+    <div class="d">不要自己开车送、不要先"观察一下"。立刻拨 120，同时拨 110 说明情况；在救护车到之前，<b>全程有人陪着，不要让他独处</b>。家里可能造成伤害的物品先移走。</div>
+  </a>
+
+  <div class="note">
+    <b>还有一个可以查的地方：</b>国家心理健康和精神卫生防治中心（国家卫健委直属）官网 <b>ncmhc.org.cn</b>，有权威科普、政策文件和各省心理服务资源；本地资源可拨 12345 转心理服务。
+  </div>
+
+  <h2>五、危机正在发生时，做这五件事</h2>
+
+  <div class="steps">
+    <div class="step"><b>直接问，不回避</b><span>"你是不是想过伤害自己？"——问出来不会教坏他，反而是把他从孤岛里拉出来的第一步。他愿意说，就认真听完，别急着反驳。</span></div>
+    <div class="step"><b>不评判、不讲道理、不威胁</b><span>别说"你怎么这么自私""你对得起谁""再这样我就……"。这些话会让他把门关得更紧。</span></div>
+    <div class="step"><b>把危险物品移出视线</b><span>药、刀、绳索、酒精，能锁就锁、能送走就送走。这一步比任何劝说都实在。</span></div>
+    <div class="step"><b>不让他独处</b><span>至少今晚，有人陪着睡、陪着待。陪伴本身就是最强的保护因素。</span></div>
+    <div class="step"><b>接上专业的人</b><span>拨上面任一热线，或直接去有精神科急诊的医院。不要指望"睡一觉就好了"。</span></div>
+  </div>
+
+  <h2>六、心理自救：孩子和大人都能用的四件事</h2>
+
+  <div class="two">
+    <div class="card tight">
+      <h3>把感受写下来</h3>
+      <p>不用写作文，一句话就行："今天最难受的时刻是___，当时我在想___。"写出来能让情绪从"淹没我"变成"我看见它"。</p>
+    </div>
+    <div class="card tight">
+      <h3>先把身体照顾住</h3>
+      <p>规律起床、晒太阳、喝水、走动。情绪最差的时候，别指望想通什么，先把生理节律稳住，这是最底层的支撑。</p>
+    </div>
+    <div class="card tight">
+      <h3>只做"下一件小事"</h3>
+      <p>不要想"我该怎么好起来"，只想"我现在去洗把脸""我去阳台站五分钟"。把巨大的难题切成能完成的小步。</p>
+    </div>
+    <div class="card tight">
+      <h3>告诉一个具体的人</h3>
+      <p>不用向所有人坦白，找一个人就够：爸妈、老师、朋友、热线接线员。说"我需要你陪我一会儿"，比说"我抑郁了"更容易开口。</p>
+    </div>
+  </div>
+
+  <div class="note warm">
+    <b>如果你是家长，也请照顾自己：</b>孩子生病不是你的失败。长期照护会耗尽一个人，你可以去看医生、可以请人帮忙、可以在孩子不在的时候哭一场。你稳住了，孩子才有地方靠。
+  </div>
+
+  <div class="footer">
+    <b>关于这份内容</b>
+    <p style="margin:0 0 10px;">本项目为<b style="display:inline;">公益项目</b>：永久免费、无广告、无推销、不收集任何个人信息。内容在安装包内离线保存，不联网也能看。</p>
+    <p style="margin:0 0 10px;">本页是科普，<b style="display:inline;">不能替代诊断和治疗</b>。是否患病、要不要用药，只能由精神科或心理科医生面诊后判断。请勿依据本页自行购药、停药或调整剂量。</p>
+    <p style="margin:0;">本页不为任何机构、药品、疗法做推荐；如发现内容有误，欢迎指正，我们会核对后修订。</p>
+
+    <div class="src">
+      <b style="margin-bottom:8px;">资料出处</b>
+      <ol>
+        <li>中华医学会精神医学分会组织编写，李凌江、王刚主编.《中国抑郁障碍防治指南（2025版）》. 北京：人民卫生出版社，2025.（2025 年 9 月 12 日于中华医学会精神医学分会第二十三次学术会议发布；国家精神疾病医学中心、国家精神心理疾病临床医学研究中心联合发起）</li>
+        <li>中国网 · 心理中国：《中国抑郁障碍防治指南（2025版）》发布，2025-09-16。<br><span style="color:#6B8199;word-break:break-all;">psy.china.com.cn/2025-09/16/content_43228832.htm</span></li>
+        <li>上海儿童医学中心 单文婕、王广海：《儿童抑郁症：早期识别、表现与科学干预指南》，2025-07-05。<br><span style="color:#6B8199;word-break:break-all;">sohu.com/a/911023682_121124522</span></li>
+        <li>傅小兰等.《中国国民心理健康发展报告（2019—2020）》. 社会科学文献出版社，2021.</li>
+        <li>国家卫生健康委员会.《中国卫生健康统计年鉴》2021—2022 年版，"居民病伤死亡原因"章（分年龄自杀死亡率）。</li>
+        <li>汪妍、彭畅、程君菡等.《中国 5 省在校中学生自杀行为流行状况及其与抑郁、焦虑关联》.《中国公共卫生》，2023，39(10)：1225-1231. DOI:10.11847/zgggws1141897</li>
+        <li>国家卫生健康委员会：全国统一心理援助热线 12356（2024 年 12 月公布，2025 年 5 月 1 日前各地热线并入）；共青团中央 12355 青少年服务台；全国妇联 12338 热线。</li>
+        <li>北京心理危机研究与干预中心（crisis.org.cn）公布的热线号码；希望 24 热线 400-161-9995 公开信息。</li>
+        <li>世界卫生组织（WHO）：自杀是全球 15–29 岁人群的主要死因之一。</li>
+      </ol>
+    </div>
+  </div>
+
+</section>
+
+</div>
+
+<div id="backTop" role="button" aria-label="回到顶部">↑</div>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.tab-btn');
+  var views = {
+    know: document.getElementById('view-know'),
+    care: document.getElementById('view-care'),
+    data: document.getElementById('view-data')
+  };
+
+  function show(which){
+    Object.keys(views).forEach(function(k){
+      if (!views[k]) return;
+      if (k === which) views[k].classList.remove('hidden');
+      else views[k].classList.add('hidden');
+    });
+    tabs.forEach(function(b){
+      var on = b.getAttribute('data-view') === which;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+
+  function go(which){
+    show(which);
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    /* 布局是渐进的，隔一帧再压一次 */
+    setTimeout(function(){ window.scrollTo(0, 0); }, 30);
+    setTimeout(function(){ window.scrollTo(0, 0); }, 180);
+    try { history.replaceState(null, '', '#' + which); } catch (e) { }
+  }
+
+  tabs.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      go(this.getAttribute('data-view'));
+    });
+  });
+
+  /* 支持 #care / #data 深链，便于从其他页面直接跳转 */
+  var hash = (location.hash || '').replace('#', '');
+  if (hash && views[hash]) show(hash);
+
+  var top = document.getElementById('backTop');
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 480) top.classList.add('show');
+    else top.classList.remove('show');
+  });
+  top.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
+
+  /* 打开时固定在顶部：WebView 会沿用上次的位置 */
+  window.scrollTo(0, 0);
+
+  /* 给宿主用：每次进入都回到第一屏。WebView2 会连会话历史一起恢复，
+     上次停在哪一屏、滚到哪，重开时都会原样回来，家长会以为内容乱了。 */
+  window.__dpReset = function () {
+    show('know');
+    try { history.replaceState(null, '', location.pathname); } catch (e) { }
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+})();
+</script>
+</body>
+</html>

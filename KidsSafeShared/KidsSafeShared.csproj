@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- 共享库：孩子端（KidsSafeDesktop）与家长端（KidsSafeParent）共用的全部界面与逻辑。
+	     命名空间保持 KidsSafeDesktop.* 不变，目的是让迁移过来的 341 个文件一行都不用改。
+	     平台专属代码（Platforms/、AppIcon、Splash、安装脚本）仍留在各自的 App 工程里。 -->
+	<PropertyGroup>
+		<TargetFrameworks>net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+
+		<RootNamespace>KidsSafeDesktop</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+
+		<!-- 关键：库工程默认会把 **/*.xaml 当 WinUI 的 Page 项交给 WindowsAppSDK 的 XamlCompiler，
+		     而这里的 XAML 全是 MAUI 页面（x:Class + MauiXaml），交给 WinUI 编译器必然失败
+		     （表现为 XamlCompiler.exe 退出码 1、无具体报错）。关掉 Windows 的默认 XAML 项，
+		     让它们只按 MauiXaml 处理。App 工程不需要这段，因为它有 SingleProject 自动处理。 -->
+		<EnableDefaultPageItems>false</EnableDefaultPageItems>
+		<EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<!-- 题库存储：SQLite（口算 + 英语词库），随包自带 e_sqlite3 -->
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.3" />
+	</ItemGroup>
+
+	<!-- 安卓签名（keystore 口令）属于 App 工程，共享库不参与签名，故此处不引用 Signing.props。 -->
+
+</Project>

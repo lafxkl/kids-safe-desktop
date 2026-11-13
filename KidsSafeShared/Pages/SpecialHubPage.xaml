@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.SpecialHubPage"
+             Title="特需关爱"
+             Background="{StaticResource KidPageGradient}">
+
+    <ContentPage.Resources>
+        <!-- 训练模块卡：目标 / 机制 / 剂量 / 要领 全部展开显示。
+             特需儿童的家长往往需要「照着做」，隐藏信息会让页面变成黑箱；
+             因此在有限高度内用字号层级（13 / 12 / 11.5）分层，而不是折叠。 -->
+        <DataTemplate x:Key="ModuleCard" x:DataType="models:SpecialModule">
+            <Frame Style="{StaticResource KidCard}" Padding="14,12" Margin="0,0,0,10">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnModuleTapped" NumberOfTapsRequired="1" />
+                </Frame.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*"
+                      ColumnSpacing="10" RowSpacing="7">
+
+                    <!-- 扁平圆角色块图标（与桌面磁贴同一套视觉语言） -->
+                    <Frame Grid.Row="0" Grid.Column="0" WidthRequest="46" HeightRequest="46"
+                           MinimumWidthRequest="46" MinimumHeightRequest="46"
+                           CornerRadius="15" Padding="0" HasShadow="False"
+                           BorderColor="Transparent" VerticalOptions="Start"
+                           BackgroundColor="{Binding AccentColor}">
+                        <Label Text="{Binding Emoji}" FontSize="24"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Frame>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                        <Label Text="{Binding Title}" FontSize="17" FontAttributes="Bold"
+                               TextColor="{StaticResource CandyInk}" />
+                        <Label Text="{Binding Subtitle}" FontSize="12"
+                               TextColor="{StaticResource CandyGrapeDeep}" />
+                    </VerticalStackLayout>
+
+                    <Label Grid.Row="1" Grid.ColumnSpan="2" FontSize="13" TextColor="#37474F"
+                           LineBreakMode="TailTruncation" MaxLines="3"
+                           Text="{Binding Goal, StringFormat='🎯 练什么：{0}'}" />
+
+                    <Label Grid.Row="2" Grid.ColumnSpan="2" FontSize="12" TextColor="#6D4C41"
+                           LineBreakMode="TailTruncation" MaxLines="5" Margin="0,2,0,0"
+                           Text="{Binding Mechanism, StringFormat='🔬 为什么这样练：{0}'}" />
+
+                    <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                        <Label Grid.Column="0" FontSize="11.5" TextColor="#00897B"
+                               LineBreakMode="TailTruncation" MaxLines="2" VerticalOptions="Center"
+                               Text="{Binding Dose, StringFormat='⏱ {0}'}" />
+
+                        <Border Grid.Column="1" BackgroundColor="#EDE7F6" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14" Padding="12,6"
+                                VerticalOptions="Center" Margin="8,0,0,0">
+                            <Label Text="开始 ▶" FontSize="12.5" FontAttributes="Bold"
+                                   TextColor="{StaticResource CandyGrapeDeep}" />
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Frame>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14"
+              Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🌱 特需关爱" TextColor="White" FontSize="20"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="🏠" FontSize="22" TextColor="White"
+                   VerticalOptions="Center" HorizontalOptions="End">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBack" NumberOfTapsRequired="1" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="16,14,16,40">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- 板块说明 -->
+                <Frame BackgroundColor="#EDE7F6" CornerRadius="20" Padding="16,14"
+                       HasShadow="False" BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="给不一样的小朋友，一套能练的小游戏" FontSize="17"
+                               FontAttributes="Bold" TextColor="{StaticResource CandyGrapeDeep}" />
+                        <Label FontSize="13" TextColor="#4E342E" LineBreakMode="WordWrap"
+                               Text="这里的小游戏按「学习通道」重做了一遍：看不见的孩子用听和摸，听不见的孩子用看和振动。每个模块都写清了练什么、为什么这样练、练多久——不是让孩子打发时间，而是家长可以照着带的结构化训练。" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 三条训练原则 -->
+                <Frame Style="{StaticResource KidCard}" Padding="16,12">
+                    <VerticalStackLayout Spacing="9">
+                        <Label Text="📋 带训练前，先记住三件事" FontSize="15" FontAttributes="Bold"
+                               TextColor="{StaticResource CandyInk}" />
+                        <Label FontSize="12.5" TextColor="#4E342E" LineBreakMode="WordWrap"
+                               Text="① 短时高频：一次 5 分钟、每天一次，比周末练一小时有效得多。" />
+                        <Label FontSize="12.5" TextColor="#4E342E" LineBreakMode="WordWrap"
+                               Text="② 一次只追一个目标：孩子答对率稳定在 80% 以上再升难度，不要连跳两级。" />
+                        <Label FontSize="12.5" TextColor="#4E342E" LineBreakMode="WordWrap"
+                               Text="③ 结束要说清「今天练了什么」：可预期、可复述的流程，能显著降低孩子的焦虑与抗拒。" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 家长心理守护入口：给大人看的内容，放在训练卡之前，
+                     避免家长眼里只有「今天该练什么」而忽略了自己的状态 -->
+                <Border BackgroundColor="#E8F5E9" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 20" Padding="16,14">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnParentGuide" NumberOfTapsRequired="1" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="💚 家长心理守护" FontSize="16" FontAttributes="Bold"
+                                   TextColor="#1B5E20" />
+                            <Label Text="该做什么 · 别做什么 · 什么情况该找医生" FontSize="12"
+                                   TextColor="#2E7D32" LineBreakMode="WordWrap" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="▶" FontSize="15" TextColor="#2E7D32"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- ===== 视力障碍 ===== -->
+                <Frame BackgroundColor="#E0F2F1" CornerRadius="18" Padding="14,10"
+                       HasShadow="False" BorderColor="Transparent" Margin="0,6,0,0">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="👁️ 视力障碍 · 听觉通道" FontSize="16" FontAttributes="Bold"
+                               TextColor="#00695C" />
+                        <Label FontSize="11.5" TextColor="#00695C" LineBreakMode="WordWrap"
+                               Text="全程语音引导 + 振动反馈；按钮 ≥ 96dp，闭着眼也能点中。" />
+                    </VerticalStackLayout>
+                </Frame>
+                <VerticalStackLayout x:Name="VisionList" Spacing="0"
+                                     BindableLayout.ItemTemplate="{StaticResource ModuleCard}" />
+
+                <!-- ===== 听障 ===== -->
+                <Frame BackgroundColor="#FFF3E0" CornerRadius="18" Padding="14,10"
+                       HasShadow="False" BorderColor="Transparent" Margin="0,6,0,0">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="👂 聋 / 重听 · 视觉通道" FontSize="16" FontAttributes="Bold"
+                               TextColor="#E65100" />
+                        <Label FontSize="11.5" TextColor="#E65100" LineBreakMode="WordWrap"
+                               Text="全程不使用声音；靠高对比色块、闪烁与振动传递「对 / 错」。" />
+                    </VerticalStackLayout>
+                </Frame>
+                <VerticalStackLayout x:Name="HearingList" Spacing="0"
+                                     BindableLayout.ItemTemplate="{StaticResource ModuleCard}" />
+
+                <!-- ===== 社交情绪 ===== -->
+                <Frame BackgroundColor="#E8EAF6" CornerRadius="18" Padding="14,10"
+                       HasShadow="False" BorderColor="Transparent" Margin="0,6,0,0">
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="😊 社交情绪 · 读脸与归因" FontSize="16" FontAttributes="Bold"
+                               TextColor="#283593" />
+                        <Label FontSize="11.5" TextColor="#283593" LineBreakMode="WordWrap"
+                               Text="听障与谱系儿童常在这里卡住：先认得出，才说得清。" />
+                    </VerticalStackLayout>
+                </Frame>
+                <VerticalStackLayout x:Name="SocialList" Spacing="0"
+                                     BindableLayout.ItemTemplate="{StaticResource ModuleCard}" />
+
+                <!-- 家长须知 -->
+                <Frame BackgroundColor="#FFF8E1" CornerRadius="18" Padding="16,13"
+                       HasShadow="False" BorderColor="Transparent" Margin="0,10,0,0">
+                    <VerticalStackLayout Spacing="7">
+                        <Label Text="👨‍👩‍👧 家长须知" FontSize="15" FontAttributes="Bold" TextColor="#E65100" />
+                        <Label FontSize="11.5" TextColor="#5D4037" LineBreakMode="WordWrap"
+                               Text="· 这里提供的是「训练活动」，不是诊断，也不替代康复治疗。若孩子尚未做过听力 / 视力评估，请先到正规医疗机构检查。" />
+                        <Label FontSize="11.5" TextColor="#5D4037" LineBreakMode="WordWrap"
+                               Text="· 手语手势为简化示意，规范打法请以《国家通用手语》或当地特教老师为准。" />
+                        <Label FontSize="11.5" TextColor="#5D4037" LineBreakMode="WordWrap"
+                               Text="· 训练效果存在个体差异。孩子连续几天抗拒时，先停下、换成他喜欢的形式，不要硬练。" />
+                        <Label FontSize="11.5" TextColor="#5D4037" LineBreakMode="WordWrap"
+                               Text="· 建议每周记录一次「今天答对几题」，用同一套题做前后对比，比凭感觉判断可靠。" />
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

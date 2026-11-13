@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             x:Class="KidsSafeDesktop.Pages.PoemDetailPage"
+             Title="古诗学习"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Image Grid.Row="0" Grid.RowSpan="3"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" x:Name="ProgressLabel" Text="1 / 1" TextColor="White" FontSize="17"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="📜" FontSize="20" TextColor="White"
+                   HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 内容 -->
+        <ScrollView Grid.Row="1" x:Name="ContentScroll" Padding="18,10,18,16">
+            <VerticalStackLayout Spacing="14">
+
+                <!-- 标题区 -->
+                <VerticalStackLayout Spacing="6" Margin="0,6,0,2">
+                    <Label Text="{Binding Title}" FontSize="30" FontAttributes="Bold" TextColor="#3E2723"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Label Text="{Binding AuthorLine}" FontSize="15" TextColor="#8D6E63"
+                           HorizontalOptions="Center" />
+                    <Border BackgroundColor="{Binding Accent}" StrokeThickness="0" Padding="12,4"
+                            HorizontalOptions="Center" StrokeShape="RoundRectangle 12" Margin="0,4,0,0">
+                        <Label Text="{Binding Category}" FontSize="12.5" FontAttributes="Bold" TextColor="White" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- 正文 -->
+                <Frame BackgroundColor="#FFFBF3" CornerRadius="22" Padding="22,24" HasShadow="False"
+                       BorderColor="#EFE3D0">
+                    <VerticalStackLayout x:Name="LinesLayout" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" FontSize="24" TextColor="#3E2723"
+                                       HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                                       LineHeight="1.5" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 注释 -->
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="20" Padding="18,16" HasShadow="False"
+                       BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="📝 字词注释" FontSize="16" FontAttributes="Bold" TextColor="#5D4037" />
+                        <VerticalStackLayout x:Name="NotesLayout" Spacing="7">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding .}" FontSize="14.5" TextColor="#6D4C41" LineHeight="1.4" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 译文 -->
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="20" Padding="18,16" HasShadow="False"
+                       BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🗒 白话译文" FontSize="16" FontAttributes="Bold" TextColor="#5D4037" />
+                        <Label Text="{Binding Translation}" FontSize="15" TextColor="#4E342E" LineHeight="1.6" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 赏析 -->
+                <Frame BackgroundColor="#FFF4E5" CornerRadius="20" Padding="18,16" HasShadow="False"
+                       BorderColor="#FFE0B2">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="💡 小知识" FontSize="16" FontAttributes="Bold" TextColor="#E65100" />
+                        <Label Text="{Binding Appreciation}" FontSize="15" TextColor="#6D4C41" LineHeight="1.6" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="读三遍，试着背给爸爸妈妈听～" FontSize="13" TextColor="#A1887F"
+                       HorizontalOptions="Center" Margin="0,4,0,8" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 底部操作：上一首 / 朗读 / 下一首 -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Padding="14,8,14,18">
+            <Button x:Name="PrevBtn" Grid.Column="0" Text="⏮ 上一首" FontSize="15" FontAttributes="Bold"
+                    BackgroundColor="#FFFFFF" TextColor="#5D4037" CornerRadius="16" HeightRequest="48"
+                    Clicked="OnPrev" />
+            <Button x:Name="SpeakBtn" Grid.Column="1" Text="🔊 朗读一遍" FontSize="17" FontAttributes="Bold"
+                    BackgroundColor="#8D6E63" TextColor="White" CornerRadius="16" HeightRequest="48"
+                    Clicked="OnSpeak" />
+            <Button x:Name="NextBtn" Grid.Column="2" Text="下一首 ⏭" FontSize="15" FontAttributes="Bold"
+                    BackgroundColor="#FFFFFF" TextColor="#5D4037" CornerRadius="16" HeightRequest="48"
+                    Clicked="OnNext" />
+        </Grid>
+    </Grid>
+</ContentPage>

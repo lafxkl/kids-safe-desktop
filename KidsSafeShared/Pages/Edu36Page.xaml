@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.Edu36Page"
+             Title="教育36计"
+             BackgroundColor="#FBF7F0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- 顶部栏：标题 + 分类入口（筛选在网页里完成，这里只做「回顶」） -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="12,10" BackgroundColor="#C96A3E">
+            <Button Grid.Column="0" Text="← 返回" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="15" HorizontalOptions="Start" Clicked="OnBack" />
+
+            <HorizontalStackLayout Grid.Column="1" Spacing="7" HorizontalOptions="Center" VerticalOptions="Center">
+                <Label Text="教育 36 计" TextColor="White" FontSize="19" FontAttributes="Bold"
+                       VerticalOptions="Center" />
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="6,2"
+                        StrokeShape="RoundRectangle 9" VerticalOptions="Center">
+                    <Label Text="推荐" TextColor="#A9532C" FontSize="10" FontAttributes="Bold"
+                           CharacterSpacing="1" />
+                </Border>
+            </HorizontalStackLayout>
+
+            <Button Grid.Column="2" Text="↑" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="21" FontAttributes="Bold" Clicked="OnTop" />
+        </Grid>
+
+        <!-- 正文（网页，离线内置） -->
+        <WebView x:Name="DocView" Grid.Row="1" BackgroundColor="#FBF7F0" />
+
+        <!-- 打不开时的说明：绝不让家长对着白屏猜 -->
+        <Grid x:Name="ErrorPanel" Grid.Row="1" IsVisible="False" Padding="32,0">
+            <VerticalStackLayout Spacing="12" VerticalOptions="Center" HorizontalOptions="Center"
+                                 MaximumWidthRequest="460">
+                <Label Text="？" FontSize="38" FontAttributes="Bold" TextColor="#C96A3E" HorizontalOptions="Center" />
+                <Label Text="这个页面没能打开" FontSize="19" FontAttributes="Bold" TextColor="#8A4A28"
+                       HorizontalOptions="Center" />
+                <Label x:Name="ErrorDetail" Text="内容就在安装包里，不需要联网。"
+                       FontSize="14" TextColor="#6B5646" HorizontalTextAlignment="Center"
+                       LineHeight="1.5" HorizontalOptions="Center" />
+                <Button Text="再试一次" FontSize="16" TextColor="White" BackgroundColor="#C96A3E"
+                        CornerRadius="22" Padding="26,0" HeightRequest="44"
+                        HorizontalOptions="Center" Clicked="OnRetry" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- 释放资源 / 等待网页就绪 -->
+        <Grid x:Name="LoadingMask" Grid.Row="0" Grid.RowSpan="2"
+              BackgroundColor="#CCFBF7F0" IsVisible="False">
+            <VerticalStackLayout Spacing="14" VerticalOptions="Center" HorizontalOptions="Center">
+                <ActivityIndicator IsRunning="True" Color="#C96A3E" WidthRequest="46" HeightRequest="46" />
+                <Label Text="正在打开…" FontSize="17" TextColor="#8A4A28"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+    </Grid>
+</ContentPage>

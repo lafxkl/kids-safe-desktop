@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             x:Class="KidsSafeDesktop.Pages.ParentDashboardPage"
+             Title="家长设置"
+             BackgroundColor="#ECEFF1">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#3949AB">
+            <Button Text="← 主页" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBackHome" />
+            <Label Grid.Column="1" Text="家长设置" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" Text="退出模式" TextColor="#FFCDD2" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="16" HorizontalOptions="End" Clicked="OnExit" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20,16">
+            <VerticalStackLayout Spacing="22">
+
+                <!-- 账号 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False"
+                      BorderColor="#E1BEE7">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="4">
+                            <Label Text="👤 账号与云端同步" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                            <Label Text="管理昵称头像、切换离线/在线模式、连接家长服务器。" FontSize="13" TextColor="#607D8B" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="进入" BackgroundColor="#7E57C2" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" Clicked="OnAccount" />
+                    </Grid>
+                </Frame>
+
+                <!-- 密码 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🔑 家长密码" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="设置新的 4 位密码（留空则不修改）" FontSize="13" TextColor="#607D8B" />
+                        <Entry Keyboard="Numeric" IsPassword="True" MaxLength="4" Placeholder="新密码"
+                               FontSize="22" Text="{Binding NewPin}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 每日时长 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="⏱ 每日可用时长" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <Stepper Value="{Binding DailyLimitMinutes}" Minimum="10" Maximum="240"
+                                     Increment="10" ValueChanged="OnLimitChanged" />
+                            <Label x:Name="LimitLabel" Text="{Binding DailyLimitMinutes, StringFormat='{0} 分钟'}"
+                                   FontSize="22" FontAttributes="Bold" TextColor="#E65100"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Label Text="到时间后儿童桌面会自动锁定，需家长重新进入。" FontSize="13" TextColor="#607D8B" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 护眼模式 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False"
+                       BorderColor="#FFCC80">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="👁️ 护眼模式" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="开启后全屏叠加暖色滤镜，降低蓝光刺激；可设为常开或按时间段自动生效。"
+                               FontSize="13" TextColor="#607D8B" />
+
+                        <!-- 常开 -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="常开护眼" FontSize="15" TextColor="#5D4037" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" IsToggled="{Binding EyeCareEnabled, Mode=TwoWay}"
+                                    OnColor="#FF9800" ThumbColor="White" />
+                        </Grid>
+
+                        <!-- 强度 -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding EyeCareIntensityText}" FontSize="15"
+                                   FontAttributes="Bold" TextColor="#E65100" />
+                            <Slider Value="{Binding EyeCareIntensity, Mode=TwoWay}"
+                                    Minimum="0" Maximum="1" MinimumTrackColor="#FF9800"
+                                    MaximumTrackColor="#FFE0B2" ThumbColor="#FF9800" />
+                            <Label Text="柔和 ←→ 强力（不建议长期拉到最高，画面会偏暗）"
+                                   FontSize="12" TextColor="#90A4AE" />
+                        </VerticalStackLayout>
+
+                        <!-- 定时自动 -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="定时自动护眼" FontSize="15" TextColor="#5D4037"
+                                   VerticalOptions="Center" />
+                            <Switch Grid.Column="1" IsToggled="{Binding EyeCareAutoEnabled, Mode=TwoWay}"
+                                    OnColor="#FF9800" ThumbColor="White" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="8"
+                              IsVisible="{Binding EyeCareAutoEnabled}">
+                            <Label Grid.Column="0" Text="开始" FontSize="14" TextColor="#607D8B"
+                                   VerticalOptions="Center" />
+                            <Stepper Grid.Column="1" Value="{Binding EyeCareAutoStartHour, Mode=TwoWay}"
+                                     Minimum="0" Maximum="23" Increment="1" />
+                            <Label Grid.Column="2" Text="结束" FontSize="14" TextColor="#607D8B"
+                                   VerticalOptions="Center" />
+                            <Stepper Grid.Column="3" Value="{Binding EyeCareAutoEndHour, Mode=TwoWay}"
+                                     Minimum="0" Maximum="23" Increment="1" />
+                        </Grid>
+
+                        <Label Text="{Binding EyeCareStatusText}" FontSize="13" TextColor="#00897B" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 防退出（仅安卓） -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False"
+                       BorderColor="#FFCC80" IsVisible="{OnPlatform Android=True, Default=False}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="🛡️ 防退出（安卓）" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="「底部上滑回桌面」「多任务手势」是系统手势，普通应用无法直接禁止。下面三层防护按顺序开启，效果从弱到强叠加。"
+                               FontSize="13" TextColor="#607D8B" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="① 离开后自动回到儿童桌面" FontSize="15" TextColor="#5D4037" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" IsToggled="{Binding AntiExitEnabled, Mode=TwoWay}"
+                                    OnColor="#2E7D32" ThumbColor="White" />
+                        </Grid>
+                        <Label Text="默认已开启：一被切走（上滑回桌面、进多任务）就立刻把自己拉回前台。"
+                               FontSize="12" TextColor="#90A4AE" />
+
+                        <Button Text="② 授予「显示在其他应用上层」（让①更稳定）"
+                                FontSize="14" BackgroundColor="#43A047" TextColor="White"
+                                CornerRadius="14" Clicked="OnRequestOverlay" />
+
+                        <Button Text="③ 设为默认桌面（上滑回桌面时回到本应用）"
+                                FontSize="14" BackgroundColor="#EF6C00" TextColor="White"
+                                CornerRadius="14" Clicked="OnSetDefaultHome" />
+
+                        <Button Text="④ 忽略电池优化（防止后台被杀）"
+                                FontSize="14" BackgroundColor="#5C6BC0" TextColor="White"
+                                CornerRadius="14" Clicked="OnIgnoreBattery" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="⑤ 锁定模式（屏幕固定）" FontSize="15" TextColor="#5D4037" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" IsToggled="{Binding KioskLockEnabled, Mode=TwoWay}"
+                                    OnColor="#EF6C00" ThumbColor="White" Toggled="OnKioskLockToggled" />
+                        </Grid>
+                        <Label Text="由系统固定本应用：通知栏、Home 手势、多任务键全部屏蔽（首次会弹一次系统「固定」确认框）。注意：固定期间无法启动家长放行的外部应用。"
+                               FontSize="12" TextColor="#90A4AE" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 允许的应用 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🧩 允许的应用" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="勾选后才会显示在儿童桌面（安卓为已安装应用）。" FontSize="13" TextColor="#607D8B" />
+                        <ActivityIndicator x:Name="CatalogLoading" IsRunning="True" Color="#3949AB" HeightRequest="30" />
+                        <CollectionView x:Name="CatalogView" ItemsSource="{Binding Catalog}" HeightRequest="320">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="Auto,*" Padding="6">
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding Selected, Mode=TwoWay}"
+                                                  Color="#3949AB" CheckedChanged="OnAppChecked" />
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                                            <Grid WidthRequest="34" HeightRequest="34">
+                                                <Frame WidthRequest="32" HeightRequest="32" CornerRadius="16" Padding="0"
+                                                       HasShadow="False" BackgroundColor="#ECEFF1"
+                                                       IsVisible="{Binding App.HasIcon}">
+                                                    <Image Source="{Binding App.Icon}" WidthRequest="24" HeightRequest="24"
+                                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                                                </Frame>
+                                                <Label Text="{Binding App.Emoji}" FontSize="22"
+                                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                                       IsVisible="{Binding App.HasIcon, Converter={StaticResource InverseBool}}" />
+                                            </Grid>
+                                            <Label Text="{Binding App.Name}" FontSize="16" TextColor="#263238"
+                                                   VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 小游戏 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🎮 小游戏" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="允许小游戏（总开关）" FontSize="14" TextColor="#607D8B" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" IsToggled="{Binding GamesEnabled, Mode=TwoWay}" />
+                        </Grid>
+                        <CollectionView ItemsSource="{Binding Games}" HeightRequest="280">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:GameToggle">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="4">
+                                        <Label Grid.Column="0" Text="{Binding Info.Emoji}" FontSize="24" />
+                                        <Label Grid.Column="1" Text="{Binding Info.Title}" FontSize="16"
+                                               TextColor="#263238" VerticalOptions="Center" />
+                                        <Switch Grid.Column="2" IsToggled="{Binding IsOn, Mode=TwoWay}" VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        <Button Text="🗑 清空排行榜记录" FontSize="14" BackgroundColor="#EF5350" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" Clicked="OnClearLeaderboard" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 允许网站 -->
+                <Frame BackgroundColor="White" CornerRadius="16" Padding="16" HasShadow="False">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🌐 允许的网站（可选）" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <HorizontalStackLayout Spacing="8">
+                            <Entry Placeholder="https://example.com" FontSize="15" Text="{Binding NewSite}"
+                                   HorizontalOptions="FillAndExpand" />
+                            <Button Text="添加" BackgroundColor="#00897B" TextColor="White" CornerRadius="10"
+                                    Clicked="OnAddSite" />
+                        </HorizontalStackLayout>
+                        <CollectionView ItemsSource="{Binding AllowedSites}" HeightRequest="120">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*,Auto" Padding="4">
+                                        <Label Text="{Binding .}" FontSize="15" TextColor="#263238"
+                                               VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                        <Button Grid.Column="1" Text="✕" TextColor="#C62828"
+                                                BackgroundColor="Transparent" BorderWidth="0" FontSize="16"
+                                                Clicked="OnRemoveSite" CommandParameter="{Binding .}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="💾 保存设置" FontSize="20" BackgroundColor="#2E7D32" TextColor="White"
+                        CornerRadius="14" HeightRequest="56" Clicked="OnSave" />
+                <Label Text="{Binding Status}" FontSize="16" TextColor="#2E7D32" HorizontalOptions="Center" />
+
+                <!-- 远程管理（家长端服务器） -->
+                <Frame BackgroundColor="#FFF8E1" CornerRadius="16" Padding="16" HasShadow="False"
+                      BorderColor="#FFD54F">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="☁️ 家长端服务器（远程管理）" FontSize="18" FontAttributes="Bold" TextColor="#E65100" />
+                        <Label Text="在电脑上运行家长端服务器后，这里填入地址即可远程下发配置。" FontSize="13" TextColor="#8D6E63" />
+                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                            <Label Text="启用" VerticalOptions="Center" TextColor="#5D4037" />
+                            <Switch IsToggled="{Binding ServerEnabled, Mode=TwoWay}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Entry Placeholder="服务器地址，如 http://192.168.1.10:5180" FontSize="15"
+                               Text="{Binding ServerUrl}" HorizontalOptions="FillAndExpand" />
+                        <Entry Placeholder="家长账号（可留空，留空则用密码/配对码）" FontSize="15" MaxLength="32"
+                               Text="{Binding ServerUser}" HorizontalOptions="FillAndExpand" />
+                        <HorizontalStackLayout Spacing="10">
+                            <Entry Placeholder="密码 或 6 位配对码" IsPassword="True" FontSize="15" MaxLength="64"
+                                   Text="{Binding ServerPin}" HorizontalOptions="FillAndExpand" />
+                            <Button Text="登录" BackgroundColor="#FB8C00" TextColor="White" CornerRadius="10"
+                                    Clicked="OnServerLogin" />
+                            <Button Text="立即同步" BackgroundColor="#039BE5" TextColor="White" CornerRadius="10"
+                                    Clicked="OnServerSync" />
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding ServerStatus}" FontSize="15" TextColor="#33691E"
+                               HorizontalOptions="Center" />
+                        <!-- 实时下发通道（长轮询）：不依赖厂商推送，家长一改配置这里就会显示已更新 -->
+                        <Label Text="{Binding LiveStatus}" FontSize="12" TextColor="#6D4C41"
+                               HorizontalOptions="Center" LineBreakMode="TailTruncation" />
+                <Label Text="默认密码 1234（服务器 appsettings.json 可改）· 同步后本页会刷新为服务器配置"
+                       FontSize="12" TextColor="#8D6E63" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 在线内容：宝宝听/宝宝看/亲子阅/故事屋/电子课本是否连家长服务器取补充内容 -->
+                <Frame BackgroundColor="#E1F5FE" CornerRadius="16" Padding="16" HasShadow="False"
+                      BorderColor="#81D4FA">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="📚 在线内容" FontSize="18" FontAttributes="Bold" TextColor="#01579B" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="允许在线内容" FontSize="16" FontAttributes="Bold" TextColor="#01579B" />
+                                <Label Text="宝宝听 · 宝宝看 · 亲子阅 · 故事屋 · 电子课本"
+                                       FontSize="13" TextColor="#0277BD" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding OnlineContentEnabled, Mode=TwoWay}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                        <Label Text="开启后从家长服务器取补充内容（需先启用上面的服务器并登录）；关闭则只用本机内置内容，完全离线。内容只来自自己的服务器，不访问第三方站点。"
+                               FontSize="12" TextColor="#0277BD" />
+                        <Label Text="💡 服务器后台网页里也有同一个开关，改完点「立即同步」一次即可生效。"
+                               FontSize="12" TextColor="#8D6E63" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 诊断日志：真机上取 nav.log 不用翻目录，直接在这里看/复制 -->
+                <Frame BackgroundColor="#E8F5E9" CornerRadius="16" Padding="16" HasShadow="False"
+                      BorderColor="#A5D6A7">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🩺 诊断日志" FontSize="18" FontAttributes="Bold" TextColor="#1B5E20" />
+                        <Label Text="应用出错、或想确认荣耀推送有没有取到 token 时，来这里看。日志内容可一键复制。"
+                               FontSize="13" TextColor="#33691E" />
+                        <Button Text="打开诊断日志" FontSize="15" BackgroundColor="#2E7D32" TextColor="White"
+                                CornerRadius="12" HeightRequest="48" Clicked="OnOpenDiagnostics" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 隐私与合规：政策入口必须在使用过程中始终可达（商店审核会查） -->
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="16" Padding="16" HasShadow="False"
+                      BorderColor="#CFD8DC">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🔒 隐私与合规" FontSize="18" FontAttributes="Bold" TextColor="#00695C" />
+                        <Label Text="不收集身份信息、不做广告、不做数据统计；孩子的数据默认只在这台设备上。"
+                               FontSize="13" TextColor="#546E7A" LineBreakMode="WordWrap" />
+                        <Label x:Name="PrivacyStateLabel" FontSize="12" TextColor="#78909C"
+                               LineBreakMode="WordWrap" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Grid.Column="0" Text="📄 隐私政策" FontSize="14" BackgroundColor="#E0F2F1"
+                                    TextColor="#00695C" CornerRadius="12" HeightRequest="46"
+                                    Clicked="OnOpenPrivacyPolicy" />
+                            <Button Grid.Column="1" Text="🧩 SDK 清单" FontSize="14" BackgroundColor="#E3F2FD"
+                                    TextColor="#1565C0" CornerRadius="12" HeightRequest="46"
+                                    Clicked="OnOpenSdkList" />
+                        </Grid>
+                        <Button Text="撤回隐私授权" FontSize="13" BackgroundColor="Transparent"
+                                TextColor="#90A4AE" BorderWidth="0" HeightRequest="36"
+                                Clicked="OnRevokePrivacy" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 新手引导 -->
+
+                <Button Text="🧸 重新查看新手引导" FontSize="15" BackgroundColor="#ECEFF1" TextColor="#455A64"
+                        CornerRadius="14" HeightRequest="46" Clicked="OnReplayOnboarding" />
+
+                <!-- 版本信息 -->
+                <Label Text="{Binding VersionText}" FontSize="13" TextColor="#90A4AE"
+                       HorizontalOptions="Center" Margin="0,4,0,8" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

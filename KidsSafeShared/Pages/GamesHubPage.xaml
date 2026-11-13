@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             xmlns:controls="clr-namespace:KidsSafeDesktop.Controls"
+             x:Class="KidsSafeDesktop.Pages.GamesHubPage"
+             Title="游戏乐园"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- 主题背景大图（覆盖整页） -->
+        <Image Grid.Row="0" Grid.RowSpan="3"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,20,16,14"
+              Background="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.HeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🎮 游戏乐园" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" Text="🏆" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="26" HorizontalOptions="End" Clicked="OnLeaderboard" />
+        </Grid>
+
+        <!-- 欢迎语 + 难度选择（固定头部，不随网格滚动） -->
+        <VerticalStackLayout Grid.Row="1" Spacing="12" Padding="20,14">
+            <Label Text="{Binding Nickname, StringFormat='Hi，{0}～ 挑一个喜欢的游戏吧！'}"
+                   FontSize="20" FontAttributes="Bold" TextColor="{StaticResource CandyGrapeDeep}"
+                   HorizontalOptions="Center" />
+
+            <Frame Style="{StaticResource KidCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🌟 选择难度" FontSize="16" TextColor="{StaticResource CandyGrapeDeep}" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="*,*,*">
+                        <Button x:Name="BtnEasy"   Grid.Column="0" Text="🌱 简单" FontSize="18"
+                                FontAttributes="Bold" CornerRadius="18" Clicked="OnDifficultyClicked" />
+                        <Button x:Name="BtnMedium" Grid.Column="1" Text="⭐ 中等" FontSize="18"
+                                FontAttributes="Bold" CornerRadius="18" Clicked="OnDifficultyClicked" />
+                        <Button x:Name="BtnHard"   Grid.Column="2" Text="🔥 困难" FontSize="18"
+                                FontAttributes="Bold" CornerRadius="18" Clicked="OnDifficultyClicked" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="👇 点一点，开始玩吧！" FontSize="16" TextColor="{StaticResource CandyInkSoft}"
+                   HorizontalOptions="Center" Margin="0,2,0,0" />
+
+            <!-- 分类：内置小游戏与网页小游戏合并到同一个大厅，用这三个按钮切换 -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button x:Name="BtnAll" Grid.Column="0" Text="🎮 全部" FontSize="14"
+                        FontAttributes="Bold" CornerRadius="16" HeightRequest="36" Clicked="OnFilterClicked" />
+                <Button x:Name="BtnBuiltin" Grid.Column="1" Text="🧩 内置" FontSize="14"
+                        FontAttributes="Bold" CornerRadius="16" HeightRequest="36" Clicked="OnFilterClicked" />
+                <Button x:Name="BtnWeb" Grid.Column="2" Text="🕹️ 网页" FontSize="14"
+                        FontAttributes="Bold" CornerRadius="16" HeightRequest="36" Clicked="OnFilterClicked" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- 游戏图标网格（与首页一致的桌面式图标布局，由 CollectionView 自身滚动） -->
+        <controls:LauncherGridView Grid.Row="2" x:Name="GamesGrid"
+                                  ItemTapped="OnGameTapped" Padding="18,8,18,24" />
+    </Grid>
+</ContentPage>

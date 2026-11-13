@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             xmlns:helpers="clr-namespace:KidsSafeDesktop.Helpers"
+             x:Class="KidsSafeDesktop.Pages.HelpPage"
+             Title="操作帮助"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*" Padding="16,12" BackgroundColor="#5C6BC0">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="❓ 操作帮助" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,14,18,40">
+            <VerticalStackLayout Spacing="14">
+
+                <!-- ============ 语音自检卡片（重点） ============ -->
+                <Frame BackgroundColor="White" CornerRadius="22" Padding="16,14" HasShadow="False"
+                       BorderColor="#C5CAE9">
+                    <VerticalStackLayout Spacing="10">
+
+                        <Label Text="🔊 语音播报自检" FontSize="20" FontAttributes="Bold"
+                               TextColor="#283593" HorizontalOptions="Center" />
+
+                        <!-- 状态灯 -->
+                        <Frame BackgroundColor="#F5F7FF" CornerRadius="16" Padding="12,10"
+                               HasShadow="False" BorderColor="Transparent">
+                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                                <Label Text="{Binding TtsStatusEmoji}" FontSize="32" VerticalOptions="Center" />
+                                <VerticalStackLayout Spacing="2" HorizontalOptions="FillAndExpand">
+                                    <Label Text="{Binding TtsStatusText}" FontSize="19" FontAttributes="Bold"
+                                           TextColor="{Binding TtsStatusColor}" VerticalOptions="Center" />
+                                    <Label Text="口算报题、英语单词、百科问答等朗读功能都需要它"
+                                           FontSize="12" TextColor="#8D6E63" VerticalOptions="Center" />
+                                </VerticalStackLayout>
+                            </HorizontalStackLayout>
+                        </Frame>
+
+                        <!-- 诊断信息 -->
+                        <Frame BackgroundColor="#FFF8E1" CornerRadius="14" Padding="12,10"
+                               HasShadow="False" BorderColor="Transparent">
+                            <Label Text="{Binding TtsStatusDetail}" FontSize="13" TextColor="#5D4037"
+                                   LineBreakMode="WordWrap" />
+                        </Frame>
+
+                        <!-- 操作按钮：2 x 2 -->
+                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*"
+                              RowSpacing="10" ColumnSpacing="10">
+                            <Button Grid.Row="0" Grid.Column="0" Text="🔊 试听中文"
+                                    FontSize="14" BackgroundColor="#66BB6A" TextColor="White"
+                                    CornerRadius="18" HeightRequest="46"
+                                    Command="{Binding TestChineseCommand}" />
+                            <Button Grid.Row="0" Grid.Column="1" Text="🔤 试听英文"
+                                    FontSize="14" BackgroundColor="#42A5F5" TextColor="White"
+                                    CornerRadius="18" HeightRequest="46"
+                                    Command="{Binding TestEnglishCommand}" />
+                            <Button Grid.Row="1" Grid.Column="0" Text="🔄 重新检测"
+                                    FontSize="14" BackgroundColor="#FFA726" TextColor="White"
+                                    CornerRadius="18" HeightRequest="46"
+                                    Command="{Binding CheckTtsCommand}" />
+                            <Button Grid.Row="1" Grid.Column="1" Text="⚙️ 系统语音设置"
+                                    FontSize="14" BackgroundColor="#7E57C2" TextColor="White"
+                                    CornerRadius="18" HeightRequest="46"
+                                    Clicked="OnOpenTtsSettings" />
+                        </Grid>
+
+                        <!-- 任务栏自救：儿童模式会隐藏系统任务栏，异常退出时可能没恢复回来 -->
+                        <Button Text="🖥️ 恢复任务栏（底下的任务栏不见了点这里）"
+                                FontSize="14" BackgroundColor="#00897B" TextColor="White"
+                                CornerRadius="18" HeightRequest="48"
+                                Clicked="OnRestoreTaskbar" />
+
+                        <!-- 不可用时的强提示 -->
+                        <Frame BackgroundColor="#FFEBEE" CornerRadius="14" Padding="12,10"
+                               HasShadow="False" BorderColor="Transparent"
+                               IsVisible="{Binding TtsHintVisible}">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="⚠️ 没声音？这样做" FontSize="15" FontAttributes="Bold"
+                                       TextColor="#C62828" />
+                                <Label Text="Windows：设置 → 时间和语言 → 语音 → 添加「中文(中国)」和「英语(美国)」"
+                                       FontSize="13" TextColor="#5D4037" />
+                                <Label Text="Android：设置 → 系统 → 语言和输入法 → 文字转语音(TTS)输出 → 安装语音数据"
+                                       FontSize="13" TextColor="#5D4037" />
+                                <Label Text="详情见下方「语音配置」页签" FontSize="13"
+                                       TextColor="#C62828" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- ============ 分类切换 ============ -->
+                <Label Text="📋 选择你想了解的内容" FontSize="16" FontAttributes="Bold"
+                       TextColor="#283593" />
+                <HorizontalStackLayout x:Name="CategoryStack" Spacing="8" />
+
+                <!-- ============ 帮助条目列表 ============ -->
+                <VerticalStackLayout x:Name="TopicsStack" Spacing="12">
+                    <BindableLayout.ItemsSource>
+                        <Binding Path="Topics" />
+                    </BindableLayout.ItemsSource>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:HelpTopic">
+                            <Frame BackgroundColor="White" CornerRadius="20" Padding="14"
+                                   HasShadow="False"
+                                   BorderColor="{Binding IsImportant, Converter={StaticResource BoolToColor}, ConverterParameter='#FFA726,#C5CAE9'}">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTopicTapped" />
+                                </Frame.GestureRecognizers>
+                                <VerticalStackLayout Spacing="8">
+                                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                        <Label Text="{Binding Emoji}" FontSize="26" VerticalOptions="Center" />
+                                        <VerticalStackLayout Spacing="1" HorizontalOptions="FillAndExpand">
+                                            <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold"
+                                                   TextColor="#283593" />
+                                            <Label Text="{Binding Summary}" FontSize="13" TextColor="#5D4037" />
+                                        </VerticalStackLayout>
+                                        <Label Text="{Binding ExpandArrow}" FontSize="14" TextColor="#9E9E9E"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+
+                                    <!-- 分步说明（展开显示） -->
+                                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsExpanded}">
+                                        <BoxView HeightRequest="1" Color="#E8EAF6" />
+                                        <BindableLayout.ItemsSource>
+                                            <Binding Path="Steps" />
+                                        </BindableLayout.ItemsSource>
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Label Text="{Binding .}" FontSize="14" TextColor="#455A64" />
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <!-- 版本信息 -->
+                <Label Text="{Binding Source={x:Static helpers:AppVersion.Version}, StringFormat='当前版本 v{0}'}"
+                       FontSize="12" TextColor="#9E9E9E" HorizontalOptions="Center" Margin="0,8,0,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

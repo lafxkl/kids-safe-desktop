@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.ThirdPartySdkPage"
+             Title="第三方 SDK 清单"
+             Background="{StaticResource KidPageGradient}">
+
+    <ContentPage.Resources>
+        <!-- 一个 SDK -->
+        <DataTemplate x:Key="SdkCard" x:DataType="models:SdkItem">
+            <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="16,14"
+                    StrokeShape="RoundRectangle 20" Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="8">
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="{Binding Name}" FontSize="16" FontAttributes="Bold"
+                               TextColor="#0D47A1" LineBreakMode="WordWrap" />
+                        <Border Grid.Column="1" BackgroundColor="#E3F2FD" StrokeThickness="0"
+                                Padding="8,3" StrokeShape="RoundRectangle 9" VerticalOptions="Start">
+                            <Label Text="{Binding Version, StringFormat='v{0}'}" FontSize="10.5"
+                                   TextColor="#1565C0" />
+                        </Border>
+                    </Grid>
+
+                    <Label Text="{Binding Provider, StringFormat='提供方：{0}'}" FontSize="12"
+                           TextColor="#78909C" LineBreakMode="WordWrap" />
+
+                    <Border BackgroundColor="#F5F7FA" StrokeThickness="0" Padding="11,9"
+                            StrokeShape="RoundRectangle 12">
+                        <Label Text="{Binding Purpose, StringFormat='用途：{0}'}" FontSize="12.5"
+                               TextColor="#37474F" LineBreakMode="WordWrap" />
+                    </Border>
+
+                    <Label Text="收集 / 处理的信息" FontSize="12" FontAttributes="Bold" TextColor="#5D4037" />
+                    <Label Text="{Binding DataCollected}" FontSize="12.5" TextColor="#455A64"
+                           LineBreakMode="WordWrap" />
+
+                    <Label Text="如何关闭" FontSize="12" FontAttributes="Bold" TextColor="#5D4037" />
+                    <Label Text="{Binding Control}" FontSize="12.5" TextColor="#455A64"
+                           LineBreakMode="WordWrap" />
+
+                    <Button Text="查看该 SDK 官方隐私政策 ›" FontSize="12" BackgroundColor="Transparent"
+                            TextColor="#1565C0" BorderWidth="0" Padding="0" HeightRequest="34"
+                            HorizontalOptions="Start" Clicked="OnOpenSdkPolicy" />
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#1565C0">
+            <Button Grid.Column="0" Text="← 返回" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="16" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🧩 第三方 SDK 清单" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="4 项" TextColor="#BBDEFB" FontSize="12" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,14,18,36">
+            <VerticalStackLayout Spacing="12">
+
+                <Border BackgroundColor="#E3F2FD" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="共享清单，一个都不藏" FontSize="17" FontAttributes="Bold" TextColor="#0D47A1" />
+                        <Label Text="以下是应用内实际引入的全部第三方组件。除下列 4 项外，没有其他任何会接触数据的 SDK。清单随版本更新，最后更新 2026-11-04。"
+                               FontSize="13" TextColor="#1565C0" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout x:Name="SdkHost" Spacing="0" />
+
+                <!-- 明确声明没有接入的类别 -->
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="9">
+                        <Label Text="✅ 下列类别的 SDK 均未接入" FontSize="15" FontAttributes="Bold"
+                               TextColor="#1B5E20" />
+                        <VerticalStackLayout x:Name="NotIncludedHost" Spacing="6" />
+                        <Label Text="这意味着：应用内没有开屏广告、插屏广告；不会采集设备标识做用户画像；崩溃时也不会把堆栈上传到第三方服务器。"
+                               FontSize="12.5" TextColor="#558B2F" LineBreakMode="WordWrap" Margin="0,4,0,0" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#FFF8E1" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="ℹ️ 关于「荣耀推送」的补充说明" FontSize="15" FontAttributes="Bold"
+                               TextColor="#E65100" />
+                        <Label Text="该 SDK 只在安卓端打包，Windows 端不含。它需要荣耀开发者平台为应用登记包名与签名指纹后才能取得推送 token；若未开通，SDK 只会在本地返回错误码，不会上传任何数据。家长可在「家长面板 → 隐私与合规」中彻底关闭推送。"
+                               FontSize="12.5" TextColor="#8D6E63" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button Text="📄 返回隐私政策" FontSize="14" BackgroundColor="#ECEFF1"
+                        TextColor="#455A64" CornerRadius="12" HeightRequest="46" Clicked="OnOpenPolicy" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.LetterToParentsPage"
+             Title="想对爸妈说"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#F2F7FF" Offset="0" />
+                <GradientStop Color="#FFF6F9" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="16,12" BackgroundColor="#64B5F6">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="✉️ 想对爸妈说" FontSize="19" FontAttributes="Bold" TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="16,14,16,28">
+            <VerticalStackLayout Spacing="12">
+
+                <Label Text="有些话当面说不出口。写下来，也算说过了。写下的内容只在这台手机上。"
+                       FontSize="13" TextColor="#5C7A99" LineHeight="1.4" />
+
+                <Frame Padding="14,12" CornerRadius="18" HasShadow="False" BackgroundColor="White"
+                       BorderColor="#D6E6FF">
+                    <VerticalStackLayout Spacing="8">
+                        <Editor x:Name="LetterEditor" Placeholder="例如：妈妈，今天我自己煮了面，放了两个蛋。"
+                                PlaceholderColor="#A8BBD0" TextColor="#2F4A6B" FontSize="15"
+                                HeightRequest="110" BackgroundColor="#F7FAFF" AutoSize="Disabled" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" Text="🔊 读给我听" FontSize="13.5" HeightRequest="46"
+                                    CornerRadius="15" BackgroundColor="#E3F2FD" TextColor="#1565C0"
+                                    Clicked="OnSpeakDraft" />
+                            <Button Grid.Column="1" Text="💾 存起来" FontSize="13.5" FontAttributes="Bold"
+                                    HeightRequest="44" CornerRadius="15" BackgroundColor="#64B5F6"
+                                    TextColor="White" Clicked="OnSave" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="写不下去？点一句开始：" FontSize="12.5" TextColor="#7A93AD" Margin="4,4,0,0" />
+                <VerticalStackLayout x:Name="StarterHost" Spacing="6" />
+
+                <Label Text="📮 我写过的" FontSize="15" FontAttributes="Bold" TextColor="#2F4A6B"
+                       Margin="4,10,0,0" />
+                <VerticalStackLayout x:Name="LetterHost" Spacing="8" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

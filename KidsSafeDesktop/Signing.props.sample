@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    安卓签名配置（模板）
+
+    用法：复制成 Signing.props 后填入自己的口令。
+        cp Signing.props.sample Signing.props
+
+    ⚠️ keystore 是应用的「身份」：一旦丢失，就永远无法覆盖升级已安装的版本，
+    必须和源码分开备份（U 盘 / 私有云），口令一并保存。
+
+    这里没有用 UserSecrets 或环境变量，是因为 .NET MAUI 的 Android 打包任务
+    只认 MSBuild 属性；用独立文件的好处是不会把口令写进主 csproj，
+    也方便把整个文件排除在版本控制之外（见 .gitignore）。
+
+    Debug 与 Release 必须用同一张证书：荣耀推送会校验安装包签名指纹与平台登记是否一致，
+    否则会出现「发布包能推、调试包报 10202」的怪现象。
+  -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(MSBuildThisFileDirectory)Keys\kidssafe.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>kidssafe</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>在这里填 key 口令</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>在这里填 keystore 口令</AndroidSigningStorePass>
+  </PropertyGroup>
+
+</Project>

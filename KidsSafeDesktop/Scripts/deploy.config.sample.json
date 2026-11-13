@@ -1,0 +1,6 @@
+{
+  "server": "root@your-server-ip",
+  "port": 22,
+  "remotePath": "/var/www/kids",
+  "domain": "kids.example.com"
+}

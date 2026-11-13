@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.MindReadGamePage"
+             Title="心灵感应魔法"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.75,1">
+                <GradientStop Color="#150E33" Offset="0" />
+                <GradientStop Color="#2A1A63" Offset="0.42" />
+                <GradientStop Color="#0E0A26" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <GraphicsView Grid.RowSpan="2" x:Name="StarView" InputTransparent="True" />
+
+        <!-- ── 顶栏 ───────────────────────────────────────── -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="14,10">
+            <Button Text="← 返回" TextColor="#C9BFF0" BackgroundColor="Transparent"
+                    FontSize="15" Padding="6,0" Clicked="OnBack"
+                    HorizontalOptions="Start" VerticalOptions="Center" />
+            <Label Grid.Column="1" Text="🔮 心灵感应魔法" TextColor="#F3EEFF"
+                   FontSize="17" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="StepLabel" Text="" TextColor="#FFD54F"
+                   FontSize="13" FontAttributes="Bold"
+                   HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- ── 内容区（四个阶段叠在一起，靠 IsVisible 切换） ── -->
+        <Grid Grid.Row="1">
+
+            <!-- ① 开场 -->
+            <ScrollView x:Name="StageIntro">
+                <VerticalStackLayout Padding="28,10,28,28" Spacing="16" VerticalOptions="Center">
+                    <Label Text="🔮" FontSize="74" HorizontalOptions="Center" />
+
+                    <Label Text="我能读出你心里的数字"
+                           FontSize="23" FontAttributes="Bold" TextColor="#FFD54F"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label x:Name="IntroText"
+                           FontSize="14.5" TextColor="#C9BFF0" LineHeight="1.55"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label Text="选一个魔法等级" FontSize="12.5" TextColor="#8C82BE"
+                           HorizontalOptions="Center" Margin="0,10,0,0" />
+
+                    <HorizontalStackLayout x:Name="LevelBar" Spacing="10" HorizontalOptions="Center" />
+
+                    <Button Text="✨ 我想好了，开始"
+                            FontSize="17" FontAttributes="Bold"
+                            BackgroundColor="#FFD54F" TextColor="#2A2200"
+                            CornerRadius="20" HeightRequest="56" Margin="0,14,0,0"
+                            Clicked="OnStart" />
+
+                    <Label Text="想好的数字要记住哦，中途不能换"
+                           FontSize="11.5" TextColor="#7C72AC"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- ② 逐张卡片 -->
+            <Grid x:Name="StageCard" IsVisible="False"
+                  RowDefinitions="Auto,*,Auto" Padding="16,4,16,18">
+
+                <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="4,0,4,0">
+                    <Label Text="这张卡片上有你想的数字吗？"
+                           FontSize="18" FontAttributes="Bold" TextColor="#F3EEFF"
+                           HorizontalTextAlignment="Center" />
+                    <Label x:Name="HintLabel" Text="慢慢看，看到就告诉我"
+                           FontSize="12.5" TextColor="#8C82BE"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <Border Grid.Row="1" x:Name="CardFrame" Margin="0,12,0,10"
+                        BackgroundColor="#1C1545"
+                        Stroke="#FFC94A" StrokeThickness="2"
+                        StrokeShape="RoundRectangle 22"
+                        Padding="10,12">
+                    <ScrollView VerticalOptions="Center">
+                        <Grid x:Name="NumberGrid"
+                              ColumnSpacing="7" RowSpacing="7"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                    </ScrollView>
+                </Border>
+
+                <VerticalStackLayout Grid.Row="2" Spacing="10">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Grid.Column="0" Text="在 ✅"
+                                FontSize="19" FontAttributes="Bold"
+                                BackgroundColor="#66BB6A" TextColor="#0B2C10"
+                                CornerRadius="18" HeightRequest="58"
+                                Clicked="OnYes" />
+                        <Button Grid.Column="1" Text="不在 ❌"
+                                FontSize="19" FontAttributes="Bold"
+                                BackgroundColor="#2E2460" TextColor="#C9BFF0"
+                                CornerRadius="18" HeightRequest="58"
+                                Clicked="OnNo" />
+                    </Grid>
+
+                    <Button Text="🤔 我忘了想的什么"
+                            FontSize="12" BackgroundColor="Transparent" TextColor="#7C72AC"
+                            Padding="0" HeightRequest="30" Clicked="OnForgot" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- ③ 揭晓 -->
+            <Grid x:Name="StageReveal" IsVisible="False" Padding="28,10,28,28">
+                <VerticalStackLayout Spacing="10" VerticalOptions="Center">
+                    <Label x:Name="BallLabel" Text="🔮" FontSize="76" HorizontalOptions="Center" />
+                    <Label Text="你心里想的数字是……"
+                           FontSize="15" TextColor="#C9BFF0"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label x:Name="AnswerLabel" Text="?"
+                           FontSize="84" FontAttributes="Bold" TextColor="#FFD54F"
+                           HorizontalTextAlignment="Center" HeightRequest="120" />
+
+                    <Label x:Name="RevealLine" Text=""
+                           FontSize="13" TextColor="#8C82BE" LineHeight="1.4"
+                           HorizontalTextAlignment="Center" />
+
+                    <Button x:Name="SecretBtn" Text="🔍 这是怎么做到的？"
+                            FontSize="16" FontAttributes="Bold"
+                            BackgroundColor="#7C5CFF" TextColor="White"
+                            CornerRadius="18" HeightRequest="54" Margin="0,16,0,0"
+                            Clicked="OnShowSecret" />
+
+                    <Button x:Name="DoneBtn" Text="好了"
+                            FontSize="15" BackgroundColor="Transparent" TextColor="#9C92CC"
+                            HeightRequest="44" Clicked="OnFinish" />
+
+                    <Button x:Name="RetryBtn" Text="🔄 再试一次"
+                            FontSize="16" FontAttributes="Bold"
+                            BackgroundColor="#7C5CFF" TextColor="White"
+                            CornerRadius="18" HeightRequest="54" Margin="0,16,0,0"
+                            IsVisible="False" Clicked="OnRetry" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- ④ 揭秘 -->
+            <ScrollView x:Name="StageSecret" IsVisible="False">
+                <VerticalStackLayout Padding="22,6,22,28" Spacing="14">
+                    <Label Text="其实不是魔法"
+                           FontSize="22" FontAttributes="Bold" TextColor="#FFD54F"
+                           HorizontalTextAlignment="Center" />
+                    <Label x:Name="SecretIntroLabel"
+                           FontSize="13.5" TextColor="#C9BFF0" LineHeight="1.55"
+                           HorizontalTextAlignment="Center" />
+
+                    <Border BackgroundColor="#1C1545" Stroke="#3E3480" StrokeThickness="1"
+                            StrokeShape="RoundRectangle 18" Padding="14,16">
+                        <VerticalStackLayout x:Name="SecretBox" Spacing="14" />
+                    </Border>
+
+                    <Label x:Name="SecretTipLabel"
+                           FontSize="12.5" TextColor="#8C82BE" LineHeight="1.5"
+                           HorizontalTextAlignment="Center" />
+
+                    <Button Text="我明白了 ✅"
+                            FontSize="16" FontAttributes="Bold"
+                            BackgroundColor="#FFD54F" TextColor="#2A2200"
+                            CornerRadius="18" HeightRequest="54" Margin="0,8,0,0"
+                            Clicked="OnLearnDone" />
+
+                    <Button Text="🏠 先回去"
+                            FontSize="14" BackgroundColor="Transparent" TextColor="#9C92CC"
+                            HeightRequest="42" Clicked="OnFinish" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

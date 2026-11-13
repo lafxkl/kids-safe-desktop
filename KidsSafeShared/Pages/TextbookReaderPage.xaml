@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.TextbookReaderPage"
+             Title="翻课本"
+             BackgroundColor="#1E1B26">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- 顶部：返回 + 书名 + 页码 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="12,16,12,10" BackgroundColor="#241F2E">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" Clicked="OnBack" />
+            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                <Label x:Name="TitleLabel" Text="" TextColor="White" FontSize="16" FontAttributes="Bold"
+                       HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                <Label x:Name="PageLabel" Text="" TextColor="#B9AEC9" FontSize="12"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+            <Button Grid.Column="2" x:Name="ZoomButton" Text="🔍 放大" FontSize="13" TextColor="White"
+                    BackgroundColor="Transparent" BorderWidth="0" Clicked="OnToggleZoom" />
+        </Grid>
+
+        <!-- 页面区：点左半边上一页、点右半边下一页，也可以左右滑 -->
+        <Grid Grid.Row="1" x:Name="Stage" Padding="6">
+            <Grid.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Left" Swiped="OnSwipeLeft" />
+                <SwipeGestureRecognizer Direction="Right" Swiped="OnSwipeRight" />
+            </Grid.GestureRecognizers>
+
+            <!-- 放大模式：可自由拖动查看细节 -->
+            <ScrollView x:Name="ZoomScroll" Orientation="Both" IsVisible="False"
+                        HorizontalScrollBarVisibility="Never" VerticalScrollBarVisibility="Never">
+                <Image x:Name="ZoomImage" Aspect="AspectFit" />
+            </ScrollView>
+
+            <Image x:Name="PageImage" Aspect="AspectFit" />
+
+            <!-- 点击热区：放大模式下隐藏，否则挡住拖动 -->
+            <Grid x:Name="TapLayer" ColumnDefinitions="*,*">
+                <BoxView Grid.Column="0" Color="Transparent">
+                    <BoxView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTapLeft" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
+                <BoxView Grid.Column="1" Color="Transparent">
+                    <BoxView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTapRight" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
+            </Grid>
+
+            <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False"
+                               Color="#B388FF" VerticalOptions="Center" HorizontalOptions="Center" />
+
+            <VerticalStackLayout x:Name="ErrorPanel" IsVisible="False" Spacing="12"
+                                 VerticalOptions="Center" HorizontalOptions="Center">
+                <Label x:Name="ErrorText" Text="这一页没有加载出来" TextColor="#E0D6EC" FontSize="15"
+                       HorizontalTextAlignment="Center" LineHeight="1.4" />
+                <Button Text="再试一次" BackgroundColor="#7E57C2" TextColor="White" FontSize="15"
+                        CornerRadius="20" HeightRequest="42" Padding="24,0" Clicked="OnRetry" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- 底部：上一页 / 进度 / 下一页 -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Padding="12,8,12,16"
+              BackgroundColor="#241F2E" ColumnSpacing="8">
+            <Button x:Name="PrevButton" Text="‹ 上一页" FontSize="14" TextColor="White"
+                    BackgroundColor="#3A3247" CornerRadius="14" HeightRequest="42" Padding="14,0"
+                    Clicked="OnPrev" />
+            <Slider Grid.Column="1" x:Name="PageSlider" Minimum="1" Maximum="1" Value="1"
+                    MinimumTrackColor="#B388FF" MaximumTrackColor="#4A4059"
+                    ThumbColor="#FFFFFF" VerticalOptions="Center" ValueChanged="OnSliderChanged" />
+            <Button Grid.Column="2" x:Name="NextButton" Text="下一页 ›" FontSize="14" TextColor="White"
+                    BackgroundColor="#7E57C2" CornerRadius="14" HeightRequest="42" Padding="14,0"
+                    Clicked="OnNext" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.CareCenterPage"
+             Title="关爱中心"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#FFF3F7" Offset="0" />
+                <GradientStop Color="#F2F7FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#F48FB1">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <VerticalStackLayout Grid.Column="1" Spacing="0" HorizontalOptions="Center">
+                <Label Text="💗 关爱中心" FontSize="19" FontAttributes="Bold" TextColor="White"
+                       HorizontalOptions="Center" />
+                <Label Text="这里只有你和你的心情" FontSize="10.5" TextColor="#FFE3EC"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+            <Label Grid.Column="2" x:Name="StarPill" Text="⭐ 0" FontSize="14" FontAttributes="Bold"
+                   TextColor="White" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="16,14,16,28">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- 今日心情 -->
+                <Frame Padding="16,14" CornerRadius="22" HasShadow="False" BackgroundColor="White"
+                       BorderColor="#F8BBD0">
+                    <VerticalStackLayout Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="1">
+                                <Label x:Name="GreetLabel" Text="今天心情怎么样？" FontSize="17"
+                                       FontAttributes="Bold" TextColor="#7A4A5C" />
+                                <Label x:Name="MoodHintLabel" Text="点一个最像你的表情" FontSize="12"
+                                       TextColor="#B08A98" />
+                            </VerticalStackLayout>
+                            <Frame Grid.Column="1" Padding="10,6" CornerRadius="12" HasShadow="False"
+                                   BackgroundColor="#FFF0F5" BorderColor="Transparent" VerticalOptions="Center">
+                                <Label x:Name="StreakLabel" Text="🔥 0 天" FontSize="12" FontAttributes="Bold"
+                                       TextColor="#E91E63" />
+                            </Frame>
+                        </Grid>
+
+                        <Grid x:Name="MoodGrid" ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto"
+                              ColumnSpacing="8" RowSpacing="8" />
+
+                        <Label x:Name="MoodSavedLabel" Text="" FontSize="12" TextColor="#4CAF50"
+                               IsVisible="False" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 最近心情条 -->
+                <Frame Padding="14,12" CornerRadius="18" HasShadow="False" BackgroundColor="White"
+                       BorderColor="#E3F2FD">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="最近 7 天" FontSize="13" FontAttributes="Bold" TextColor="#4A5A72" />
+                            <Button Grid.Column="1" Text="看趋势 →" FontSize="11.5" HeightRequest="28"
+                                    Padding="8,0" BackgroundColor="Transparent" TextColor="#1E88E5"
+                                    Clicked="OnOpenJournal" />
+                        </Grid>
+                        <HorizontalStackLayout x:Name="RecentBar" Spacing="6" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 我的日记（孩子自己设密码的私密书写） -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#EDE7F6"
+                       BorderColor="#D1C4E9">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenDiary" />
+                    </Frame.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="🔐" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="我的日记" FontSize="15" FontAttributes="Bold" TextColor="#4A3B6B" />
+                            <Label Text="自己设密码，只有你能打开；可以写很长，也可以不给人看"
+                                   FontSize="11.5" TextColor="#7E6E99" LineHeight="1.35" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#9575CD"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 四个入口 -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <Frame Grid.Column="0" Grid.Row="0" Padding="14,14" CornerRadius="18" HasShadow="False"
+                           BackgroundColor="#E8F5E9" BorderColor="Transparent">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOpenLessons" />
+                        </Frame.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="📚" FontSize="26" />
+                            <Label Text="心理小课堂" FontSize="14" FontAttributes="Bold" TextColor="#2E5C3A" />
+                            <Label Text="10 节课，讲你心里的事" FontSize="11" TextColor="#6B8A72" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Grid.Column="1" Grid.Row="0" Padding="14,14" CornerRadius="18" HasShadow="False"
+                           BackgroundColor="#FFF3E0" BorderColor="Transparent">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOpenBreathing" />
+                        </Frame.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="🌬️" FontSize="26" />
+                            <Label Text="呼吸放松" FontSize="14" FontAttributes="Bold" TextColor="#7A4A1E" />
+                            <Label Text="难受的时候，先慢下来" FontSize="11" TextColor="#A58255" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Grid.Column="0" Grid.Row="1" Padding="14,14" CornerRadius="18" HasShadow="False"
+                           BackgroundColor="#E3F2FD" BorderColor="Transparent">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOpenLetters" />
+                        </Frame.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="✉️" FontSize="26" />
+                            <Label Text="想对爸妈说" FontSize="14" FontAttributes="Bold" TextColor="#1E4B6B" />
+                            <Label x:Name="LettersCountLabel" Text="写下来，也可以读给你听" FontSize="11"
+                                   TextColor="#5C7F99" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Grid.Column="1" Grid.Row="1" Padding="14,14" CornerRadius="18" HasShadow="False"
+                           BackgroundColor="#F3E5F5" BorderColor="Transparent">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOpenParents" />
+                        </Frame.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="👨‍👩‍👧" FontSize="26" />
+                            <Label Text="给家长看" FontSize="14" FontAttributes="Bold" TextColor="#5C2E6B" />
+                            <Label Text="怎么说话、怎么放手" FontSize="11" TextColor="#8A6B99" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- 0-15 岁成长指南（家长向长文，离线内置） -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#FFF3E0"
+                       BorderColor="#FFE0B2">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenGrowthGuide" />
+                    </Frame.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="📖" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="0-15 岁成长指南" FontSize="15" FontAttributes="Bold" TextColor="#7A4A1E" />
+                            <Label Text="几岁学什么、怎么管、性教育怎么讲，家长可以慢慢翻"
+                                   FontSize="11.5" TextColor="#A58255" LineHeight="1.35" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#E0A96D"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 儿童心理学 · 自闭症关怀（公益科普长文，离线内置） -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#E8F6F2"
+                       BorderColor="#B2DFDB">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenChildPsych" />
+                    </Frame.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="🧠" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="7">
+                                <Label Text="儿童心理学" FontSize="15" FontAttributes="Bold" TextColor="#1F6B5E"
+                                       VerticalOptions="Center" />
+                                <Border BackgroundColor="#2E9E8F" StrokeThickness="0" Padding="6,1"
+                                        StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                    <Label Text="公益项目" TextColor="White" FontSize="9.5"
+                                           FontAttributes="Bold" CharacterSpacing="1" />
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Label Text="孩子每个阶段在想什么；自闭症怎么早发现、怎么干预"
+                                   FontSize="11.5" TextColor="#5C8A80" LineHeight="1.35" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#6FB8A9"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 抑郁症专区（公益科普长文，离线内置，含全国心理援助热线） -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#EDF3FA"
+                       BorderColor="#C6D8EC">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenDepression" />
+                    </Frame.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="💙" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="7">
+                                <Label Text="抑郁症专区" FontSize="15" FontAttributes="Bold" TextColor="#2C527E"
+                                       VerticalOptions="Center" />
+                                <Border BackgroundColor="#3F6FA8" StrokeThickness="0" Padding="6,1"
+                                        StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                    <Label Text="公益项目" TextColor="White" FontSize="9.5"
+                                           FontAttributes="Bold" CharacterSpacing="1" />
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Label Text="怎么早发现、怎么预防；附全国心理援助与自杀干预电话"
+                                   FontSize="11.5" TextColor="#54718F" LineHeight="1.35" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#7FA5CC"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 教育孩子 36 计（人民日报推荐的家庭教育方法，离线内置） -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#FDF0E6"
+                       BorderColor="#F3D3BC">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenEdu36" />
+                    </Frame.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="📌" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="7">
+                                <Label Text="教育孩子 36 计" FontSize="15" FontAttributes="Bold" TextColor="#A9532C"
+                                       VerticalOptions="Center" />
+                                <Border BackgroundColor="#C96A3E" StrokeThickness="0" Padding="6,1"
+                                        StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                    <Label Text="推荐" TextColor="White" FontSize="9.5"
+                                           FontAttributes="Bold" CharacterSpacing="1" />
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Label Text="自卑、厌学、逆反、顶嘴——36 条具体做法，按场景分类慢慢挑"
+                                   FontSize="11.5" TextColor="#9A6A4A" LineHeight="1.35" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#D79B76"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 温暖的话 -->
+                <Frame Padding="16,14" CornerRadius="20" HasShadow="False" BackgroundColor="#FFF8E1"
+                       BorderColor="#FFE082">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🌤️ 今天送你一句话" FontSize="13" FontAttributes="Bold" TextColor="#8A6D00" />
+                        <Label x:Name="WarmLabel" Text="" FontSize="15" TextColor="#6B5A2A" LineHeight="1.5" />
+                        <HorizontalStackLayout Spacing="8">
+                            <Button Text="🔊 读给我听" FontSize="12.5" HeightRequest="34" Padding="12,0"
+                                    CornerRadius="17" BackgroundColor="#FFD54F" TextColor="#4E3B12"
+                                    Clicked="OnSpeakWarm" />
+                            <Button Text="换一句" FontSize="12.5" HeightRequest="34" Padding="12,0"
+                                    CornerRadius="17" BackgroundColor="White" TextColor="#8A6D00"
+                                    BorderColor="#FFE082" BorderWidth="1" Clicked="OnNextWarm" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 求助 -->
+                <Frame Padding="16,14" CornerRadius="20" HasShadow="False" BackgroundColor="White"
+                       BorderColor="#FFCDD2">
+                    <VerticalStackLayout Spacing="9">
+                        <Label Text="🤝 需要人帮忙的时候" FontSize="13.5" FontAttributes="Bold"
+                               TextColor="#B23A48" />
+                        <Label Text="难受撑不住、被欺负、没人照顾，都可以打电话。不要一个人扛。"
+                               FontSize="12" TextColor="#8A6B70" LineHeight="1.4" />
+                        <VerticalStackLayout x:Name="ChannelHost" Spacing="7" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="🔒 你的心情记录只保存在这台设备上，不会上传，也不会给任何人看。"
+                       FontSize="11.5" TextColor="#9C8A98" HorizontalTextAlignment="Center"
+                       Margin="6,4,6,0" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

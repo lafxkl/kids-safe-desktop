@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>儿童安全桌面 更新日志 · 历代版本都改了什么</title>
+<meta name="description" content="儿童安全桌面全部版本的更新记录：从 v1.0 首发到 v1.20，每个版本都写明新增了什么、修了什么、为什么改，包含功能升级与合规改造。" />
+<style>
+  :root{
+    --purple:#7E57C2; --purple-d:#5C6BC0; --teal:#26C6DA;
+    --ink:#2E3A4D; --soft:#7A8290; --bg:#F6F1FF; --card:#fff;
+    --grad:linear-gradient(135deg,#7E57C2 0%,#26C6DA 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--purple);text-decoration:none}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+  /* 顶部导航：与首页保持一致 */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #EEE5FF}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1120px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple)}
+  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(126,87,194,.3)}
+  .nav nav{display:flex;gap:24px;font-size:15px}
+  .nav nav a{color:var(--ink);font-weight:600}
+  .nav nav a:hover,.nav nav a.on{color:var(--purple)}
+  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(126,87,194,.35)}
+
+  /* 头部 */
+  .hero{padding:52px 0 10px}
+  .hero h1{font-size:38px;font-weight:900;letter-spacing:1px}
+  .hero h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{margin-top:14px;font-size:17px;color:var(--soft);max-width:640px}
+  .hero p.lead b{color:var(--purple)}
+  .meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+  .pill{background:#fff;border:1px solid #ECE3FB;border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--purple-d)}
+
+  /* 筛选 */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 8px}
+  .fbtn{border:1px solid #E4D9FA;background:#fff;color:var(--ink);border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .fbtn:hover{border-color:var(--purple);color:var(--purple)}
+  .fbtn.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(126,87,194,.3)}
+
+  /* 时间线 */
+  .list{padding:14px 0 60px}
+  .rel{display:grid;grid-template-columns:104px 1fr;gap:22px;padding:26px 0 26px 0;position:relative}
+  .rel + .rel{border-top:1px solid #EADFFB}
+  .rel .side{position:relative;padding-left:18px}
+  .rel .side::before{content:"";position:absolute;left:0;top:9px;width:10px;height:10px;border-radius:50%;background:var(--grad);box-shadow:0 0 0 4px #F0E7FE}
+  /* 时间线竖线：连接相邻版本，最后一个不画 */
+  .rel .side::after{content:"";position:absolute;left:4px;top:24px;bottom:-52px;width:2px;background:linear-gradient(#E3D6FA,#F3ECFE)}
+  .rel:last-of-type .side::after{display:none}
+  .rel .vno{font-size:26px;font-weight:900;color:var(--purple);line-height:1.1}
+  .rel .date{font-size:12.5px;color:var(--soft);margin-top:4px}
+  .rel .code{font-size:12px;color:#A7A0B8;margin-top:2px}
+  .rel .body h2{font-size:20px;font-weight:800;line-height:1.4}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 12px}
+  .tag{font-size:12px;font-weight:800;border-radius:7px;padding:3px 9px}
+  .t-new{background:#E6F6EC;color:#1B7A3E}
+  .t-fix{background:#FFF0E3;color:#B45309}
+  .t-opt{background:#E7F1FE;color:#1D4ED8}
+  .t-law{background:#F1E8FE;color:#6B2BB8}
+  .t-key{background:#FDE7E7;color:#B3261E}
+  .t-first{background:#FFF6DA;color:#8A6100}
+  .rel ul{list-style:none;display:grid;gap:7px}
+  .rel li{position:relative;padding-left:17px;font-size:15px;color:#3E4A54}
+  .rel li::before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:#C9B8ED}
+  .rel .warn{margin-top:12px;background:#FFF8E1;border-left:3px solid #FB8C00;border-radius:0 10px 10px 0;padding:10px 14px;font-size:14px;color:#6B4E00}
+
+  /* 底部 */
+  .tail{background:#fff;border-radius:24px;padding:30px;text-align:center;box-shadow:0 12px 34px rgba(94,53,177,.1);margin-bottom:60px}
+  .tail h3{font-size:20px;margin-bottom:8px}
+  .tail p{color:var(--soft);font-size:14.5px;margin-bottom:18px}
+  .tail .links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .tail a{padding:11px 22px;border-radius:22px;font-weight:700;font-size:15px}
+  .tail .primary{background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(126,87,194,.3)}
+  .tail .ghost{background:#F4EEFE;color:var(--purple)}
+
+  footer{background:#2E2452;color:#D9D2F0;padding:30px 0;font-size:13.5px;text-align:center}
+  footer a{color:#C9BEF2;margin:0 8px}
+
+  @media(max-width:720px){
+    .hero h1{font-size:30px}
+    .nav nav{display:none}
+    .rel{grid-template-columns:1fr;gap:10px}
+    .rel .side{display:flex;align-items:baseline;gap:10px;padding-left:18px}
+    .rel .side::after{display:none}
+    .rel .vno{font-size:22px}
+    .rel .date,.rel .code{margin:0}
+    .rel .body h2{font-size:18px}
+    .rel li{font-size:14.5px}
+    .tail{padding:22px}
+  }
+</style>
+
+<!-- ── SEO / 分享卡片 ── 新增页面时同步 sitemap.xml -->
+<link rel="canonical" href="https://kids.siguangblog.cc/changelog.html" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="512x512" href="assets/icon.png" />
+<link rel="apple-touch-icon" href="assets/icon.png" />
+<meta name="theme-color" content="#7E57C2" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="儿童安全桌面" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:url" content="https://kids.siguangblog.cc/changelog.html" />
+<meta property="og:title" content="儿童安全桌面 更新日志 · 历代版本都改了什么" />
+<meta property="og:description" content="儿童安全桌面全部版本的更新记录：每个版本改了什么、为什么改，包含新增功能、问题修复与合规改造。" />
+<meta property="og:image" content="https://kids.siguangblog.cc/assets/header.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://kids.siguangblog.cc/assets/header.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "url": "https://kids.siguangblog.cc/changelog.html",
+  "name": "更新日志 · 儿童安全桌面",
+  "inLanguage": "zh-CN",
+  "isPartOf": { "@id": "https://kids.siguangblog.cc/#site" },
+  "about": { "@id": "https://kids.siguangblog.cc/#app" },
+  "publisher": { "@id": "https://kids.siguangblog.cc/#org" }
+}
+</script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="儿童安全桌面图标" />儿童安全桌面</a>
+    <nav>
+      <a href="index.html">首页</a>
+      <a href="index.html#features">功能</a>
+      <a href="index.html#screens">界面</a>
+      <a href="changelog.html" class="on">更新日志</a>
+      <a href="privacy.html">隐私政策</a>
+    </nav>
+    <a class="btn" href="index.html#download">下载</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>更新<span>日志</span></h1>
+    <p class="lead">
+      每一个版本改了什么、为什么改，都写在这里。当前版本 <b>v1.20</b>（versionCode 21），
+      覆盖 Android 与 Windows 两端，两端同版本、同一份更新记录。
+    </p>
+    <div class="meta-row">
+      <span class="pill">共 21 个版本</span>
+      <span class="pill">首发 2026-10-31</span>
+      <span class="pill">最近更新 2026-11-12</span>
+      <span class="pill">Android + Windows</span>
+    </div>
+  </div>
+</section>
+
+<section class="list">
+  <div class="wrap">
+
+    <div class="filters">
+      <button class="fbtn on" data-f="all">全部</button>
+      <button class="fbtn" data-f="新增">新增功能</button>
+      <button class="fbtn" data-f="修复">问题修复</button>
+      <button class="fbtn" data-f="优化">体验优化</button>
+      <button class="fbtn" data-f="合规">隐私合规</button>
+    </div>
+
+    <!-- v1.20 -->
+    <article class="rel" id="v1-20" data-tags="新增 优化">
+      <div class="side">
+        <div class="vno">1.20</div>
+        <div class="date">2026-11-12</div>
+        <div class="code">code 21</div>
+      </div>
+      <div class="body">
+        <h2>给家长看的心理课堂，从 4 节变成 10 节</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span><span class="tag t-opt">体验优化</span></div>
+        <ul>
+          <li><b>原来的 4 节只讲了「父母在外」这件事</b>：怎么跟孩子解释你要外出、每周 15 分钟电话怎么打、哪些信号说明孩子需要专业帮助、怎么和爷爷奶奶配合。这四节解决的是分离。但孩子不在分离里的那些日子——不肯写作业、顶嘴、考砸了、到青春期把门关上——一样需要有人给个说法。所以这一版补的是<b>日常养育</b>这一层。</li>
+          <li><b>🤲 少做一点，孩子反而长得更好</b>：从「孩子摔一跤，脑子里立刻演到以后可怎么办」讲起。心理学研究里，人担心的坏结果九成以上不会发生；在后果真的发生之前，先别动。还有一条容易被听反的：<b>共情不等于同理</b>——共情是把自己泡进他的难过里两个人一起沉，同理是「我知道你为什么难过，也知道怎么帮你走出来」。一句话：不要陪他一起哭，要帮他不哭。</li>
+          <li><b>💬 孩子「不听话」时，先接情绪再讲道理</b>：这个年纪负责刹车、调节情绪的那部分大脑还没长好，想要的东西必须马上得到、说两句就炸，很多时候是发育没到位。大段道理还会让他直接「屏蔽」，所以规则要短：一句说清哪里不对，一句说清下次怎么做。另外写了一个常被忽略的细节——沟通里真正被记住的大半是表情和语气，你提高音量，他记住的是「你在凶我」，不是「我错在哪」。</li>
+          <li><b>🌱 如果孩子只是个普通孩子</b>：「普娃」这个说法的问题在于尺子会移动——班里第一、年级前十、省里拿奖，换个参照系同一个孩子就从优秀变成普通，只要不停换尺子，所有孩子都能被量成普娃。所以它能描述现在，不能预测以后。这一节还讲了为什么「多投入」不等于「多产出」，以及怎么从「他喜欢什么」里看出天赋。</li>
+          <li><b>🎯 把「你要努力」换成今天能做完的一件小事</b>：手表定律——只有一块表才知道几点，同时拿五块表反而不知道了。「成绩进前十」做不到，「每天十道计算、五道应用题」做得到。时间表要一起定、一起做（他写作业，你在旁边看书，不是刷手机），没做到时先问「哪一科卡住了」，不要第一句就是「又磨蹭」。</li>
+          <li><b>🧭 他现在这个年纪，真正在意什么</b>：1-3 / 4-6 / 7-9 / 10-12 / 13-18 五段，每段只写两件事——<b>他为什么变了，家长该退到哪一步</b>。比如三年级功课会突然上一个台阶，学得吃力是正常的，不是孩子变笨了；10-12 岁朋友比爸妈重要，是正常的社交发育，不是跟你不亲了；13 岁以后关上门，是自我在长。</li>
+          <li><b>🪁 先懂孩子，再谈教育</b>：陈鹤琴一百年前说的那几条还站得住——好游戏、好奇、好模仿、喜欢成功、喜欢被称赞。其中「任务要跳一跳够得着」和「夸要夸到具体行为上，夸多了就贬值」，是这一节最实用的两句。</li>
+          <li><b>每节最后一段都是一个动作</b>，不是一句口号。比如「选一件你平时一定会代劳的事（收书包、盛饭、系鞋带），这周只在旁边看着，忍住不出手。他做得慢、做得歪都可以」。</li>
+          <li><b>为什么不照搬原文</b>：这批文章里「优秀的孩子都是管出来的」这类因果句，放在留守家庭的语境里会变成指责——孩子不优秀＝没管好。这类标题一律改成描述行为与动作的中性说法。同样没有收进来的是「激发计」（用嫉妒心刺激孩子）和「冷淡计」（长期不理他），它们与小课堂「不制造羞耻感」的基调冲突；分数、排名、升学的叙事也去掉了，这一节只留「先关心人，再关心分数」。</li>
+          <li><b>两篇没有做成课，原因写在这里</b>：《教育孩子 36 计》v1.19 已经做成独立页面，按六类场景可以筛，重复进小课堂会让家长在两个入口看到同一批内容；《30 个培养孩子的细节》正文是长图，抓到的是导语，<b>没有拿到那 30 条就不凭标题编造条目</b>。</li>
+          <li><b>官网新增「内容来源」页</b>：这 6 节的 10 篇原文、儿童心理学与抑郁症专区引用的国家指南与官方数据、教育 36 计的原文，全部收在 <a href="care-sources.html">care-sources.html</a>，可以点开核对。App 里的出处是一段文字，复制不出来，网页上补齐这一步。</li>
+          <li><b>家长课 10 节，孩子课也是 10 节</b>，两边对齐。列表里的「N 节」是按实际条目算的，以后加课不用再去改数字。关爱中心里「给家长看」那张卡片的副标题也从「怎么打电话、怎么看出来」改成了「怎么说话、怎么放手」——原来那句只概括了 4 节里的 2 节。</li>
+        </ul>
+        <div class="warn">本版为内容更新，无新增权限、无新增联网行为：小课堂是随包内置的文字，不采集、不上传。versionCode 21，签名未变更，可直接覆盖安装（从 v1.8 之前的版本升级仍需先卸载旧版）。</div>
+      </div>
+    </article>
+
+    <!-- v1.19 -->
+    <article class="rel" id="v1-19" data-tags="新增 优化 合规">
+      <div class="side">
+        <div class="vno">1.19</div>
+        <div class="date">2026-11-11</div>
+        <div class="code">code 20</div>
+      </div>
+      <div class="body">
+        <h2>教育 36 计、两个公益专区，和一个真正的 Windows 安装包</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span><span class="tag t-opt">体验优化</span><span class="tag t-law">隐私合规</span></div>
+        <ul>
+          <li><b>教育孩子 36 计（人民日报推荐）</b>：关爱中心新增一整页，36 条按「放手与抗挫 / 自信与认可 / 沟通与情绪 / 规则与纠错 / 学习与榜样 / 品格与生活」六类各 6 条分组，每条一张卡：编号、计名、一句点题、具体怎么做。顶部可以按类筛选，筛完自动回到列表开头。</li>
+          <li><b>它不是一篇长文，是一张可以查的表</b>：家长遇到具体问题来翻一条，所以做成卡片墙而不是让人从头读到尾。页面里另外写了「这 36 计怎么用才有效」——一次只用一两计、按场景找而不是按顺序背、先做关系类再做管教类、方法要配年龄、允许自己做不到。原文里的「处罚计」「冷淡计」容易读歪，页面明确写了它指的是<b>适度、有边界的管教</b>，不是打骂，也不是长期不理孩子。</li>
+          <li><b>两个公益专区，永久免费</b>：关爱中心新增「🧠 儿童心理学」与「💙 抑郁症专区」，纯客户端、离线内置，<b>没有广告、没有课程推销、不推荐任何机构、不收集任何信息</b>，入口卡片和页面顶部都标了「公益项目」。</li>
+          <li><b>自闭症关怀写得比想象中细</b>：从「是什么」一路走到「家长自己怎么撑住」。早发现部分列了国家给 0–6 岁安排的 <b>11 次免费发育筛查</b>（3/6/8/12 月龄、18/24/30/36 月龄、4/5/6 岁）和日常最该留心的六个信号，并写明「看到一两条不等于自闭症，但『不像』不是不查的理由」。干预部分按 2026 年版国家指南写：每周有效干预 20 小时以上、每 3~6 个月一次专业评估、有循证依据的方法清单。还专门列了<b>不要碰的疗法</b>——排毒/螯合、干细胞、高压氧、禁食、承诺「治愈/摘帽」的机构，判断标准一句话：凡是承诺治愈、要求停掉正规康复、或者让你别再去看医生的，一律远离。</li>
+          <li><b>抑郁症专区里有一整屏热线，着急的家长应该一次点到底</b>：12356 全国统一心理援助热线、12355 青少年服务台、12338 妇联维权热线、北京心理危机研究与干预中心、希望 24 热线，每个都能点，安卓上直接进拨号盘；顶栏右侧另有「求助」按钮，一下跳到这一屏。判断要不要就医写成三条线：两周以上、几乎每天大半天、已经影响功能，并提醒<b>孩子的抑郁最常见的表情不是「哭」而是「烦」</b>。</li>
+          <li><b>数字部分我们刻意写得很克制</b>：官方只公布自杀死亡率、不公布绝对人数，所以给的是 2021 年分年龄死亡率，「约 4000 人/年」明确标注为按死亡率乘人口粗算的<b>估算值</b>；网上流传的「每年 10 万青少年死于自杀、每分钟 2 个」与官方数据差一个数量级，正文写明不采信。24.6% 标为检出率，并说明不等于临床患病率。</li>
+          <li><b>游戏乐园合并成一个入口</b>：首页原来并列「🎮 小游戏乐园」和「🕹️ 游戏乐园」，功能重叠、顶栏风格还不一样。现在只剩一个「🎮 游戏乐园」，顶部用「全部 / 内置 / 网页」三个按钮分类，内置小游戏（仍受家长开关控制、可调难度）和网页小游戏在同一个图标网格里；点网页游戏直接进对应页面，不再先落一个大厅再点一次。</li>
+          <li><b>Windows 有了真正的安装程序</b>：装到当前用户目录，<b>不需要管理员权限、不弹 UAC</b>，开始菜单和桌面快捷方式可选，可从系统设置正常卸载。<b>桌面空白处右键</b>会多一个「儿童安全桌面」的启动项（Windows 11 收在「显示更多选项」里），卸载时一起清掉。</li>
+          <li><b>安装界面就是隐私政策本身</b>：许可页显示的是<b>应用内那份隐私政策的全文</b>，不是另写一份摘要——两者由同一处内容生成，政策更新后安装界面自动跟着变。按钮文案也从笼统的「我接受协议」改成「我接受这份隐私政策」，欢迎页和完成页都给出官网地址。</li>
+          <li><b>免安装版仍然保留，但故意没有右键菜单</b>：解压即用、不写任何注册表，所以不会在你系统里留下看不见的东西。两个版本内容完全一样，区别只有「装没装进系统」，官网页面上把这句写明了。</li>
+          <li><b>模拟考试</b>：学习天地顶部新增「🧮 口算练习 / 📝 模拟考试」切换，三～初三语数英各 1 套，共 <b>21 套 252 题</b>。一次一题，可以来回改答案，<b>交卷前不透露对错</b>；交卷后按百分制打分、逐题列出你的答案、正确答案和解析。判分留了余地：大小写、全角半角、前后空格、句末句号都不影响，<code>0.75</code> 与 <code>0.750</code> 算对。</li>
+          <li><b>电子课本收到 130 册</b>：语文人教版（六三制）14 册 + 五四制 10 册，共 3149 页；数学 9 个版本 106 册、12566 页（人教 / 冀教 / 北京 / 北师大 / 沪教五四制 / 苏教 / 西大 / 青岛 / 青岛五四制）。不给客户端发 PDF 的原因是单本 12–29 MB、安卓 WebView 本身不渲染 PDF，改为每页一张 120 DPI 的图，左右滑动翻页，看过的页缓存在本机。<i>这项需要家长在「在线内容」里打开开关并填写服务器地址。</i></li>
+          <li><b>口算与英语扩到初三</b>：年级从 4 个扩到 9 个，五年级起从题库出题，共 <b>368 道</b>（小数、分数、百分数、比例、有理数、方程、不等式、函数、三角函数、圆与相似…）；英语词库 108 → <b>411 词</b>，每个都带音标和配图。题目改存 SQLite，是否重新灌数据看脚本指纹而不是手写版本号——以后加题只改脚本，装过旧版的孩子下次启动自动拿到新题。</li>
+          <li><b>安全知识大幅扩充</b>：防拐骗 3 → 13 条（假称爸妈委托接送、问路带路、强行拉走、商场走散、让保密、熟人单独带走、记住 110 与家庭住址、网友见面…），每条都写成孩子能照做的动作而不是「要提高警惕」；「保护自己」2 → 12 条，「网络安全」2 → 9 条，安全小问答 25 → <b>40 道</b>。</li>
+          <li><b>家长成长指南加了四块最难的</b>：0-15 岁的 5 张年龄卡片各补「🧭 怎么引导」与「💗 性教育与界限」两节；主题视图新增「科学引导」分年龄怎么管、「性教育」分年龄怎么讲、「防范猥亵」家长要做的几件事、「网络社交」怎么辨别好坏。防侵害部分写了加害者五种常见手法和发现之后的 6 步处理顺序，并强调<b>不要自行调查、不要反复追问孩子</b>，怀疑已受侵害请立即报警就医。</li>
+          <li><b>三款新小游戏</b>：🧱 俄罗斯方块（10×20 棋盘、幽灵落点、旋转撞墙自动挪一格）、🚗 小汽车大冒险（三车道躲避、收集金币、速度渐快）、💎 光线宝石（转镜子把阳光反射到宝石上，4 关）。</li>
+          <li><b>顺手修的一处</b>：「在线内容」这个开关之前其实是个空壳——代码里有，但服务端后台和客户端家长页都没入口能打开它，所以宝宝听、宝宝看、故事屋、电子课本的在线内容一直没生效。现在两边都补上了开关，勾完保存，连着的儿童端几秒内自动跟随。</li>
+        </ul>
+        <div class="warn">本版 versionCode 20，签名未变更，可直接覆盖安装（从 v1.8 之前的版本升级仍需先卸载旧版）。Windows 安装版与免安装版内容一致，安装包体积不同是因为压缩方式不同。</div>
+      </div>
+    </article>
+
+    <!-- v1.18 -->
+    <article class="rel" id="v1-18" data-tags="新增 修复">
+      <div class="side">
+        <div class="vno">1.18</div>
+        <div class="date">2026-11-06</div>
+        <div class="code">code 19</div>
+      </div>
+      <div class="body">
+        <h2>我的日记：孩子自己设密码的本子</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span><span class="tag t-fix">问题修复</span></div>
+        <ul>
+          <li><b>我的日记</b>：一个只有孩子自己能打开的本子。4 位数字密码由孩子本人设定（不是家长密码），连着输两次确认，还可以留一句只有自己懂的提示语。桌面上多了「🔐 我的日记」入口，关爱中心里也有一张卡片。</li>
+          <li><b>离开页面就自动上锁</b>：切到别的应用、按返回、甚至只是去看了眼桌面，回来都是锁屏。写作过程中切后台会静默自动保存，不会因为接了个电话丢掉刚写的一段。</li>
+          <li><b>可以什么都不写地开始</b>：标题、心情都可以空着，正文下面的实时字数只统计真正的字——表情符号和标点不算，不会让孩子看到「才写 20 个字」这种莫名其妙的结果。不知道写什么时，页面会给一句写作引子（「今天有没有哪一刻，你希望时间慢一点？」）。</li>
+          <li><b>给孩子的本子，就该能读给他听</b>：日记支持 🔊 朗读，用的是故事屋同一套声音风格。写给孩子自己看的东西，也不该只有「看」一种方式。</li>
+          <li><b>关于密码，我们把边界写在明面上</b>：忘记密码只能请家长用家长密码重置；内容会保留，但<b>重置之后家长也能读到</b>。这句话直接印在设密码那一页，没有藏进隐私政策。我们也可以做成「谁也打不开」，但那样孩子忘一次密码就会永久失去全部日记——对 6–12 岁的孩子来说这不是保护。</li>
+          <li><b>输错会等一会儿，但绝不删东西</b>：连错 5 次等 60 秒，8 次等 3 分钟，12 次起等 5 分钟。这个计数写在设备存储里，杀掉应用重开也绕不过去；但<b>任何情况下都不会删除日记</b>，因为惩罚不该落在孩子写下的内容上。第 2 次输错时会显示孩子自己留的提示语，让他先靠自己的线索想一想。</li>
+          <li><b>日记不发星星</b>：星星会进星星榜和家长面板，那等于告诉家长「孩子今天写日记了」，和「只有孩子自己能打开」自相矛盾。日记的奖励是写完之后的那口气，不是积分。</li>
+          <li><b>密码只存派生值</b>：页面里没有明文密码，存的是加盐慢哈希（PBKDF2-SHA256，10 万次迭代）。需要如实说明的是，<b>日记文件本身没有额外加密</b>——能读到应用私有目录的人同样能读到内容。真正的保护是「别人不会去翻这个目录」，而不是加密算法。</li>
+          <li><b>修复</b>：从「成长」页进入「无限想象」时，顶部会多出一条白底灰字的系统标题栏，和页面自己画的标题重复。已关掉系统导航栏，渐变背景现在直接顶到屏幕顶部。</li>
+        </ul>
+        <div class="warn">本版签名未变更，可直接覆盖安装；从 v1.8 之前的版本升级仍需先卸载旧版。</div>
+      </div>
+    </article>
+
+    <!-- v1.17 -->
+    <article class="rel" id="v1-17" data-tags="新增 优化">
+      <div class="side">
+        <div class="vno">1.17</div>
+        <div class="date">2026-11-05</div>
+        <div class="code">code 18</div>
+      </div>
+      <div class="body">
+        <h2>无限想象、心灵感应魔法与声音风格</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span><span class="tag t-opt">体验优化</span></div>
+        <ul>
+          <li><b>无限想象（一起编故事）</b>：孩子说一句心愿——「小兔子，下雨了，想睡觉」——五个小伙伴依次上场：灵感火花抓元素、场景星球搭场景、创作向导排四步逻辑、精修精灵润色、天赋瞭望归档，最后织成四段睡前故事。故事固定按「想睡觉 → 遇到小困扰 → 温柔解决 → 安心入睡」的因果写，<b>不会讲到一半逻辑崩掉</b>。可以逐段朗读并高亮，也可以收藏进故事库。</li>
+          <li><b>默认完全离线，AI 要家长开</b>：内置模板不联网，孩子说的话不出这台设备。只有家长在「成长」页输入密码、并主动打开「大模型故事引擎」之后，那句话才会发到<b>家长自己填写的服务器</b>。打开时页面会直白地写着「孩子说的话会发到下面这台服务器」，随时可以关。</li>
+          <li><b>六维成长不是成绩</b>：想象力、词汇、表达、叙事、情感、专注六项用雷达图呈现，<b>不标数字、不做排名</b>，页面上只写「随共创慢慢长」。3–8 岁的语言能力不该被量化打分。</li>
+          <li><b>心灵感应魔法（第 20 款小游戏）</b>：孩子在心里想一个数（1~15 / 1~31 / 1~60 三档），游戏一张一张给卡片，只问「有你想的数字吗」，6 次回答之后数字跳几轮落定，正好是想的那一个。揭晓后点「这是怎么做到的」会讲原理——每张卡片有个代号 1、2、4、8、16、32，在的卡片代号加起来就是答案，<b>这就是二进制</b>。孩子看懂了可以反过来给爸妈表演。</li>
+          <li><b>答不上来不算错</b>：这个游戏里孩子只是回答「在 / 不在」，六张卡如果记混了一张，结果就对不上。这时不会显示一个错的数字，只会说「可能有一张记混了」，让你重来一次。</li>
+          <li><b>朗读声音风格</b>：新增 🌸 温柔姐姐、🧓 慈祥爷爷、🐣 活泼小伙伴、📖 标准朗读四种。需要如实说明：<b>调的是音高和停顿，不是换配音演员</b>——一台设备通常只装了一个中文语音包，真要多音色得连云端，与「离线优先」冲突。选择会记住，故事屋和无限想象共用。</li>
+          <li><b>语音输入</b>：点 🎤 说一句，话就变成文字。它由手机自带的语音识别完成，<b>应用本身不申请麦克风权限、不保存任何音频</b>（可以在官网权限页核对）。默认关闭，第一次用要先过家长密码。</li>
+          <li><b>故事图片卡</b>：把故事排成一张卡片导出图片，发给爷爷奶奶看；也可以只复制文字，因为有些聊天软件会把长图压糊。</li>
+          <li><b>修复</b>：故事标题会把孩子的原话整个塞进去，出现《小兔子与「小兔子下雨了想睡觉」的奇妙夜》。现在会先剔除已经识别出的元素再取名。</li>
+          <li><b>官网新增「应用权限说明」页</b>：把 7 项权限逐条摊开——用来做什么、拒绝之后会怎样（比如拒绝悬浮窗只是防退出变弱，其他照常）。还列出 12 类我们<b>故意不申请</b>的权限，其中「无障碍服务」和「设备管理器」两项最值得看：很多儿童锁靠它们把手机锁死，我们没有用，所以孩子和家长随时都能正常卸载。</li>
+        </ul>
+        <div class="warn">本版签名未变更，可直接覆盖安装；从 v1.8 之前的版本升级仍需先卸载旧版。</div>
+      </div>
+    </article>
+
+    <!-- v1.16 -->
+    <article class="rel" id="v1-16" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.16</div>
+        <div class="date">2026-11-05</div>
+        <div class="code">code 17</div>
+      </div>
+      <div class="body">
+        <h2>星星奖励、睡前故事、家务英雄与关爱中心</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span><span class="tag t-opt">内容更新</span></div>
+        <ul>
+          <li><b>玩完就有星星</b>：19 款小游戏一局结束都会跳到结算页，按正确率给 1–5 星，星星一颗一颗弹出来。<b>输一局也有 2 星、认真完成就是 3 星</b>，满星才需要正确率 95% 以上——目的是鼓励再来一局，而不是让孩子怕输。</li>
+          <li><b>学完也有回音</b>：古诗、英语、口诀、身体百科等 13 个学习页面加了「🌟 学完了」按钮，点开是激励页，写着今日小目标进度、一句名言，以及<b>具体</b>的夸奖（「你今天读完了《静夜思》，还跟读了三遍」，而不是「你真棒」）。</li>
+          <li><b>星星中心</b>：能看到总星数、连续打卡天数、17 枚勋章和最近记录。星星只增不减、<b>不上传、不做公开排名</b>，只存在这台设备上。</li>
+          <li><b>星夜故事屋</b>：14 个完全离线的睡前故事（童话、寓言、经典、想念爸妈、晚安五类）。播放用系统语音逐段朗读，当前这段会高亮、进度条跟着走，标点处有自然停顿；<b>睡眠定时</b>到点后声音淡出、弹出晚安遮罩。支持收藏与搜索。</li>
+          <li><b>家务小英雄</b>：任务打卡、积分奖励商店、我的周报三栏。做家务攒积分换奖励，周报看连续天数与最擅长的活儿。家长模式<b>每次进入都要重新验证 PIN</b>，不会记住登录状态。</li>
+          <li><b>关爱中心</b>（给留守家庭的孩子）：心情日记（8 种心情 + 连续记录）、14 节心理小课堂（10 节给孩子、4 节给家长）、4-7-8 呼吸放松动画、「给爸妈的话」、以及 12355 / 12338 / 110 / 120 等求助通道。</li>
+          <li>孩子写下的心情和给爸妈的留言<b>只写进本机存储，不联网、不上传</b>；家长面板只看得到打卡次数和心情趋势，<b>看不到具体内容</b>——这是刻意留给孩子的一块私人空间。</li>
+          <li>帮助中心补了 4 条说明（共 27 条），隐私政策同步写明关爱中心数据的留存边界。</li>
+        </ul>
+        <div class="warn">本版签名未变更，可直接覆盖安装；从 v1.8 之前的版本升级仍需先卸载旧版。</div>
+      </div>
+    </article>
+
+    <!-- v1.15 -->
+    <article class="rel" id="v1-15" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.15</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 16</div>
+      </div>
+      <div class="body">
+        <h2>围棋小课堂、古诗学习与服务端下载页</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span><span class="tag t-opt">内容更新</span></div>
+        <ul>
+          <li><b>围棋小课堂</b>：9 路小棋盘，完整实现气、提子、禁入点与打劫规则，一局十几分钟下得完。</li>
+          <li>电脑对手分三档：简单会「手下留情」，中等正常应对，困难更会吃子、贴身紧气，不容易被围。</li>
+          <li>支持悔棋、重新开始与「数子」结算，按中国规则显示双方子数并判断胜负。</li>
+          <li><b>古诗学习</b>：收录 26 首小学必背古诗，按山水田园、四季风光、童趣生活、思念送别、励志哲理五类整理。</li>
+          <li>每首诗都有字词注释、白话译文与小知识，可用系统语音朗读，也能直接翻上一首、下一首。</li>
+          <li>家长后台的小游戏开关新增「围棋小课堂」，可以单独关掉。</li>
+          <li>服务端新增「下载安装」页与「服务端说明」页：安装包放进 <code>wwwroot/downloads</code> 即自动列出，并附 SHA-256 校验值。</li>
+          <li>官网下载区改为直接下载安装包，不再依赖任何应用市场。</li>
+        </ul>
+        <div class="warn">本版签名未变更，可直接覆盖安装；从 v1.8 之前的版本升级仍需先卸载旧版。</div>
+      </div>
+    </article>
+
+    <!-- v1.14 -->
+    <article class="rel" id="v1-14" data-tags="修复">
+      <div class="side">
+        <div class="vno">1.14</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 15</div>
+      </div>
+      <div class="body">
+        <h2>修复手机端小游戏布局</h2>
+        <div class="tags"><span class="tag t-fix">问题修复</span></div>
+        <ul>
+          <li>连连看：棋盘改为按屏幕可用宽度自适应，第 6 列卡片不再被切掉一半。</li>
+          <li>走迷宫：修掉方格被拉成竖条的问题，13×13 的方阵恢复正方形。</li>
+          <li>游戏乐园 13 款网页小游戏全面适配手机：内容可上下滚动、按钮与状态条自动换行、画布不再超出屏幕。</li>
+          <li>竖排大标题在窄屏改为横排，不再占掉半屏空间。</li>
+          <li>转屏、分屏、折叠屏切换后自动重算尺寸，不必退出重进。</li>
+          <li>关闭网页的桌面视口与系统字体放大，家长把系统字体调大也不会挤爆布局。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.13 -->
+    <article class="rel" id="v1-13" data-tags="合规 新增">
+      <div class="side">
+        <div class="vno">1.13</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 14</div>
+      </div>
+      <div class="body">
+        <h2>隐私合规三件套：同意页、政策全文、第三方 SDK 清单</h2>
+        <div class="tags"><span class="tag t-law">隐私合规</span><span class="tag t-new">新增功能</span></div>
+        <ul>
+          <li>首次打开先展示隐私政策摘要，主动点「同意并继续」才进入应用。</li>
+          <li>同意之前不初始化任何第三方 SDK、不发起任何网络请求；不同意则退出，不写入任何偏好。</li>
+          <li>应用内可随时查阅 13 节隐私政策全文，以及第三方 SDK 清单（含用途、收集字段与关闭方式）。</li>
+          <li>家长面板新增「隐私与合规」：显示政策版本与同意时间，并支持<b>撤回授权</b>，撤回后立即停止服务器同步。</li>
+          <li>政策有实质修改时自动递增版本号，会重新征询你的同意。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.12 -->
+    <article class="rel" id="v1-12" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.12</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 13</div>
+      </div>
+      <div class="body">
+        <h2>家长改配置，孩子设备 1 秒内生效</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span></div>
+        <ul>
+          <li>新增「实时下发通道」，不再依赖厂商推送服务，个人开发者也能用。</li>
+          <li>家长在电脑端保存设置后，孩子设备立即拉取并应用，无需重开应用。</li>
+          <li>断线自动重连，只在家长面板显示连接状态，不打扰孩子使用。</li>
+          <li>诊断页新增实时通道四项状态，排障时一眼看清是网络、登录还是服务器的问题。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.11 -->
+    <article class="rel" id="v1-11" data-tags="修复">
+      <div class="side">
+        <div class="vno">1.11</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 12</div>
+      </div>
+      <div class="body">
+        <h2>修诊断页「App ID 未配置」误报</h2>
+        <div class="tags"><span class="tag t-fix">问题修复</span></div>
+        <ul>
+          <li>纯数字的应用 ID 被系统编译成整数，按字符串读取时得到空值，诊断页因此误报「清单未配置」。</li>
+          <li>改为整数与字符串两种类型都兼容读取，同时显示推送 SDK 版本号。</li>
+          <li>推送链路本身一直正常，此项纯属显示问题。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.10 -->
+    <article class="rel" id="v1-10" data-tags="优化">
+      <div class="side">
+        <div class="vno">1.10</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 11</div>
+      </div>
+      <div class="body">
+        <h2>推送错误码翻译成中文</h2>
+        <div class="tags"><span class="tag t-opt">体验优化</span></div>
+        <ul>
+          <li>诊断页不再只显示 <code>10202</code> 这样的数字，而是附上中文含义与处理建议。</li>
+          <li>覆盖 10202、10211、10214、8003xxx、8004xxx 等常见错误码。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.9 -->
+    <article class="rel" id="v1-9" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.9</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 10</div>
+      </div>
+      <div class="body">
+        <h2>诊断页可一键重新申请推送 token</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span></div>
+        <ul>
+          <li>在开发者平台补完配置后，点一下按钮就能重新校验，不必杀进程重开应用。</li>
+          <li>内置 30 秒间隔限制，避免触发平台频控。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.8 -->
+    <article class="rel" id="v1-8" data-tags="修复">
+      <div class="side">
+        <div class="vno">1.8</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 9</div>
+      </div>
+      <div class="body">
+        <h2>启用正式签名证书</h2>
+        <div class="tags"><span class="tag t-fix">问题修复</span><span class="tag t-key">重要变更</span></div>
+        <ul>
+          <li>安装包此前实际由 Android 调试证书签名，本版起改用有效期 30 年的正式证书。</li>
+          <li>修掉「诊断页永远显示不支持推送」的类型错误，真机状态显示恢复正常。</li>
+        </ul>
+        <div class="warn">⚠️ 此版本更换了签名证书，从更早版本升级<b>必须先卸载旧版</b>再安装，不能直接覆盖；卸载会清空应用内数据。</div>
+      </div>
+    </article>
+
+    <!-- v1.7 -->
+    <article class="rel" id="v1-7" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.7</div>
+        <div class="date">2026-11-04</div>
+        <div class="code">code 8</div>
+      </div>
+      <div class="body">
+        <h2>日志可查看，新增应用内诊断页</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span></div>
+        <ul>
+          <li>日志改写到外部可见目录，无需任何存储权限，卸载时随应用自动清除。</li>
+          <li>家长设置新增「诊断日志」页：显示日志实际目录、推送状态、日志尾部，支持一键复制全部。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.6 -->
+    <article class="rel" id="v1-6" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.6</div>
+        <div class="date">2026-11-03</div>
+        <div class="code">code 7</div>
+      </div>
+      <div class="body">
+        <h2>接入荣耀推送</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span></div>
+        <ul>
+          <li>支持接收 token 变更与配置变更消息。</li>
+          <li>所有推送异常静默处理：任何机型、任何失败都不影响桌面正常启动。</li>
+          <li>收到消息只记录、不弹通知——儿童界面不该弹权限框打扰孩子。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.5 -->
+    <article class="rel" id="v1-5" data-tags="优化">
+      <div class="side">
+        <div class="vno">1.5</div>
+        <div class="date">2026-11-03</div>
+        <div class="code">code 6</div>
+      </div>
+      <div class="body">
+        <h2>新版应用图标</h2>
+        <div class="tags"><span class="tag t-opt">体验优化</span></div>
+        <ul>
+          <li>图标换成手绘风熊猫：深绿配奶白，举手打招呼的坐姿。</li>
+          <li>按安卓自适应图标规范重做，主体落在中央安全区，任何厂商的圆角或圆形遮罩都不会切到耳朵和爪子。</li>
+          <li>同步更新应用商店用的 320×320 直角方形图标。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.4 -->
+    <article class="rel" id="v1-4" data-tags="修复">
+      <div class="side">
+        <div class="vno">1.4</div>
+        <div class="date">2026-11-03</div>
+        <div class="code">code 5</div>
+      </div>
+      <div class="body">
+        <h2>Windows 端图标尺寸统一</h2>
+        <div class="tags"><span class="tag t-fix">问题修复</span></div>
+        <ul>
+          <li>修掉首页图标明显小于子页面的问题，两端现在共用同一套尺寸算法。</li>
+          <li>磁贴边长设上限，超宽屏下图标不会大到失真。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.3 -->
+    <article class="rel" id="v1-3" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.3</div>
+        <div class="date">2026-11-03</div>
+        <div class="code">code 4</div>
+      </div>
+      <div class="body">
+        <h2>新增「特需关爱」板块与家长心理守护</h2>
+        <div class="tags"><span class="tag t-new">新增功能</span></div>
+        <ul>
+          <li>按学习通道分为视障、听障、社交情绪三组，共 6 个小游戏：声音寻宝、听音复述、听声辨物、节奏光影、手语图卡、表情配对。</li>
+          <li>视障页按钮不小于 96dp，每个状态都有语音播报，答错不扣分也不推进。</li>
+          <li>听障页用「颜色 + 图标 + 振动」三重编码，不依赖红绿，色觉障碍也能用。</li>
+          <li>每个模块都写明练什么、为什么这样练、每次多久、家长怎么带。</li>
+          <li>家长心理守护：12 条「不该做什么 + 为什么 + 换成这样」、8 组换句话示例，以及该就医的红黄信号。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.2 -->
+    <article class="rel" id="v1-2" data-tags="修复">
+      <div class="side">
+        <div class="vno">1.2</div>
+        <div class="date">2026-11-02</div>
+        <div class="code">code 3</div>
+      </div>
+      <div class="body">
+        <h2>修 Android 15/16 顶部白色空白带</h2>
+        <div class="tags"><span class="tag t-fix">问题修复</span></div>
+        <ul>
+          <li>状态栏、导航栏、刘海占位全部置零，界面真正铺满屏幕。</li>
+          <li>修复引导页在 Windows 上点「开始使用」无反应的问题。</li>
+          <li>引导完成时保存设置加超时保护，避免个别环境卡在引导页。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.1 -->
+    <article class="rel" id="v1-1" data-tags="优化">
+      <div class="side">
+        <div class="vno">1.1</div>
+        <div class="date">2026-11-02</div>
+        <div class="code">code 2</div>
+      </div>
+      <div class="body">
+        <h2>首页紧凑化与圆角扁平化</h2>
+        <div class="tags"><span class="tag t-opt">体验优化</span></div>
+        <ul>
+          <li>时钟与天气模块占屏高由约 47% 降到约 27%，把空间让给图标区。</li>
+          <li>磁贴、天气卡、名称胶囊统一圆角层级，去掉渐变与投影。</li>
+          <li>顶部栏重排，窄屏下不再互相挤压。</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- v1.0 -->
+    <article class="rel" id="v1-0" data-tags="新增">
+      <div class="side">
+        <div class="vno">1.0</div>
+        <div class="date">2026-10-31</div>
+        <div class="code">code 1</div>
+      </div>
+      <div class="body">
+        <h2>第一个可用版本</h2>
+        <div class="tags"><span class="tag t-first">首发</span></div>
+        <ul>
+          <li>桌面替换、家长验证入口、屏幕时间与锁屏、应用白名单。</li>
+          <li>游戏大厅、安全知识、口诀乐园、科学实验室、身体百科。</li>
+          <li>天气逐小时与预警、语音训练。</li>
+        </ul>
+      </div>
+    </article>
+
+    <div class="tail">
+      <h3>想装最新版？</h3>
+      <p>当前为 v1.16，签名未变更，可直接覆盖安装；从 v1.8 之前的版本升级请先卸载旧版。</p>
+      <div class="links">
+        <a class="primary" href="index.html#download">前往下载</a>
+        <a class="ghost" href="privacy.html">隐私政策</a>
+        <a class="ghost" href="index.html">返回首页</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    © 2026 儿童安全桌面 ·
+    <a href="index.html">首页</a>
+    <a href="about.html">关于我们</a>
+    <a href="changelog.html">更新日志</a>
+    <a href="care-sources.html">内容来源</a>
+    <a href="privacy.html">隐私政策</a>
+  </div>
+</footer>
+
+<script>
+// 标签筛选：纯前端过滤，全部内容仍在 DOM 中，搜索引擎与商店抓取都能读到完整日志
+(function(){
+  const btns = document.querySelectorAll('.fbtn');
+  const items = document.querySelectorAll('.rel');
+  btns.forEach(btn => btn.addEventListener('click', () => {
+    btns.forEach(b => b.classList.toggle('on', b === btn));
+    const f = btn.dataset.f;
+    items.forEach(it => {
+      const tags = (it.dataset.tags || '').split(/\s+/);
+      it.style.display = (f === 'all' || tags.includes(f)) ? '' : 'none';
+    });
+  }));
+})();
+</script>
+</body>
+</html>

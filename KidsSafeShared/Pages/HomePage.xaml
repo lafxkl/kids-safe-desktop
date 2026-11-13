@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             xmlns:helpers="clr-namespace:KidsSafeDesktop.Helpers"
+             xmlns:controls="clr-namespace:KidsSafeDesktop.Controls"
+             x:Class="KidsSafeDesktop.Pages.HomePage"
+             Title="儿童桌面"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- 主题背景大图（覆盖整页，显示在内容之下） -->
+        <Image Grid.Row="0" Grid.RowSpan="3"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏。用 VerticalStackLayout 分两行（而不是 Grid 的 Auto 行），
+             窄屏下绝不会出现「徽章压到头像上」的挤压问题：
+             第一行 头像 + 昵称 + 剩余时间，第二行 离线/护眼/换肤 徽章（右对齐）。
+             所有元素统一「圆角 + 扁平」：纯色/半透明纯色底、无描边、无投影。 -->
+        <VerticalStackLayout Padding="16,18,16,0" Spacing="6">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <!-- 头像（点我改名） -->
+                <Frame Grid.Column="0" x:Name="AvatarFrame" WidthRequest="54" HeightRequest="54"
+                       CornerRadius="27" Padding="0" HasShadow="False" BackgroundColor="#FFFFFF"
+                       BorderColor="#FFFFFF" VerticalOptions="Center">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnAvatarTapped" NumberOfTapsRequired="1" />
+                    </Frame.GestureRecognizers>
+                    <Label Text="{Binding AvatarEmoji}" FontSize="30"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Frame>
+
+                <!-- 昵称 + 提示（半透明白底圆角，可缩可截断，绝不把右侧挤出屏幕） -->
+                <Frame Grid.Column="1" BackgroundColor="#B3FFFFFF" CornerRadius="16" Padding="12,5"
+                       HasShadow="False" BorderColor="Transparent" VerticalOptions="Center">
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{Binding Nickname}" FontSize="19" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold" TextColor="#5D4037"
+                               LineBreakMode="TailTruncation" MaxLines="1" />
+                        <Label Text="✏️ 点我改名字" FontSize="11" TextColor="#8D6E63"
+                               LineBreakMode="TailTruncation" MaxLines="1" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 剩余时间（圆角胶囊） -->
+                <Frame Grid.Column="2" BackgroundColor="#FFE0B2" CornerRadius="16" Padding="11,7"
+                       HasShadow="False" BorderColor="Transparent" VerticalOptions="Center">
+                    <Label Text="{Binding RemainingText}" FontSize="13" FontAttributes="Bold"
+                           TextColor="#E65100" LineBreakMode="TailTruncation" MaxLines="1" />
+                </Frame>
+            </Grid>
+
+            <!-- 第二行：账号徽章 + 护眼指示 + 换皮肤（全部圆角胶囊 / 圆形） -->
+            <HorizontalStackLayout Spacing="8" HorizontalOptions="End">
+                <Frame BackgroundColor="#E8F5E9" CornerRadius="14" Padding="10,4" HeightRequest="30"
+                       HasShadow="False" BorderColor="Transparent" VerticalOptions="Center">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnAccountTapped" NumberOfTapsRequired="1" />
+                    </Frame.GestureRecognizers>
+                    <Label Text="{Binding AccountBadge}" FontSize="12" FontAttributes="Bold"
+                           TextColor="#2E7D32" VerticalOptions="Center" />
+                </Frame>
+
+                <!-- 护眼模式生效指示 -->
+                <Frame BackgroundColor="#FFF3E0" CornerRadius="14" Padding="10,4" HeightRequest="30"
+                       HasShadow="False" BorderColor="Transparent" VerticalOptions="Center"
+                       IsVisible="{Binding EyeCareVisible}">
+                    <Label Text="👁️ 护眼" FontSize="12" FontAttributes="Bold" TextColor="#EF6C00"
+                           VerticalOptions="Center" />
+                </Frame>
+
+                <!-- 换皮肤（圆形按钮） -->
+                <Frame WidthRequest="34" HeightRequest="34" CornerRadius="17" Padding="0"
+                       HasShadow="False" BackgroundColor="#B3FFFFFF" BorderColor="Transparent"
+                       VerticalOptions="Center">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnThemeTapped" NumberOfTapsRequired="1" />
+                    </Frame.GestureRecognizers>
+                    <Label Text="🎨" FontSize="17" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Frame>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- 问候 + 时钟 + 天气（圆角扁平卡片，尺寸已整体压缩，给下面的图标腾出空间） -->
+        <Frame Grid.Row="1" BackgroundColor="#B3FFFFFF" CornerRadius="24" Padding="14,11"
+               HasShadow="False" BorderColor="Transparent" Margin="20,10,20,0">
+            <VerticalStackLayout Spacing="2">
+                <!-- 彩虹 + 问候合并成一行，省掉一整行高度 -->
+                <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="🌈" FontSize="22" VerticalOptions="Center" />
+                    <Label Text="{Binding Greeting}" FontSize="19" FontAttributes="Bold"
+                           TextColor="#5D4037" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <Label x:Name="ClockLabel" Text="{Binding ClockText}" FontSize="44" FontAttributes="Bold"
+                       TextColor="#7E57C2" HorizontalOptions="Center" Margin="0,-4,0,-2" />
+
+                <!-- 天气小卡片：联网定位 + 逐小时预报 + 预警。
+                     与图标统一的圆角扁平风格：纯色底、无描边、无投影，圆角按层级递减 -->
+                <Frame BackgroundColor="#E3F2FD" CornerRadius="18" Padding="10,8"
+                       HasShadow="False" BorderColor="Transparent" Margin="0,6,0,0"
+                       IsVisible="{Binding WeatherVisible}">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnWeatherTapped" NumberOfTapsRequired="1" />
+                    </Frame.GestureRecognizers>
+                    <VerticalStackLayout Spacing="6">
+                        <!-- 用 Grid 而不是 HorizontalStackLayout：StackLayout 不支持 * 展开，
+                             「🔄」会紧贴文字而不是靠到卡片右侧 -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Label Grid.Column="0" Text="{Binding WeatherEmoji}" FontSize="21"
+                                   VerticalOptions="Center" Margin="0,0,6,0" />
+                            <Label Grid.Column="1" Text="{Binding WeatherText}" FontSize="14" FontAttributes="Bold"
+                                   TextColor="#0277BD" VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation" MaxLines="1" />
+                            <Label Grid.Column="2" Text="🔄" FontSize="12" TextColor="#0277BD"
+                                   VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- 预警/提醒 -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding HasWeatherAlerts}">
+                            <BindableLayout.ItemsSource>
+                                <Binding Path="WeatherAlerts" />
+                            </BindableLayout.ItemsSource>
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:WeatherAlert">
+                                    <Frame Padding="7,3" CornerRadius="11" Margin="0,2"
+                                           BackgroundColor="{Binding Level, Converter={StaticResource AlertBg}}"
+                                           HasShadow="False" BorderColor="Transparent">
+                                        <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                                            <Label Text="{Binding Emoji}" FontSize="13" />
+                                            <Label Text="{Binding Title}" FontSize="12" FontAttributes="Bold" TextColor="#B71C1C" />
+                                            <Label Text="{Binding Desc}" FontSize="10.5" TextColor="#37474F" />
+                                        </HorizontalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <!-- 逐小时预报（小卡片：扁平纯白 + 14 圆角，尺寸比之前更紧凑） -->
+                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                            <HorizontalStackLayout Spacing="7" Padding="1,1">
+                                <BindableLayout.ItemsSource>
+                                    <Binding Path="WeatherHours" />
+                                </BindableLayout.ItemsSource>
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="models:WeatherHour">
+                                        <Frame WidthRequest="48" HeightRequest="66" CornerRadius="14" Padding="1"
+                                               HasShadow="False" BackgroundColor="#FFFFFF" BorderColor="Transparent">
+                                            <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                                                <Label Text="{Binding TimeLabel}" FontSize="10" TextColor="#0277BD"
+                                                       HorizontalOptions="Center" />
+                                                <Label Text="{Binding Emoji}" FontSize="18" HorizontalOptions="Center" />
+                                                <Label Text="{Binding TempC, StringFormat='{0:0}°'}" FontSize="12"
+                                                       FontAttributes="Bold" TextColor="#01579B" HorizontalOptions="Center" />
+                                                <Label Text="{Binding PrecipProb, StringFormat='{0}%'}" FontSize="9"
+                                                       TextColor="#0288D1" HorizontalOptions="Center"
+                                                       IsVisible="{Binding PrecipProb, Converter={StaticResource HasPrecip}}" />
+                                            </VerticalStackLayout>
+                                        </Frame>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
+                        </ScrollView>
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- 应用图标（手机桌面式：圆角扁平图标 + 图标下方圆角胶囊名称）。
+             与「小游戏乐园 / 学习天地 / 英语学习」共用同一个 LauncherGridView 控件和同一份
+             尺寸算法（Helpers/LauncherMetrics）：同一个窗口宽度必然算出同一个磁贴尺寸，
+             PC 上再也不会出现「首页图标小、子页面图标大」的割裂。 -->
+        <controls:LauncherGridView Grid.Row="2" x:Name="AppsGrid"
+                                   ItemTapped="OnLauncherTapped" Padding="18,12,18,96" />
+
+        <!-- 空状态：家长还没允许任何应用时给孩子的引导 -->
+        <VerticalStackLayout x:Name="EmptyHint" Grid.Row="2" IsVisible="False"
+                             VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+            <Label Text="🧸" FontSize="56" HorizontalOptions="Center" />
+            <Label Text="还没有允许的应用" FontSize="18" TextColor="#5D4037"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            <Label Text="请让家长来添加" FontSize="16" TextColor="#8D6E63"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <!-- 家长入口（低调的圆角胶囊按钮，位于右下角；不用 Button 以免被全局样式染成绿色方块） -->
+        <Border Grid.Row="2" BackgroundColor="#B3FFFFFF" StrokeThickness="0"
+                StrokeShape="RoundRectangle 15" Padding="12,5"
+                HorizontalOptions="End" VerticalOptions="End" Margin="0,0,12,12">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnParentTapped" NumberOfTapsRequired="1" />
+            </Border.GestureRecognizers>
+            <Label Text="家长" FontSize="13" FontAttributes="Bold" TextColor="#8D6E63" />
+        </Border>
+
+        <!-- 版本号（左下角，低调显示；配一层半透明圆角底，避免压在图标上看不清） -->
+        <Border Grid.Row="2" BackgroundColor="#80FFFFFF" StrokeThickness="0"
+                StrokeShape="RoundRectangle 10" Padding="7,2"
+                HorizontalOptions="Start" VerticalOptions="End" Margin="12,0,0,12">
+            <Label Text="{Binding Source={x:Static helpers:AppVersion.Display}}"
+                   FontSize="11" TextColor="#8D6E63" />
+        </Border>
+
+    </Grid>
+</ContentPage>

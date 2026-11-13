@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.EmotionMatchGamePage"
+             Title="表情配对"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="😊 表情配对" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="ProgressLabel" Text="第 1 / 10 题" TextColor="White"
+                   FontSize="15" VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <!-- 题目卡：表情 + 情境。情境句是「归因」线索，比单纯认脸更接近真实社交 -->
+        <Border Grid.Row="1" StrokeShape="RoundRectangle 26" StrokeThickness="0"
+                BackgroundColor="#FFFFFF" Padding="18,14" Margin="18,14,18,6">
+            <VerticalStackLayout Spacing="8">
+                <Label x:Name="FaceLabel" Text="😊" FontSize="66" HorizontalOptions="Center" />
+                <Label x:Name="SceneLabel" Text="" FontSize="15" TextColor="#37474F"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                       LineBreakMode="WordWrap" />
+                <Label Text="他现在是什么感觉？" FontSize="14" FontAttributes="Bold"
+                       TextColor="#5E35B1" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- 四个选项：2×2，颜色区分但不用红绿做对错（红绿盲友好），改用「勾/叉」文字符号 + 振动 -->
+        <Grid Grid.Row="2" x:Name="OptionsGrid" RowDefinitions="*,*" ColumnDefinitions="*,*"
+              Padding="18,8,18,8" RowSpacing="10" ColumnSpacing="10" />
+
+        <Label Grid.Row="3" x:Name="FeedbackLabel" Text="" FontSize="16" FontAttributes="Bold"
+               TextColor="#5E35B1" HorizontalOptions="Center" HorizontalTextAlignment="Center"
+               Margin="18,0,18,14" />
+
+        <!-- 结果层 -->
+        <Grid Grid.Row="0" Grid.RowSpan="4" x:Name="ResultLayer" IsVisible="False"
+              BackgroundColor="#F5FFFFFF">
+            <ScrollView Padding="28,20">
+                <VerticalStackLayout Spacing="16" VerticalOptions="Center">
+                    <Label Text="🏆" FontSize="76" HorizontalOptions="Center" />
+                    <Label x:Name="ResultTitle" Text="练习完成！" FontSize="26" FontAttributes="Bold"
+                           TextColor="#4527A0" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Label x:Name="ResultDetail" Text="" FontSize="17" TextColor="#5E35B1"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                    <Label Text="练完别急着走：问孩子「刚才弟弟哭了，他是什么感觉？」把卡片搬到真实场景里。"
+                           FontSize="14" TextColor="#6D4C41" HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                    <Button Text="🔄 再练一次" FontSize="19" BackgroundColor="#5E35B1" TextColor="White"
+                            CornerRadius="18" HeightRequest="58" Margin="0,8,0,0" Clicked="OnReplayAll" />
+                    <Button Text="↩️ 回到板块" FontSize="17" BackgroundColor="#FFFFFF" TextColor="#5E35B1"
+                            CornerRadius="18" HeightRequest="54" Clicked="OnBack" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

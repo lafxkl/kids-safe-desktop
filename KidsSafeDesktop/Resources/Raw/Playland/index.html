@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🎮 智趣游戏乐园</title>
+  <style>
+    :root {
+      --primary-cyan: #0284c7;
+      --primary-amber: #d97706;
+      --primary-emerald: #059669;
+      --primary-orange: #ea580c;
+      --text-dark: #0f172a;
+      --text-medium: #334155;
+      --text-muted: #64748b;
+      --bg-page: #f8fafc;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: 
+        radial-gradient(circle at 12% 16%, rgba(186, 230, 253, 0.5) 0%, transparent 42%),
+        radial-gradient(circle at 88% 18%, rgba(254, 243, 199, 0.6) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(220, 252, 231, 0.6) 0%, transparent 52%),
+        #f1f5f9;
+      font-family: var(--font-family);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 18px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 背景柔光悬浮光晕装饰 */
+    .bg-glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.65;
+      animation: floatGlow 18s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 380px; height: 380px;
+      background: linear-gradient(135deg, #bae6fd, #e0f2fe);
+      top: -80px; left: -80px;
+    }
+    .orb-2 {
+      width: 420px; height: 420px;
+      background: linear-gradient(135deg, #fef3c7, #fed7aa);
+      top: 60px; right: -120px;
+      animation-delay: -5s;
+    }
+    .orb-3 {
+      width: 480px; height: 480px;
+      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+      bottom: -100px; left: 15%;
+      animation-delay: -10s;
+    }
+
+    @keyframes floatGlow {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 20px) scale(1.08); }
+      100% { transform: translate(-20px, 40px) scale(0.95); }
+    }
+
+    /* 乐园主视窗容器 */
+    .hub-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 1520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 游戏卡片网格 - 默认一行放5个，大号精美排布 */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    @media (max-width: 1320px) {
+      .games-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px 10px 24px;
+      }
+      .games-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+
+    /* 游戏主卡片 (大号精美纯净版) */
+    .game-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 24px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 
+        0 10px 28px -6px rgba(15, 23, 42, 0.08),
+        0 0 0 1px rgba(226, 232, 240, 0.9);
+      border: 2px solid transparent;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+      min-height: 205px;
+    }
+
+    .game-card:hover {
+      transform: translateY(-7px);
+      background: #ffffff;
+    }
+
+    /* 卡片顶部标头 */
+    .card-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .game-icon-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+    }
+
+    .game-card:hover .game-icon-circle {
+      transform: scale(1.12) rotate(4deg);
+    }
+
+    .game-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    /* 卡片 1: 雷霆战机 */
+    .card-plane .game-icon-circle {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      border: 3px solid #bae6fd;
+      color: #ffffff;
+    }
+    .card-plane:hover {
+      border-color: #38bdf8;
+      box-shadow: 
+        0 24px 48px -12px rgba(14, 165, 233, 0.25),
+        0 0 0 2px #38bdf8;
+    }
+    .badge-plane {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* 卡片 2: 欢乐五子棋 */
+    .card-gomoku .game-icon-circle {
+      background: linear-gradient(135deg, #334155, #0f172a);
+      border: 3px solid #fef3c7;
+      color: #ffffff;
+    }
+    .card-gomoku:hover {
+      border-color: #f59e0b;
+      box-shadow: 
+        0 24px 48px -12px rgba(245, 158, 11, 0.25),
+        0 0 0 2px #f59e0b;
+    }
+    .badge-gomoku {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
+    /* 卡片 3: 贪吃蛇大冒险 */
+    .card-snake .game-icon-circle {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: 3px solid #dcfce7;
+      color: #ffffff;
+    }
+    .card-snake:hover {
+      border-color: #10b981;
+      box-shadow: 
+        0 24px 48px -12px rgba(16, 185, 129, 0.25),
+        0 0 0 2px #10b981;
+    }
+    .badge-snake {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+
+    /* 卡片 5: 萌趣宝石消消乐 */
+    .card-gem .game-icon-circle {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border: 3px solid #fce7f3;
+      color: #ffffff;
+    }
+    .card-gem:hover {
+      border-color: #ec4899;
+      box-shadow: 
+        0 24px 48px -12px rgba(236, 72, 153, 0.25),
+        0 0 0 2px #ec4899;
+    }
+    .badge-gem {
+      background: #fce7f3;
+      color: #be185d;
+      border: 1px solid #fbcfe8;
+    }
+
+    /* 卡片 6: 森林斗兽棋 */
+    .card-animal .game-icon-circle {
+      background: linear-gradient(135deg, #10b981, #047857);
+      border: 3px solid #d1fae5;
+      color: #ffffff;
+    }
+    .card-animal:hover {
+      border-color: #10b981;
+      box-shadow: 
+        0 24px 48px -12px rgba(16, 185, 129, 0.28),
+        0 0 0 2px #10b981;
+    }
+    .badge-animal {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    /* 卡片 7: 中国象棋 */
+    .card-chess .game-icon-circle {
+      background: linear-gradient(135deg, #b45309, #78350f);
+      border: 3px solid #fef3c7;
+      color: #ffffff;
+    }
+    .card-chess:hover {
+      border-color: #f59e0b;
+      box-shadow: 
+        0 24px 48px -12px rgba(217, 119, 6, 0.28),
+        0 0 0 2px #f59e0b;
+    }
+    .badge-chess {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    /* 卡片 8: 冰雪打企鹅 */
+    .card-penguin .game-icon-circle {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border: 3px solid #bae6fd;
+      color: #ffffff;
+    }
+    .card-penguin:hover {
+      border-color: #0284c7;
+      box-shadow: 
+        0 24px 48px -12px rgba(2, 132, 199, 0.28),
+        0 0 0 2px #0284c7;
+    }
+    .badge-penguin {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* 卡片 9: 萌趣凑十消消乐 */
+    .card-make-ten .game-icon-circle {
+      background: linear-gradient(135deg, #ec4899, #7c3aed);
+      border: 3px solid #fce7f3;
+      color: #ffffff;
+    }
+    .card-make-ten:hover {
+      border-color: #ec4899;
+      box-shadow: 
+        0 24px 48px -12px rgba(236, 72, 153, 0.28),
+        0 0 0 2px #ec4899;
+    }
+    .badge-make-ten {
+      background: #fce7f3;
+      color: #be185d;
+      border: 1px solid #fbcfe8;
+    }
+
+    /* 卡片 10: 算术小飞行员 */
+    .card-math-pilot .game-icon-circle {
+      background: linear-gradient(135deg, #0284c7, #3b82f6);
+      border: 3px solid #bae6fd;
+      color: #ffffff;
+    }
+    .card-math-pilot:hover {
+      border-color: #38bdf8;
+      box-shadow: 
+        0 24px 48px -12px rgba(56, 189, 248, 0.3),
+        0 0 0 2px #38bdf8;
+    }
+    .badge-math-pilot {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* 卡片 11: 点字成诗 */
+    .card-poem .game-icon-circle {
+      background: linear-gradient(135deg, #b45309, #78350f);
+      border: 3px solid #fef3c7;
+      color: #ffffff;
+    }
+    .card-poem:hover {
+      border-color: #b45309;
+      box-shadow: 
+        0 24px 48px -12px rgba(180, 83, 9, 0.28),
+        0 0 0 2px #b45309;
+    }
+    .badge-poem {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    /* 卡片 12: 汉字合体 */
+    .card-radical .game-icon-circle {
+      background: linear-gradient(135deg, #4f46e5, #3730a3);
+      border: 3px solid #e0e7ff;
+      color: #ffffff;
+    }
+    .card-radical:hover {
+      border-color: #4f46e5;
+      box-shadow: 
+        0 24px 48px -12px rgba(79, 70, 229, 0.28),
+        0 0 0 2px #4f46e5;
+    }
+    .badge-radical {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    /* 卡片 13: 听音识字打气球 */
+    .card-balloon .game-icon-circle {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border: 3px solid #bae6fd;
+      color: #ffffff;
+    }
+    .card-balloon:hover {
+      border-color: #0284c7;
+      box-shadow: 
+        0 24px 48px -12px rgba(2, 132, 199, 0.28),
+        0 0 0 2px #0284c7;
+    }
+    .badge-balloon {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* 卡片 15: 小汽车大冒险 */
+    .card-car .game-icon-circle {
+      background: linear-gradient(135deg, #f97316, #dc2626);
+      border: 3px solid #ffedd5;
+      color: #ffffff;
+    }
+    .card-car:hover {
+      border-color: #f97316;
+      box-shadow: 
+        0 24px 48px -12px rgba(249, 115, 22, 0.28),
+        0 0 0 2px #f97316;
+    }
+    .badge-car {
+      background: #ffedd5;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+    }
+
+    /* 卡片 16: 光线宝石反射解谜 */
+    .card-light .game-icon-circle {
+      background: linear-gradient(135deg, #14b8a6, #0ea5e9);
+      border: 3px solid #ccfbf1;
+      color: #ffffff;
+    }
+    .card-light:hover {
+      border-color: #14b8a6;
+      box-shadow: 
+        0 24px 48px -12px rgba(20, 184, 166, 0.28),
+        0 0 0 2px #14b8a6;
+    }
+    .badge-light {
+      background: #ccfbf1;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+
+    /* 两款新游戏的进入按钮 */
+    .btn-car {
+      background: linear-gradient(135deg, #f97316, #dc2626);
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.28);
+    }
+    .btn-car:hover {
+      background: linear-gradient(135deg, #fb923c, #b91c1c);
+      box-shadow: 0 10px 25px rgba(220, 38, 38, 0.38);
+      transform: translateY(-2px);
+    }
+    .btn-light {
+      background: linear-gradient(135deg, #14b8a6, #0284c7);
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.28);
+    }
+    .btn-light:hover {
+      background: linear-gradient(135deg, #2dd4bf, #0369a1);
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.38);
+      transform: translateY(-2px);
+    }
+
+    /* 卡片 14: 象形字翻翻看 */
+    .card-pictograph .game-icon-circle {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      border: 3px solid #ffedd5;
+      color: #ffffff;
+    }
+    .card-pictograph:hover {
+      border-color: #ea580c;
+      box-shadow: 
+        0 24px 48px -12px rgba(234, 88, 12, 0.28),
+        0 0 0 2px #ea580c;
+    }
+    .badge-pictograph {
+      background: #ffedd5;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      line-height: 1.25;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.55;
+      margin-bottom: 16px;
+      min-height: 40px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      transition: color 0.2s ease;
+    }
+
+    .game-card:hover .card-desc {
+      color: #334155;
+    }
+
+    /* 按钮 (带新标签页 ↗ 提示) */
+    .enter-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 15px;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #ffffff;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.22s ease;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+      margin-top: auto;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-main-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* 飞机按钮 */
+    .btn-plane {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.32);
+    }
+    .btn-plane:hover {
+      background: linear-gradient(135deg, #0ea5e9, #4338ca);
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 五子棋按钮 */
+    .btn-gomoku {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      box-shadow: 0 8px 20px rgba(217, 119, 6, 0.32);
+    }
+    .btn-gomoku:hover {
+      background: linear-gradient(135deg, #f59e0b, #92400e);
+      box-shadow: 0 10px 25px rgba(217, 119, 6, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 贪吃蛇按钮 */
+    .btn-snake {
+      background: linear-gradient(135deg, #10b981, #047857);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.32);
+    }
+    .btn-snake:hover {
+      background: linear-gradient(135deg, #34d399, #065f46);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.42);
+      transform: translateY(-2px);
+    }
+
+
+    /* 宝石消消乐按钮 */
+    .btn-gem {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      box-shadow: 0 8px 20px rgba(236, 72, 153, 0.32);
+    }
+    .btn-gem:hover {
+      background: linear-gradient(135deg, #f472b6, #7c3aed);
+      box-shadow: 0 10px 25px rgba(236, 72, 153, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 斗兽棋按钮 */
+    .btn-animal {
+      background: linear-gradient(135deg, #059669, #0d9488);
+      box-shadow: 0 8px 20px rgba(5, 150, 105, 0.32);
+    }
+    .btn-animal:hover {
+      background: linear-gradient(135deg, #10b981, #0f766e);
+      box-shadow: 0 10px 25px rgba(5, 150, 105, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 象棋按钮 */
+    .btn-chess {
+      background: linear-gradient(135deg, #d97706, #78350f);
+      box-shadow: 0 8px 20px rgba(180, 83, 9, 0.32);
+    }
+    .btn-chess:hover {
+      background: linear-gradient(135deg, #f59e0b, #92400e);
+      box-shadow: 0 10px 25px rgba(180, 83, 9, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 冰雪打企鹅按钮 */
+    .btn-penguin {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.32);
+    }
+    .btn-penguin:hover {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 凑十消消乐按钮 */
+    .btn-make-ten {
+      background: linear-gradient(135deg, #ec4899, #7c3aed);
+      box-shadow: 0 8px 20px rgba(236, 72, 153, 0.32);
+    }
+    .btn-make-ten:hover {
+      background: linear-gradient(135deg, #f472b6, #6d28d9);
+      box-shadow: 0 10px 25px rgba(236, 72, 153, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 算术小飞行员按钮 */
+    .btn-pilot {
+      background: linear-gradient(135deg, #0284c7, #3b82f6);
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35);
+    }
+    .btn-pilot:hover {
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.45);
+      transform: translateY(-2px);
+    }
+
+    /* 点字成诗按钮 */
+    .btn-poem {
+      background: linear-gradient(135deg, #b45309, #78350f);
+      box-shadow: 0 8px 20px rgba(180, 83, 9, 0.32);
+    }
+    .btn-poem:hover {
+      background: linear-gradient(135deg, #d97706, #92400e);
+      box-shadow: 0 10px 25px rgba(180, 83, 9, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 汉字合体消消乐按钮 */
+    .btn-radical {
+      background: linear-gradient(135deg, #4f46e5, #3730a3);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.32);
+    }
+    .btn-radical:hover {
+      background: linear-gradient(135deg, #6366f1, #4338ca);
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 听音打气球按钮 */
+    .btn-balloon {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.32);
+    }
+    .btn-balloon:hover {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 象形字翻翻看按钮 */
+    .btn-pictograph {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      box-shadow: 0 8px 20px rgba(234, 88, 12, 0.32);
+    }
+    .btn-pictograph:hover {
+      background: linear-gradient(135deg, #f97316, #9a3412);
+      box-shadow: 0 10px 25px rgba(234, 88, 12, 0.42);
+      transform: translateY(-2px);
+    }
+
+    /* 底部提示 */
+    footer {
+      font-size: 13.5px;
+      color: #64748b;
+      text-align: center;
+      z-index: 10;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 16px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    footer strong {
+      color: #0f172a;
+    }
+  </style>
+  <link rel="stylesheet" href="pages/assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 背景悬浮环境光晕 -->
+  <div class="bg-glow-orb orb-1"></div>
+  <div class="bg-glow-orb orb-2"></div>
+  <div class="bg-glow-orb orb-3"></div>
+
+  <div class="hub-container">
+    <!-- 15 款精品游戏卡片网格 -->
+    <main class="games-grid">
+      
+      <!-- 卡片 1: 雷霆战机 -->
+      <div class="game-card card-plane">
+        <div class="card-banner">
+          <div class="game-icon-circle">🚀</div>
+          <span class="game-badge badge-plane">🔥 热血空战 · 波次成长</span>
+        </div>
+        <h2 class="card-title">雷霆战机</h2>
+        <p class="card-desc">指尖穿梭枪林弹雨，升级护盾僚机火力，迎战巨型首领BOSS！</p>
+        <a href="pages/plane_war.html" class="enter-btn btn-plane">
+          <span class="btn-main-label">
+            <span>⚔️</span> 开始雷霆空战
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 2: 欢乐五子棋 -->
+      <div class="game-card card-gomoku">
+        <div class="card-banner">
+          <div class="game-icon-circle">🎯</div>
+          <span class="game-badge badge-gomoku">👑 益智对弈 · 双人&人机</span>
+        </div>
+        <h2 class="card-title">欢乐五子棋</h2>
+        <p class="card-desc">经典黑白落子博弈，支持好友同屏切磋与多难度电脑AI智勇对决。</p>
+        <a href="pages/gomoku.html" class="enter-btn btn-gomoku">
+          <span class="btn-main-label">
+            <span>🎯</span> 开始五子棋对弈
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 3: 贪吃蛇大冒险 -->
+      <div class="game-card card-snake">
+        <div class="card-banner">
+          <div class="game-icon-circle">🐍</div>
+          <span class="game-badge badge-snake">🍎 少儿慢速趣味版</span>
+        </div>
+        <h2 class="card-title">贪吃蛇大冒险</h2>
+        <p class="card-desc">柔光护眼舒适画风，慢速吞食苹果快快长大，少儿亲子休闲优选！</p>
+        <a href="pages/snake_kids.html" class="enter-btn btn-snake">
+          <span class="btn-main-label">
+            <span>🚀</span> 开始贪吃蛇冒险
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 5: 萌趣宝石消消乐 -->
+      <div class="game-card card-gem">
+        <div class="card-banner">
+          <div class="game-icon-circle">💎</div>
+          <span class="game-badge badge-gem">✨ 炫彩连击 · 益智闯关</span>
+        </div>
+        <h2 class="card-title">萌趣宝石消消乐</h2>
+        <p class="card-desc">滑动三消触发华丽连击，收集魔法道具彩虹魔方，爽快解压闯关！</p>
+        <a href="pages/gem_match.html" class="enter-btn btn-gem">
+          <span class="btn-main-label">
+            <span>✨</span> 开启宝石消消乐
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 6: 森林斗兽棋 -->
+      <div class="game-card card-animal">
+        <div class="card-banner">
+          <div class="game-icon-circle">🦁</div>
+          <span class="game-badge badge-animal">👑 智勇相克 · 亲子策略</span>
+        </div>
+        <h2 class="card-title">森林斗兽棋</h2>
+        <p class="card-desc">八兽相克智勇博弈，狮虎飞渡横跨小河，步步为营攻占敌方兽穴！</p>
+        <a href="pages/animal_chess.html" class="enter-btn btn-animal">
+          <span class="btn-main-label">
+            <span>🦁</span> 开启森林斗兽棋
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 7: 中国象棋 -->
+      <div class="game-card card-chess">
+        <div class="card-banner">
+          <div class="game-icon-circle">♟️</div>
+          <span class="game-badge badge-chess">👑 国粹博弈 · 楚河汉界</span>
+        </div>
+        <h2 class="card-title">中国象棋</h2>
+        <p class="card-desc">楚河汉界运筹帷幄，经典排兵布阵博弈，支持人机切磋与悔棋复盘。</p>
+        <a href="pages/chinese_chess.html" class="enter-btn btn-chess">
+          <span class="btn-main-label">
+            <span>♟️</span> 开始中国象棋对弈
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 8: 冰雪打企鹅 -->
+      <div class="game-card card-penguin">
+        <div class="card-banner">
+          <div class="game-icon-circle">🐧</div>
+          <span class="game-badge badge-penguin">❄️ 极地全垒打 · 经典复刻</span>
+        </div>
+        <h2 class="card-title">冰雪打企鹅</h2>
+        <p class="card-desc">经典手感原汁复刻，把握绝佳挥棒时机击飞企鹅，挑战极地滑行纪录！</p>
+        <a href="pages/penguin_hit.html" class="enter-btn btn-penguin">
+          <span class="btn-main-label">
+            <span>🐧</span> 开始冰雪打企鹅
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 9: 萌趣凑十消消乐 -->
+      <div class="game-card card-make-ten">
+        <div class="card-banner">
+          <div class="game-icon-circle">🔟</div>
+          <span class="game-badge badge-make-ten">✨ 凑十破十 · 算术益智</span>
+        </div>
+        <h2 class="card-title">萌趣凑十消消乐</h2>
+        <p class="card-desc">数字相加凑十消除，寓教于乐锻炼心算，趣味数学启智亲子乐园。</p>
+        <a href="pages/make_ten.html" class="enter-btn btn-make-ten">
+          <span class="btn-main-label">
+            <span>🔟</span> 开始凑十消消乐
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 10: 算术小飞行员 -->
+      <div class="game-card card-math-pilot">
+        <div class="card-banner">
+          <div class="game-icon-circle">🛩️</div>
+          <span class="game-badge badge-math-pilot">⚡ 极速心算 · 光门跑酷</span>
+        </div>
+        <h2 class="card-title">算术小飞行员</h2>
+        <p class="card-desc">驾驶战机穿梭算术光门，左右滑动择选答案，挑战极速连击心算！</p>
+        <a href="pages/math_pilot.html" class="enter-btn btn-pilot">
+          <span class="btn-main-label">
+            <span>🛩️</span> 开始算术飞行
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 11: 点字成诗大闯关 -->
+      <div class="game-card card-poem">
+        <div class="card-banner">
+          <div class="game-icon-circle">📜</div>
+          <span class="game-badge badge-poem">✨ 诗仙启蒙 · 点字闯关</span>
+        </div>
+        <h2 class="card-title">点字成诗大闯关</h2>
+        <p class="card-desc">打散经典必背古诗字块，按诗韵顺序点字成诗，配音诵读诗意赏析！</p>
+        <a href="pages/poem_puzzle.html" class="enter-btn btn-poem">
+          <span class="btn-main-label">
+            <span>📜</span> 开始诗词闯关
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 12: 汉字合体消消乐 -->
+      <div class="game-card card-radical">
+        <div class="card-banner">
+          <div class="game-icon-circle">🧩</div>
+          <span class="game-badge badge-radical">🌟 偏旁部首 · 神奇造字</span>
+        </div>
+        <h2 class="card-title">汉字合体消消乐</h2>
+        <p class="card-desc">日加月变明，木加木变林！收录45组神奇偏旁部首合体字，探索汉字造字奥秘。</p>
+        <a href="pages/radical_merge.html" class="enter-btn btn-radical">
+          <span class="btn-main-label">
+            <span>🧩</span> 开始汉字合体
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 13: 听音识字打气球 -->
+      <div class="game-card card-balloon">
+        <div class="card-banner">
+          <div class="game-icon-circle">🎈</div>
+          <span class="game-badge badge-balloon">⚡ 语音听辨 · 识字神射手</span>
+        </div>
+        <h2 class="card-title">听音识字打气球</h2>
+        <p class="card-desc">动听语音亲切出题，升起130+幼儿高频汉字彩色气球，听音击破快乐认字！</p>
+        <a href="pages/word_balloon.html" class="enter-btn btn-balloon">
+          <span class="btn-main-label">
+            <span>🎈</span> 开始识字打气球
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 14: 象形字翻翻看 -->
+      <div class="game-card card-pictograph">
+        <div class="card-banner">
+          <div class="game-icon-circle">🖼️</div>
+          <span class="game-badge badge-pictograph">🀄 古今对照 · 记忆配对</span>
+        </div>
+        <h2 class="card-title">象形字翻翻看</h2>
+        <p class="card-desc">太阳变日，弯月变月！收录36组经典象形图与汉字，趣味翻牌探秘汉字起源。</p>
+        <a href="pages/pictograph_match.html" class="enter-btn btn-pictograph">
+          <span class="btn-main-label">
+            <span>🖼️</span> 开启象形字翻牌
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 15: 小汽车大冒险 -->
+      <div class="game-card card-car">
+        <div class="card-banner">
+          <div class="game-icon-circle">🚗</div>
+          <span class="game-badge badge-car">🛣️ 三车道 · 躲车收金币</span>
+        </div>
+        <h2 class="card-title">小汽车大冒险</h2>
+        <p class="card-desc">左右换道躲开迎面来的车辆和路锥，一路收集金币，越开越快，看你能跑多远！</p>
+        <a href="pages/car_rush.html" class="enter-btn btn-car">
+          <span class="btn-main-label">
+            <span>🚗</span> 开车出发
+          </span>
+        </a>
+      </div>
+
+      <!-- 卡片 16: 光线宝石反射解谜 -->
+      <div class="game-card card-light">
+        <div class="card-banner">
+          <div class="game-icon-circle">💎</div>
+          <span class="game-badge badge-light">✨ 转镜子 · 反射光线</span>
+        </div>
+        <h2 class="card-title">光线宝石</h2>
+        <p class="card-desc">点一下镜子，让它转向 ╱ 或 ╲，把阳光反射到宝石上。四个小关卡，越往后越要想一想。</p>
+        <a href="pages/light_puzzle.html" class="enter-btn btn-light">
+          <span class="btn-main-label">
+            <span>💎</span> 开始反射光线
+          </span>
+        </a>
+      </div>
+
+    </main>
+  </div>
+
+</body>
+</html>

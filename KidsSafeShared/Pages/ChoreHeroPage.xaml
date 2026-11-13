@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.ChoreHeroPage"
+             Title="小小家务英雄"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FFF9E0" Offset="0" />
+                <GradientStop Color="#E8F4FD" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#FFD54F">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="#5B4500" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🌟 小小家务英雄" FontSize="19" FontAttributes="Bold"
+                   TextColor="#5B4500" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" x:Name="RoleBtn" Text="👨‍👩‍👧 家长" FontSize="13" TextColor="#5B4500"
+                    BackgroundColor="#FFFFFF99" CornerRadius="14" HeightRequest="34" Padding="10,0"
+                    Clicked="OnRoleToggle" />
+        </Grid>
+
+        <!-- 积分卡 -->
+        <Frame Grid.Row="1" Margin="16,12,16,0" Padding="18,14" CornerRadius="22" HasShadow="False"
+               BackgroundColor="#FFFFFF" BorderColor="#FFE082">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="0">
+                    <Label x:Name="RoleLabel" Text="我的积分" FontSize="12" TextColor="#9C8A5A" />
+                    <Label x:Name="PointsLabel" Text="0" FontSize="40" FontAttributes="Bold"
+                           TextColor="#F5A623" />
+                    <HorizontalStackLayout Spacing="14" Margin="0,2,0,0">
+                        <Label x:Name="TotalLabel" Text="🏆 累计 0" FontSize="12" TextColor="#9C8A5A" />
+                        <Label x:Name="ExchangedLabel" Text="🎁 已兑 0" FontSize="12" TextColor="#9C8A5A" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <Label Grid.Column="1" Text="🧹" FontSize="46" VerticalOptions="Center" />
+            </Grid>
+        </Frame>
+
+        <!-- Tab -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="8" Padding="16,12,16,6">
+            <Button Grid.Column="0" x:Name="TabTasks" Text="🏠 今日任务" FontSize="13.5" FontAttributes="Bold"
+                    HeightRequest="42" CornerRadius="14" Clicked="OnTabTasks" />
+            <Button Grid.Column="1" x:Name="TabRewards" Text="🎁 奖励商店" FontSize="13.5" FontAttributes="Bold"
+                    HeightRequest="42" CornerRadius="14" Clicked="OnTabRewards" />
+            <Button Grid.Column="2" x:Name="TabReport" Text="📊 周报统计" FontSize="13.5" FontAttributes="Bold"
+                    HeightRequest="42" CornerRadius="14" Clicked="OnTabReport" />
+        </Grid>
+
+        <ScrollView Grid.Row="3" Padding="16,6,16,26">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- ===== 今日任务 ===== -->
+                <VerticalStackLayout x:Name="TasksSection" Spacing="10">
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Frame Grid.Column="0" Padding="8,10" CornerRadius="14" HasShadow="False" BackgroundColor="#FFFFFF">
+                            <VerticalStackLayout Spacing="1">
+                                <Label x:Name="StatDone" Text="0" FontSize="22" FontAttributes="Bold"
+                                       TextColor="#4A8A4A" HorizontalOptions="Center" />
+                                <Label Text="✅ 已完成" FontSize="11" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="1" Padding="8,10" CornerRadius="14" HasShadow="False" BackgroundColor="#FFFFFF">
+                            <VerticalStackLayout Spacing="1">
+                                <Label x:Name="StatPending" Text="0" FontSize="22" FontAttributes="Bold"
+                                       TextColor="#FFA94D" HorizontalOptions="Center" />
+                                <Label Text="⏳ 待确认" FontSize="11" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="2" Padding="8,10" CornerRadius="14" HasShadow="False" BackgroundColor="#FFFFFF">
+                            <VerticalStackLayout Spacing="1">
+                                <Label x:Name="StatTodo" Text="0" FontSize="22" FontAttributes="Bold"
+                                       TextColor="#4A9FCB" HorizontalOptions="Center" />
+                                <Label Text="📋 未完成" FontSize="11" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout x:Name="TaskChips" Spacing="8" />
+                    </ScrollView>
+
+                    <VerticalStackLayout x:Name="TaskHost" Spacing="10" />
+
+                    <Button x:Name="AddTaskBtn" Text="➕ 添加自定义任务" FontSize="15" HeightRequest="48"
+                            CornerRadius="16" BackgroundColor="#FFFFFF" TextColor="#4A9FCB"
+                            BorderColor="#6EC1E4" BorderWidth="2" IsVisible="False" Clicked="OnAddTask" />
+                </VerticalStackLayout>
+
+                <!-- ===== 奖励商店 ===== -->
+                <VerticalStackLayout x:Name="RewardsSection" Spacing="10" IsVisible="False">
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout x:Name="RewardChips" Spacing="8" />
+                    </ScrollView>
+
+                    <VerticalStackLayout x:Name="RewardHost" Spacing="10" />
+
+                    <Button x:Name="AddRewardBtn" Text="➕ 添加自定义奖励" FontSize="15" HeightRequest="48"
+                            CornerRadius="16" BackgroundColor="#FFFFFF" TextColor="#4A9FCB"
+                            BorderColor="#6EC1E4" BorderWidth="2" IsVisible="False" Clicked="OnAddReward" />
+
+                    <Label Text="🧾 兑换记录" FontSize="15" FontAttributes="Bold" TextColor="#5B4500"
+                           Margin="4,10,0,0" />
+                    <VerticalStackLayout x:Name="RedemptionHost" Spacing="8" />
+                </VerticalStackLayout>
+
+                <!-- ===== 周报统计 ===== -->
+                <VerticalStackLayout x:Name="ReportSection" Spacing="12" IsVisible="False">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="0,2">
+                        <Button Grid.Column="0" Text="◀" FontSize="15" WidthRequest="42" HeightRequest="38"
+                                CornerRadius="19" BackgroundColor="#FFFFFF" TextColor="#5B4500" Clicked="OnPrevWeek" />
+                        <Label Grid.Column="1" x:Name="WeekLabel" Text="本周" FontSize="15" FontAttributes="Bold"
+                               TextColor="#5B4500" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Button Grid.Column="2" Text="▶" FontSize="15" WidthRequest="42" HeightRequest="38"
+                                CornerRadius="19" BackgroundColor="#FFFFFF" TextColor="#5B4500" Clicked="OnNextWeek" />
+                    </Grid>
+
+                    <Frame Padding="12,16,12,10" CornerRadius="18" HasShadow="False" BackgroundColor="#FFFFFF">
+                        <Grid x:Name="ChartHost" HeightRequest="170" ColumnSpacing="4" />
+                    </Frame>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Frame Grid.Column="0" Padding="8,12" CornerRadius="14" HasShadow="False" BackgroundColor="#FFFFFF">
+                            <VerticalStackLayout Spacing="1">
+                                <Label Text="⭐" FontSize="20" HorizontalOptions="Center" />
+                                <Label x:Name="WeekPoints" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#F5A623" HorizontalOptions="Center" />
+                                <Label Text="本周积分" FontSize="10.5" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="1" Padding="8,12" CornerRadius="14" HasShadow="False" BackgroundColor="#FFFFFF">
+                            <VerticalStackLayout Spacing="1">
+                                <Label Text="✅" FontSize="20" HorizontalOptions="Center" />
+                                <Label x:Name="WeekTasks" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#4A8A4A" HorizontalOptions="Center" />
+                                <Label Text="完成任务" FontSize="10.5" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                        <Frame Grid.Column="2" Padding="8,12" CornerRadius="14" HasShadow="False" BackgroundColor="#FFFFFF">
+                            <VerticalStackLayout Spacing="1">
+                                <Label Text="🔥" FontSize="20" HorizontalOptions="Center" />
+                                <Label x:Name="WeekStreak" Text="0" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#E64A19" HorizontalOptions="Center" />
+                                <Label Text="连续打卡" FontSize="10.5" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+
+                    <Label Text="🏆 最常完成 Top 3" FontSize="15" FontAttributes="Bold" TextColor="#5B4500"
+                           Margin="4,8,0,0" />
+                    <VerticalStackLayout x:Name="Top3Host" Spacing="8" />
+
+                    <Label Text="📅 打卡记录" FontSize="15" FontAttributes="Bold" TextColor="#5B4500"
+                           Margin="4,8,0,0" />
+                    <VerticalStackLayout x:Name="CheckinHost" Spacing="8" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

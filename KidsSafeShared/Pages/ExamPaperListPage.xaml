@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.ExamPaperListPage"
+             Title="模拟考试"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" x:Name="TitleLabel" Text="模拟考试" TextColor="White" FontSize="20"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="📝" FontSize="20" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 说明 -->
+        <Label Grid.Row="1" x:Name="HintLabel"
+               Text="选一套卷子，按顺序做完再交卷，会帮你打分并讲解错题～"
+               FontSize="15" TextColor="#0277BD" HorizontalOptions="Center"
+               Margin="20,10" HorizontalTextAlignment="Center" />
+
+        <!-- 试卷卡片 -->
+        <CollectionView Grid.Row="2" x:Name="PaperList" Margin="18,6,18,26">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:ExamPaper">
+                    <Frame CornerRadius="22" Padding="16,14" HasShadow="False"
+                           BackgroundColor="#FFFFFF" BorderColor="#B3E5FC">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnPaperTapped" NumberOfTapsRequired="1" />
+                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Frame Grid.Column="0" CornerRadius="16" WidthRequest="54" HeightRequest="54"
+                                   HasShadow="False" Padding="0" VerticalOptions="Center"
+                                   BackgroundColor="{Binding AccentColor}" BorderColor="Transparent">
+                                <Label Text="{Binding SubjectEmoji}" FontSize="26"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                <Label Text="{Binding Title}" FontSize="19" FontAttributes="Bold"
+                                       TextColor="#01579B" />
+                                <Label Text="{Binding Subtitle}" FontSize="13" TextColor="#78909C" />
+                                <Label Text="{Binding Note}" FontSize="12" TextColor="#8D6E63"
+                                       IsVisible="{Binding Note, Converter={StaticResource HasItem}}" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="2" Text="开始 →" FontSize="16" FontAttributes="Bold"
+                                   TextColor="#0288D1" VerticalOptions="Center" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <Label Text="这个年级的卷子还在整理中…" FontSize="17" TextColor="#90A4AE"
+                       HorizontalOptions="Center" Margin="0,40" />
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>

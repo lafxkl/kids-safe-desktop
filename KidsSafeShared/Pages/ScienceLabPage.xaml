@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.ScienceLabPage">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部工具栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="6" BackgroundColor="#0a0a1a">
+            <Button x:Name="BtnBack" Text="← 返回" Clicked="OnBack"
+                    BackgroundColor="#1a1a3a" TextColor="White" FontSize="16" />
+            <Label Grid.Column="1" Text="🚀 星际科学实验室" FontSize="18" FontAttributes="Bold"
+                   TextColor="White" VerticalOptions="Center" HorizontalOptions="Center" />
+            <Button x:Name="BtnReload" Grid.Column="2" Text="🔄 刷新" Clicked="OnReload"
+                    BackgroundColor="#1a1a3a" TextColor="White" FontSize="16" />
+        </Grid>
+
+        <!-- 科学实验室网页 -->
+        <WebView x:Name="LabView" Grid.Row="1" />
+
+        <!-- 加载遮罩 -->
+        <ActivityIndicator x:Name="LoadingMask" Grid.Row="1" IsRunning="True" IsVisible="True"
+                           Color="#00e5ff" HorizontalOptions="Center" VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

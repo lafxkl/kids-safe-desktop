@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.PrivacyConsentPage"
+             Title="隐私保护"
+             Padding="0"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- 背景：与首次引导同一套暖色渐变，视觉上属于同一个「开始」流程 -->
+        <Grid Grid.RowSpan="2">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FFF6E8" Offset="0" />
+                    <GradientStop Color="#EAF7EE" Offset="0.55" />
+                    <GradientStop Color="#E7F1FB" Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+        </Grid>
+
+        <ScrollView Grid.Row="0" Padding="0">
+            <VerticalStackLayout Padding="24,28,24,12" Spacing="16">
+
+                <!-- 图标 -->
+                <Frame WidthRequest="82" HeightRequest="82" CornerRadius="27" Padding="0"
+                       HasShadow="False" BorderColor="Transparent" HorizontalOptions="Center">
+                    <Frame.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#A5D6A7" Offset="0" />
+                            <GradientStop Color="#43A047" Offset="1" />
+                        </LinearGradientBrush>
+                    </Frame.Background>
+                    <Label Text="🛡️" FontSize="42" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Frame>
+
+                <Label Text="欢迎使用儿童安全桌面" FontSize="23" FontAttributes="Bold"
+                       TextColor="#33691E" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                <Label Text="开始之前，请先花 1 分钟了解我们怎样对待孩子的信息"
+                       FontSize="14" TextColor="#6D4C41" HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+
+                <!-- 三条承诺 -->
+                <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 22">
+                    <VerticalStackLayout Spacing="13">
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
+                            <Label Grid.Column="0" Text="🏠" FontSize="21" VerticalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                <Label Text="数据默认只在我的设备上" FontSize="15" FontAttributes="Bold"
+                                       TextColor="#1B5E20" />
+                                <Label Text="孩子的昵称、头像、时长、学习记录都存在这台设备里。我们没有云端账号，也没有把数据汇总回开发者的通道。"
+                                       FontSize="12.5" TextColor="#455A64" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#EEEEEE" />
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
+                            <Label Grid.Column="0" Text="🚫" FontSize="21" VerticalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                <Label Text="不收集身份信息，不做广告" FontSize="15" FontAttributes="Bold"
+                                       TextColor="#1B5E20" />
+                                <Label Text="不要手机号，不读通讯录、短信、相册、位置，也不申请摄像头和麦克风。应用内没有广告 SDK、统计 SDK、崩溃上报 SDK。"
+                                       FontSize="12.5" TextColor="#455A64" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#EEEEEE" />
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
+                            <Label Grid.Column="0" Text="✋" FontSize="21" VerticalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                <Label Text="何时联网，由你决定" FontSize="15" FontAttributes="Bold"
+                                       TextColor="#1B5E20" />
+                                <Label Text="只有你打开「家长端服务器」时，配置才会同步到你自己填写的服务器；关掉开关后，应用不再发起任何业务网络请求。"
+                                       FontSize="12.5" TextColor="#455A64" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 条款入口：必须能从首屏直达，审核会逐条点开验证 -->
+                <VerticalStackLayout Spacing="9">
+                    <Border BackgroundColor="#F1F8E9" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOpenPolicy" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Label Grid.Column="0" Text="📄" FontSize="17" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="《儿童安全桌面隐私政策》全文" FontSize="14"
+                                   TextColor="#1B5E20" VerticalOptions="Center" Margin="8,0,0,0" />
+                            <Label Grid.Column="2" Text="›" FontSize="20" TextColor="#7CB342"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <Border BackgroundColor="#E3F2FD" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 16">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOpenSdk" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Label Grid.Column="0" Text="🧩" FontSize="17" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="《第三方 SDK 清单》" FontSize="14"
+                                   TextColor="#0D47A1" VerticalOptions="Center" Margin="8,0,0,0" />
+                            <Label Grid.Column="2" Text="›" FontSize="20" TextColor="#42A5F5"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <Label FontSize="12" TextColor="#8D6E63" LineBreakMode="WordWrap"
+                       Text="我会和监护人一起阅读以上条款" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 底部操作区：同意 / 暂不同意，均需主动点击，不预设勾选 -->
+        <VerticalStackLayout Grid.Row="1" Padding="22,8,22,22" Spacing="10"
+                             BackgroundColor="#F7FBF8">
+
+            <Button x:Name="AgreeBtn" Text="同意并继续" FontSize="19" FontAttributes="Bold"
+                    BackgroundColor="#2E7D32" TextColor="White" CornerRadius="16"
+                    HeightRequest="56" Clicked="OnAgree" />
+
+            <Button x:Name="DisagreeBtn" Text="暂不同意" FontSize="15"
+                    BackgroundColor="Transparent" TextColor="#78909C" BorderWidth="0"
+                    HeightRequest="44" Clicked="OnDisagree" />
+
+            <Label Text="点击「同意并继续」表示你已阅读并同意上述条款。若不同意，应用将退出，且不会收集任何信息。"
+                   FontSize="11.5" TextColor="#90A4AE" HorizontalTextAlignment="Center"
+                   LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+
+    </Grid>
+</ContentPage>

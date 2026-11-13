@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             xmlns:controls="clr-namespace:KidsSafeDesktop.Controls"
+             x:Class="KidsSafeDesktop.Pages.LearnWorldPage"
+             Title="学习天地"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+        <!-- 主题背景大图 -->
+        <Image Grid.Row="0" Grid.RowSpan="4"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,20,16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📖 学习天地" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="🌈" FontSize="20" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 模式切换：口算练习 / 模拟考试 -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="10" HorizontalOptions="Center" Margin="0,8,0,0">
+            <Button x:Name="BtnOral" Text="🧮 口算练习" FontSize="15" HeightRequest="40" Padding="16,0"
+                    CornerRadius="20" Clicked="OnModeOral" />
+            <Button x:Name="BtnExam" Text="📝 模拟考试" FontSize="15" HeightRequest="40" Padding="16,0"
+                    CornerRadius="20" Clicked="OnModeExam" />
+        </HorizontalStackLayout>
+
+        <!-- 引导语 -->
+        <Label Grid.Row="2" x:Name="HintLabel" Text="选一个年级（一年级到初三），做完会帮你批改哦～"
+               FontSize="16" TextColor="#0277BD" HorizontalOptions="Center"
+               Margin="20,8" HorizontalTextAlignment="Center" />
+
+        <!-- 年级图标网格（与首页一致的桌面式图标布局，由 CollectionView 自身滚动） -->
+        <controls:LauncherGridView Grid.Row="3" x:Name="GradesGrid"
+                                  ItemTapped="OnGradeTapped" Padding="18,8,18,24" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.LockoutPage"
+             Title="时间到"
+             BackgroundColor="#37474F">
+
+    <VerticalStackLayout VerticalOptions="Center" Padding="40" Spacing="24">
+        <Label Text="🌙" FontSize="96" HorizontalOptions="Center" />
+        <Label Text="今天的时间用完啦" FontSize="34" FontAttributes="Bold" TextColor="White"
+               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        <Label Text="去休息一下，或者请爸爸妈妈来加点时间吧～" FontSize="18" TextColor="#B0BEC5"
+               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        <Button Text="👨👩 家长进入" FontSize="20" BackgroundColor="#FFB300" TextColor="#212121"
+                CornerRadius="16" HeightRequest="58" WidthRequest="240"
+                HorizontalOptions="Center" Clicked="OnParentEnter" />
+    </VerticalStackLayout>
+</ContentPage>

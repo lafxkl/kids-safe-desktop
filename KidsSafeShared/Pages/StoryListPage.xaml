@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.StoryListPage"
+             Title="故事屋"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="10,12"
+              BackgroundColor="#6A1B9A">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" x:Name="TitleLabel" Text="故事" TextColor="White" FontSize="18" FontAttributes="Bold"
+                   VerticalOptions="Center" HorizontalOptions="Center" />
+            <Label Grid.Column="2" x:Name="CountLabel" Text="" FontSize="13" TextColor="#E1BEE7"
+                   VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <!-- 列表 -->
+        <ScrollView Grid.Row="1" x:Name="ListScroll" Padding="16,12,16,24">
+            <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout x:Name="StoryList" Spacing="10"
+                                     BindableLayout.ItemsSource="{Binding Stories}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:StorySummary">
+                            <Frame CornerRadius="18" HasShadow="False" Padding="12,10"
+                                   BackgroundColor="#F3E5F5" BorderColor="Transparent">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnStoryTapped" NumberOfTapsRequired="1" />
+                                </Frame.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                                    <Frame WidthRequest="50" HeightRequest="50" CornerRadius="25" Padding="0"
+                                           HasShadow="False" BackgroundColor="#AB47BC">
+                                        <Label Text="📖" FontSize="26" HorizontalOptions="Center"
+                                               VerticalOptions="Center" TextColor="White" />
+                                    </Frame>
+                                    <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                                        <Label Text="{Binding Title}" FontSize="17" FontAttributes="Bold"
+                                               TextColor="#4A148C" />
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="{Binding Type}" FontSize="12" TextColor="#8E24AA" />
+                                            <Label Text="{Binding ReadTime}" FontSize="12" TextColor="#9575CD" />
+                                        </HorizontalStackLayout>
+                                        <Label Text="{Binding ShortDesc}" FontSize="12" TextColor="#6A1B9A"
+                                               LineBreakMode="TailTruncation" MaxLines="2" />
+                                    </VerticalStackLayout>
+                                </HorizontalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Button x:Name="LoadMore" Text="加载更多 ▼" FontSize="15" TextColor="White"
+                        BackgroundColor="#AB47BC" CornerRadius="16" HeightRequest="44"
+                        IsVisible="False" Clicked="OnLoadMore" />
+
+                <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False"
+                                   Color="#AB47BC" HorizontalOptions="Center" />
+
+                <Label x:Name="EmptyHint" Text="😢 这里还没有故事，换个分类或搜搜别的词吧"
+                       FontSize="15" TextColor="#8D6E63" IsVisible="False"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

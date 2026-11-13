@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.MoodJournalPage"
+             Title="心情日记"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#FFF3F7" Offset="0" />
+                <GradientStop Color="#F2F7FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="16,12" BackgroundColor="#F48FB1">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📔 心情日记" FontSize="19" FontAttributes="Bold" TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="16,14,16,28">
+            <VerticalStackLayout Spacing="12">
+
+                <Frame Padding="16,14" CornerRadius="22" HasShadow="False" BackgroundColor="White"
+                       BorderColor="#F8BBD0">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="最近 14 天" FontSize="14" FontAttributes="Bold" TextColor="#7A4A5C" />
+                        <Grid x:Name="TrendHost" HeightRequest="150" ColumnSpacing="3" />
+                        <Label Text="每一根柱子的颜色 = 那天的心情；空白 = 那天没有记录。"
+                               FontSize="11" TextColor="#B08A98" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Frame Grid.Column="0" Padding="8,12" CornerRadius="16" HasShadow="False" BackgroundColor="White">
+                        <VerticalStackLayout Spacing="1">
+                            <Label x:Name="DaysLabel" Text="0" FontSize="20" FontAttributes="Bold"
+                                   TextColor="#E91E63" HorizontalOptions="Center" />
+                            <Label Text="记录天数" FontSize="11" TextColor="#B08A98" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1" Padding="8,12" CornerRadius="16" HasShadow="False" BackgroundColor="White">
+                        <VerticalStackLayout Spacing="1">
+                            <Label x:Name="StreakLabel" Text="0" FontSize="20" FontAttributes="Bold"
+                                   TextColor="#FB8C00" HorizontalOptions="Center" />
+                            <Label Text="连续天数" FontSize="11" TextColor="#B08A98" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="2" Padding="8,12" CornerRadius="16" HasShadow="False" BackgroundColor="White">
+                        <VerticalStackLayout Spacing="1">
+                            <Label x:Name="MostLabel" Text="—" FontSize="20" FontAttributes="Bold"
+                                   TextColor="#5E35B1" HorizontalOptions="Center" />
+                            <Label Text="最常见" FontSize="11" TextColor="#B08A98" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <Frame Padding="16,12" CornerRadius="18" HasShadow="False" BackgroundColor="#FFF8E1"
+                       BorderColor="#FFE082">
+                    <Label x:Name="InsightLabel" Text="" FontSize="13.5" TextColor="#6B5A2A"
+                           LineHeight="1.45" />
+                </Frame>
+
+                <Label Text="📋 全部记录" FontSize="15" FontAttributes="Bold" TextColor="#7A4A5C"
+                       Margin="4,6,0,0" />
+                <VerticalStackLayout x:Name="HistoryHost" Spacing="8" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

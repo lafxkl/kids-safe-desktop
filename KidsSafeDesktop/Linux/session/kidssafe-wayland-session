@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Wayland 会话入口。
+#
+# 与 X11 最大的不同：Wayland 下普通应用不能自己「占据整个屏幕并锁死切换」，
+# 必须有一个合成器托管。所以这里先拉起合成器，再把应用作为唯一客户端。
+#
+# 两条路，按可用性自动选择：
+#   A) kwin_wayland —— 与系统观感一致，将来要接 KWin 脚本（监听前台窗口、
+#      做更细的管控）只能走这条。
+#   B) cage          —— 单应用合成器，没有窗口切换、没有快捷键，锁定最彻底，
+#      代价是完全没有 KDE 外观。作为兜底。
+#
+# ⚠️ 合成器的具体参数随版本变化，务必在目标发行版上跑一遍再定稿。
+
+set -u
+
+export KIDSSAFE_KIOSK_SESSION=1
+
+# 关掉 KDE 锁屏。儿童会话里锁屏没有意义（没人会回来解锁），
+# 而且 KWin 的空闲锁屏会把孩子挡在自己的桌面外面。
+if command -v kwriteconfig6 >/dev/null 2>&1; then
+    kwriteconfig6 --file kscreenlockerrc --group Daemon --key Autolock false >/dev/null 2>&1 || true
+    kwriteconfig6 --file kscreenlockerrc --group Daemon --key Timeout 0 >/dev/null 2>&1 || true
+fi
+
+if command -v kwin_wayland >/dev/null 2>&1; then
+    kwin_wayland --xwayland &
+    sleep 1
+    exec kidssafe-session
+fi
+
+if command -v cage >/dev/null 2>&1; then
+    exec cage -s -d -- kidssafe-session
+fi
+
+echo "kidssafe: 需要 kwin_wayland 或 cage 之一才能启动 Wayland 会话" >&2
+exit 1

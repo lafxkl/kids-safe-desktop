@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.EncouragePage"
+             Title="学习打卡"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#EAF7FF" Offset="0" />
+                <GradientStop Color="#F3ECFF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,14">
+            <Button Grid.Column="0" Text="✕" FontSize="18" TextColor="#3E4A63" BackgroundColor="Transparent"
+                    BorderWidth="0" Padding="6,0" Clicked="OnClose" />
+            <Label Grid.Column="1" Text="学习打卡" FontSize="17" FontAttributes="Bold"
+                   TextColor="#2F3B57" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="TotalPill" Text="⭐ 0" FontSize="16" FontAttributes="Bold"
+                   TextColor="#5E6B8A" VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20,4,20,28">
+            <VerticalStackLayout Spacing="13">
+
+                <Frame x:Name="EmojiBubble" WidthRequest="104" HeightRequest="104" CornerRadius="52"
+                       Padding="0" HasShadow="False" HorizontalOptions="Center" Margin="0,6,0,0"
+                       BackgroundColor="#FFFFFF" BorderColor="#B3E5FC">
+                    <Label x:Name="EmojiLabel" Text="📚" FontSize="50"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Frame>
+
+                <Label x:Name="CaptionLabel" Text="学习 · 今日打卡" FontSize="13.5"
+                       TextColor="#7A87A3" HorizontalOptions="Center" />
+
+                <Label x:Name="TitleLabel" Text="学习内容" FontSize="20" FontAttributes="Bold"
+                       TextColor="#2F3B57" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                <Label x:Name="HeadlineLabel" Text="又学会一点点！" FontSize="30" FontAttributes="Bold"
+                       TextColor="#1E88E5" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                <Label x:Name="DetailLabel" Text="" FontSize="16.5" TextColor="#46536E"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                <!-- 今日学习目标进度 -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False"
+                       BackgroundColor="#FFFFFF" BorderColor="#D6E6FF" Margin="0,2,0,0">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label x:Name="GoalTitle" Text="今日小目标" FontSize="14" FontAttributes="Bold"
+                                   TextColor="#3E4A63" />
+                            <Label Grid.Column="1" x:Name="GoalCount" Text="0 / 2 次" FontSize="13"
+                                   TextColor="#7A87A3" />
+                        </Grid>
+                        <Grid HeightRequest="10">
+                            <BoxView CornerRadius="5" Color="#E8EFFB" />
+                            <BoxView x:Name="GoalFill" CornerRadius="5" Color="#64B5F6"
+                                     HorizontalOptions="Start" WidthRequest="0" />
+                        </Grid>
+                        <Label x:Name="GoalHint" Text="每天学两次，记得更牢～" FontSize="12.5" TextColor="#8695B0" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 星星入账 -->
+                <Frame Padding="18,14" CornerRadius="22" HasShadow="False"
+                       BackgroundColor="#FFFFFF" BorderColor="#D6E6FF">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                        <Label Grid.Column="0" Text="⭐" FontSize="30" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                            <Label x:Name="AwardLabel" Text="+2 颗星星" FontSize="20" FontAttributes="Bold"
+                                   TextColor="#1E88E5" />
+                            <Label x:Name="LedgerLabel" Text="一共 0 颗 · 今天 0 颗" FontSize="12.5"
+                                   TextColor="#8695B0" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" x:Name="StreakLabel" Text="" FontSize="13" FontAttributes="Bold"
+                               TextColor="#5C6BC0" VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 鼓励 -->
+                <Frame Padding="16,14" CornerRadius="18" HasShadow="False"
+                       BackgroundColor="#EAF3FF" BorderColor="Transparent">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="💡" FontSize="20" VerticalOptions="Start" />
+                        <Label x:Name="EncourageLabel" Text="" FontSize="15" TextColor="#2F4A6B"
+                               LineHeight="1.45" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Frame>
+
+                <!-- 一句话（名言 / 小知识） -->
+                <Frame Padding="16,14" CornerRadius="18" HasShadow="False"
+                       BackgroundColor="#F6F1FF" BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="4">
+                        <Label x:Name="QuoteLabel" Text="" FontSize="14.5" TextColor="#4A3D6B"
+                               LineHeight="1.5" />
+                        <Label x:Name="QuoteFromLabel" Text="" FontSize="12" TextColor="#8A7CA8"
+                               HorizontalOptions="End" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <VerticalStackLayout x:Name="BadgeHost" Spacing="8" IsVisible="False" />
+
+                <Button Text="📖 继续学习" FontSize="18" FontAttributes="Bold" HeightRequest="54"
+                        CornerRadius="18" BackgroundColor="#64B5F6" TextColor="#0D2A45"
+                        Clicked="OnContinue" Margin="0,6,0,0" />
+                <Button Text="🌟 我的星星" FontSize="16" HeightRequest="48" CornerRadius="16"
+                        BackgroundColor="#FFFFFF" TextColor="#3E4A63" BorderColor="#D6E6FF"
+                        BorderWidth="2" Clicked="OnStarBoard" />
+                <Button Text="😴 休息一下" FontSize="16" HeightRequest="48" CornerRadius="16"
+                        BackgroundColor="#E8EFFB" TextColor="#46536E" Clicked="OnClose" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

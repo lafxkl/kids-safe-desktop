@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.EyeExercisePage"
+             Title="眼保健操"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*" Padding="16,12" BackgroundColor="#26A69A">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="👀 眼保健操" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="24,20,24,40">
+            <VerticalStackLayout Spacing="22" VerticalOptions="Center">
+                <!-- 步骤卡片 -->
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="28" Padding="24,28" HasShadow="False"
+                       BorderColor="#80CBC4" IsVisible="{Binding NotFinished}">
+                    <VerticalStackLayout Spacing="16" HorizontalOptions="Center">
+                        <Label Text="{Binding StepEmoji}" FontSize="96" HorizontalOptions="Center" />
+                        <Label Text="{Binding StepName}" FontSize="30" FontAttributes="Bold"
+                               TextColor="#00695C" HorizontalOptions="Center" />
+                        <Label Text="{Binding StepInstruction}" FontSize="20" TextColor="#37474F"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding TimeText}" FontSize="40" FontAttributes="Bold"
+                               TextColor="#00897B" HorizontalOptions="Center" />
+                        <ProgressBar Progress="{Binding Progress}" HeightRequest="14"
+                                     ProgressColor="#26A69A" HorizontalOptions="Fill" />
+                        <Label Text="{Binding StepLabel}" FontSize="15" TextColor="#00897B"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 完成卡片 -->
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="28" Padding="24,28" HasShadow="False"
+                       BorderColor="#80CBC4" IsVisible="{Binding IsFinished}">
+                    <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                        <Label Text="{Binding StepEmoji}" FontSize="96" HorizontalOptions="Center" />
+                        <Label Text="{Binding StepInstruction}" FontSize="22" TextColor="#00695C"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 控制按钮 -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowSpacing="14">
+                    <Button Text="⏯️ 开始 / 暂停" FontSize="20" BackgroundColor="#00897B" TextColor="White"
+                            CornerRadius="22" HeightRequest="56" Clicked="OnToggle" />
+                    <Button Grid.Column="1" Text="🔄 重来" FontSize="20" BackgroundColor="#26A69A" TextColor="White"
+                            CornerRadius="22" HeightRequest="56" Clicked="OnRestart" />
+                    <Button Grid.Row="1" Text="⬅️ 上一步" FontSize="18" BackgroundColor="#80CBC4" TextColor="White"
+                            CornerRadius="20" HeightRequest="50" Clicked="OnPrev" />
+                    <Button Grid.Row="1" Grid.Column="1" Text="下一步 ➡️" FontSize="18" BackgroundColor="#80CBC4" TextColor="White"
+                            CornerRadius="20" HeightRequest="50" Clicked="OnNext" />
+                </Grid>
+
+                <Label Text="💡 小贴士：做眼保健操前要洗干净小手，动作要轻柔哦～"
+                       FontSize="14" TextColor="#00897B" HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:KidsSafeDesktop.Helpers"
+             x:Class="KidsSafeDesktop.Pages.SplashPage"
+             Title="启动中"
+             BackgroundColor="#B388FF"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <!-- 逐帧绘制的启动动画：糖果渐变 + 守护之盾 + 旋转光环 + 环绕星点 + 标语 -->
+        <GraphicsView x:Name="SplashView"
+                      HorizontalOptions="Fill"
+                      VerticalOptions="Fill" />
+
+        <!-- 版本号 -->
+        <Label Text="{Binding Source={x:Static helpers:AppVersion.Display}}"
+               HorizontalOptions="Center"
+               VerticalOptions="End"
+               Margin="0,0,0,56"
+               FontSize="12"
+               TextColor="White"
+               Opacity="0.7" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,12 @@
+# 儿童安全桌面 · https://kids.siguangblog.cc
+# 全站可抓取；安装包不参与索引，省下爬取预算。
+
+User-agent: *
+Allow: /
+Disallow: /downloads/*.apk
+Disallow: /downloads/*.zip
+Disallow: /downloads/README.txt
+
+# 百度 / 必应 / Google 共用同一份规则，无需重复声明。
+# 站点地图：新增页面后记得同步 sitemap.xml（含 lastmod）。
+Sitemap: https://kids.siguangblog.cc/sitemap.xml

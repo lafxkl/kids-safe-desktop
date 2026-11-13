@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.BreathingPage"
+             Title="呼吸放松"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.4,1">
+                <GradientStop Color="#E8F6F8" Offset="0" />
+                <GradientStop Color="#F3F0FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#4DB6AC">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🌬️ 呼吸放松" FontSize="19" FontAttributes="Bold" TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label x:Name="RoundLabel" Grid.Column="2" Text="" FontSize="12" TextColor="#D9F2EF"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20,16,20,24">
+            <VerticalStackLayout Spacing="16">
+
+                <Label Text="心里很乱的时候，先不管事情，只管呼吸。跟着圆圈走 4 轮。"
+                       FontSize="13.5" TextColor="#4A6B6B" HorizontalTextAlignment="Center"
+                       LineHeight="1.4" />
+
+                <Grid HeightRequest="300">
+                    <Frame x:Name="Circle" WidthRequest="170" HeightRequest="170" CornerRadius="85"
+                           Padding="0" HasShadow="False" HorizontalOptions="Center"
+                           VerticalOptions="Center" BackgroundColor="#B2DFDB"
+                           BorderColor="#80CBC4">
+                        <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label x:Name="PhaseLabel" Text="准备好了吗" FontSize="15" FontAttributes="Bold"
+                                   TextColor="#2E5C5A" HorizontalOptions="Center" />
+                            <Label x:Name="CountLabel" Text="" FontSize="40" FontAttributes="Bold"
+                                   TextColor="#00695C" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <Label x:Name="HintLabel" Text="吸气 4 下 · 屏住 7 下 · 呼气 8 下"
+                       FontSize="13" TextColor="#6B8A88" HorizontalTextAlignment="Center" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,6,0,0">
+                    <Button Grid.Column="0" x:Name="StartBtn" Text="▶ 开始" FontSize="16" FontAttributes="Bold"
+                            HeightRequest="52" CornerRadius="18" BackgroundColor="#4DB6AC"
+                            TextColor="White" Clicked="OnStart" />
+                    <Button Grid.Column="1" Text="⏹ 停下" FontSize="16" HeightRequest="52" CornerRadius="18"
+                            BackgroundColor="White" TextColor="#4DB6AC" BorderColor="#B2DFDB"
+                            BorderWidth="2" Clicked="OnStop" />
+                </Grid>
+
+                <Frame Padding="16,14" CornerRadius="18" HasShadow="False" BackgroundColor="#FFFFFF"
+                       BorderColor="#D6EFEC">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="做的时候注意" FontSize="14" FontAttributes="Bold" TextColor="#2E5C5A" />
+                        <Label Text="· 用鼻子吸气，用嘴呼气，像吹凉一碗热汤。&#10;· 屏住的时候不要憋得很用力，轻轻停住就好。&#10;· 如果头晕，就停下来正常呼吸，这不是比赛。&#10;· 做完 4 轮，再回去看刚才那件事，通常就没那么大了。"
+                               FontSize="12.5" TextColor="#5C7B78" LineHeight="1.6" />
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

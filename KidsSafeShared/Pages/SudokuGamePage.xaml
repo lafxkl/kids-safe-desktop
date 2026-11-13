@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.SudokuGamePage"
+             Title="数独小游戏"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🧠 数独小游戏" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="{Binding ProgressText}" TextColor="White" FontSize="16"
+                   HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 提示 -->
+        <Label Grid.Row="1" Text="{Binding StatusText}" FontSize="15" TextColor="#5E35B1"
+               HorizontalOptions="Center" Margin="12,8" />
+
+        <!-- 4×4 棋盘 -->
+        <ScrollView Grid.Row="2" Padding="24,4" VerticalOptions="Center">
+            <VerticalStackLayout Spacing="10" VerticalOptions="Center" HorizontalOptions="Center">
+                <CollectionView ItemsSource="{Binding Cells}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="4"
+                                        HorizontalItemSpacing="6" VerticalItemSpacing="6" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SudokuCell">
+                            <Frame WidthRequest="72" HeightRequest="72" CornerRadius="14" Padding="0"
+                                   HasShadow="False" BackgroundColor="{Binding BoxTint}">
+                                <Frame.BorderColor>
+                                    <Binding Path="IsSelected" Converter="{StaticResource BoolToColor}"
+                                             ConverterParameter="#7E57C2,#CFD8DC" />
+                                </Frame.BorderColor>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCellTapped" NumberOfTapsRequired="1" />
+                                </Frame.GestureRecognizers>
+                                <Label Text="{Binding ValueText}" FontSize="34" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       TextColor="{Binding IsWrong, Converter={StaticResource BoolToColor}, ConverterParameter='#C62828,#37474F'}" />
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 数字键盘 -->
+        <VerticalStackLayout Grid.Row="3" Spacing="10" Padding="24,10,24,24">
+            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                <Button Text="1" FontSize="28" FontAttributes="Bold" TextColor="White"
+                        BackgroundColor="#5E35B1" CornerRadius="16" HeightRequest="56" WidthRequest="70"
+                        Clicked="OnNumber" CommandParameter="1" />
+                <Button Text="2" FontSize="28" FontAttributes="Bold" TextColor="White"
+                        BackgroundColor="#5E35B1" CornerRadius="16" HeightRequest="56" WidthRequest="70"
+                        Clicked="OnNumber" CommandParameter="2" />
+                <Button Text="3" FontSize="28" FontAttributes="Bold" TextColor="White"
+                        BackgroundColor="#5E35B1" CornerRadius="16" HeightRequest="56" WidthRequest="70"
+                        Clicked="OnNumber" CommandParameter="3" />
+                <Button Text="4" FontSize="28" FontAttributes="Bold" TextColor="White"
+                        BackgroundColor="#5E35B1" CornerRadius="16" HeightRequest="56" WidthRequest="70"
+                        Clicked="OnNumber" CommandParameter="4" />
+                <Button Text="🧽" FontSize="26" TextColor="#5E35B1"
+                        BackgroundColor="#EDE7F6" CornerRadius="16" HeightRequest="56" WidthRequest="70"
+                        Clicked="OnErase" />
+            </HorizontalStackLayout>
+            <Button Text="🔄 新游戏" FontSize="18" BackgroundColor="#7E57C2" TextColor="White"
+                    CornerRadius="16" HeightRequest="48" WidthRequest="200" HorizontalOptions="Center"
+                    Clicked="OnNew" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

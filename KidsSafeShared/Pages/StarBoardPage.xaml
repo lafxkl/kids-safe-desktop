@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.StarBoardPage"
+             Title="我的星星"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FFF9E6" Offset="0" />
+                <GradientStop Color="#EAF6FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="16,14" BackgroundColor="#FFD54F">
+            <Button Grid.Column="0" Text="← 返回" FontSize="16" TextColor="#5B4500" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="⭐ 我的星星" FontSize="19" FontAttributes="Bold"
+                   TextColor="#5B4500" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="16,14,16,28">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- 总览 -->
+                <Frame Padding="18,16" CornerRadius="24" HasShadow="False" BackgroundColor="#FFFFFF"
+                       BorderColor="#FFE082">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="我攒下的星星" FontSize="13" TextColor="#9C8A5A" />
+                            <Label x:Name="TotalLabel" Text="0" FontSize="42" FontAttributes="Bold"
+                                   TextColor="#E65100" />
+                            <Label x:Name="SubLabel" Text="" FontSize="13" TextColor="#8A7A50" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                            <Frame Padding="12,8" CornerRadius="14" HasShadow="False" BackgroundColor="#FFF6D9"
+                                   BorderColor="Transparent">
+                                <VerticalStackLayout Spacing="0">
+                                    <Label Text="今天" FontSize="11" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                                    <Label x:Name="TodayLabel" Text="0" FontSize="20" FontAttributes="Bold"
+                                           TextColor="#EF6C00" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Frame>
+                            <Frame Padding="12,8" CornerRadius="14" HasShadow="False" BackgroundColor="#FFF1E6"
+                                   BorderColor="Transparent">
+                                <VerticalStackLayout Spacing="0">
+                                    <Label Text="连续" FontSize="11" TextColor="#9C8A5A" HorizontalOptions="Center" />
+                                    <Label x:Name="StreakLabel" Text="0 天" FontSize="17" FontAttributes="Bold"
+                                           TextColor="#E64A19" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Frame>
+
+                <!-- 勋章墙 -->
+                <Label Text="🎖️ 勋章墙" FontSize="16" FontAttributes="Bold" TextColor="#5B4500"
+                       Margin="4,4,0,0" />
+                <Label x:Name="BadgeSummaryLabel" Text="" FontSize="12" TextColor="#9C8A5A"
+                       Margin="4,-6,0,0" />
+                <FlexLayout x:Name="BadgeHost" Wrap="Wrap" Direction="Row" JustifyContent="Start"
+                            AlignItems="Start" />
+
+                <!-- 最近记录 -->
+                <Label Text="📋 最近记录" FontSize="16" FontAttributes="Bold" TextColor="#5B4500"
+                       Margin="4,8,0,0" />
+                <VerticalStackLayout x:Name="RecordHost" Spacing="8" />
+
+                <Button Text="🔁 清空记录" FontSize="14" HeightRequest="44" CornerRadius="14"
+                        BackgroundColor="#F2ECE0" TextColor="#8A7A50" Clicked="OnReset" Margin="0,10,0,0" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

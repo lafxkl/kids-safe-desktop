@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             x:Class="KidsSafeDesktop.Pages.LeaderboardPage"
+             Title="我的排行榜"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*" Padding="16,14" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="{Binding OwnerName, StringFormat='🏆 {0} 的荣耀榜'}"
+                   TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,14">
+            <!-- 空状态 -->
+            <VerticalStackLayout IsVisible="{Binding IsEmpty}" Spacing="10"
+                                 VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="🎯" FontSize="64" HorizontalOptions="Center" />
+                <Label Text="还没有成绩哦" FontSize="20" TextColor="{StaticResource CandyGrapeDeep}"
+                       HorizontalOptions="Center" />
+                <Label Text="去玩几个小游戏，成绩就会出现在榜单上！" FontSize="14"
+                       TextColor="{StaticResource CandyInkSoft}" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- 各游戏榜单 -->
+            <VerticalStackLayout Spacing="16" IsVisible="{Binding IsNotEmpty}">
+                <BindableLayout.ItemsSource>
+                    <Binding Path="Sections" />
+                </BindableLayout.ItemsSource>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LeaderboardSection">
+                        <Frame Style="{StaticResource KidCard}">
+                            <VerticalStackLayout Spacing="8">
+                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                    <Frame WidthRequest="44" HeightRequest="44" CornerRadius="22" Padding="0"
+                                           HasShadow="False" BackgroundColor="#F3E5F5" BorderColor="Transparent">
+                                        <Label Text="{Binding GameEmoji}" FontSize="24"
+                                               HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Frame>
+                                    <Label Text="{Binding GameTitle}" FontSize="20" FontAttributes="Bold"
+                                           TextColor="{StaticResource CandyGrapeDeep}" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <BoxView HeightRequest="2" Color="#F3E5F5" />
+                                <VerticalStackLayout Spacing="6">
+                                    <BindableLayout.ItemsSource>
+                                        <Binding Path="Rows" />
+                                    </BindableLayout.ItemsSource>
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LeaderboardRow">
+                                            <Grid ColumnDefinitions="44,*,*" Padding="2">
+                                                <Label Grid.Column="0" Text="{Binding Rank}" FontSize="22"
+                                                       VerticalOptions="Center" />
+                                                <Label Grid.Column="1" Text="{Binding DifficultyLabel}"
+                                                       FontSize="16" TextColor="{StaticResource CandyGrapeDeep}" VerticalOptions="Center" />
+                                                <HorizontalStackLayout Grid.Column="2" Spacing="8"
+                                                                      HorizontalOptions="End" VerticalOptions="Center">
+                                                    <Label Text="{Binding ScoreText}" FontSize="18"
+                                                           FontAttributes="Bold" TextColor="{StaticResource CandyMintDeep}" />
+                                                    <Label Text="{Binding DateText}" FontSize="13"
+                                                           TextColor="#9E9E9E" VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

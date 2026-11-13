@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             x:Class="KidsSafeDesktop.Pages.TypingGamePage"
+             Title="打字游戏"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#3949AB">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="⌨️ 打字游戏" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <HorizontalStackLayout Grid.Column="2" Spacing="10" VerticalOptions="Center">
+                <Label Text="{Binding ProgressText}" TextColor="#C5CAE9" FontSize="14" VerticalOptions="Center" />
+                <Label Text="{Binding ScoreText}" TextColor="White" FontSize="15" FontAttributes="Bold" />
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!-- 练习区 -->
+        <ScrollView Grid.Row="1" Padding="20,16,20,40" IsVisible="{Binding NotFinished}">
+            <VerticalStackLayout Spacing="18">
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="26" Padding="22,28" HasShadow="False"
+                       BorderColor="#9FA8DA">
+                    <VerticalStackLayout Spacing="16" HorizontalOptions="Center">
+                        <Label Text="跟着读音，把单词打出来 👇" FontSize="18" TextColor="#3949AB"
+                               HorizontalOptions="Center" />
+                        <Label Text="{Binding CurrentWord}" FontSize="54" FontAttributes="Bold"
+                               TextColor="#1A237E" HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="🔊 听一听" FontSize="20" BackgroundColor="#FFB300" TextColor="White"
+                                CornerRadius="22" HeightRequest="54" WidthRequest="180"
+                                HorizontalOptions="Center" Clicked="OnListen" />
+                        <Entry x:Name="InputEntry" Text="{Binding TypedText, Mode=TwoWay}"
+                               Keyboard="Text" Placeholder="在这里打单词…"
+                               FontSize="30" HorizontalTextAlignment="Center" HorizontalOptions="Fill"
+                               HeightRequest="62" Completed="OnEntryCompleted" />
+                        <Label Text="{Binding FeedbackText}" FontSize="20" FontAttributes="Bold"
+                               HorizontalOptions="Center" IsVisible="{Binding HasFeedback}"
+                               TextColor="{Binding IsCorrect, Converter={StaticResource BoolToColor}, ConverterParameter='#2E7D32,#E53935'}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="⏭️ 跳过这个词" FontSize="18" BackgroundColor="#7986CB" TextColor="White"
+                        CornerRadius="20" HeightRequest="50" Clicked="OnSkip" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 成绩 -->
+        <ScrollView Grid.Row="1" Padding="20,16,20,40" IsVisible="{Binding Finished}">
+            <VerticalStackLayout Spacing="20" VerticalOptions="Center">
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="26" Padding="24,30" HasShadow="False"
+                       BorderColor="#9FA8DA">
+                    <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                        <Label Text="🏆" FontSize="60" HorizontalOptions="Center" />
+                        <Label Text="{Binding ResultText}" FontSize="24" FontAttributes="Bold"
+                               TextColor="#3949AB" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding TotalText}" FontSize="18" TextColor="#5D4037"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+                <Button Text="🔄 再来一组" FontSize="20" BackgroundColor="#3949AB" TextColor="White"
+                        CornerRadius="22" HeightRequest="56" Clicked="OnReplay" />
+                <Button Text="🏠 返回首页" FontSize="20" BackgroundColor="#9575CD" TextColor="White"
+                        CornerRadius="22" HeightRequest="56" Clicked="OnBack" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

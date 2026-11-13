@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.CareLessonPage"
+             Title="心理小课堂"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#F2FAF4" Offset="0" />
+                <GradientStop Color="#F2F7FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#66BB6A">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <Label Grid.Column="1" x:Name="TitleLabel" Text="📚 心理小课堂" FontSize="19" FontAttributes="Bold"
+                   TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="CountLabel" Text="" FontSize="12" TextColor="#DFF3E1"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <Label Grid.Row="1" x:Name="IntroLabel" Text="" FontSize="13" TextColor="#4E6B54"
+               Margin="20,12,20,4" LineHeight="1.4" />
+
+        <CollectionView Grid.Row="2" x:Name="LessonList" Margin="16,6,16,24" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:CareLesson">
+                    <Frame Padding="14,12" CornerRadius="18" HasShadow="False" BackgroundColor="White"
+                           BorderColor="#DFF0E1">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLessonTapped" NumberOfTapsRequired="1" />
+                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Frame Grid.Column="0" WidthRequest="46" HeightRequest="46" CornerRadius="23"
+                                   Padding="0" HasShadow="False" BackgroundColor="#E8F5E9"
+                                   VerticalOptions="Center">
+                                <Label Text="{Binding Emoji}" FontSize="23" HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Frame>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold"
+                                       TextColor="#2E5C3A" />
+                                <Label Text="{Binding Subtitle}" FontSize="12" TextColor="#6B8A72"
+                                       MaxLines="2" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding MetaText}" FontSize="10.5" TextColor="#9AB3A0" />
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="›" FontSize="22" TextColor="#A5C7AC"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

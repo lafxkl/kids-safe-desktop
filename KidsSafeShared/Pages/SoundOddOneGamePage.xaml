@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.SoundOddOneGamePage"
+             Title="听声辨物"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🔊 听声辨物" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="ProgressLabel" Text="第 1 / 6 题" TextColor="White"
+                   FontSize="15" VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="6" Padding="20,14,20,4">
+            <Label Text="🔊 三个声音里，有一个不一样" FontSize="20" FontAttributes="Bold"
+                   TextColor="#283593" HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                   LineBreakMode="WordWrap" />
+            <Label x:Name="FeedbackLabel" Text="听完以后，点出「不一样」的那一个" FontSize="14"
+                   TextColor="#5C6BC0" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="14" Padding="20,10" VerticalOptions="Center">
+            <Button x:Name="Btn1" Text="第 1 个" FontSize="24" FontAttributes="Bold"
+                    BackgroundColor="#8D6E63" TextColor="White" CornerRadius="24"
+                    HeightRequest="96" Clicked="OnPick" CommandParameter="0"
+                    SemanticProperties.Description="选第一个声音" />
+            <Button x:Name="Btn2" Text="第 2 个" FontSize="24" FontAttributes="Bold"
+                    BackgroundColor="#8D6E63" TextColor="White" CornerRadius="24"
+                    HeightRequest="96" Clicked="OnPick" CommandParameter="1"
+                    SemanticProperties.Description="选第二个声音" />
+            <Button x:Name="Btn3" Text="第 3 个" FontSize="24" FontAttributes="Bold"
+                    BackgroundColor="#8D6E63" TextColor="White" CornerRadius="24"
+                    HeightRequest="96" Clicked="OnPick" CommandParameter="2"
+                    SemanticProperties.Description="选第三个声音" />
+        </VerticalStackLayout>
+
+        <Button Grid.Row="3" Text="🔁 再听一次" FontSize="18" FontAttributes="Bold"
+                BackgroundColor="#5C6BC0" TextColor="White" CornerRadius="18"
+                HeightRequest="54" Margin="24,4,24,16" Clicked="OnReplay" />
+
+        <Grid Grid.Row="0" Grid.RowSpan="4" x:Name="ResultLayer" IsVisible="False"
+              BackgroundColor="#F5FFFFFF">
+            <ScrollView Padding="28,20">
+                <VerticalStackLayout Spacing="16" VerticalOptions="Center">
+                    <Label Text="🏆" FontSize="76" HorizontalOptions="Center" />
+                    <Label x:Name="ResultTitle" Text="训练完成！" FontSize="26" FontAttributes="Bold"
+                           TextColor="#283593" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Label x:Name="ResultDetail" Text="" FontSize="17" TextColor="#3949AB"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                    <Label x:Name="ResultTip" Text="" FontSize="14" TextColor="#6D4C41"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                    <Button Text="🔄 再练一次" FontSize="19" BackgroundColor="#3949AB" TextColor="White"
+                            CornerRadius="18" HeightRequest="58" Margin="0,8,0,0" Clicked="OnReplayAll" />
+                    <Button Text="↩️ 回到板块" FontSize="17" BackgroundColor="#FFFFFF" TextColor="#3949AB"
+                            CornerRadius="18" HeightRequest="54" Clicked="OnBack" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

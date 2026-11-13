@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             x:Class="KidsSafeDesktop.Pages.ThemePickerPage"
+             Title="换皮肤"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 当前主题背景 -->
+        <Image Grid.Row="0" Grid.RowSpan="2"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="16,14" BackgroundColor="#B3FFFFFF">
+            <Button Text="← 返回" TextColor="#5D4037" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🎨 换个皮肤吧！" TextColor="#5D4037" FontSize="22" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20,16">
+            <VerticalStackLayout Spacing="20">
+                <!-- 暖阳 -->
+                <Border x:Name="CardSunshine" StrokeShape="RoundRectangle 26" StrokeThickness="5"
+                        Stroke="#00000000" BackgroundColor="#CCFFFFFF" HeightRequest="180"
+                        HorizontalOptions="Fill">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCardTapped" CommandParameter="sunshine" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Grid Grid.Column="0" RowDefinitions="*,Auto" Padding="14">
+                            <Image Source="theme_sunshine.png" Aspect="AspectFill" />
+                            <Label Grid.Row="1" Text="☀️ 暖阳" FontSize="22" FontAttributes="Bold"
+                                   TextColor="#5D4037" HorizontalOptions="Center" Margin="0,6,0,0" />
+                        </Grid>
+                        <Label x:Name="CheckSunshine" Grid.Column="1" Text="✅" FontSize="34"
+                               IsVisible="False" VerticalOptions="Start" Margin="0,12,12,0" />
+                    </Grid>
+                </Border>
+
+                <!-- 蓝天 -->
+                <Border x:Name="CardSky" StrokeShape="RoundRectangle 26" StrokeThickness="5"
+                        Stroke="#00000000" BackgroundColor="#CCFFFFFF" HeightRequest="180"
+                        HorizontalOptions="Fill">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCardTapped" CommandParameter="sky" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Grid Grid.Column="0" RowDefinitions="*,Auto" Padding="14">
+                            <Image Source="theme_sky.png" Aspect="AspectFill" />
+                            <Label Grid.Row="1" Text="🌤️ 蓝天" FontSize="22" FontAttributes="Bold"
+                                   TextColor="#01579B" HorizontalOptions="Center" Margin="0,6,0,0" />
+                        </Grid>
+                        <Label x:Name="CheckSky" Grid.Column="1" Text="✅" FontSize="34"
+                               IsVisible="False" VerticalOptions="Start" Margin="0,12,12,0" />
+                    </Grid>
+                </Border>
+
+                <!-- 彩虹 -->
+                <Border x:Name="CardRainbow" StrokeShape="RoundRectangle 26" StrokeThickness="5"
+                        Stroke="#00000000" BackgroundColor="#CCFFFFFF" HeightRequest="180"
+                        HorizontalOptions="Fill">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCardTapped" CommandParameter="rainbow" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Grid Grid.Column="0" RowDefinitions="*,Auto" Padding="14">
+                            <Image Source="theme_rainbow.png" Aspect="AspectFill" />
+                            <Label Grid.Row="1" Text="🌈 彩虹" FontSize="22" FontAttributes="Bold"
+                                   TextColor="#4A148C" HorizontalOptions="Center" Margin="0,6,0,0" />
+                        </Grid>
+                        <Label x:Name="CheckRainbow" Grid.Column="1" Text="✅" FontSize="34"
+                               IsVisible="False" VerticalOptions="Start" Margin="0,12,12,0" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

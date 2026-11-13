@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>登录 · 儿童安全桌面家长后台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+<style>
+  :root { --p:#7E57C2; --p2:#9575CD; --ok:#2E7D32; --bg:#F3E5F5; --ink:#3E2723; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  /* 只给 html 定高：body 交给内容撑开，否则比视口高时圆角卡片会被裁掉一截 */
+  html { height: 100%; }
+  body {
+    margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(135deg,#E1BEE7 0%,#B3E5FC 55%,#C8E6C9 100%) fixed;
+    display:flex; align-items:flex-start; padding:24px 16px; min-height:100vh;
+  }
+  /* margin:auto 而不是 body 上居中：内容比视口高时不会把顶部裁掉 */
+  .shell { width:100%; max-width:860px; margin:auto; display:grid; grid-template-columns:1.02fr .98fr; gap:0;
+           background:#fff; border-radius:26px; overflow:hidden; box-shadow:0 18px 50px rgba(78,52,46,.22); }
+  /* 左侧品牌区：小屏幕上直接隐藏，登录框居中 */
+  .brand { padding:30px 28px; background:linear-gradient(160deg,#7E57C2,#5C6BC0 60%,#4FC3F7); color:#fff;
+           display:flex; flex-direction:column; justify-content:space-between; }
+  .brand h1 { font-size:24px; margin:0 0 10px; letter-spacing:.5px; }
+  .brand p { margin:0; font-size:13.5px; line-height:1.7; opacity:.92; }
+  .brand .logo { font-size:40px; margin-bottom:14px; }
+  .brand ul { list-style:none; padding:0; margin:22px 0 0; font-size:13px; line-height:2; opacity:.95; }
+  .brand li::before { content:"✓"; display:inline-block; width:20px; color:#C5E1A5; font-weight:800; }
+  .pane { padding:28px 30px 22px; }
+  .tabs { display:flex; background:#F3E5F5; border-radius:14px; padding:4px; margin-bottom:16px; }
+  .tabs button { flex:1; border:none; background:transparent; padding:10px 0; border-radius:11px;
+                 font-size:15px; font-weight:700; color:#7E57C2; cursor:pointer; transition:.18s; }
+  .tabs button.on { background:#fff; color:#4A148C; box-shadow:0 2px 8px rgba(126,87,194,.18); }
+  h2 { font-size:20px; margin:0 0 4px; }
+  .sub { margin:0 0 14px; font-size:13px; color:#8D6E63; }
+  label { display:block; font-size:13.5px; font-weight:700; margin:11px 0 6px; color:#5D4037; }
+  input[type=text], input[type=password] {
+    width:100%; padding:12px 14px; border:2px solid #E1BEE7; border-radius:13px;
+    font-size:15px; outline:none; transition:.16s; background:#FDFBFF; color:var(--ink);
+  }
+  input:focus { border-color:var(--p); background:#fff; box-shadow:0 0 0 4px rgba(126,87,194,.1); }
+  .pwd { position:relative; }
+  .pwd .eye { position:absolute; right:10px; top:50%; transform:translateY(-50%);
+              border:none; background:transparent; font-size:17px; cursor:pointer; padding:6px; opacity:.65; }
+  button.primary { width:100%; margin-top:18px; border:none; border-radius:14px; padding:13px;
+                   font-size:16px; font-weight:800; color:#fff; cursor:pointer;
+                   background:linear-gradient(135deg,#7E57C2,#5C6BC0); box-shadow:0 8px 18px rgba(94,53,177,.28); }
+  button.primary:active { transform:translateY(1px); }
+  button.primary[disabled] { opacity:.6; cursor:default; box-shadow:none; }
+  .msg { min-height:22px; margin-top:12px; font-size:13.5px; font-weight:700; }
+  .msg.err { color:#C62828; }
+  .msg.ok { color:var(--ok); }
+  .hint { margin-top:16px; font-size:12.5px; color:#8D6E63; line-height:1.7; }
+  .hint a { color:#5C6BC0; }
+  details { margin-top:14px; font-size:13px; color:#795548; }
+  details summary { cursor:pointer; color:#5C6BC0; font-weight:700; }
+  details .box { margin-top:10px; padding:12px; background:#FFF8E1; border-radius:12px; line-height:1.7; }
+  .foot { margin-top:20px; display:flex; justify-content:space-between; gap:10px;
+          font-size:12px; color:#A1887F; flex-wrap:wrap; }
+  .foot a { color:#5C6BC0; text-decoration:none; }
+  .banner { display:none; margin-bottom:16px; padding:12px 14px; border-radius:13px;
+            background:#E8F5E9; color:#1B5E20; font-size:13.5px; line-height:1.65; font-weight:600; }
+  .banner.show { display:block; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media(max-width:760px){
+    body { align-items:flex-start; padding:0; background:#fff; }
+    .shell { grid-template-columns:1fr; border-radius:0; box-shadow:none; min-height:100vh; }
+    .brand { padding:26px 22px 22px; border-radius:0 0 26px 26px; }
+    .brand ul { display:none; }
+    .pane { padding:24px 20px 30px; }
+    .row2 { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="brand">
+    <div>
+      <div class="logo">🛡️</div>
+      <h1>儿童安全桌面<br/>家长后台</h1>
+      <p>用家长账号登录，远程管理孩子的桌面：使用时长、应用白名单、游戏与在线内容，改完即生效。</p>
+    </div>
+    <ul>
+      <li>账号登录，多个家长可各管各的设备</li>
+      <li>儿童端用 6 位配对码绑定，只读不可改</li>
+      <li>配置保存在你自己的电脑上，不上传第三方</li>
+    </ul>
+  </aside>
+
+  <main class="pane">
+    <div class="tabs">
+      <button id="tabLogin" class="on" onclick="switchTab('login')">登录</button>
+      <button id="tabRegister" onclick="switchTab('register')">注册家长账号</button>
+    </div>
+
+    <div class="banner" id="banner"></div>
+
+    <!-- 登录 -->
+    <section id="viewLogin">
+      <h2>欢迎回来 👋</h2>
+      <p class="sub" id="loginSub">请输入家长账号与密码</p>
+
+      <form onsubmit="doLogin(event)">
+        <label for="loginUser">账号</label>
+        <input type="text" id="loginUser" autocomplete="username" placeholder="注册时填写的账号" required />
+
+        <label for="loginPwd">密码</label>
+        <div class="pwd">
+          <input type="password" id="loginPwd" autocomplete="current-password" placeholder="登录密码" required />
+          <button type="button" class="eye" onclick="togglePwd('loginPwd', this)">👁️</button>
+        </div>
+
+        <button class="primary" id="loginBtn" type="submit">进入后台</button>
+        <div class="msg" id="loginMsg"></div>
+      </form>
+
+      <details id="pinBox" style="display:none">
+        <summary>用旧版家长密码登录</summary>
+        <div class="box">
+          升级服务端之前设置的家长密码（默认 1234）。注册家长账号之后，为了安全这条通道会自动关闭；
+          想临时打开，把 appsettings.json 里的 <code>Auth:AllowPinLogin</code> 改成 <code>true</code>。
+        </div>
+        <label for="pinInput">家长密码</label>
+        <div class="pwd">
+          <input type="password" id="pinInput" placeholder="默认 1234" />
+          <button type="button" class="eye" onclick="togglePwd('pinInput', this)">👁️</button>
+        </div>
+        <button class="primary" style="background:#B0BEC5;box-shadow:none;margin-top:14px" type="button" onclick="doPinLogin()">用密码进入</button>
+      </details>
+    </section>
+
+    <!-- 注册 -->
+    <section id="viewRegister" style="display:none">
+      <h2>创建家长账号 ✨</h2>
+      <p class="sub">第一个注册的账号是管理员；之后同一台服务器上的其他家长也可各自注册</p>
+
+      <form onsubmit="doRegister(event)">
+        <div class="row2">
+          <div>
+            <label for="regUser">账号</label>
+            <input type="text" id="regUser" autocomplete="username" placeholder="字母/数字，3–32 位" required />
+          </div>
+          <div>
+            <label for="regName">家庭名称</label>
+            <input type="text" id="regName" placeholder="如：小明家" />
+          </div>
+        </div>
+
+        <label for="regPwd">密码</label>
+        <div class="pwd">
+          <input type="password" id="regPwd" autocomplete="new-password" placeholder="至少 6 位" required />
+          <button type="button" class="eye" onclick="togglePwd('regPwd', this)">👁️</button>
+        </div>
+
+        <label for="regPwd2">确认密码</label>
+        <div class="pwd">
+          <input type="password" id="regPwd2" autocomplete="new-password" placeholder="再输一次" required />
+          <button type="button" class="eye" onclick="togglePwd('regPwd2', this)">👁️</button>
+        </div>
+
+        <button class="primary" id="regBtn" type="submit">注册并登录</button>
+        <div class="msg" id="regMsg"></div>
+      </form>
+
+      <p class="hint">
+        注册成功后，账号密码请记好 —— 它是家长后台唯一的凭证。忘记密码只能在本机删除
+        <code>data/accounts.json</code> 重新开始（配置会一起丢，请先备份 <code>data/</code>）。
+      </p>
+    </section>
+
+    <div class="foot">
+      <span id="serverInfo">正在读取服务器状态…</span>
+      <span><a href="download.html">下载安装</a> · <a href="docs.html">服务端说明</a></span>
+    </div>
+  </main>
+</div>
+
+<script>
+const API = "/api";
+let status = null;
+let mode = "login";
+
+const $ = id => document.getElementById(id);
+
+function switchTab(next){
+  mode = next;
+  $("tabLogin").classList.toggle("on", next === "login");
+  $("tabRegister").classList.toggle("on", next === "register");
+  $("viewLogin").style.display = next === "login" ? "" : "none";
+  $("viewRegister").style.display = next === "register" ? "" : "none";
+  $("loginMsg").textContent = "";
+  $("regMsg").textContent = "";
+}
+
+function togglePwd(id, btn){
+  const el = $(id);
+  const show = el.type === "password";
+  el.type = show ? "text" : "password";
+  btn.textContent = show ? "🙈" : "👁️";
+}
+
+function say(el, text, ok){
+  const box = $(el);
+  box.textContent = text;
+  box.className = "msg " + (ok ? "ok" : "err");
+}
+
+/** 保存登录状态：ks_token 沿用老键名，index.html 直接复用 */
+function saveSession(d){
+  localStorage.setItem("ks_token", d.token);
+  localStorage.setItem("ks_user", JSON.stringify(d.user || {}));
+}
+
+async function post(path, body){
+  const r = await fetch(API + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  let d = {};
+  try { d = await r.json(); } catch (e) { /* 空响应 */ }
+  return { ok: r.ok, status: r.status, data: d };
+}
+
+async function doLogin(e){
+  e.preventDefault();
+  const btn = $("loginBtn");
+  const username = $("loginUser").value.trim();
+  const password = $("loginPwd").value;
+  if (!username || !password) return;
+
+  btn.disabled = true;
+  btn.textContent = "登录中…";
+  try {
+    const { ok, data } = await post("/auth/login", { username, password });
+    if (ok && data.ok){
+      saveSession(data);
+      say("loginMsg", "登录成功，正在进入后台…", true);
+      location.href = "index.html";
+    } else {
+      say("loginMsg", data.error || "账号或密码错误", false);
+    }
+  } catch (err) {
+    say("loginMsg", "连不上服务器：" + (err.message || err), false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "进入后台";
+  }
+}
+
+async function doPinLogin(){
+  const pin = $("pinInput").value.trim();
+  if (!pin) return;
+  try {
+    const { ok, data } = await post("/auth/login", { pin });
+    if (ok && data.ok){
+      saveSession(data);
+      location.href = "index.html";
+    } else {
+      say("loginMsg", data.error || "密码错误", false);
+    }
+  } catch (err) {
+    say("loginMsg", "连不上服务器：" + (err.message || err), false);
+  }
+}
+
+async function doRegister(e){
+  e.preventDefault();
+  const btn = $("regBtn");
+  const username = $("regUser").value.trim();
+  const password = $("regPwd").value;
+  const password2 = $("regPwd2").value;
+  const displayName = $("regName").value.trim();
+
+  if (password !== password2) { say("regMsg", "两次输入的密码不一致", false); return; }
+
+  btn.disabled = true;
+  btn.textContent = "注册中…";
+  try {
+    const { ok, data } = await post("/auth/register", { username, password, displayName });
+    if (ok && data.ok){
+      saveSession(data);
+      say("regMsg", data.adoptedLegacyProfile
+        ? "注册成功，原有配置已迁移到这个账号，正在进入后台…"
+        : "注册成功，正在进入后台…", true);
+      location.href = "index.html";
+    } else {
+      say("regMsg", data.error || "注册失败", false);
+    }
+  } catch (err) {
+    say("regMsg", "连不上服务器：" + (err.message || err), false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "注册并登录";
+  }
+}
+
+async function loadStatus(){
+  try {
+    const r = await fetch(API + "/auth/status");
+    status = await r.json();
+    $("serverInfo").textContent =
+      "服务端 v" + (status.serverVersion || "?") +
+      " · " + (status.accountCount || 0) + " 个账号";
+
+    if (status.hasAccounts === false){
+      const b = $("banner");
+      b.className = "banner show";
+      b.innerHTML = "这台服务器还没有家长账号，先注册一个吧 —— 注册后原有配置会自动迁移过来。";
+      switchTab("register");
+    }
+
+    // 老密码通道：只有服务端还开着才显示这个折叠入口
+    if (status.pinLoginEnabled){
+      $("pinBox").style.display = "";
+      if (status.hasAccounts === false)
+        $("loginSub").textContent = "也可以先用旧版家长密码进入（默认 1234）";
+    }
+
+    if (status.registrationOpen === false){
+      $("tabRegister").style.display = "none";
+      if (!status.hasAccounts) switchTab("login");
+    }
+  } catch (err) {
+    $("serverInfo").textContent = "服务端未响应";
+  }
+}
+
+// 已经登录过就直接进后台，不用再看登录页
+(async function boot(){
+  await loadStatus();
+  const token = localStorage.getItem("ks_token");
+  if (!token) { if (status && status.hasAccounts === false) switchTab("register"); return; }
+  try {
+    const r = await fetch(API + "/auth/me?token=" + encodeURIComponent(token));
+    if (r.ok) { location.replace("index.html"); return; }
+  } catch (e) { /* 服务端没起来：留在登录页 */ }
+  localStorage.removeItem("ks_token");
+  localStorage.removeItem("ks_user");
+})();
+</script>
+</body>
+</html>

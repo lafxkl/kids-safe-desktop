@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.RewardResultPage"
+             Title="本局结算"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FFF9E6" Offset="0" />
+                <GradientStop Color="#EAF6FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- 顶部：只留一个「关闭」，避免孩子在结算页迷路 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,14">
+            <Button Grid.Column="0" Text="✕" FontSize="18" TextColor="#7A6A3A" BackgroundColor="Transparent"
+                    BorderWidth="0" Padding="6,0" Clicked="OnClose" />
+            <Label Grid.Column="1" Text="本局结算" FontSize="17" FontAttributes="Bold"
+                   TextColor="#5B4500" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="TotalPill" Text="⭐ 0" FontSize="16" FontAttributes="Bold"
+                   TextColor="#8A6D00" VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20,4,20,28">
+            <VerticalStackLayout Spacing="13">
+
+                <!-- 大图标 -->
+                <Frame x:Name="EmojiBubble" WidthRequest="104" HeightRequest="104" CornerRadius="52"
+                       Padding="0" HasShadow="False" HorizontalOptions="Center" Margin="0,6,0,0"
+                       BackgroundColor="#FFFFFF" BorderColor="#FFE082">
+                    <Label x:Name="EmojiLabel" Text="🎉" FontSize="50"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Frame>
+
+                <Label x:Name="CaptionLabel" Text="小游戏 · 本局结束" FontSize="13.5"
+                       TextColor="#9C8A5A" HorizontalOptions="Center" />
+
+                <Label x:Name="TitleLabel" Text="游戏名称" FontSize="21" FontAttributes="Bold"
+                       TextColor="#4E3B12" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                <Label x:Name="HeadlineLabel" Text="太棒了！" FontSize="31" FontAttributes="Bold"
+                       TextColor="#FF8F00" HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                       Margin="0,2,0,0" />
+
+                <!-- 星级：逐颗弹出 -->
+                <HorizontalStackLayout x:Name="StarRow" Spacing="6" HorizontalOptions="Center" Margin="0,4,0,0" />
+
+                <Label x:Name="DetailLabel" Text="" FontSize="17" TextColor="#5D4E2A"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                <!-- 星星入账卡 -->
+                <Frame x:Name="AwardCard" Padding="18,14" CornerRadius="22" HasShadow="False"
+                       BackgroundColor="#FFFFFF" BorderColor="#FFE082" Margin="0,4,0,0">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                        <Label Grid.Column="0" Text="⭐" FontSize="30" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                            <Label x:Name="AwardLabel" Text="+3 颗星星" FontSize="20" FontAttributes="Bold"
+                                   TextColor="#E65100" />
+                            <Label x:Name="LedgerLabel" Text="一共 0 颗 · 今天 0 颗" FontSize="12.5"
+                                   TextColor="#9E8B60" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" x:Name="StreakLabel" Text="" FontSize="13" FontAttributes="Bold"
+                               TextColor="#EF6C00" VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
+                <!-- 具体夸奖 -->
+                <Frame x:Name="EncourageCard" Padding="16,14" CornerRadius="18" HasShadow="False"
+                       BackgroundColor="#FFF6D9" BorderColor="Transparent">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="💬" FontSize="20" VerticalOptions="Start" />
+                        <Label x:Name="EncourageLabel" Text="" FontSize="15" TextColor="#6B5A2A"
+                               LineHeight="1.45" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Frame>
+
+                <!-- 新勋章 -->
+                <VerticalStackLayout x:Name="BadgeHost" Spacing="8" IsVisible="False" />
+
+                <!-- 下一步建议 -->
+                <Label x:Name="NextTipLabel" Text="" FontSize="13.5" TextColor="#8A7A50"
+                       HorizontalTextAlignment="Center" Margin="6,2" />
+
+                <Button Text="🔁 再来一局" FontSize="18" FontAttributes="Bold" HeightRequest="54"
+                        CornerRadius="18" BackgroundColor="#FFB300" TextColor="#4E3B12"
+                        Clicked="OnReplay" Margin="0,6,0,0" />
+                <Button Text="🌟 我的星星" FontSize="16" HeightRequest="48" CornerRadius="16"
+                        BackgroundColor="#FFFFFF" TextColor="#8A6D00" BorderColor="#FFE082"
+                        BorderWidth="2" Clicked="OnStarBoard" />
+                <Button Text="🎮 回小游戏" FontSize="16" HeightRequest="48" CornerRadius="16"
+                        BackgroundColor="#EFE7D2" TextColor="#6B5A2A" Clicked="OnBackToHub" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 彩带层：纯装饰，不接收点击 -->
+        <AbsoluteLayout Grid.RowSpan="2" x:Name="ConfettiLayer" InputTransparent="True" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.EncyclopediaQuizGamePage"
+             Title="百科问答"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#00897B">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📚 百科问答" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Frame Grid.Column="2" BackgroundColor="#FFFFFF" CornerRadius="16" Padding="12,6"
+                   HasShadow="False" BorderColor="Transparent">
+                <Label Text="{Binding ScoreText}" FontSize="16" FontAttributes="Bold" TextColor="#00897B" />
+            </Frame>
+        </Grid>
+
+        <!-- 答题区 -->
+        <ScrollView Grid.Row="1" Padding="20,16,20,40" IsVisible="{Binding NotFinished}">
+            <VerticalStackLayout Spacing="16">
+                <Label Text="{Binding ProgressText}" FontSize="15" TextColor="#00695C"
+                       HorizontalOptions="Center" />
+
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="26" Padding="20,24" HasShadow="False"
+                       BorderColor="#80CBC4">
+                    <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Label Text="{Binding QuestionEmoji}" FontSize="56" HorizontalOptions="Center" />
+                        <Label Text="{Binding Category}" FontSize="15" FontAttributes="Bold"
+                               TextColor="#00897B" HorizontalOptions="Center" />
+                        <Label Text="{Binding QuestionText}" FontSize="24" FontAttributes="Bold"
+                               TextColor="#004D40" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <Button Text="🔊 听题" FontSize="18" BackgroundColor="#FFB300" TextColor="White"
+                                CornerRadius="20" HeightRequest="48" WidthRequest="140"
+                                HorizontalOptions="Center" Clicked="OnSpeak" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 选项 -->
+                <VerticalStackLayout x:Name="OptionsStack" Spacing="12" />
+
+                <!-- 反馈 -->
+                <Frame BackgroundColor="#E0F2F1" CornerRadius="18" Padding="14,10" HasShadow="False"
+                       BorderColor="Transparent" IsVisible="{Binding HasFeedback}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{Binding FeedbackText}" FontSize="22" FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               TextColor="{Binding IsCorrect, Converter={StaticResource BoolToColor}, ConverterParameter='#2E7D32,#E53935'}" />
+                        <Label Text="{Binding ExplainText}" FontSize="15" TextColor="#37474F"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="➡️ 下一题" FontSize="22" BackgroundColor="#00897B" TextColor="White"
+                        CornerRadius="22" HeightRequest="56" IsVisible="{Binding HasFeedback}"
+                        Clicked="OnNext" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 成绩 -->
+        <ScrollView Grid.Row="1" Padding="20,16,20,40" IsVisible="{Binding Finished}">
+            <VerticalStackLayout Spacing="20" VerticalOptions="Center">
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="26" Padding="24,30" HasShadow="False"
+                       BorderColor="#80CBC4">
+                    <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                        <Label Text="🎉" FontSize="60" HorizontalOptions="Center" />
+                        <Label Text="{Binding ResultText}" FontSize="24" FontAttributes="Bold"
+                               TextColor="#00897B" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+                <Button Text="🔄 再来一组" FontSize="20" BackgroundColor="#00897B" TextColor="White"
+                        CornerRadius="22" HeightRequest="56" Clicked="OnReplay" />
+                <Button Text="🏠 返回首页" FontSize="20" BackgroundColor="#9575CD" TextColor="White"
+                        CornerRadius="22" HeightRequest="56" Clicked="OnBack" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

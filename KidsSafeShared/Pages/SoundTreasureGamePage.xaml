@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.SoundTreasureGamePage"
+             Title="声音寻宝"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack"
+                    SemanticProperties.Hint="返回特需关爱板块" />
+            <Label Grid.Column="1" Text="🎯 声音寻宝" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" x:Name="ProgressLabel" Text="第 1 / 6 题" TextColor="White"
+                   FontSize="15" VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <!-- 提示区：大字号高对比，低视力儿童也能看见；同时全部会被语音朗读 -->
+        <VerticalStackLayout Grid.Row="1" Spacing="4" Padding="20,14,20,4">
+            <Label Text="🔊 听一听，声音在哪一格？" FontSize="20" FontAttributes="Bold"
+                   TextColor="#283593" HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                   LineBreakMode="WordWrap" />
+            <Label x:Name="FeedbackLabel" Text="先点下面的「再听一次」" FontSize="15"
+                   TextColor="#5C6BC0" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <!-- 3×3 棋盘：格子由 code-behind 生成（每格 ≥ 96dp，远超 48dp 无障碍下限） -->
+        <Grid Grid.Row="2" x:Name="Board" RowDefinitions="*,*,*" ColumnDefinitions="*,*,*"
+              Padding="12,6,12,6" />
+
+        <!-- 重听按钮：视障儿童需要随时能重新定位声源 -->
+        <Button Grid.Row="3" Text="🔁 再听一次" FontSize="18" FontAttributes="Bold"
+                BackgroundColor="#5C6BC0" TextColor="White" CornerRadius="18"
+                HeightRequest="56" Margin="24,6,24,18" Clicked="OnReplaySound"
+                SemanticProperties.Description="再播放一次提示音" />
+
+        <!-- 结果层 -->
+        <Grid Grid.Row="0" Grid.RowSpan="4" x:Name="ResultLayer" IsVisible="False"
+              BackgroundColor="#F5FFFFFF">
+            <ScrollView Padding="28,20">
+                <VerticalStackLayout Spacing="16" VerticalOptions="Center">
+                    <Label Text="🏆" FontSize="76" HorizontalOptions="Center" />
+                    <Label x:Name="ResultTitle" Text="训练完成！" FontSize="26" FontAttributes="Bold"
+                           TextColor="#283593" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Label x:Name="ResultDetail" Text="" FontSize="17" TextColor="#3949AB"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                    <Label x:Name="ResultTip" Text="" FontSize="14" TextColor="#6D4C41"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                    <Button Text="🔄 再练一次" FontSize="19" BackgroundColor="#3949AB" TextColor="White"
+                            CornerRadius="18" HeightRequest="58" Margin="0,8,0,0" Clicked="OnReplayAll" />
+                    <Button Text="↩️ 回到板块" FontSize="17" BackgroundColor="#FFFFFF" TextColor="#3949AB"
+                            CornerRadius="18" HeightRequest="54" Clicked="OnBack" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

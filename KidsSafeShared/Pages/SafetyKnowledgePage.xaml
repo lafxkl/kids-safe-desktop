@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.SafetyKnowledgePage"
+             Title="安全知识"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🛡️ 安全知识" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" Text="🎮 闯关" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="End" Clicked="OnQuiz" />
+        </Grid>
+
+        <!-- 引导语 -->
+        <Label Grid.Row="1" Text="学会保护自己，做勇敢又聪明的小朋友！点一点下面的主题看一看吧～"
+               FontSize="16" TextColor="#B71C1C" HorizontalOptions="Center"
+               Margin="20,10" HorizontalTextAlignment="Center" />
+
+        <!-- 分类卡片 -->
+        <ScrollView Grid.Row="2" Padding="20,8,20,80">
+            <CollectionView ItemsSource="{Binding Topics}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="2"
+                                    HorizontalItemSpacing="14" VerticalItemSpacing="14" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SafetyTopic">
+                        <Frame CornerRadius="20" Padding="0" HasShadow="False" HeightRequest="150">
+                            <Frame.BackgroundColor>
+                                <Binding Path="Color" />
+                            </Frame.BackgroundColor>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTopicTapped" NumberOfTapsRequired="1" />
+                            </Frame.GestureRecognizers>
+                            <VerticalStackLayout Spacing="6" VerticalOptions="Center" HorizontalOptions="Center">
+                                <Label Text="{Binding Emoji}" FontSize="48" HorizontalOptions="Center" />
+                                <Label Text="{Binding Title}" FontSize="20" FontAttributes="Bold"
+                                       TextColor="White" HorizontalOptions="Center" />
+                                <Label Text="{Binding Tips.Count, StringFormat='{0} 条小知识'}" FontSize="13"
+                                       TextColor="#FFFFFF" Opacity="0.9" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
+</ContentPage>

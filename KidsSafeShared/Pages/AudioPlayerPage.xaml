@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.AudioPlayerPage"
+             Title="播放"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="10,12"
+              BackgroundColor="#00897B">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label x:Name="TitleLabel" Grid.Column="1" Text="🎵 播放" TextColor="White" FontSize="18"
+                   FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Center" />
+            <Label x:Name="ModeLabel" Grid.Column="2" Text="" FontSize="12" TextColor="#B2DFDB"
+                   VerticalOptions="Center" HorizontalOptions="End" />
+        </Grid>
+
+        <!-- 主体：青绿渐变 + 旋转 CD -->
+        <Grid Grid.Row="1">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#20B2AA" Offset="0" />
+                    <GradientStop Color="#E0F7FA" Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+
+            <ScrollView x:Name="BodyScroll" Padding="20,16">
+                <VerticalStackLayout Spacing="14">
+
+                    <!-- 旋转 CD 封面 -->
+                    <Frame x:Name="CdCover" WidthRequest="200" HeightRequest="200" CornerRadius="100"
+                           Padding="0" HasShadow="False" BackgroundColor="#004D40"
+                           BorderColor="#80CBC4" HorizontalOptions="Center">
+                        <Frame WidthRequest="64" HeightRequest="64" CornerRadius="32" Padding="0"
+                               HasShadow="False" BackgroundColor="#26A69A" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label x:Name="CoverLabel" Text="🎵" FontSize="80"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Frame>
+                    </Frame>
+
+                    <!-- 音乐 / 环境音 文字信息 -->
+                    <VerticalStackLayout x:Name="SongPanel" Spacing="8" IsVisible="False">
+                        <Label x:Name="NameLabel" Text="" FontSize="26" FontAttributes="Bold"
+                               TextColor="#004D40" HorizontalOptions="Center" />
+                        <Label x:Name="DescLabel" Text="" FontSize="15" TextColor="#00695C"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <Label x:Name="LoopLabel" Text="🔁 循环播放中" FontSize="13" TextColor="#00897B"
+                               HorizontalOptions="Center" IsVisible="False" />
+                    </VerticalStackLayout>
+
+                    <!-- 语音朗读 -->
+                    <VerticalStackLayout x:Name="SpeechPanel" Spacing="10" IsVisible="False">
+                        <Label x:Name="HintLabel" Text="" FontSize="13" TextColor="#00695C"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <StackLayout x:Name="LineContainer" Spacing="4">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame CornerRadius="12" Padding="10,8" Margin="0,2"
+                                           HasShadow="False" BorderColor="Transparent"
+                                           BackgroundColor="{Binding Background}">
+                                        <Label Text="{Binding Text}" FontSize="17"
+                                               FontAttributes="{Binding Attributes}"
+                                               TextColor="{Binding TextColor}" />
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                    </VerticalStackLayout>
+
+                    <!-- TTS 不可用提示 -->
+                    <Frame x:Name="TtsWarnPanel" CornerRadius="14" Padding="12,10" HasShadow="False"
+                           BackgroundColor="#FFEBEE" BorderColor="#EF9A9A" IsVisible="False">
+                        <VerticalStackLayout Spacing="8">
+                            <Label x:Name="TtsWarnLabel" Text="" FontSize="13" TextColor="#C62828" />
+                            <Button Text="📖 查看语音安装指引" FontSize="14" BackgroundColor="#EF5350"
+                                    TextColor="White" CornerRadius="14" HeightRequest="42"
+                                    Clicked="OnOpenHelp" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- 歌单抽屉 -->
+            <Grid x:Name="DrawerHost" IsVisible="False">
+                <BoxView x:Name="DrawerBackdrop" BackgroundColor="#000000" Opacity="0.35">
+                    <BoxView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDrawerClose" NumberOfTapsRequired="1" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
+                <Border x:Name="DrawerPanel" StrokeShape="RoundRectangle 24,0,0,24" StrokeThickness="0"
+                        BackgroundColor="#FFFFFF" HeightRequest="420"
+                        VerticalOptions="End" TranslationY="420">
+                    <VerticalStackLayout Spacing="6" Padding="16,14">
+                        <Label x:Name="DrawerTitle" Text="播放列表" FontSize="18" FontAttributes="Bold"
+                               TextColor="#004D40" />
+                        <ScrollView x:Name="DrawerScroll" Padding="0,4">
+                            <StackLayout x:Name="DrawerList" Spacing="4" />
+                        </ScrollView>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- 控制条 -->
+        <Grid Grid.Row="2" Padding="16,10,16,16" BackgroundColor="#FAFAFA" RowSpacing="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Slider x:Name="SeekSlider" Grid.Row="0" Minimum="0" Maximum="1" Value="0"
+                    MinimumTrackColor="#00897B" MaximumTrackColor="#E0E0E0"
+                    DragStarted="OnSeekStarted" DragCompleted="OnSeekCompleted" />
+
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <Label x:Name="PositionLabel" Text="00:00" FontSize="12" TextColor="#00897B"
+                       VerticalOptions="Center" />
+                <Label x:Name="CenterLabel" Grid.Column="1" Text="" FontSize="12" TextColor="#00897B"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label x:Name="DurationLabel" Grid.Column="2" Text="00:00" FontSize="12"
+                       TextColor="#00897B" VerticalOptions="Center" />
+            </Grid>
+
+            <HorizontalStackLayout Grid.Row="2" Spacing="22" HorizontalOptions="Center">
+                <Button x:Name="PrevButton" Text="⏮" FontSize="24" WidthRequest="64" HeightRequest="64"
+                        CornerRadius="32" BackgroundColor="#E0F2F1" TextColor="#00695C"
+                        Clicked="OnPrev" />
+                <Button x:Name="PlayButton" Text="▶️" FontSize="30" WidthRequest="82" HeightRequest="82"
+                        CornerRadius="41" BackgroundColor="#00897B" TextColor="White"
+                        Clicked="OnPlayPause" />
+                <Button x:Name="NextButton" Text="⏭" FontSize="24" WidthRequest="64" HeightRequest="64"
+                        CornerRadius="32" BackgroundColor="#E0F2F1" TextColor="#00695C"
+                        Clicked="OnNext" />
+                <Button x:Name="ListButton" Text="📜" FontSize="24" WidthRequest="64" HeightRequest="64"
+                        CornerRadius="32" BackgroundColor="#E0F2F1" TextColor="#00695C"
+                        Clicked="OnDrawerOpen" />
+            </HorizontalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

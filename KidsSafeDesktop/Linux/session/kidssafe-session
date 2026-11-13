@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# 儿童安全桌面 —— 专属会话启动脚本
+#
+# 这是 Linux 版锁定的核心。对比 Windows 版靠 SetWindowsHookEx 拦按键、
+# 靠 FindWindow 藏任务栏，Linux 侧不做这些（Wayland 下也做不到）。真正的
+# 锁是「会话裁剪」：不启动 plasmashell，不加载全局快捷键服务，没有别的窗口
+# 可切换，Alt+Tab 落到窗口管理器也无可切换对象。
+#
+# 这层还负责崩溃重启。Windows/Android 版的 kiosk 一旦进程死掉，孩子就自由了；
+# 这里用守护循环 + 标记文件把它堵住：
+#   - 非正常退出 → 1 秒后自动重启
+#   - 家长在后台点「退出」→ 应用写 .session_exit 标记 → 循环结束，会话退出
+
+set -u
+
+export KIDSSAFE_KIOSK_SESSION=1
+
+APP_BIN="${KIDSSAFE_BIN:-/usr/bin/kidssafe}"
+STATE_DIR="${HOME}/.local/share/kidssafe"
+
+mkdir -p "$STATE_DIR"
+rm -f "$STATE_DIR/.session_exit"
+
+# 1) 关掉 X11 的屏保与 DPMS。孩子离开几分钟屏幕就黑掉，非常影响体验，
+#    而且锁屏恢复往往要输密码，等于把小朋友挡在自己的桌面外面。
+if command -v xset >/dev/null 2>&1; then
+    xset s off -dpms s noblank >/dev/null 2>&1 || true
+fi
+
+# 2) 关掉 Plasma 的活动切换与总览手势。这两个是少数即使在空会话里
+#    也能让画面跑到别处去的全局动作。
+if command -v kwriteconfig6 >/dev/null 2>&1; then
+    kwriteconfig6 --file kwinrc --group Effect-overview --key BorderActivate 9 >/dev/null 2>&1 || true
+    kwriteconfig6 --file kglobalshortcutsrc --group kwin --key "Overview" "none,none,总览" >/dev/null 2>&1 || true
+fi
+
+# 3) 守护循环
+while :; do
+    "$APP_BIN"
+    rc=$?
+
+    if [ -f "$STATE_DIR/.session_exit" ]; then
+        rm -f "$STATE_DIR/.session_exit"
+        break
+    fi
+
+    logger -t kidssafe "kidssafe exited unexpectedly (rc=$rc), restarting in 1s" 2>/dev/null || true
+    sleep 1
+done
+
+exit 0

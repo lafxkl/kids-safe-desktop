@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Grid xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+      xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+      x:Class="KidsSafeDesktop.Controls.LauncherGridView"
+      RowDefinitions="*,Auto" HorizontalOptions="Fill" VerticalOptions="Fill">
+
+    <!-- 结构说明（重要，勿随意改回全局 CollectionView）：
+         本控件曾是「CollectionView + GridItemsLayout + 运行期改 Span」的方案，在 WinUI 上
+         会触发 LayoutCycleException（“Layout cycle detected. Layout could not complete.”）
+         —— 虚拟化 CollectionView 自身滚动、又被放进 ScrollView、且在尺寸变化时动态改列数，
+         三者叠加使 WinUI 布局管理器无法收敛，导致整个 UI 线程卡死（Debug 下断在
+         App.g.cs 的 Debugger.Break），Release 下进程退出 -1。
+
+         现在按住处分两种模式，互不干扰：
+         ① 换行模式（Windows 桌面）：FlexLayout + BindableLayout，纯一次性布局，纵向滚动。
+         ② 分页模式（手机 Android/iOS）：横向 CollectionView 每页一个固定容量的 FlexLayout，
+            带 SnapPoints 吸附 + 底部指示点，观感与系统桌面一致。
+         分页模式只在移动端启用，WinUI 永远走 ①，因此不会再踩到上面那个坑。
+
+         手势说明（重要）：TapGestureRecognizer 必须挂在**有背景色的**元素上（Frame / Label），
+         不能挂在无背景的 Grid 上——安卓上没有背景的布局不参与命中测试，点了毫无反应
+         （Windows 会向上冒泡所以看不出问题）。与首页 HomePage 的写法保持一致。 -->
+
+    <Grid.Resources>
+        <!-- 单个磁贴（两种模式共用同一份模板，改这里两边同时生效） -->
+        <DataTemplate x:Key="TileTemplate" x:DataType="models:LauncherItem">
+            <Grid RowDefinitions="84,Auto" WidthRequest="92" Margin="6,8" VerticalOptions="Start">
+                <!-- 整块磁贴也可以点（安卓上无背景的布局不参与命中测试，
+                     所以真正生效的是下面 Frame / Border 上的手势；这里多挂一个作为兜底） -->
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTileTapped" NumberOfTapsRequired="1" />
+                </Grid.GestureRecognizers>
+
+                <!-- 扁平化圆角图标（squircle，约 33% 圆角）：纯色色块，无渐变、无投影。
+                     尺寸与圆角由 LauncherGridView.xaml.cs 按屏宽等比缩放 -->
+                <Frame Grid.Row="0" WidthRequest="84" HeightRequest="84" CornerRadius="28" Padding="0"
+                       HasShadow="False" BackgroundColor="{Binding Accent}" BorderColor="Transparent"
+                       HorizontalOptions="Center" VerticalOptions="Start">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTileTapped" NumberOfTapsRequired="1" />
+                    </Frame.GestureRecognizers>
+                    <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+                        <Image Source="{Binding Icon}" WidthRequest="52" HeightRequest="52"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               IsVisible="{Binding HasIcon}" />
+                        <Label Text="{Binding Emoji}" FontSize="44"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               IsVisible="{Binding HasIcon, Converter={StaticResource InverseBool}}" />
+                    </Grid>
+                </Frame>
+
+                <!-- 图标下方的名称：圆角胶囊底（随文字宽度） -->
+                <Border Grid.Row="1" BackgroundColor="#D9FFFFFF" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 11" Padding="8,3" Margin="0,6,0,0"
+                        HorizontalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTileTapped" NumberOfTapsRequired="1" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding Name}" FontSize="12.5" FontAttributes="Bold"
+                           TextColor="#37474F" HorizontalTextAlignment="Center"
+                           LineBreakMode="NoWrap" MaxLines="1" />
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Grid.Resources>
+
+    <!-- ① 换行模式（Windows 桌面）：保持原有观感 -->
+    <ScrollView x:Name="WrapScroll" Grid.Row="0" HorizontalOptions="Fill" VerticalOptions="Fill">
+        <FlexLayout x:Name="WrapFlex" Wrap="Wrap" Direction="Row"
+                    JustifyContent="Center" AlignItems="Start" AlignContent="Start"
+                    HorizontalOptions="Fill"
+                    BindableLayout.ItemTemplate="{StaticResource TileTemplate}" />
+    </ScrollView>
+
+    <!-- ② 分页模式（手机）：一页一屏，横向滑动，自带页面吸附，像系统桌面。
+         用 CarouselView 而不是 CollectionView：这个版本的 CollectionView 没有
+         SnapPointsType 属性，滑到一半松手会停在两页之间；CarouselView 天生按页吸附。 -->
+    <CarouselView x:Name="Pager" Grid.Row="0" IsVisible="False"
+                  Loop="False" IsBounceEnabled="True" PeekAreaInsets="0"
+                  HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+    <!-- 页码指示点：只在分页模式且多于 1 页时显示 -->
+    <IndicatorView x:Name="Dots" Grid.Row="1" IsVisible="False"
+                   HorizontalOptions="Center" Margin="0,4,0,2"
+                   IndicatorSize="7" IndicatorColor="#59FFFFFF" SelectedIndicatorColor="#7E57C2" />
+</Grid>

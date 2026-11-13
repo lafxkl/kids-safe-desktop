@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.MathRhymeDetailPage"
+             Title="口诀"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                <Label x:Name="IconLabel" Text="📚" FontSize="26" VerticalOptions="Center" />
+                <Label x:Name="TitleLabel" Text="口诀" TextColor="White" FontSize="20"
+                       FontAttributes="Bold" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <Label Grid.Column="2" Text="🌈" FontSize="20" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 内容 -->
+        <ScrollView Grid.Row="1" Padding="20,16,20,80">
+            <VerticalStackLayout x:Name="ContentPanel" Spacing="14" />
+        </ScrollView>
+    </Grid>
+</ContentPage>

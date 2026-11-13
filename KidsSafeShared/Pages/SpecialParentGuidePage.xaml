@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.SpecialParentGuidePage"
+             Title="家长心理守护"
+             Background="{StaticResource KidPageGradient}">
+
+    <ContentPage.Resources>
+
+        <!-- 该做的一条 -->
+        <DataTemplate x:Key="DoCard" x:DataType="models:ParentDoTip">
+            <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="14,13"
+                    StrokeShape="RoundRectangle 20" Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="7">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="{Binding Emoji}" FontSize="20" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding Title}" FontSize="15.5" FontAttributes="Bold"
+                               TextColor="#263238" VerticalOptions="Center" LineBreakMode="WordWrap" />
+                    </Grid>
+                    <Label Text="{Binding Detail}" FontSize="13" TextColor="#37474F" LineBreakMode="WordWrap" />
+                    <Border BackgroundColor="#F1F8E9" StrokeThickness="0" Padding="10,8"
+                            StrokeShape="RoundRectangle 12">
+                        <Label FontSize="12" TextColor="#33691E" LineBreakMode="WordWrap"
+                               Text="{Binding Why, StringFormat='💡 {0}'}" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <!-- 不该做的一条：为什么有害 + 换成怎么做 -->
+        <DataTemplate x:Key="AvoidCard" x:DataType="models:ParentAvoidTip">
+            <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="14,13"
+                    StrokeShape="RoundRectangle 20" Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="{Binding Emoji}" FontSize="18" VerticalOptions="Start" />
+                        <Label Grid.Column="1" Text="{Binding Bad}" FontSize="15.5" FontAttributes="Bold"
+                               TextColor="#C62828" VerticalOptions="Center" LineBreakMode="WordWrap" />
+                    </Grid>
+                    <Label FontSize="12.5" TextColor="#5D4037" LineBreakMode="WordWrap"
+                           Text="{Binding Why, StringFormat='为什么会伤到他：{0}'}" />
+                    <Border BackgroundColor="#E8F5E9" StrokeThickness="0" Padding="10,9"
+                            StrokeShape="RoundRectangle 12">
+                        <Label FontSize="12.5" TextColor="#1B5E20" LineBreakMode="WordWrap"
+                               Text="{Binding Better, StringFormat='✔ 换成这样：{0}'}" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <!-- 一句话的前后对比 -->
+        <DataTemplate x:Key="PhraseCard" x:DataType="models:PhraseSwap">
+            <Border BackgroundColor="#FFFFFF" StrokeThickness="0" Padding="14,12"
+                    StrokeShape="RoundRectangle 20" Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="8">
+                    <Border BackgroundColor="#FFEBEE" StrokeThickness="0" Padding="10,8"
+                            StrokeShape="RoundRectangle 12">
+                        <Label FontSize="13.5" TextColor="#B71C1C" LineBreakMode="WordWrap"
+                               Text="{Binding Bad, StringFormat='✗  「{0}」'}" />
+                    </Border>
+                    <Border BackgroundColor="#E8F5E9" StrokeThickness="0" Padding="10,8"
+                            StrokeShape="RoundRectangle 12">
+                        <Label FontSize="13.5" FontAttributes="Bold" TextColor="#1B5E20"
+                               LineBreakMode="WordWrap"
+                               Text="{Binding Good, StringFormat='✓  「{0}」'}" />
+                    </Border>
+                    <Label FontSize="12" TextColor="#8D6E63" LineBreakMode="WordWrap"
+                           Text="{Binding Why}" />
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <!-- 就医信号 -->
+        <DataTemplate x:Key="WarnCard" x:DataType="models:WarningSign">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,0,0,9">
+                <Label Grid.Column="0" Text="{Binding Dot}" FontSize="13" VerticalOptions="Start" Margin="0,1,0,0" />
+                <Label Grid.Column="1" Text="{Binding Text}" TextColor="{Binding TextColor}"
+                       FontSize="13" LineBreakMode="WordWrap" />
+            </Grid>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*" Padding="16,14" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="💚 家长心理守护" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 四个分栏 -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="6" Padding="14,10,14,6">
+            <Border x:Name="TabDo" Grid.Column="0" BackgroundColor="#FFFFFF" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 14" Padding="6,9">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTabDo" NumberOfTapsRequired="1" />
+                </Border.GestureRecognizers>
+                <Label x:Name="TabDoText" Text="✅ 该做的" FontSize="12.5" FontAttributes="Bold"
+                       TextColor="#2E7D32" HorizontalOptions="Center" />
+            </Border>
+
+            <Border x:Name="TabAvoid" Grid.Column="1" BackgroundColor="#FFFFFF" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 14" Padding="6,9">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTabAvoid" NumberOfTapsRequired="1" />
+                </Border.GestureRecognizers>
+                <Label x:Name="TabAvoidText" Text="⛔ 别做的" FontSize="12.5" FontAttributes="Bold"
+                       TextColor="#C62828" HorizontalOptions="Center" />
+            </Border>
+
+            <Border x:Name="TabPhrase" Grid.Column="2" BackgroundColor="#FFFFFF" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 14" Padding="6,9">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTabPhrase" NumberOfTapsRequired="1" />
+                </Border.GestureRecognizers>
+                <Label x:Name="TabPhraseText" Text="💬 换句话" FontSize="12.5" FontAttributes="Bold"
+                       TextColor="#5E35B1" HorizontalOptions="Center" />
+            </Border>
+
+            <Border x:Name="TabWarn" Grid.Column="3" BackgroundColor="#FFFFFF" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 14" Padding="6,9">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTabWarn" NumberOfTapsRequired="1" />
+                </Border.GestureRecognizers>
+                <Label x:Name="TabWarnText" Text="🚨 该就医" FontSize="12.5" FontAttributes="Bold"
+                       TextColor="#E65100" HorizontalOptions="Center" />
+            </Border>
+        </Grid>
+
+        <ScrollView Grid.Row="2" x:Name="Body" Padding="14,6,14,36">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- ============ 分栏 1：该做的 ============ -->
+                <VerticalStackLayout x:Name="PaneDo" Spacing="0">
+
+                    <Border BackgroundColor="#E8F5E9" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18" Margin="0,4,0,12">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="📌 开始之前，先记住这四句" FontSize="14.5" FontAttributes="Bold"
+                                   TextColor="#1B5E20" />
+                            <VerticalStackLayout x:Name="RulesHost" Spacing="7">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="7">
+                                            <Label Grid.Column="0" Text="·" FontSize="16" TextColor="#2E7D32"
+                                                   VerticalOptions="Start" />
+                                            <Label Grid.Column="1" Text="{Binding}" FontSize="12.5"
+                                                   TextColor="#33691E" LineBreakMode="WordWrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="✅ 每天都能做的十件事" FontSize="16" FontAttributes="Bold"
+                           TextColor="#2E7D32" Margin="2,2,0,10" />
+                    <VerticalStackLayout x:Name="DoHost" Spacing="0"
+                                         BindableLayout.ItemTemplate="{StaticResource DoCard}" />
+
+                    <Border BackgroundColor="#FFF8E1" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18" Margin="0,6,0,0">
+                        <Label FontSize="12" TextColor="#5D4037" LineBreakMode="WordWrap"
+                               Text="做不到十条很正常。挑一条这周试着做，比全都看一眼更有用。" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ============ 分栏 2：别做的 ============ -->
+                <VerticalStackLayout x:Name="PaneAvoid" Spacing="0" IsVisible="False">
+
+                    <Border BackgroundColor="#FFEBEE" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18" Margin="0,4,0,12">
+                        <Label FontSize="12.5" TextColor="#B71C1C" LineBreakMode="WordWrap"
+                               Text="下面这些做法，多半不是「不爱」，而是「太累了、没人教过」才做出来的。它们看起来能立刻解决问题，代价却落在孩子的自我认知上。" />
+                    </Border>
+
+                    <Label Text="⛔ 这些事，尽量别做" FontSize="16" FontAttributes="Bold"
+                           TextColor="#C62828" Margin="2,2,0,10" />
+                    <VerticalStackLayout x:Name="AvoidHost" Spacing="0"
+                                         BindableLayout.ItemTemplate="{StaticResource AvoidCard}" />
+                </VerticalStackLayout>
+
+                <!-- ============ 分栏 3：换句话 ============ -->
+                <VerticalStackLayout x:Name="PanePhrase" Spacing="0" IsVisible="False">
+
+                    <Border BackgroundColor="#EDE7F6" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18" Margin="0,4,0,12">
+                        <Label FontSize="12.5" TextColor="#4527A0" LineBreakMode="WordWrap"
+                               Text="同一件事，换一种说法，孩子听到的是完全不同的信息：一句在说「你不行」，一句在说「这件事可以想办法」。" />
+                    </Border>
+
+                    <Label Text="💬 换一种说法" FontSize="16" FontAttributes="Bold"
+                           TextColor="#5E35B1" Margin="2,2,0,10" />
+                    <VerticalStackLayout x:Name="PhraseHost" Spacing="0"
+                                         BindableLayout.ItemTemplate="{StaticResource PhraseCard}" />
+                </VerticalStackLayout>
+
+                <!-- ============ 分栏 4：该就医 ============ -->
+                <VerticalStackLayout x:Name="PaneWarn" Spacing="0" IsVisible="False">
+
+                    <Border BackgroundColor="#FFF3E0" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18" Margin="0,4,0,12">
+                        <Label FontSize="12.5" TextColor="#E65100" LineBreakMode="WordWrap"
+                               Text="情绪问题越早介入越好。下面这些信号不代表「孩子有病」，只代表「这件事需要专业的人一起看」。" />
+                    </Border>
+
+                    <Label Text="🔴 立刻处理（当天）" FontSize="15.5" FontAttributes="Bold"
+                           TextColor="#B71C1C" Margin="2,2,0,8" />
+                    <VerticalStackLayout x:Name="UrgentHost" Spacing="0"
+                                         BindableLayout.ItemTemplate="{StaticResource WarnCard}" />
+
+                    <Label Text="🟡 尽快预约评估（两周内）" FontSize="15.5" FontAttributes="Bold"
+                           TextColor="#E65100" Margin="2,10,0,8" />
+                    <VerticalStackLayout x:Name="NormalHost" Spacing="0"
+                                         BindableLayout.ItemTemplate="{StaticResource WarnCard}" />
+
+                    <Label Text="☎️ 可以打这些电话" FontSize="15.5" FontAttributes="Bold"
+                           TextColor="#00695C" Margin="2,12,0,8" />
+                    <Border BackgroundColor="#E0F2F1" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18">
+                        <VerticalStackLayout Spacing="8">
+                            <VerticalStackLayout x:Name="HotlineHost" Spacing="7">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Label Text="{Binding}" FontSize="12.5" TextColor="#00695C"
+                                               LineBreakMode="WordWrap" />
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border BackgroundColor="#F5F5F5" StrokeThickness="0" Padding="14,12"
+                            StrokeShape="RoundRectangle 18" Margin="0,12,0,0">
+                        <Label FontSize="11.5" TextColor="#616161" LineBreakMode="WordWrap"
+                               Text="说明：本页是心理健康科普，帮助你判断「什么时候该找人帮忙」，不构成诊断，也不能替代精神科、康复科或心理治疗。具体的评估与用药，请以面诊医生的意见为准。" />
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

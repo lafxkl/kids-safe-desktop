@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.VideoPlayerPage"
+             Title="宝宝看"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="10,12" BackgroundColor="#1565C0">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label x:Name="TitleLabel" Grid.Column="1" Text="📺 宝宝看" TextColor="White" FontSize="18"
+                   FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Center" />
+            <Button x:Name="ModeButton" Grid.Column="2" Text="🔊 听讲解" FontSize="13" TextColor="White"
+                    BackgroundColor="#0D47A1" CornerRadius="14" HeightRequest="38"
+                    Clicked="OnToggleMode" IsVisible="False" />
+        </Grid>
+
+        <!-- 视频区 -->
+        <Grid Grid.Row="1">
+            <WebView x:Name="VideoView" HorizontalOptions="Fill" VerticalOptions="Fill" IsVisible="False" />
+
+            <!-- 视听模式（无视频或切换时显示）-->
+            <ScrollView x:Name="NarrationPanel" Padding="20,16">
+                <VerticalStackLayout Spacing="16">
+                    <Frame WidthRequest="150" HeightRequest="150" CornerRadius="75" Padding="0"
+                           HasShadow="False" HorizontalOptions="Center" BackgroundColor="#1565C0">
+                        <Label x:Name="PosterLabel" Text="📺" FontSize="78"
+                               HorizontalOptions="Center" VerticalOptions="Center" TextColor="White" />
+                    </Frame>
+                    <Label x:Name="NameLabel" Text="" FontSize="24" FontAttributes="Bold"
+                           TextColor="#0D47A1" HorizontalOptions="Center" />
+                    <Label x:Name="DescLabel" Text="" FontSize="15" TextColor="#1565C0"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                    <Button x:Name="NarrationButton" Text="▶️ 听讲解" FontSize="18" BackgroundColor="#1565C0"
+                            TextColor="White" CornerRadius="24" HeightRequest="52" WidthRequest="200"
+                            HorizontalOptions="Center" Clicked="OnNarrationToggle" />
+
+                    <StackLayout x:Name="NarrationList" Spacing="6" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

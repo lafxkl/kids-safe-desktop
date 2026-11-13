@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=儿童安全桌面（X11）
+Comment=给小朋友的安全桌面环境
+Exec=kidssafe-session
+TryExec=kidssafe-session
+Icon=kidssafe
+Terminal=false
+DesktopNames=KDE
+X-KDE-PluginInfo-Name=kidssafe

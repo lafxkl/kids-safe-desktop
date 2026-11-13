@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.StoryHousePage"
+             Title="星夜故事屋"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0.7,0" EndPoint="0.3,1">
+                <GradientStop Color="#2A2F6E" Offset="0" />
+                <GradientStop Color="#141A3F" Offset="0.4" />
+                <GradientStop Color="#0A0E2A" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- 顶部 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,14">
+            <Button Grid.Column="0" Text="← 返回" FontSize="15" TextColor="#EEF1FF" BackgroundColor="Transparent"
+                    BorderWidth="0" Clicked="OnBack" />
+            <VerticalStackLayout Grid.Column="1" Spacing="0" HorizontalOptions="Center">
+                <Label Text="🌙 星夜故事屋" FontSize="19" FontAttributes="Bold" TextColor="#FFE9A8"
+                       HorizontalOptions="Center" />
+                <Label x:Name="SubtleLabel" Text="睡前听一个故事吧" FontSize="11" TextColor="#AAB2D8"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+            <Button Grid.Column="2" x:Name="FavBtn" Text="⭐" FontSize="18" WidthRequest="42"
+                    HeightRequest="42" CornerRadius="21" BackgroundColor="#1C244E" TextColor="#FFE9A8"
+                    Clicked="OnToggleFavFilter" />
+        </Grid>
+
+        <!-- 搜索 -->
+        <Frame Grid.Row="1" Margin="16,0,16,6" Padding="12,2" CornerRadius="20" HasShadow="False"
+               BackgroundColor="#1C244E" BorderColor="#2A3568">
+            <Grid ColumnDefinitions="Auto,*">
+                <Label Grid.Column="0" Text="🔍" FontSize="15" VerticalOptions="Center" Margin="0,0,8,0" />
+                <Entry Grid.Column="1" x:Name="SearchEntry" Placeholder="搜索故事名字…" FontSize="14"
+                       TextColor="#EEF1FF" PlaceholderColor="#7C86B8" BackgroundColor="Transparent"
+                       TextChanged="OnSearchChanged" />
+            </Grid>
+        </Frame>
+
+        <!-- 分类 -->
+        <ScrollView Grid.Row="2" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                    Margin="16,2,16,8">
+            <HorizontalStackLayout x:Name="ChipBar" Spacing="8" />
+        </ScrollView>
+
+        <!-- 故事列表 -->
+        <CollectionView Grid.Row="3" x:Name="StoryList" Margin="16,0,16,20" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Spacing="8" Padding="0,40">
+                    <Label Text="🌙" FontSize="40" HorizontalOptions="Center" />
+                    <Label Text="没有找到故事，换个词试试～" FontSize="14" TextColor="#AAB2D8"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:BedtimeStory">
+                    <Frame Padding="14,12" CornerRadius="18" HasShadow="False"
+                           BackgroundColor="#1C244E" BorderColor="#2A3568">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnStoryTapped" NumberOfTapsRequired="1" />
+                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Frame Grid.Column="0" WidthRequest="50" HeightRequest="50" CornerRadius="25"
+                                   Padding="0" HasShadow="False" BackgroundColor="#2A3568"
+                                   VerticalOptions="Center">
+                                <Label Text="{Binding Emoji}" FontSize="25" HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Frame>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                <Label Text="{Binding Title}" FontSize="16.5" FontAttributes="Bold"
+                                       TextColor="#FFE9A8" />
+                                <Label Text="{Binding TagText}" FontSize="11.5" TextColor="#8AB4FF" />
+                                <Label Text="{Binding Summary}" FontSize="12" TextColor="#AAB2D8"
+                                       MaxLines="2" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
+                                <Label Text="▶" FontSize="18" TextColor="#FFE9A8" HorizontalOptions="Center" />
+                                <Label Text="{Binding MinutesText}" FontSize="10" TextColor="#7C86B8"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>儿童安全桌面 · 给孩子一个安全好玩的成长空间</title>
+<meta name="description" content="儿童安全桌面是面向 3–12 岁孩子的桌面式安全应用：图标化入口、家长守护、护眼与时长限制，21 款益智小游戏、26 首古诗、科学实验与睡前故事离线可玩，无广告无充值，还有孩子自己设密码的日记本。" />
+<style>
+  :root{
+    --purple:#7E57C2; --purple-d:#5C6BC0; --teal:#26C6DA; --pink:#FF8A65;
+    --green:#26A69A; --orange:#EF6C00; --ink:#2E3A4D; --soft:#8D6E63;
+    --bg:#F6F1FF; --card:#FFFFFF; --radius:22px;
+    --grad:linear-gradient(135deg,#7E57C2 0%,#26C6DA 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--purple);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  /* Nav */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid #EEE5FF}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple)}
+  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(126,87,194,.3)}
+  .nav nav{display:flex;gap:22px;font-size:15px}
+  .nav nav a{color:var(--ink);font-weight:600}
+  .nav nav a:hover{color:var(--purple)}
+  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(126,87,194,.35)}
+  /* Hero */
+  .hero{position:relative;overflow:hidden;padding:56px 0 40px}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
+  .hero h1{font-size:42px;line-height:1.2;font-weight:900;color:var(--ink)}
+  .hero h1 .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{margin:18px 0 26px;font-size:18px;color:var(--soft);max-width:520px}
+  .cta{display:flex;gap:14px;flex-wrap:wrap}
+  .cta a{padding:13px 26px;border-radius:26px;font-weight:800;font-size:16px}
+  .cta .primary{background:var(--grad);color:#fff;box-shadow:0 10px 24px rgba(126,87,194,.4)}
+  .cta .ghost{background:#fff;color:var(--purple);border:2px solid #E1D5FB}
+  .hero .phone{display:flex;justify-content:center}
+  .hero .phone img{width:260px;height:auto;border-radius:30px;box-shadow:0 24px 60px rgba(94,53,177,.35);border:6px solid #fff}
+  .badges{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+  .badge{background:#fff;border:1px solid #ECE3FB;border-radius:14px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--purple-d)}
+  /* Section */
+  section{padding:60px 0}
+  .sec-title{text-align:center;font-size:32px;font-weight:900;margin-bottom:10px}
+  .sec-sub{text-align:center;color:var(--soft);margin-bottom:40px;font-size:17px}
+  /* Features */
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .feat{background:var(--card);border-radius:var(--radius);padding:26px;box-shadow:0 10px 30px rgba(94,53,177,.08);border:1px solid #F1EAFF}
+  .feat .ico{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:28px;margin-bottom:14px}
+  .feat h3{font-size:20px;margin-bottom:8px}
+  .feat p{color:var(--soft);font-size:15px}
+  /* Screenshots */
+  .shots{display:flex;gap:20px;overflow-x:auto;padding:8px 2px 22px;scroll-snap-type:x mandatory}
+  .shots figure{flex:0 0 auto;width:230px;scroll-snap-align:center;margin:0}
+  .shots img{width:100%;height:auto;border-radius:26px;border:6px solid #fff;box-shadow:0 16px 40px rgba(94,53,177,.22)}
+  .shots figcaption{text-align:center;margin-top:10px;font-weight:700;color:var(--purple-d);font-size:15px}
+  /* Parent */
+  .parent{background:var(--grad);border-radius:34px;color:#fff;padding:48px;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+  .parent h2{font-size:30px;margin-bottom:14px}
+  .parent ul{list-style:none;display:grid;gap:12px}
+  .parent li{display:flex;gap:12px;align-items:flex-start;font-size:16px}
+  .parent li b{font-weight:800}
+  .parent .ptag{background:rgba(255,255,255,.18);border-radius:14px;padding:10px 14px;font-size:14px}
+  /* Safety */
+  .safe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .safe{background:#fff;border-radius:18px;padding:22px;text-align:center;box-shadow:0 8px 22px rgba(94,53,177,.07)}
+  .safe .e{font-size:34px}
+  .safe h4{margin:10px 0 6px;font-size:17px}
+  .safe p{color:var(--soft);font-size:14px}
+  /* Download */
+  .download{text-align:center}
+  .store-card{display:inline-flex;flex-direction:column;align-items:center;gap:14px;background:#fff;border-radius:26px;padding:34px 44px;box-shadow:0 16px 44px rgba(94,53,177,.15);border:1px solid #F0E8FF}
+  .store-card .qr{width:160px;height:160px;border-radius:16px;background:repeating-conic-gradient(#2E3A4D 0 25%, #fff 0 50%) 50%/22px 22px;display:grid;place-items:center;color:#fff;font-size:13px;text-align:center;font-weight:700}
+  .store-card .dl-icon{width:88px;height:88px;border-radius:28px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,#F3E9FF,#E1F7FB);box-shadow:0 8px 22px rgba(126,87,194,.18)}
+  .store-card .hl{font-size:18px;font-weight:800;color:var(--purple)}
+  .store-card .sub{color:var(--soft);font-size:14px;max-width:240px}
+  .store-card .ver{font-size:13px;color:#A1887F;border-top:1px dashed #EFE6FF;padding-top:12px;width:100%;text-align:center;line-height:1.9}
+  .store-card .ver b{color:var(--purple);font-weight:800}
+  .store-links{margin-top:18px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .store-links a{padding:11px 22px;border-radius:22px;font-weight:700;background:var(--grad);color:#fff}
+  .dl-note{margin-top:16px;font-size:13px;color:#8D6E63;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8}
+  /* 交流渠道：QQ 群 / 微信群 / 公众号 三卡 */
+  .chan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:790px;margin:0 auto}
+  .chan{background:#fff;border:1px solid #F1EAFF;border-radius:22px;padding:22px 18px 20px;text-align:center;
+        box-shadow:0 10px 30px rgba(94,53,177,.08);transition:transform .25s ease,box-shadow .25s ease}
+  .chan:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(94,53,177,.14)}
+  .chan img{width:100%;max-width:168px;height:auto;border-radius:12px;background:#fff;display:block;
+            margin:0 auto 14px;box-shadow:0 6px 18px rgba(94,53,177,.12)}
+  .chan h3{font-size:16.5px;margin-bottom:7px}
+  .chan .meta{display:inline-block;background:#F3E9FF;color:#5C6BC0;font-weight:800;border-radius:10px;
+              padding:5px 12px;font-size:12.5px;letter-spacing:.02em;margin-bottom:10px}
+  .chan p{font-size:12.5px;color:var(--soft);line-height:1.75;margin:0}
+  .chan .expire{font-size:11px;color:#B45309;background:#FFF7ED;border:1px solid #FDE7CE;border-radius:9px;
+                padding:6px 9px;margin-top:11px;line-height:1.6;text-align:left}
+  .chan-note{max-width:790px;margin:16px auto 0;text-align:center;font-size:11.5px;color:#A79BC0;line-height:1.8}
+
+  @media(max-width:760px){
+    .chan-grid{grid-template-columns:1fr;max-width:330px}
+    .chan img{max-width:190px}
+  }
+  /* Footer */
+  footer{background:#2E2452;color:#D9D2F0;padding:42px 0;font-size:14px}
+  footer .wrap{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:30px}
+  footer h4{color:#fff;margin-bottom:12px;font-size:16px}
+  footer a{color:#C9BEF2;display:block;margin:6px 0}
+  footer .copy{grid-column:1/-1;text-align:center;margin-top:24px;color:#9A8FC8;border-top:1px solid #443A6B;padding-top:18px}
+  @media(max-width:880px){
+    .hero{padding:34px 0 20px}
+    .hero .wrap{grid-template-columns:1fr;text-align:center}
+    .hero h1{font-size:32px}
+    .hero p.lead{font-size:16px;margin-left:auto;margin-right:auto}
+    .hero .phone{order:-1}
+    .hero .phone img{width:220px}
+    .cta{justify-content:center}
+    .badges{justify-content:center}
+    .feat-grid{grid-template-columns:1fr}
+    .parent{grid-template-columns:1fr;padding:30px}
+    .safe-grid{grid-template-columns:repeat(2,1fr)}
+    .nav nav{display:none}
+    footer .wrap{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 16px}
+    .hero h1{font-size:26px;line-height:1.32}
+    .sec-title{font-size:25px}
+    .sec-sub{font-size:15px}
+    section{padding:42px 0}
+    .store-card{padding:26px 20px;width:100%}
+    .store-card .qr{width:140px;height:140px}
+    .store-links a{padding:10px 16px;font-size:14px}
+    .parent h2{font-size:24px}
+    .hero .phone img{width:190px}
+  }
+</style>
+
+<!-- ── SEO / 分享卡片 ───────────────────────────────────────────────
+     canonical 必须与 sitemap.xml 里的 loc 完全一致（带尾斜杠）；
+     分享卡片图用 assets/header.png（1280×720，横版带标题，别删）。
+     softwareVersion 由 Scripts/release.ps1 发版时自动回填，勿手改版本号。 -->
+<link rel="canonical" href="https://kids.siguangblog.cc/" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="512x512" href="assets/icon.png" />
+<link rel="apple-touch-icon" href="assets/icon.png" />
+<meta name="theme-color" content="#7E57C2" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="儿童安全桌面" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:url" content="https://kids.siguangblog.cc/" />
+<meta property="og:title" content="儿童安全桌面 · 给孩子一个安全好玩的成长空间" />
+<meta property="og:description" content="面向 3–12 岁孩子的桌面式安全应用：家长守护、护眼与时长限制，21 款益智小游戏、26 首古诗、科学小实验、睡前故事，离线可玩、无广告无充值，还有孩子自己设密码的「我的日记」。" />
+<meta property="og:image" content="https://kids.siguangblog.cc/assets/header.png" />
+<meta property="og:image:width" content="1280" />
+<meta property="og:image:height" content="720" />
+<meta property="og:image:alt" content="儿童安全桌面：给孩子一个安全、好玩的成长空间" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="儿童安全桌面 · 给孩子一个安全好玩的成长空间" />
+<meta name="twitter:description" content="面向 3–12 岁孩子的桌面式安全应用：家长守护、护眼与时长限制、离线可玩、无广告无充值，含孩子自己设密码的「我的日记」。" />
+<meta name="twitter:image" content="https://kids.siguangblog.cc/assets/header.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://kids.siguangblog.cc/#org",
+      "name": "儿童安全桌面",
+      "url": "https://kids.siguangblog.cc/",
+      "logo": "https://kids.siguangblog.cc/assets/icon.png"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://kids.siguangblog.cc/#site",
+      "url": "https://kids.siguangblog.cc/",
+      "name": "儿童安全桌面",
+      "inLanguage": "zh-CN",
+      "publisher": { "@id": "https://kids.siguangblog.cc/#org" }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://kids.siguangblog.cc/#app",
+      "name": "儿童安全桌面",
+      "alternateName": "KidsSafeDesktop",
+      "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "儿童模式 / 家长管控",
+      "operatingSystem": "Android 7.0 及以上、Windows 10 及以上",
+      "softwareVersion": "1.19",
+      "inLanguage": "zh-CN",
+      "url": "https://kids.siguangblog.cc/",
+      "image": "https://kids.siguangblog.cc/assets/header.png",
+      "description": "面向 3–12 岁孩子的桌面式安全学习娱乐应用：图标化入口、家长守护、护眼模式，儿歌故事、趣味学习、科学实验离线可玩，无广告无外链。",
+      "downloadUrl": "https://kids.siguangblog.cc/downloads/KidsSafeDesktop-1.19.apk",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+      "publisher": { "@id": "https://kids.siguangblog.cc/#org" },
+      "audience": { "@type": "PeopleAudience", "suggestedMinAge": 3, "suggestedMaxAge": 12 },
+      "featureList": [
+        "桌面式图标入口，孩子一看就会用",
+        "独立家长锁：退出儿童模式需家长鉴权",
+        "每日屏幕时长限制与到点休息",
+        "按时段自动切换护眼柔光",
+        "儿歌故事后台播放与连播",
+        "科学实验室：物理、化学、生命、太空、身体奥秘亲子小实验",
+        "趣味学习：口算自动批改、英语单词认读、古诗朗读、语音训练",
+        "特需关爱：视障、听障、社交情绪三条训练通道",
+        "21 款益智小游戏，按正确率给星星奖励",
+        "无限想象：一句话织成四段睡前故事，默认离线不出设备",
+        "我的日记：孩子自己设密码的私密本子，离开页面自动上锁",
+        "离线可玩，无广告、无外链、无支付"
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="brand"><img src="assets/icon.png" alt="儿童安全桌面图标"/>儿童安全桌面</div>
+    <nav>
+      <a href="#features">功能</a>
+      <a href="#screens">界面</a>
+      <a href="#parent">家长守护</a>
+      <a href="#safety">安全</a>
+      <a href="changelog.html">更新日志</a>
+      <a href="#download">下载</a>
+    </nav>
+    <a class="btn" href="#download">立即下载</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>给孩子一个<br><span class="hl">安全、好玩</span>的成长空间</h1>
+      <p class="lead">儿童安全桌面，用孩子熟悉的「手机桌面」方式组织一切：圆角图标 + 名称，点一点就能玩、能学。家长可控、护眼、离线可玩，纯净无广告。也支持视障、听障与社交情绪等特需儿童的分通道训练。</p>
+      <div class="cta">
+        <a class="primary" href="#download">下载体验</a>
+        <a class="ghost" href="changelog.html">查看更新日志</a>
+      </div>
+      <div class="badges">
+        <span class="badge">📱 手机 / 折叠屏 / 平板</span>
+        <span class="badge">👨‍👩‍👧 家长守护</span>
+        <span class="badge">👁️ 护眼模式</span>
+        <span class="badge">🚫 无广告无外链</span>
+        <a class="badge" href="changelog.html" style="color:#5C6BC0">🆕 最新 v1.19</a>
+      </div>
+    </div>
+    <div class="phone"><img src="assets/screenshot_home.png" alt="儿童安全桌面首页：圆角图标 + 文字名称的桌面式布局，适合 3–12 岁孩子" width="720" height="1280" fetchpriority="high" decoding="async"/></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <h2 class="sec-title">为什么选择儿童安全桌面</h2>
+    <p class="sec-sub">把复杂留给家长，把简单和安全留给孩子</p>
+    <div class="feat-grid">
+      <div class="feat"><div class="ico" style="background:#F3E9FF">🖥️</div><h3>桌面式图标入口</h3><p>首页即桌面，所有功能以图标呈现，图标下方显示名称，孩子一看就会用。</p></div>
+      <div class="feat"><div class="ico" style="background:#E1F7FB">👨‍👩‍👧</div><h3>家长守护</h3><p>独立鉴权的家长入口，可管理可用应用、每日时长、小游戏开关，到点自动休息。</p></div>
+      <div class="feat"><div class="ico" style="background:#FFEDE6">👁️</div><h3>护眼模式</h3><p>按时段自动切换柔光护眼，降低蓝光，保护孩子视力。</p></div>
+      <div class="feat"><div class="ico" style="background:#E6F4EA">🎵</div><h3>儿歌故事听一听</h3><p>海量儿歌故事，旋转 CD 播放器，支持后台播放与连播。</p></div>
+      <div class="feat"><div class="ico" style="background:#FDEFE0">🚀</div><h3>科学实验室</h3><p>物理 / 化学 / 生命 / 太空 / 身体奥秘，十余个亲子小实验，边玩边学。</p></div>
+      <div class="feat"><div class="ico" style="background:#F3E9FF">📚</div><h3>趣味学习</h3><p>口算练习从一年级练到初三（自动批改、语音读题），英语词库 411 词同样覆盖到初中毕业，另有 26 首古诗朗读与注释、语音训练、口诀乐园。</p></div>
+      <div class="feat"><div class="ico" style="background:#FFEBEE">📝</div><h3>模拟考试</h3><p>三年级到初三，语文 / 数学 / 英语共 21 套期末模拟卷、252 道题。一次一题可回头改答案，交卷后按百分制打分，逐题列出你的答案、正确答案和解析。</p></div>
+      <div class="feat"><div class="ico" style="background:#E0F2F1">📕</div><h3>电子课本</h3><p>语文 24 册、数学 106 册（人教、北师大、苏教、青岛等 11 个教材版本）放进自己的服务器，孩子点开就能一页页翻，放大看生字表和竖式，看过的页缓存在本机。</p></div>
+      <div class="feat"><div class="ico" style="background:#E8F0FE">🎮</div><h3>小游戏乐园</h3><p>21 款益智小游戏，从数独、打字、俄罗斯方块到心灵感应魔法；每局结束按正确率给星星，输一局也有星星。</p></div>
+      <div class="feat"><div class="ico" style="background:#FDF2F8">✨</div><h3>无限想象</h3><p>孩子说一句心愿，五个小伙伴依次上场织成四段睡前故事，可朗读、可收藏、可导出图片卡。默认离线，不出这台设备。</p></div>
+      <div class="feat"><div class="ico" style="background:#EDE7F6">🔐</div><h3>我的日记</h3><p>孩子自己设密码的本子，离开页面就自动上锁。忘密码只能请家长重置，这一点写在设密码那一页，不藏着。</p></div>
+      <div class="feat"><div class="ico" style="background:#E8F5E9">🌱</div><h3>特需关爱</h3><p>视障、听障、社交情绪三条训练通道，6 个小游戏，每个都写明练什么、家长怎么带。</p></div>
+      <div class="feat"><div class="ico" style="background:#FFF8E1">📖</div><h3>0-15 岁成长指南</h3><p>给家长的长文，16 个议题按年龄展开：怎么科学地管、性教育怎么讲、怎么防侵犯、网友怎么辨别好坏。离线内置。</p></div>
+      <div class="feat"><div class="ico" style="background:#E8F6F2">🧠</div><h3>儿童心理学 · 自闭症关怀（公益）</h3><p>公益科普长文，永久免费、无广告无推销。讲儿童心理发展的四条基本规律与 0-18 岁六个阶段；自闭症部分讲清早期识别的六个信号、国家 11 次免费筛查、确诊三级流程、2026 版指南的干预方法与每月 20 小时的强度要求，以及哪些「疗法」不能碰、能用什么救助政策。</p></div>
+      <div class="feat"><div class="ico" style="background:#EDF3FA">💙</div><h3>抑郁症专区（公益）</h3><p>给家长的公益科普，永久免费、无广告无推销、不收集信息。讲抑郁和普通情绪低落的区别、孩子最容易被漏掉的六类信号、判断要不要就医的三条线、家庭预防六件事，以及《中国抑郁障碍防治指南（2025版）》的全病程治疗。专区里直接列出 12356、12355、010-82951332、400-161-9995 与 120 等求助电话，安卓上点号码即可拨出。</p></div>
+      <div class="feat"><div class="ico" style="background:#E3F2FD">☁️</div><h3>远程改配置</h3><p>家长在电脑上改设置，孩子设备 1 秒内生效；配置只走你自己的服务器。</p></div>
+      <div class="feat"><div class="ico" style="background:#FFF3E0">🔒</div><h3>隐私看得见</h3><p>首启先同意再进应用，政策全文与第三方 SDK 清单随时可查，授权可撤回。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section id="screens" style="background:#fff">
+  <div class="wrap">
+    <h2 class="sec-title">界面一览</h2>
+    <p class="sec-sub">手机桌面式布局，折叠屏 / 平板自动适配更多列</p>
+    <div class="shots">
+      <figure><img src="assets/screenshot_home.png" alt="儿童安全桌面首页：图标化入口，孩子点一点就能玩" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>桌面式首页</figcaption></figure>
+      <figure><img src="assets/screenshot_games.png" alt="小游戏乐园：20 个益智小游戏列表" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>小游戏乐园</figcaption></figure>
+      <figure><img src="assets/screenshot_science.png" alt="科学实验室：物理、化学、生命、太空、身体奥秘亲子小实验" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>科学实验室</figcaption></figure>
+      <figure><img src="assets/screenshot_player.png" alt="听一听播放器：旋转 CD 播放儿歌与故事，支持后台播放" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>听一听播放器</figcaption></figure>
+      <figure><img src="assets/screenshot_learn.png" alt="学习天地：口算练习、模拟考试、英语单词认读、古诗朗读" width="720" height="1280" loading="lazy" decoding="async"/><figcaption>学习天地</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- PARENT -->
+<section id="parent">
+  <div class="wrap">
+    <div class="parent">
+      <div>
+        <h2>家长守护，安心放手</h2>
+        <ul>
+          <li><span>🔐</span><div><b>独立家长锁</b>：退出儿童模式需家长鉴权，孩子无法自行退出。</div></li>
+          <li><span>⏱️</span><div><b>屏幕时长</b>：自定义每日可用时长，到点进入休息页。</div></li>
+          <li><span>🎚️</span><div><b>内容开关</b>：按需开启 / 关闭小游戏与各类应用。</div></li>
+          <li><span>📊</span><div><b>使用概览</b>：了解孩子的兴趣与停留时长。</div></li>
+        </ul>
+      </div>
+      <div class="ptag">所有设置均保存在本机，不上传任何儿童个人信息。我们坚持「数据最小化」，让孩子在一个纯净、安全的环境里探索。</div>
+    </div>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section id="safety">
+  <div class="wrap">
+    <h2 class="sec-title">安全，是底线</h2>
+    <p class="sec-sub">每一项设计，都为保护孩子而生</p>
+    <div class="safe-grid">
+      <div class="safe"><div class="e">🚫</div><h4>无广告</h4><p>不含任何第三方广告 SDK。</p></div>
+      <div class="safe"><div class="e">🔗</div><h4>无外链</h4><p>内容在应用内加载，不外跳陌生网页。</p></div>
+      <div class="safe"><div class="e">📴</div><h4>离线可玩</h4><p>儿歌、故事、实验、小游戏离线可用。</p></div>
+      <div class="safe"><div class="e">🛡️</div><h4>纯净环境</h4><p>无社交、无支付、无陌生人联系。</p></div>
+    </div>
+    <p style="text-align:center;margin-top:24px;font-size:15px">
+      <a href="permissions.html" style="font-weight:700;color:#7E57C2">📋 应用申请了哪些权限？逐条都在这里 →</a>
+    </p>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download" class="download" style="background:#fff">
+  <div class="wrap">
+    <h2 class="sec-title">立即下载</h2>
+    <p class="sec-sub">支持 Android 手机 / 折叠屏 / 平板，Windows 桌面版同步上线</p>
+    <div class="store-card">
+      <div class="dl-icon">📦</div>
+      <div class="hl">直接下载安装包</div>
+      <div class="sub">下载后传到手机点击安装即可；安装包由开发者直接提供，不经第三方应用市场。</div>
+      <div class="ver">
+        <b>v1.19</b>（versionCode 20）　·　约 116 MB　·　2026-11-11 更新<br/>
+        安卓与 Windows 同版本；签名未变更，可直接覆盖安装
+      </div>
+    </div>
+    <div class="store-links">
+      <a href="downloads/KidsSafeDesktop-1.19.apk">Android APK</a>
+      <a href="downloads/KidsSafeDesktop-1.19-setup.exe">Windows 安装版</a>
+      <a href="downloads/KidsSafeDesktop-1.19-win.zip">Windows 免安装版</a>
+      <a href="changelog.html">更新日志</a>
+    </div>
+    <p class="dl-note">
+      安卓首次安装需在系统设置里允许「安装未知来源应用」。若之前装过更早的旧签名的包，请先卸载再安装。<br/>
+      Windows 两个版本内容一样，区别只有一处：<b>安装版</b>（约 138 MB）会装进「开始菜单」，并在<b>桌面空白处右键</b>加一个启动项，可从系统设置正常卸载；<b>免安装版</b>（约 166 MB）解压即用、不写注册表，因此没有右键菜单。
+    </p>
+  </div>
+</section>
+
+<!-- 交流群 -->
+<section id="community">
+  <div class="wrap">
+    <h2 class="sec-title">加入交流群</h2>
+    <p class="sec-sub">装不上、用不顺、想加什么功能，进群里直接说</p>
+    <div class="chan-grid">
+      <div class="chan">
+        <img src="assets/qq-group.png" alt="儿童安全桌面开发者交流群 QQ 群二维码，群号 1134839505" width="562" height="562" decoding="async"/>
+        <h3>QQ 交流群</h3>
+        <div class="meta">群号 1134839505</div>
+        <p>群里就是开发者本人。安装问题、bug、功能建议都可以直接说，不用走工单。</p>
+      </div>
+      <div class="chan">
+        <img src="assets/wechat-group.png" alt="儿童安全桌面开发者交流群 微信群二维码" width="847" height="847" decoding="async"/>
+        <h3>微信交流群</h3>
+        <div class="meta">微信扫码入群</div>
+        <p>同一个群，用微信更方便。群里同样有开发者本人。</p>
+        <div class="expire" id="wgroup-expire">微信群二维码 7 天内有效（本码至 2026 年 11 月 13 日）。过期后请加 QQ 群，或发邮件索取新码。</div>
+      </div>
+      <div class="chan">
+        <img src="assets/wechat-mp.png" alt="公众号「时光笔记」二维码" width="490" height="490" decoding="async"/>
+        <h3>公众号：时光笔记</h3>
+        <div class="meta">微信扫码关注</div>
+        <p>版本更新、使用技巧、新功能预告，偶尔写点做这个应用的来龙去脉。</p>
+      </div>
+    </div>
+    <p class="chan-note">扫码会跳转到腾讯 QQ / 微信，均属第三方服务；进群后请勿发送孩子的真实姓名、学校、住址等信息。</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <h4>儿童安全桌面</h4>
+      <p>一款面向 3–12 岁儿童的桌面式安全学习娱乐应用。让每一次点击都安全、有趣、有所得。</p>
+    </div>
+    <div>
+      <h4>产品</h4>
+      <a href="#features">功能特性</a>
+      <a href="#screens">界面展示</a>
+      <a href="#parent">家长守护</a>
+      <a href="#download">下载安装</a>
+      <a href="changelog.html">更新日志</a>
+    </div>
+    <div>
+      <h4>支持</h4>
+      <a href="about.html">关于我们</a>
+      <a href="#community">交流群</a>
+      <a href="privacy.html">隐私政策</a>
+      <a href="permissions.html">应用权限说明</a>
+      <a href="care-sources.html">关爱中心内容来源</a>
+      <a href="privacy.html#sdk">第三方 SDK 清单</a>
+      <a href="changelog.html">版本历史</a>
+      <a href="mailto:2279125469@qq.com">联系我们</a>
+    </div>
+    <div class="copy">© 2026 儿童安全桌面 · v1.19 · 保留所有权利 · 本页为产品展示页，最终解释权归开发者所有</div>
+  </div>
+</footer>
+<script>
+/* 微信群二维码是 7 天有效的一次性码，过期后扫码会失败。
+   这里按日期自动把提示换成「已过期 + 去哪要新码」，避免家长扫不出还以为是自己手机的问题。
+   换上新码时，把下面的 deadline 改成新码的到期日即可，不用动其它地方。 */
+(function () {
+  var el = document.getElementById('wgroup-expire');
+  if (!el) return;
+  var deadline = new Date('2026-11-13T23:59:59+08:00');
+  if (Date.now() <= deadline.getTime()) return;
+  el.textContent = '本码已于 2026 年 11 月 13 日过期，可能扫不出。请加 QQ 群 1134839505，或发邮件到 2279125469@qq.com 索取新码。';
+  el.style.background = '#FEF2F2';
+  el.style.borderColor = '#FECACA';
+  el.style.color = '#B91C1C';
+})();
+</script>
+</body>
+</html>

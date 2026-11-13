@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:KidsSafeDesktop.Converters"
+             x:Class="KidsSafeParent.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 与孩子端同一套配色与隐式样式，保证家长中心观感一致 -->
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- 与孩子端保持一致：共享页面里的 {StaticResource InverseBool} 等
+                 都是按 App 级资源查找的，两个 App 都必须注册同一批转换器。 -->
+            <converters:InverseBoolConverter x:Key="InverseBool" />
+            <converters:AlertBgConverter x:Key="AlertBg" />
+            <converters:GreaterThanZeroConverter x:Key="HasPrecip" />
+            <converters:BoolToColorConverter x:Key="BoolToColor" />
+            <converters:HasItemConverter x:Key="HasItem" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

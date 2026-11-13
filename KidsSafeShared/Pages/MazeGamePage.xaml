@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.MazeGamePage"
+             Title="走迷宫"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" Background="{StaticResource KidHeaderGradient}">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🌀 走迷宫" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="{Binding DifficultyLabel}" TextColor="White" FontSize="16"
+                   HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 游戏区：上=提示 / 中=迷宫（吃掉剩余空间并居中） / 下=换迷宫按钮。
+             迷宫按可用空间反算格子大小，所以不放 ScrollView（滚动容器里高度无限，反算会失效）。 -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" Padding="12,8,12,16"
+              IsVisible="{Binding NotFinished}">
+
+            <Label Grid.Row="0" Text="点一下和熊猫相邻的路，带它走到 🏆 终点吧！"
+                   FontSize="15" TextColor="#2E7D32" HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" Margin="0,0,0,4" />
+
+            <Grid Grid.Row="1" x:Name="MazeHost"
+                  HorizontalOptions="Fill" VerticalOptions="Fill"
+                  SizeChanged="OnMazeHostSizeChanged">
+                <Grid x:Name="MazeGrid" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Grid>
+
+            <Button Grid.Row="2" Text="🔄 换一个新迷宫" FontSize="18" BackgroundColor="#43A047" TextColor="White"
+                    CornerRadius="16" HeightRequest="50" WidthRequest="220" HorizontalOptions="Center"
+                    Margin="0,10,0,0" Clicked="OnReplay" />
+        </Grid>
+
+        <!-- 完成区 -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding Finished}" Padding="40,30">
+            <VerticalStackLayout Spacing="24" VerticalOptions="Center">
+                <Label Text="🐼" FontSize="100" HorizontalOptions="Center" />
+                <Label Text="走出迷宫啦！" FontSize="38" FontAttributes="Bold" TextColor="#1B5E20"
+                       HorizontalOptions="Center" />
+                <Label Text="{Binding ResultText}" FontSize="22" TextColor="#2E7D32"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                <Button Text="🔄 再玩一次" FontSize="22" BackgroundColor="#43A047" TextColor="White"
+                        CornerRadius="18" HeightRequest="60" WidthRequest="240" HorizontalOptions="Center"
+                        Clicked="OnReplay" />
+                <Button Text="🏠 回主页" FontSize="20" BackgroundColor="#FFFFFF" TextColor="#43A047"
+                        CornerRadius="18" HeightRequest="56" WidthRequest="240" HorizontalOptions="Center"
+                        Clicked="OnBack" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

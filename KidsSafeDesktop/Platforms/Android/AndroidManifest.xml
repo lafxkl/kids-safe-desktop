@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- Android 11+ 包可见性：荣耀推送 SDK 需要按 action 查找自己的消息服务，
+	     不声明 queries 会「拿得到 token、收不到消息」（官方文档 targetSdk>=30 的要求）。 -->
+	<queries>
+		<intent>
+			<action android:name="com.hihonor.push.action.MESSAGING_EVENT" />
+		</intent>
+	</queries>
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true">
+		<!-- ===== 荣耀推送（Push Kit）=====
+		     app_id 来自开发者控制台下载的 mcs-services.json（developer_id 110000279716）。
+		     SDK 10.x 只从这个 meta-data 读 app_id；assets 里的同名 json 一并保留，
+		     方便以后换更早/更晚的 SDK 版本时不用再改清单。 -->
+		<meta-data android:name="com.hihonor.push.app_id" android:value="104600830" />
+
+		<!-- 消息接收服务：荣耀 SDK 只提供抽象基类 HonorMessageService，
+		     应用必须自己继承并在清单里注册，否则「能拿到 token 但收不到消息」。 -->
+		<service android:name="com.kidssafe.push.KidsHonorMessageService" android:exported="false">
+			<intent-filter>
+				<action android:name="com.hihonor.push.action.MESSAGING_EVENT" />
+			</intent-filter>
+		</service>
+	</application>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<!-- 枚举已安装应用所需（Android 11+ 包可见性） -->
+	<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+	<!-- 把本应用任务切回前台（防退出） -->
+	<uses-permission android:name="android.permission.REORDER_TASKS" />
+	<!-- Android 10+ 后台启动 Activity 的豁免项：「显示在其他应用上层」，
+	     由家长在家长面板里手动授予（不授予则该机型上防退出可能被系统限制）。 -->
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+	<!-- 申请加入电池优化白名单：厂商省电策略会在切后台后杀掉进程，导致防退出失效 -->
+	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+	<!-- 特需关爱板块：听障训练用「振动」替代声音做对错反馈（HapticFeedback 需要此权限） -->
+	<uses-permission android:name="android.permission.VIBRATE" />
+</manifest>

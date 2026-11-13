@@ -1,0 +1,85 @@
+# ══════════════════════════════════════════════════════════════════════════
+#  儿童安全桌面 · .gitignore
+#  规则分四段：构建产物 / 密钥 / 大文件与版权内容 / 本地临时目录
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── 1. 构建产物 ────────────────────────────────────────────────────────────
+[Bb]in/
+[Oo]bj/
+.vs/
+.vscode/
+node_modules/
+*.user
+*.suo
+*.userprefs
+*.binlog
+*.pdb
+
+# ── 2. 密钥与本地配置（绝不能提交）────────────────────────────────────────
+# Android 签名：keystore + 明文口令。丢了无法覆盖升级，务必自行备份。
+KidsSafeDesktop/Signing.props
+KidsSafeDesktop/Keys/
+*.keystore
+*.jks
+*.pfx
+
+# 服务端配置：含管理员 PIN 与第三方密钥，仓库只保留 sample
+KidsSafeServer/appsettings.json
+KidsSafeServer/appsettings.*.local.json
+
+# 服务端运行时数据：账号库、令牌签名密钥、各账号配置
+KidsSafeServer/data/
+
+# 荣耀推送配置文件（应用级凭证）与 Push Kit SDK
+KidsSafeDesktop/Platforms/Android/Assets/mcs-services.json
+KidsSafeDesktop/Platforms/Android/libs/*.aar
+
+# 部署目标（服务器地址、域名）
+KidsSafeDesktop/Scripts/deploy.config.json
+
+# 保留模板文件
+!KidsSafeServer/appsettings.sample.json
+!KidsSafeDesktop/Signing.props.sample
+!KidsSafeDesktop/Scripts/deploy.config.sample.json
+
+# ── 3. 大文件与版权内容 ───────────────────────────────────────────────────
+# 教材 PDF 与渲染页图：版权归出版社，不随仓库分发（只保留 books.json 书目）
+KidsSafeServer/wwwroot/books/pdf/
+KidsSafeServer/wwwroot/books/pages/
+
+# 安装包（每个版本 100~200MB，走 Release 附件而不是仓库）
+KidsSafeServer/wwwroot/downloads/*
+KidsSafeDesktop/Website/downloads/*
+!KidsSafeServer/wwwroot/downloads/README.txt
+!KidsSafeDesktop/Website/downloads/README.txt
+
+# 历史版本归档
+KidsSafeDesktop/_release/
+
+# 软著申请材料（含个人信息，按需自行保留）
+KidsSafeDesktop/Docs/软著申请材料/
+
+# PDF 转页图工具的二进制产物
+KidsSafeDesktop/Scripts/BookRender/winrt-render/
+KidsSafeDesktop/Scripts/BookRender/__pycache__/
+KidsSafeDesktop/Scripts/BookRender/logs/
+
+# ── 4. 本地临时目录 ───────────────────────────────────────────────────────
+.workbuddy/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ── 5. 仓库根目录白名单 ───────────────────────────────────────────────────
+# 这个仓库的根目录同时也是开发工作区，旁边可能放着备份、截图、实验工程。
+# 与其逐个排除，不如先忽略根目录下所有东西，再显式放行本项目的成员。
+# 新增顶层目录时在这里加一行，否则它不会进仓库。
+/*
+!/.gitignore
+!/README.md
+!/README.en.md
+!/LICENSE
+!/KidsSafeDesktop/
+!/KidsSafeShared/
+!/KidsSafeParent/
+!/KidsSafeServer/

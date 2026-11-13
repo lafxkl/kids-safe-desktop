@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.OnboardingPage"
+             Title="首次设置"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- 柔和渐变背景 -->
+        <Grid Grid.RowSpan="3">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FFF6E8" Offset="0" />
+                    <GradientStop Color="#EAF7EE" Offset="0.55" />
+                    <GradientStop Color="#E7F1FB" Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+        </Grid>
+
+        <!-- 顶部：图标 + 标题 + 步骤指示 -->
+        <VerticalStackLayout Grid.Row="0" Padding="24,26,24,6" Spacing="8">
+            <Frame WidthRequest="86" HeightRequest="86" CornerRadius="28" Padding="0"
+                   HasShadow="False" BorderColor="Transparent" HorizontalOptions="Center">
+                <Frame.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FFD180" Offset="0" />
+                        <GradientStop Color="#FF9800" Offset="1" />
+                    </LinearGradientBrush>
+                </Frame.Background>
+                <Frame.Shadow>
+                    <Shadow Brush="#33FF9800" Offset="0,8" Radius="18" Opacity="0.7" />
+                </Frame.Shadow>
+                <Label Text="🧸" FontSize="44" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Frame>
+
+            <Label x:Name="StepTitle" Text="欢迎使用儿童安全桌面"
+                   FontSize="23" FontAttributes="Bold" TextColor="#4E342E"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            <Label x:Name="StepSubtitle" Text="跟着提示，1 分钟就能设置好"
+                   FontSize="14" TextColor="#8D6E63"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+            <HorizontalStackLayout x:Name="DotsRow" Spacing="7" HorizontalOptions="Center"
+                                   Margin="0,8,0,0" />
+        </VerticalStackLayout>
+
+        <!-- 内容区 -->
+        <ScrollView Grid.Row="1" Padding="20,6,20,6">
+            <Grid>
+
+                <!-- ① 家长密码 -->
+                <Frame x:Name="Step1Panel" Style="{StaticResource KidCard}" VerticalOptions="Start">
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="🔐 设置家长密码" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="家长入口（首页右下角「家长」）需要输入这 4 位密码才能打开。请记住它。"
+                               FontSize="13" TextColor="#607D8B" />
+
+                        <Label Text="输入 4 位数字密码" FontSize="14" TextColor="#5D4037" />
+                        <Entry x:Name="PinBox" Placeholder="••••" IsPassword="True" MaxLength="4"
+                               Keyboard="Numeric" FontSize="26" HorizontalTextAlignment="Center"
+                               BackgroundColor="#F4F7FB" TextColor="#263238" />
+
+                        <Label Text="再输入一次确认" FontSize="14" TextColor="#5D4037" />
+                        <Entry x:Name="PinBox2" Placeholder="••••" IsPassword="True" MaxLength="4"
+                               Keyboard="Numeric" FontSize="26" HorizontalTextAlignment="Center"
+                               BackgroundColor="#F4F7FB" TextColor="#263238" />
+
+                        <Label x:Name="PinError" Text="" FontSize="13" TextColor="#E53935" IsVisible="False" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- ② 昵称 + 头像 -->
+                <Frame x:Name="Step2Panel" Style="{StaticResource KidCard}" IsVisible="False" VerticalOptions="Start">
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="😊 给小朋友起个名字" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="名字会显示在儿童桌面上，点头像可以随时修改。"
+                               FontSize="13" TextColor="#607D8B" />
+
+                        <Entry x:Name="NickBox" Placeholder="例如：小星星" MaxLength="8"
+                               FontSize="18" BackgroundColor="#F4F7FB" TextColor="#263238" />
+
+                        <Label Text="选一个头像" FontSize="14" TextColor="#5D4037" />
+                        <FlexLayout x:Name="AvatarRow" Wrap="Wrap" Direction="Row"
+                                    JustifyContent="Start" AlignItems="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- ③ 使用时长 -->
+                <Frame x:Name="Step3Panel" Style="{StaticResource KidCard}" IsVisible="False" VerticalOptions="Start">
+                    <VerticalStackLayout Spacing="16">
+                        <Label Text="⏰ 每天可以玩多久" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label Text="时间用完会自动进入休息页，需要家长开锁才能继续。"
+                               FontSize="13" TextColor="#607D8B" />
+
+                        <Label x:Name="LimitLabel" Text="60 分钟" FontSize="30" FontAttributes="Bold"
+                               TextColor="#EF6C00" HorizontalOptions="Center" />
+
+                        <Slider x:Name="LimitSlider" Minimum="15" Maximum="240" Value="60"
+                                MinimumTrackColor="#FF9800" MaximumTrackColor="#FFE0B2"
+                                ThumbColor="#FB8C00" ValueChanged="OnLimitChanged" />
+
+                        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10">
+                            <Label Text="15 分钟" FontSize="12" TextColor="#90A4AE" />
+                            <Label Grid.Column="1" Text="4 小时" FontSize="12" TextColor="#90A4AE"
+                                   HorizontalOptions="End" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#ECEFF1" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="允许小游戏" FontSize="15" TextColor="#5D4037" />
+                                <Label Text="关闭后儿童桌面不显示「游戏乐园」入口" FontSize="12" TextColor="#90A4AE" />
+                            </VerticalStackLayout>
+                            <Switch x:Name="GamesSwitch" Grid.Column="1" IsToggled="True"
+                                    OnColor="#EF6C00" ThumbColor="White" VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- ④ 权限申请（安卓）/ 完成（其它平台） -->
+                <Frame x:Name="Step4Panel" Style="{StaticResource KidCard}" IsVisible="False" VerticalOptions="Start">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="🛡️ 最后一步：开启防退出权限" FontSize="18" FontAttributes="Bold" TextColor="#263238" />
+                        <Label x:Name="PermIntro"
+                               Text="「底部上滑回桌面」属于系统手势，普通应用无法直接禁止。开启下面三项后，孩子就不容易滑出儿童桌面了。"
+                               FontSize="13" TextColor="#607D8B" />
+
+                        <!-- 安卓专属 -->
+                        <VerticalStackLayout x:Name="AndroidPermPanel" Spacing="10">
+                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="#F1F8E9" Padding="12,10">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="① 显示在其他应用上层" FontSize="15" FontAttributes="Bold" TextColor="#33691E" />
+                                        <Label x:Name="OverlayStatus" Text="未授权" FontSize="12" TextColor="#7CB342" />
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="1" Text="去开启" FontSize="13" Padding="14,6"
+                                            CornerRadius="14" BackgroundColor="#7CB342" TextColor="White"
+                                            Clicked="OnRequestOverlay" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="#E8EAF6" Padding="12,10">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="② 忽略电池优化" FontSize="15" FontAttributes="Bold" TextColor="#283593" />
+                                        <Label x:Name="BatteryStatus" Text="未授权" FontSize="12" TextColor="#7986CB" />
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="1" Text="去开启" FontSize="13" Padding="14,6"
+                                            CornerRadius="14" BackgroundColor="#5C6BC0" TextColor="White"
+                                            Clicked="OnRequestBattery" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="#FFF3E0" Padding="12,10">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="③ 设为默认桌面" FontSize="15" FontAttributes="Bold" TextColor="#E65100" />
+                                        <Label x:Name="HomeStatus" Text="未设置" FontSize="12" TextColor="#FB8C00" />
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="1" Text="去设置" FontSize="13" Padding="14,6"
+                                            CornerRadius="14" BackgroundColor="#FB8C00" TextColor="White"
+                                            Clicked="OnSetDefaultHome" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- 非安卓：仅说明 -->
+                        <VerticalStackLayout x:Name="NonAndroidPanel" IsVisible="False" Spacing="6">
+                            <Label Text="本设备无需额外授权，点「开始使用」即可。"
+                                   FontSize="14" TextColor="#5D4037" />
+                        </VerticalStackLayout>
+
+                        <Label Text="以上都可以稍后在「家长 → 防退出」中随时调整。"
+                               FontSize="12" TextColor="#90A4AE" />
+                    </VerticalStackLayout>
+                </Frame>
+            </Grid>
+        </ScrollView>
+
+        <!-- 底部按钮 -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10" Padding="20,10,20,20">
+            <Button x:Name="BackBtn" Text="上一步" FontSize="16" CornerRadius="18"
+                    BackgroundColor="#00000000" TextColor="#8D6E63" BorderWidth="0"
+                    Padding="18,10" IsVisible="False" Clicked="OnBack" />
+            <Button x:Name="NextBtn" Grid.Column="1" Text="下一步" FontSize="17" FontAttributes="Bold"
+                    CornerRadius="20" BackgroundColor="#FF7043" TextColor="White"
+                    Padding="18,12" MinimumHeightRequest="52" Clicked="OnNext" />
+        </Grid>
+    </Grid>
+</ContentPage>

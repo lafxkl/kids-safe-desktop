@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             x:Class="KidsSafeDesktop.Pages.OralPracticePage"
+             Title="口算练习"
+             Background="{StaticResource KidPageGradient}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#29B6F6">
+            <Button Text="← 返回" TextColor="White" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" x:Name="TitleLabel" Text="口算练习" TextColor="White" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="📝" FontSize="20" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 练习区（未结束时显示） -->
+        <ScrollView Grid.Row="1" Padding="20,12,20,40" IsVisible="{Binding NotFinished}">
+            <VerticalStackLayout Spacing="14">
+                <!-- 进度 + 得分 -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="{Binding ProgressText}" FontSize="16" TextColor="#0277BD"
+                           VerticalOptions="Center" />
+                    <Frame Grid.Column="1" BackgroundColor="#FFF3E0" CornerRadius="16" Padding="12,6"
+                           HasShadow="False" BorderColor="Transparent">
+                        <Label Text="{Binding ScoreText}" FontSize="16" FontAttributes="Bold" TextColor="#E65100" />
+                    </Frame>
+                </Grid>
+
+                <!-- 题型选择 -->
+                <Label Text="题型" FontSize="14" TextColor="#0288D1" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="8">
+                    <Button x:Name="BtnAll"  Text="全部"  Style="{StaticResource KidChip}" Clicked="OnTopic" />
+                    <Button x:Name="BtnAdd"  Text="加法"  Style="{StaticResource KidChip}" Clicked="OnTopic" />
+                    <Button x:Name="BtnSub"  Text="减法"  Style="{StaticResource KidChip}" Clicked="OnTopic" />
+                    <Button x:Name="BtnMul"  Text="乘法"  Style="{StaticResource KidChip}" Clicked="OnTopic" />
+                    <Button x:Name="BtnDiv"  Text="除法"  Style="{StaticResource KidChip}" Clicked="OnTopic" />
+                    <Button x:Name="BtnMix"  Text="混合"  Style="{StaticResource KidChip}" Clicked="OnTopic" />
+                </HorizontalStackLayout>
+
+                <!-- 题目卡片 -->
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="26" Padding="20,28" HasShadow="False"
+                       BorderColor="#B3E5FC">
+                    <VerticalStackLayout Spacing="18" HorizontalOptions="Center">
+                        <Label Text="{Binding Expression}" FontSize="46" FontAttributes="Bold"
+                               TextColor="#01579B" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <Entry x:Name="AnswerEntry" Text="{Binding UserInput, Mode=TwoWay}"
+                                   Keyboard="Numeric" Placeholder="点这里写答案"
+                                   FontSize="32" HorizontalTextAlignment="Center" HorizontalOptions="Fill"
+                                   HeightRequest="60" Completed="OnEntryCompleted" />
+                            <!-- 负数开关：初中会出现 - 开头的答案，数字键盘不一定带负号，这里兜一个 -->
+                            <Button Grid.Column="1" Text="±" FontSize="26" FontAttributes="Bold"
+                                    BackgroundColor="#E1F5FE" TextColor="#0277BD" BorderWidth="0"
+                                    CornerRadius="18" WidthRequest="62" HeightRequest="60"
+                                    Clicked="OnToggleSign" />
+                        </Grid>
+                        <Label Text="{Binding Feedback}" FontSize="20" FontAttributes="Bold"
+                               HorizontalOptions="Center" IsVisible="{Binding HasFeedback}"
+                               TextColor="{Binding IsCorrect, Converter={StaticResource BoolToColor}, ConverterParameter='#2E7D32,#E53935'}" />
+                        <Label Text="{Binding CorrectAnswerText}" FontSize="18"
+                               HorizontalOptions="Center" TextColor="#E53935"
+                               IsVisible="{Binding ShowAnswer}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 操作按钮 -->
+                <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="14">
+                    <Button Text="🔊 读题" FontSize="18" BackgroundColor="#FFB300" TextColor="White"
+                            CornerRadius="22" HeightRequest="58" WidthRequest="96" Clicked="OnSpeak" />
+                    <Button Grid.Column="1" Text="✅ 确定" FontSize="22" BackgroundColor="#43A047" TextColor="White"
+                            CornerRadius="22" HeightRequest="58" Clicked="OnSubmit" />
+                    <Button Grid.Column="2" Text="➡️ 下一题" FontSize="22" BackgroundColor="#29B6F6" TextColor="White"
+                            CornerRadius="22" HeightRequest="58" Clicked="OnNext" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- 成绩报告（结束后显示） -->
+        <ScrollView Grid.Row="1" Padding="20,12,20,40" IsVisible="{Binding Finished}">
+            <VerticalStackLayout Spacing="16">
+                <Frame BackgroundColor="#FFFFFF" CornerRadius="26" Padding="24,28" HasShadow="False"
+                       BorderColor="#B3E5FC">
+                    <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Label Text="{Binding ResultText}" FontSize="26" FontAttributes="Bold"
+                               TextColor="#0277BD" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding TotalText}" FontSize="20" TextColor="#5D4037"
+                               HorizontalOptions="Center" />
+                        <Label Text="{Binding AccuracyText}" FontSize="22" FontAttributes="Bold"
+                               TextColor="#2E7D32" HorizontalOptions="Center" />
+                        <Label Text="{Binding ScoreText}" FontSize="20" TextColor="#E65100"
+                               HorizontalOptions="Center" />
+                        <Label Text="{Binding TimeText}" FontSize="18" TextColor="#0288D1"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 错题回顾 -->
+                <Frame BackgroundColor="#FFF3E0" CornerRadius="22" Padding="16,14" HasShadow="False"
+                       BorderColor="Transparent" IsVisible="{Binding WrongRecords.Count, Converter={StaticResource HasPrecip}}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📋 错题回顾" FontSize="20" FontAttributes="Bold" TextColor="#E65100" />
+                        <CollectionView ItemsSource="{Binding WrongRecords}">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:WrongRecord">
+                                    <Frame BackgroundColor="#FFFFFF" CornerRadius="14" Padding="12,8"
+                                           HasShadow="False" BorderColor="#FFCCBC">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding Expression}" FontSize="18" FontAttributes="Bold"
+                                                   TextColor="#5D4037" />
+                                            <Label Text="{Binding CorrectText, StringFormat='正确答案：{0}'}"
+                                                   FontSize="14" TextColor="#2E7D32" />
+                                            <Label Text="{Binding YourText, StringFormat='你的答案：{0}'}"
+                                                   FontSize="14" TextColor="#E53935" />
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+                    <Button Text="🔄 再来一组" FontSize="20" BackgroundColor="#43A047" TextColor="White"
+                            CornerRadius="22" HeightRequest="56" Clicked="OnReplay" />
+                    <Button Text="🏠 返回首页" FontSize="20" BackgroundColor="#9575CD" TextColor="White"
+                            CornerRadius="22" HeightRequest="56" Clicked="OnBack" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

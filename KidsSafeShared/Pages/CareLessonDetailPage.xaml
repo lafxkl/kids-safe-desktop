@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.CareLessonDetailPage"
+             Title="心理小课堂"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#F2FAF4" Offset="0" />
+                <GradientStop Color="#F6F9FF" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,12" BackgroundColor="#66BB6A">
+            <Button Grid.Column="0" Text="←" FontSize="18" WidthRequest="40" HeightRequest="40"
+                    CornerRadius="20" BackgroundColor="Transparent" TextColor="White" Clicked="OnBack" />
+            <Label Grid.Column="1" x:Name="HeaderLabel" Text="心理小课堂" FontSize="16.5" FontAttributes="Bold"
+                   TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"
+                   LineBreakMode="TailTruncation" />
+            <Label Grid.Column="2" x:Name="AudienceLabel" Text="" FontSize="11" TextColor="#DFF3E1"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,12,18,10">
+            <VerticalStackLayout Spacing="12">
+                <Label x:Name="EmojiLabel" Text="💗" FontSize="40" />
+                <Label x:Name="TitleText" Text="" FontSize="22" FontAttributes="Bold" TextColor="#2E5C3A" />
+                <Label x:Name="SubtitleText" Text="" FontSize="13.5" TextColor="#6B8A72" LineHeight="1.4" />
+
+                <Frame Padding="14,12" CornerRadius="16" HasShadow="False" BackgroundColor="#FFF8E1"
+                       BorderColor="#FFE082">
+                    <Label x:Name="KeyLineText" Text="" FontSize="14.5" FontAttributes="Bold"
+                           TextColor="#7A5A00" LineHeight="1.45" />
+                </Frame>
+
+                <VerticalStackLayout x:Name="SectionHost" Spacing="14" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Frame Grid.Row="2" Margin="12,0,12,14" Padding="12,10" CornerRadius="20" HasShadow="False"
+               BackgroundColor="White" BorderColor="#DFF0E1">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <Button Grid.Column="0" x:Name="SpeakBtn" Text="🔊 读给我听" FontSize="13" HeightRequest="44"
+                        Padding="12,0" CornerRadius="16" BackgroundColor="#E8F5E9" TextColor="#2E5C3A"
+                        Clicked="OnSpeak" />
+                <Button Grid.Column="1" x:Name="StopBtn" Text="⏹ 停止" FontSize="13" HeightRequest="44"
+                        Padding="12,0" CornerRadius="16" BackgroundColor="#F2F2F2" TextColor="#7A7A7A"
+                        IsEnabled="False" Clicked="OnStop" />
+                <Button Grid.Column="2" Text="✅ 我看完了" FontSize="13" FontAttributes="Bold"
+                        HeightRequest="44" Padding="12,0" CornerRadius="16" BackgroundColor="#66BB6A"
+                        TextColor="White" Clicked="OnFinish" />
+            </Grid>
+        </Frame>
+    </Grid>
+</ContentPage>

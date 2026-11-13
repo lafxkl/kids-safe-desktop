@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>儿童安全桌面 · 家长后台</title>
+<style>
+  :root { --p:#7E57C2; --p2:#9575CD; --ok:#2E7D32; --bg:#F3E5F5; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "PingFang SC","Microsoft YaHei",system-ui,sans-serif; background:linear-gradient(135deg,#E1BEE7,#B3E5FC); color:#3E2723; min-height:100vh; }
+  .wrap { max-width:760px; margin:0 auto; padding:24px 16px 60px; }
+  .card { background:#fff; border-radius:18px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,.12); margin-bottom:18px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  h2 { font-size:18px; margin:0 0 12px; color:var(--p); }
+  label { font-size:14px; font-weight:600; display:block; margin:10px 0 4px; }
+  input[type=text], input[type=number], input[type=password], select {
+    width:100%; padding:10px 12px; border:2px solid #E1BEE7; border-radius:12px; font-size:15px; outline:none;
+  }
+  input:focus, select:focus { border-color:var(--p); }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  /* 输入框 + 按钮并排：输入框吃掉剩余宽度，按钮不会被挤到下一行 */
+  .row.inline input { flex:1 1 160px; width:auto; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:560px){ .grid{grid-template-columns:1fr;} }
+  button { cursor:pointer; border:none; border-radius:12px; font-size:16px; font-weight:700; padding:12px 18px; }
+  .primary { background:var(--p); color:#fff; }
+  .primary:hover { background:var(--p2); }
+  .ghost { background:#EEE; color:#555; }
+  .ok { color:var(--ok); font-weight:700; }
+  .err { color:#C62828; font-weight:700; }
+  .chips { display:flex; flex-wrap:wrap; gap:10px; }
+  .chip { display:flex; align-items:center; gap:6px; background:#F3E5F5; border-radius:999px; padding:8px 14px; font-size:14px; }
+  .chip input { transform:scale(1.2); }
+  .app-item { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .app-item input { flex:1; }
+  .app-item .narrow { flex:0 0 90px; }
+  .muted { color:#888; font-size:13px; }
+  #loginCard { max-width:360px; margin:80px auto; }
+  .hidden { display:none !important; }
+  .badge { display:inline-block; background:#E8F5E9; color:var(--ok); border-radius:999px; padding:4px 12px; font-size:13px; }
+  .topnav { display:flex; gap:16px; justify-content:flex-end; padding:14px 2px 0; font-size:14px; font-weight:700; }
+  .topnav a { color:#5C6BC0; text-decoration:none; }
+  .topnav a:hover { color:#7E57C2; }
+  .topnav a.on { color:#7E57C2; border-bottom:2px solid #7E57C2; padding-bottom:2px; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .stat { background:#F3E5F5; border-radius:14px; padding:10px 12px; font-size:13px; color:#6D4C41; }
+  .stat b { display:block; font-size:17px; color:var(--p); margin-bottom:2px; }
+  .switchline { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:700; }
+  .switchline input { width:auto; transform:scale(1.25); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 页面导航：后台 / 下载 / 服务端说明 -->
+  <div class="topnav">
+    <a class="on" href="index.html">家长后台</a>
+    <a href="download.html">下载安装</a>
+    <a href="docs.html">服务端说明</a>
+    <a href="books.html">电子课本</a>
+  </div>
+
+  <!-- 登录已独立成 login.html；这里只做一次校验，无令牌直接跳过去 -->
+  <div id="loginCard" class="card hidden">
+    <h1>🔐 正在检查登录状态…</h1>
+    <p class="muted">如果没有自动跳转，请点 <a href="login.html">这里登录</a>。</p>
+  </div>
+
+  <!-- 主后台 -->
+  <div id="dash" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <h1>🛡️ 家长管理后台</h1>
+          <div class="row" style="gap:8px;margin-top:6px">
+            <span class="badge" id="syncBadge">未连接</span>
+            <span class="muted" id="whoBadge"></span>
+          </div>
+        </div>
+        <div class="row" style="gap:8px">
+          <a href="login.html" class="muted" style="text-decoration:none" onclick="return switchAccount()">切换账号</a>
+          <button class="ghost" onclick="logout()">退出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 账号与设备：家长账号资料、儿童端配对码、已配对设备、改密码 -->
+    <div class="card">
+      <h2>👤 账号与设备</h2>
+
+      <div class="grid">
+        <div>
+          <label>家庭名称（显示在后台右上角）</label>
+          <div class="row inline">
+            <input type="text" id="accountName" maxlength="20" />
+            <button class="ghost" onclick="saveAccountName()">保存</button>
+          </div>
+        </div>
+        <div>
+          <label>账号 / 角色</label>
+          <input type="text" id="accountUser" readonly />
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding-top:14px;border-top:1px dashed #E1BEE7">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <label style="margin:0">儿童端配对码</label>
+            <p class="muted" style="margin:2px 0 0">
+              在儿童端「账号 → 家长服务器密码」里填这 6 位数字即可同步配置；孩子只能读取，不能修改。
+            </p>
+          </div>
+          <button class="primary" style="padding:10px 16px;font-size:14px" onclick="genPairCode()">生成配对码</button>
+        </div>
+        <div id="pairBox" class="hidden" style="margin-top:12px">
+          <div class="row" style="gap:14px;align-items:center">
+            <div id="pairCode" style="font-size:34px;font-weight:800;letter-spacing:8px;color:#7E57C2">------</div>
+            <span class="muted" id="pairExpire"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <label>已配对设备</label>
+        <div id="deviceList"><p class="muted">读取中…</p></div>
+      </div>
+
+      <details style="margin-top:16px;padding-top:12px;border-top:1px dashed #E1BEE7">
+        <summary style="cursor:pointer;font-weight:700;color:#7E57C2;font-size:14px">修改登录密码</summary>
+        <div class="grid" style="margin-top:10px">
+          <div><label>原密码</label><input type="password" id="pwdOld" autocomplete="current-password" /></div>
+          <div><label>新密码（至少 6 位）</label><input type="password" id="pwdNew" autocomplete="new-password" /></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="ghost" onclick="changePassword()">确认修改</button>
+          <span id="pwdMsg" class="muted"></span>
+        </div>
+        <p class="muted" style="margin-top:8px">改完后，其他设备上已登录的网页需要重新登录（儿童端配对码不受影响）。</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>⏱ 使用时长与资料</h2>
+      <div class="grid">
+        <div><label>每日可用时长（分钟）</label><input type="number" id="dailyLimit" min="10" max="600" step="10" /></div>
+        <div><label>小朋友昵称</label><input type="text" id="nickname" maxlength="8" /></div>
+      </div>
+      <label>天气城市（留 auto 自动定位）</label><input type="text" id="weatherCity" placeholder="auto 或 城市名，如 上海" />
+    </div>
+
+    <div class="card">
+      <h2>🎮 小游戏</h2>
+      <label><input type="checkbox" id="gamesEnabled" style="width:auto;margin-right:8px" />允许小游戏（总开关）</label>
+      <p class="muted">取消勾选「全部允许」时，仅勾选的游戏对小朋友开放：</p>
+      <div class="chips" id="gamesChips"></div>
+    </div>
+
+    <div class="card">
+      <h2>🎨 主题与音频</h2>
+      <div class="grid">
+        <div><label>桌面主题</label>
+          <select id="themeId">
+            <option value="sunshine">☀️ 暖阳</option>
+            <option value="sky">🌤️ 蓝天</option>
+            <option value="rainbow">🌈 彩虹</option>
+          </select>
+        </div>
+        <div><label>喜马拉雅默认分类</label>
+          <select id="ximalayaDefault">
+            <option value="nursery">🎵 儿歌点点</option>
+            <option value="story">📚 睡前故事</option>
+            <option value="classic">🏮 国学启蒙</option>
+            <option value="english">🔤 英语启蒙</option>
+            <option value="science">🔬 科普知识</option>
+            <option value="lullaby">🌙 哄睡白噪音</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📚 在线内容</h2>
+      <label class="switchline">
+        <input type="checkbox" id="onlineContent" />
+        允许儿童端使用在线内容
+      </label>
+      <p class="muted" style="margin-top:10px">
+        开启后，宝宝听 / 宝宝看 / 亲子阅 / 故事屋 / 电子课本 会从<b>这台服务器</b>拉取补充内容；
+        关闭则只用儿童端内置的离线内容，完全断网。内容只来自本机，绝不访问第三方站点；拉取失败也会自动回退离线。
+      </p>
+      <div class="stats" id="onlineStats">
+        <div class="stat"><b>读取中…</b>正在统计服务器上的内容</div>
+      </div>
+      <p class="muted" style="margin-top:12px">
+        课本可以直接在 <a href="books.html" target="_blank" rel="noopener">电子课本</a> 页面翻看；
+        内容接口：<a href="/api/content/audio" target="_blank" rel="noopener">音频</a> ·
+        <a href="/api/content/video" target="_blank" rel="noopener">视频</a> ·
+        <a href="/api/content/articles" target="_blank" rel="noopener">文章</a>。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🧩 允许的应用</h2>
+      <p class="muted">名称 + 包名(安卓)/启动目标(Windows exe 或网址) + 图标 emoji + 主题色</p>
+      <div id="appsList"></div>
+      <button class="ghost" onclick="addApp()">＋ 添加应用</button>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <button class="primary" id="saveBtn" onclick="save()">💾 保存到服务器</button>
+        <span id="statusMsg"></span>
+      </div>
+      <p class="muted" style="margin-top:10px">保存后，已配置「家长端服务器」的儿童端会在下次打开或手动同步时拉取这些设置。</p>
+    </div>
+
+    <!-- 版本与更新：运维信息，方便确认「服务端是不是最新、客户端该装哪一版」 -->
+    <div class="card">
+      <h2>🚀 版本与更新</h2>
+      <div class="row" style="justify-content:space-between">
+        <span class="badge" id="verBadge">读取中…</span>
+        <span class="muted" id="verServer"></span>
+      </div>
+      <p class="muted" id="verPulse" style="margin:8px 0 0"></p>
+      <div id="verList" style="margin-top:12px"></div>
+      <p class="muted" style="margin-top:12px">
+        服务端接口版本 <b id="verServerNum">–</b>；完整日志见官网 <code>changelog.html</code>，
+        或直接看数据接口 <a href="/api/app/changelog" target="_blank" rel="noopener">/api/app/changelog</a>。
+        安装包与校验值在 <a href="download.html">下载安装</a> 页。
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api";
+const GAMES = [
+  ["PictureWord","看图识字"],["Counting","数一数"],["Matching","配对"],["FindColor","找颜色"],
+  ["Listen","听音选物"],["LinkMatch","连连看"],["Maze","走迷宫"],["Go","围棋小课堂"]
+];
+
+let token = localStorage.getItem("ks_token") || "";
+let me = null;                 // /api/auth/me 返回的当前身份
+let pairTimer = null;
+
+function $(id){ return document.getElementById(id); }
+
+// 登录页独立成页：没有令牌直接跳过去，不要在后台里再摆一个登录框
+if (!token) location.replace("login.html");
+
+function authQuery(){ return "token=" + encodeURIComponent(token); }
+
+function logout(){
+  fetch(API+"/auth/logout",{method:"POST"}).catch(()=>{});
+  token = ""; me = null;
+  localStorage.removeItem("ks_token");
+  localStorage.removeItem("ks_user");
+  location.href = "login.html";
+}
+
+function switchAccount(){
+  // 保留令牌也行，但换账号时先清掉，避免带着上一个账号进后台
+  localStorage.removeItem("ks_token");
+  return true;
+}
+
+function renderGames(enabled){
+  const box = $("gamesChips"); box.innerHTML="";
+  GAMES.forEach(([k,label])=>{
+    const c=document.createElement("label"); c.className="chip";
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.value=k; cb.checked = enabled.includes(k);
+    c.appendChild(cb); c.appendChild(document.createTextNode(label));
+    box.appendChild(c);
+  });
+}
+
+function appRow(a={}){
+  const d=document.createElement("div"); d.className="app-item";
+  d.innerHTML = `
+    <input class="narrow" placeholder="图标" value="${a.emoji||''}" data-f="emoji" />
+    <input placeholder="名称" value="${a.name||''}" data-f="name" />
+    <input placeholder="包名/启动目标" value="${a.packageName||a.launchTarget||''}" data-f="pkg" />
+    <input class="narrow" placeholder="颜色" value="${a.accentColor||''}" data-f="color" />
+    <button class="ghost" onclick="this.parentNode.remove()">✕</button>`;
+  $("appsList").appendChild(d);
+}
+
+function gather(){
+  const enabledGames = [...document.querySelectorAll("#gamesChips input:checked")].map(c=>c.value);
+  const apps = [...document.querySelectorAll("#appsList .app-item")].map(row=>{
+    const v=f=>row.querySelector(`[data-f="${f}"]`).value.trim();
+    const pkg=v("pkg");
+    const isAndroid = /[.]/g.test(pkg) && !pkg.startsWith("http");
+    return { name:v("name"), emoji:v("emoji"), accentColor:v("color"),
+             packageName: isAndroid?pkg:null, launchTarget: isAndroid?null:pkg };
+  }).filter(a=>a.name);
+  return {
+    dailyLimitMinutes: Number($("dailyLimit").value)||60,
+    gamesEnabled: $("gamesEnabled").checked,
+    enabledGames,
+    themeId: $("themeId").value,
+    nickname: $("nickname").value.trim()||"小朋友",
+    weatherCity: $("weatherCity").value.trim()||"auto",
+    ximalayaDefaultCategory: $("ximalayaDefault").value,
+    onlineContentEnabled: $("onlineContent").checked,
+    allowedApps: apps
+  };
+}
+
+async function save(){
+  const body = gather();
+  const r = await fetch(API+"/settings?"+authQuery(),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const d = await r.json().catch(()=>({}));
+  if(r.ok && d.ok){ $("statusMsg").textContent="✅ 已保存"; $("statusMsg").className="ok"; }
+  else if(r.status===403){ $("statusMsg").textContent="❌ 设备只读：请在家长后台修改"; $("statusMsg").className="err"; }
+  else { $("statusMsg").textContent="❌ 保存失败（请重新登录）"; $("statusMsg").className="err"; }
+}
+
+// ── 版本与更新：读 /api/health 与 /api/app/release ──
+function fmtUptime(s){
+  s = Number(s)||0;
+  if(s < 60) return s+" 秒";
+  if(s < 3600) return Math.floor(s/60)+" 分钟";
+  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60);
+  return h+" 小时 "+m+" 分";
+}
+
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+
+async function loadVersion(){
+  try{
+    const [h, rel] = await Promise.all([
+      fetch(API+"/health").then(r=>r.json()),
+      fetch(API+"/app/release?limit=3").then(r=>r.json())
+    ]);
+    const latest = rel.latest || {};
+    $("verBadge").textContent = "最新版 v" + (latest.version||"?") + "（versionCode " + (latest.versionCode||0) + "）";
+    $("verServer").textContent = "服务端已运行 " + fmtUptime(h.uptimeSeconds);
+    $("verServerNum").textContent = h.serverVersion || "–";
+    $("verPulse").textContent =
+      "本次启动保存配置 " + (h.pulseCount||0) + " 次 · 实时通道版本号 " + (h.watchVersion||0);
+
+    const items = rel.history || [];
+    $("verList").innerHTML = items.map(r=>`
+      <div style="padding:10px 0;border-top:1px solid #F1E7F5">
+        <div style="font-weight:700;color:#7E57C2">v${esc(r.version)} · ${esc(r.date)}</div>
+        <div style="font-size:14px;margin:2px 0 4px">${esc(r.title)}</div>
+        <div class="muted">${(r.tags||[]).map(t=>"#"+esc(t)).join(" ")}</div>
+      </div>`).join("") || `<p class="muted">暂无发布记录</p>`;
+  }catch(e){
+    $("verBadge").textContent = "版本信息读取失败";
+    $("verServer").textContent = "";
+    $("verList").innerHTML = `<p class="muted">${esc(e.message||e)}</p>`;
+  }
+}
+
+// ── 在线内容：统计服务器上真实可下发的条数，让家长知道打开开关后孩子能看到什么 ──
+async function loadOnlineStats(){
+  const box = $("onlineStats");
+  try{
+    const [a, v, ar, bk] = await Promise.all([
+      fetch(API+"/content/audio").then(r=>r.json()),
+      fetch(API+"/content/video").then(r=>r.json()),
+      fetch(API+"/content/articles").then(r=>r.json()),
+      fetch(API+"/books").then(r=>r.json())
+    ]);
+    const items = g => (g||[]).reduce((n,x)=>n+((x.items||[]).length),0);
+    const pages = (bk.editions||[]).reduce((n,e)=>
+      n + (e.books||[]).reduce((m,b)=>m+(b.pages||0),0), 0);
+    box.innerHTML = `
+      <div class="stat"><b>${(a||[]).length} 组 · ${items(a)} 条</b>宝宝听（音频）</div>
+      <div class="stat"><b>${(v||[]).length} 组 · ${items(v)} 条</b>宝宝看（视频）</div>
+      <div class="stat"><b>${(ar||[]).length} 组 · ${items(ar)} 条</b>亲子阅（文章）</div>
+      <div class="stat"><b>${bk.total||0} 册 · ${pages} 页</b>电子课本</div>`;
+  }catch(e){
+    box.innerHTML = `<div class="stat"><b>统计失败</b>${esc(e.message||e)}</div>`;
+  }
+}
+
+async function enter(){
+  // 先用 /auth/me 验一次令牌：过期或被改密码后签发的旧令牌都要打回登录页
+  const mr = await fetch(API+"/auth/me?"+authQuery());
+  if(!mr.ok){ logout(); return; }
+  const md = await mr.json();
+  me = md.user || {};
+  localStorage.setItem("ks_user", JSON.stringify(me));
+
+  $("loginCard").classList.add("hidden");
+  $("dash").classList.remove("hidden");
+
+  const roleText = me.role === "owner" ? "管理员" : me.device ? "儿童设备" : "家长";
+  $("whoBadge").textContent = (me.name || me.username || "") + " · " + roleText;
+  $("accountUser").value = (me.username || "—") + "（" + roleText + "）";
+  $("accountName").value = me.name || "";
+
+  // 设备令牌只读：把能改配置的入口都关掉，避免家长以为保存成功了
+  if (me.canWrite === false){
+    $("accountName").disabled = true;
+    document.querySelectorAll("button.primary").forEach(b=>{ if(b.id!=="saveBtn") b.disabled = true; });
+    $("saveBtn").disabled = true;
+    $("saveBtn").textContent = "设备只读，不能修改配置";
+  }
+
+  loadVersion();
+  loadOnlineStats();
+  loadDevices();
+
+  const r = await fetch(API+"/settings?"+authQuery());
+  if(!r.ok){ logout(); return; }
+  const p = await r.json();
+  $("dailyLimit").value=p.dailyLimitMinutes;
+  $("nickname").value=p.nickname;
+  $("weatherCity").value=p.weatherCity;
+  $("gamesEnabled").checked=p.gamesEnabled;
+  $("themeId").value=p.themeId;
+  $("ximalayaDefault").value=p.ximalayaDefaultCategory;
+  $("onlineContent").checked = !!p.onlineContentEnabled;
+  renderGames(p.enabledGames||[]);
+  $("appsList").innerHTML="";
+  (p.allowedApps||[]).forEach(appRow);
+  $("syncBadge").textContent="已连接 · "+new Date(p.updatedAt).toLocaleString();
+}
+
+// ── 账号与设备 ──
+async function saveAccountName(){
+  const name = $("accountName").value.trim();
+  const r = await fetch(API+"/auth/profile?"+authQuery(),{
+    method:"PUT", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ displayName: name })
+  });
+  const d = await r.json().catch(()=>({}));
+  if(r.ok && d.ok){
+    me.name = name || me.username;
+    $("whoBadge").textContent = me.name + " · " + (me.role==="owner"?"管理员":"家长");
+    $("statusMsg").textContent = "✅ 家庭名称已更新";
+    $("statusMsg").className = "ok";
+  } else {
+    alert(d.error || "保存失败");
+  }
+}
+
+async function genPairCode(){
+  const r = await fetch(API+"/auth/paircode?"+authQuery());
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok || !d.ok){ alert(d.error || "生成失败"); return; }
+
+  $("pairBox").classList.remove("hidden");
+  $("pairCode").textContent = d.code;
+  const exp = new Date(d.expiresAt);
+  $("pairExpire").textContent = "有效期 " + d.minutes + " 分钟，用完即失效";
+
+  clearInterval(pairTimer);
+  pairTimer = setInterval(()=>{
+    const left = Math.round((exp - new Date())/1000);
+    if(left <= 0){
+      clearInterval(pairTimer);
+      $("pairCode").textContent = "------";
+      $("pairExpire").textContent = "已过期，请重新生成";
+    } else {
+      $("pairExpire").textContent = "剩余 " + Math.floor(left/60) + " 分 " + (left%60) + " 秒";
+    }
+  }, 1000);
+}
+
+async function loadDevices(){
+  const box = $("deviceList");
+  try{
+    const r = await fetch(API+"/auth/devices?"+authQuery());
+    if(!r.ok){ box.innerHTML = `<p class="muted">读取失败</p>`; return; }
+    const d = await r.json();
+    const list = d.devices || [];
+    if(!list.length){ box.innerHTML = `<p class="muted">还没有设备配对。生成配对码，在儿童端输入即可。</p>`; return; }
+    box.innerHTML = list.map(x=>`
+      <div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #F6EEF9">
+        <span>📱 ${esc(x.name)} <span class="muted">· 配对于 ${new Date(x.pairedAt).toLocaleDateString()}</span></span>
+        <button class="ghost" style="padding:6px 10px;font-size:13px" onclick="removeDevice('${x.id}')">移除</button>
+      </div>`).join("");
+  }catch(e){
+    box.innerHTML = `<p class="muted">读取失败：${esc(e.message||e)}</p>`;
+  }
+}
+
+async function removeDevice(id){
+  if(!confirm("移除后，这台设备需要重新用配对码绑定，确定吗？")) return;
+  const r = await fetch(API+"/auth/devices/"+encodeURIComponent(id)+"?"+authQuery(),{method:"DELETE"});
+  if(r.ok) loadDevices(); else alert("移除失败");
+}
+
+async function changePassword(){
+  const oldPassword = $("pwdOld").value;
+  const newPassword = $("pwdNew").value;
+  if(!oldPassword || !newPassword){ $("pwdMsg").textContent = "请填写原密码与新密码"; return; }
+  const r = await fetch(API+"/auth/password?"+authQuery(),{
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ oldPassword, newPassword })
+  });
+  const d = await r.json().catch(()=>({}));
+  if(r.ok && d.ok){
+    $("pwdMsg").textContent = "✅ 密码已修改，其它设备需重新登录";
+    $("pwdOld").value = ""; $("pwdNew").value = "";
+  } else {
+    $("pwdMsg").textContent = "❌ " + (d.error || "修改失败");
+  }
+}
+
+// 启动：有令牌才进后台，否则回登录页
+if(token) enter();
+</script>
+</body>
+</html>

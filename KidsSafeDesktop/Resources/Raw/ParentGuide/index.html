@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="面向家长的 0-15 岁儿童成长指南：分年龄的科学引导方法、儿童性教育、防范猥亵、网络社交辨别，以及学科学习、超前学习、自主学习、手机屏幕、体育、乐器、营养、牙齿矫正、身高视力、睡眠阅读等主题。">
+<title>0-15 岁儿童成长指南</title>
+<script>
+  /* 应用内是 WebView，Chromium 会记住上次的滚动位置，于是重新打开时常停在中段，
+     家长会以为页面破了一半。这里关掉滚动恢复，每次都从最上面开始。 */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+</script>
+<style>
+  :root{
+    --c-03:#f0932b;      /* 0-3 暖橙 */
+    --c-36:#10ac84;      /* 3-6 绿 */
+    --c-69:#3867d6;      /* 6-9 蓝 */
+    --c-912:#8854d0;     /* 9-12 紫 */
+    --c-1215:#eb3b5a;    /* 12-15 珊瑚红 */
+    --bg:#f7f5f0;        /* 温暖米白背景 */
+    --card:#ffffff;
+    --ink:#2d3436;
+    --muted:#636e72;
+    --line:#eadfd0;
+    --radius:18px;
+    --shadow:0 6px 24px rgba(80,60,30,.08);
+    --maxw:1120px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .container{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  h1,h2,h3,h4{line-height:1.35}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:linear-gradient(135deg,#ffece0 0%,#fff6ec 45%,#eef6ff 100%);
+    padding:64px 0 0;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .blobs{position:absolute;inset:0;pointer-events:none}
+  .hero .blobs span{position:absolute;border-radius:50%;opacity:.35;filter:blur(2px)}
+  .hero .blobs b1{width:180px;height:180px;background:#ffd9a8;top:-40px;left:-30px}
+  .hero .blobs b2{width:120px;height:120px;background:#b8e0ff;bottom:-30px;right:10%}
+  .hero .blobs b3{width:90px;height:90px;background:#d4f3e4;top:20px;right:22%}
+  .hero-inner{position:relative}
+  .hero .flag{display:inline-block;background:#fff;border:1px solid var(--line);color:#a07c2e;
+    font-size:.85rem;font-weight:600;padding:6px 16px;border-radius:999px;margin-bottom:18px;
+    box-shadow:var(--shadow)}
+  .hero h1{font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:.5px}
+  .hero h1 .grad{background:linear-gradient(90deg,#e17055,#e84393,#6c5ce7);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.sub{max-width:640px;margin:14px auto 8px;color:var(--muted);font-size:clamp(1rem,2.4vw,1.15rem)}
+  .hero .scroll-hint{margin-top:20px;color:#b2a88f;font-size:.85rem}
+
+  /* ---------- 时间轴 ---------- */
+  .timeline-wrap{margin-top:38px;background:rgba(255,255,255,.75);border-top:1px solid var(--line)}
+  .timeline{display:flex;max-width:var(--maxw);margin:0 auto;padding:22px 20px}
+  .tl-node{flex:1;text-align:center;position:relative;padding:0 4px}
+  .tl-node::before{content:"";position:absolute;top:14px;left:0;right:0;height:2px;background:var(--line);z-index:0}
+  .tl-node:first-child::before{left:50%}
+  .tl-node:last-child::before{right:50%}
+  .tl-dot{width:28px;height:28px;margin:0 auto;border-radius:50%;position:relative;z-index:1;
+    border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;
+    font-size:.8rem;color:#fff}
+  .tl-node .tl-name{display:block;margin-top:8px;font-size:.85rem;font-weight:700;color:var(--ink)}
+  .tl-node .tl-desc{display:block;font-size:.72rem;color:var(--muted)}
+  .tl-03{background:var(--c-03)} .tl-36{background:var(--c-36)} .tl-69{background:var(--c-69)} .tl-912{background:var(--c-912)} .tl-1215{background:var(--c-1215)}
+
+  /* ---------- 顶部导航 ---------- */
+  .main-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:58px}
+  .nav-brand{font-weight:800;color:#e17055;white-space:nowrap;margin-right:6px}
+  .nav-brand small{color:var(--muted);font-weight:400}
+  .tabs{display:flex;gap:8px;background:#f1ede4;padding:4px;border-radius:12px;margin-left:4px}
+  .tab-btn{border:0;background:transparent;padding:8px 22px;border-radius:9px;font-size:.92rem;font-weight:600;
+    color:var(--muted);cursor:pointer;transition:.2s;font-family:inherit}
+  .tab-btn.active{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .nav-links{display:flex;gap:16px;margin-left:auto;align-items:center;flex-wrap:wrap}
+  .nav-links a{text-decoration:none;color:var(--muted);font-size:.9rem;font-weight:500;transition:.2s}
+  .nav-links a:hover{color:#e17055}
+
+  /* ---------- 章节 ---------- */
+  main{padding:36px 0 8px}
+  .view-head{text-align:center;margin-bottom:28px}
+  .view-head h2{font-size:clamp(1.5rem,4vw,2.1rem);font-weight:800}
+  .view-head p{color:var(--muted);margin-top:6px}
+  .hidden{display:none!important}
+
+  /* ---------- 按年龄卡片 ---------- */
+  .age-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:36px;border:1px solid rgba(0,0,0,.03)}
+  .age-head{padding:22px 26px;color:#fff;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .age-badge{background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);padding:5px 16px;border-radius:999px;
+    font-weight:800;font-size:1.02rem;letter-spacing:.5px}
+  .age-head h3{font-size:clamp(1.25rem,3vw,1.55rem);font-weight:800}
+  .age-head p{margin-left:auto;font-size:.88rem;opacity:.92;max-width:340px;text-align:right}
+  .age-body{padding:22px 26px 26px}
+  .point-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .point{background:#fbf9f4;border-radius:14px;padding:16px 18px;border-left:4px solid var(--ptc,#f0932b)}
+  .point h4{font-size:1rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .point ul{padding-left:0;list-style:none}
+  .point li{position:relative;padding-left:18px;margin-bottom:7px;font-size:.93rem;color:#3d4347}
+  .point li::before{content:"";position:absolute;left:2px;top:10px;width:6px;height:6px;border-radius:50%;background:var(--ptc,#f0932b)}
+  .point li b{color:var(--ink)}
+
+  /* ---------- 按主题卡片 ---------- */
+  .theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px}
+  .theme-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px 24px 20px;
+    border:1px solid rgba(0,0,0,.03);display:flex;flex-direction:column}
+  .theme-card .th-emoji{font-size:1.9rem;line-height:1}
+  .theme-card h3{font-size:1.2rem;font-weight:800;margin:10px 0 6px}
+  .theme-card .th-intro{font-size:.92rem;color:var(--muted);margin-bottom:14px}
+  .age-row{border-radius:12px;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);
+    border-left:4px solid var(--agec,#999)}
+  .age-row .age-tag{display:inline-block;font-size:.76rem;font-weight:800;color:#fff;padding:2px 10px;border-radius:999px;margin-bottom:6px}
+  .age-row ul{list-style:none;padding-left:0}
+  .age-row li{position:relative;padding-left:16px;font-size:.9rem;color:#40464a;margin-bottom:5px}
+  .age-row li::before{content:"";position:absolute;left:1px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--agec)}
+  .key-point{margin-top:auto;padding:12px 14px;border-radius:12px;background:linear-gradient(90deg,#fff3e6,#ffeef0);
+    font-size:.93rem;font-weight:700;color:#9c4a1d}
+  .key-point::before{content:"✳ ";font-weight:900}
+
+  /* ---------- 免责声明 ---------- */
+  .disclaimer{max-width:var(--maxw);margin:34px auto 20px;padding:24px 26px;border-radius:var(--radius);
+    background:#fff5e6;border:2px solid #f5c26b;box-shadow:var(--shadow)}
+  .disclaimer h2{font-size:1.25rem;color:#9c6b1c;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .disclaimer ul{list-style:none;color:#6b4c1a;font-size:.95rem}
+  .disclaimer li{padding-left:20px;position:relative;margin-bottom:6px}
+  .disclaimer li::before{content:"⚠";position:absolute;left:0;top:1px}
+
+  /* ---------- 页脚 ---------- */
+  footer{background:#2f2a24;color:#cfc6b8;margin-top:40px;padding:34px 0}
+  footer .container{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+  footer h3{color:#fff;font-size:1.05rem;margin-bottom:6px}
+  footer p{font-size:.88rem;max-width:520px}
+  footer small{display:block;color:#8f8677;font-size:.8rem}
+
+  /* ---------- 返回顶部 ---------- */
+  #backTop{position:fixed;right:22px;bottom:26px;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+    background:#e17055;color:#fff;font-size:1.2rem;box-shadow:0 6px 18px rgba(225,112,85,.4);opacity:0;
+    transform:translateY(12px);transition:.25s;z-index:60;pointer-events:none}
+  #backTop.show{opacity:1;transform:none;pointer-events:auto}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:820px){
+    .age-head p{margin-left:0;text-align:left;max-width:100%}
+    .nav-links{margin-left:0;width:100%;justify-content:flex-start;padding-bottom:8px}
+    .timeline{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .tl-node{min-width:120px}
+  }
+  @media (max-width:520px){
+    .hero{padding-top:44px}
+    .point-grid,.theme-grid{grid-template-columns:1fr}
+    .tabs{flex:1}
+    .tab-btn{padding:8px 14px;flex:1}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= Hero ================= -->
+<header class="hero">
+  <div class="blobs"><span b1></span><span b2></span><span b3></span></div>
+  <div class="container hero-inner">
+    <span class="flag">🌱 给家长的一本"成长时刻表"</span>
+    <h1><span class="grad">0-15 岁</span> 儿童成长指南</h1>
+    <p class="sub">从学科启蒙到牙齿矫正，从科学引导到性教育与防侵害——按年龄段整理的成长建议，讲清楚<strong>"为什么是这个年龄"</strong>，让养育少一点焦虑，多一点把握。</p>
+    <p class="scroll-hint">↓ 往下滑动，或使用顶部导航按「年龄」或「主题」浏览</p>
+  </div>
+
+  <!-- 成长时间轴 -->
+  <div class="timeline-wrap">
+    <div class="timeline">
+      <div class="tl-node"><span class="tl-dot tl-03">0</span><span class="tl-name">0-3 岁</span><span class="tl-desc">奠基期 · 安全感与语言</span></div>
+      <div class="tl-node"><span class="tl-dot tl-36">3</span><span class="tl-name">3-6 岁</span><span class="tl-desc">幼儿园 · 黄金启蒙期</span></div>
+      <div class="tl-node"><span class="tl-dot tl-69">6</span><span class="tl-name">6-9 岁</span><span class="tl-desc">小学低年级 · 习惯养成</span></div>
+      <div class="tl-node"><span class="tl-dot tl-912">9</span><span class="tl-name">9-12 岁</span><span class="tl-desc">小学高年级 · 抽象思维</span></div>
+      <div class="tl-node"><span class="tl-dot tl-1215">12</span><span class="tl-name">12-15 岁</span><span class="tl-desc">初中 · 青春期</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 导航 ================= -->
+<nav class="main-nav">
+  <div class="nav-inner">
+    <span class="nav-brand">📗 成长指南 <small>按年龄段 × 按主题双索引</small></span>
+    <div class="tabs" role="tablist" aria-label="浏览方式">
+      <button class="tab-btn active" data-view="ages" role="tab" aria-selected="true">按年龄</button>
+      <button class="tab-btn" data-view="themes" role="tab" aria-selected="false">按主题</button>
+    </div>
+    <div class="nav-links">
+      <a href="#disclaimer">⬤ 重要提示</a>
+      <a href="#footer">⬤ 关于本站</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+  <!-- 按年龄视图 -->
+  <section id="view-ages" class="view">
+    <div class="view-head">
+      <h2>👶 按年龄：5 个成长阶段</h2>
+      <p>每个阶段先看"孩子处于什么状态"，再谈"该做什么"。</p>
+    </div>
+    <!-- ============ 0-3 岁 ============ -->
+    <article class="age-card">
+      <div class="age-head" style="background:linear-gradient(135deg,var(--c-03),#f5a623)">
+        <span class="age-badge">0-3 岁</span>
+        <h3>婴幼儿期 · 奠基之年</h3>
+        <p>所有发展的地基期：安全感、语言、大运动、视觉、睡眠。别急着"教"，先好好"养"。</p>
+      </div>
+      <div class="age-body">
+        <div class="point-grid">
+          <div class="point" style="--ptc:#e67e22">
+            <h4>📚 学科学习</h4>
+            <ul><li><b>母语输入与亲子共读是重中之重</b>——大脑语言中枢快速发育，多听多说是语言地基；每天固定几分钟亲子共读即可。</li><li><b>切忌强迫过早识字</b>——3 岁前若孩子自己对文字有兴趣可以顺着讲，但一律不带逼迫。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>🚀 超前学习</h4>
+            <ul><li>这个阶段不存在"超前"概念：<b>输入的丰富度 &gt; 学了多少</b>。</li><li>多说话、多唱歌、多拥抱，就是最好的早教。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#0984e3">
+            <h4>🕐 自主学习</h4>
+            <ul><li>先建立"吃—睡—清洁"的规律作息，规律本身就是最初的自我管理。</li><li>从 1 岁起让孩子自己拿杯子、啃手指食物、扔尿布，<b>从"帮孩子做"到"让孩子试着做"</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#6c5ce7">
+            <h4>📱 手机与屏幕</h4>
+            <ul><li><b>建议基本不接触屏幕</b>（视频通话除外）——2 岁前大脑需要真实互动、语言和抚摸，屏幕给不了这些。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00b894">
+            <h4>⚽ 体育锻炼</h4>
+            <ul><li>核心是<b>大运动发展</b>：趴、爬、走、跑、跳、攀爬。</li><li>在安全地面少抱多放，自由爬行比"扶着走"更能刺激协调发育。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e17055">
+            <h4>🎹 乐器</h4>
+            <ul><li>音乐熏陶从摇篮曲和拍手律动开始即可，不需要"上课"。</li><li>听辨声音、跟着节奏摇摆，都是在给乐感打底。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00a8a8">
+            <h4>💊 膳食补充剂</h4>
+            <ul><li><b>维生素 D：出生后即常规补充</b>（尤其纯母乳喂养），具体剂量遵医嘱。</li><li>足月儿 4-6 个月后通过辅食补铁（强化铁米粉、红肉）；早产儿补铁遵医嘱提前安排。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#74b9ff">
+            <h4>🦷 牙齿</h4>
+            <ul><li>乳牙萌出即开始口腔清洁与<b>防龋</b>：早晚刷牙（含氟牙膏按年龄用量）、定期涂氟。</li><li>发现龋齿及时补，<b>别等换牙再管</b>——乳牙龋坏会影响恒牙胚。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#9c88ff">
+            <h4>📏 身高与视力</h4>
+            <ul><li>每 3-6 个月测身高体重、<b>建立生长曲线档案</b>——曲线比单次数值更能说明问题。</li><li>不过早、不过多接触电子屏。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#636e72">
+            <h4>😴 睡眠</h4>
+            <ul><li>0-1 岁睡 12-16 小时、1-2 岁睡 11-14 小时（含白天小睡），按需喂养、规律作息。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#ff7982">
+            <h4>📖 阅读与外语</h4>
+            <ul><li>亲子共读从布书、绘本开始，<b>重在"在一起读"的体验</b>。</li><li>外语启蒙＝给耳朵"喂"儿歌，当背景音就好，不要求产出。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#a29bfe">
+            <h4>💬 心理·社交·财商</h4>
+            <ul><li><b>安全依恋是全部的基础</b>——被抱够、被及时回应的孩子，才敢放心探索世界。</li><li>财商不必讲道理，示范"用耐心换结果"即可。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e84393">
+            <h4>🧭 怎么引导</h4>
+            <ul><li>讲道理在这个年龄无效，靠<b>环境替代禁令</b>：把危险物品收高，比反复说"不许碰"有用。</li><li><b>及时回应不会宠坏孩子</b>——安全感是配合的前提，不是惯坏。</li><li>硬规则只留 3-5 条（安全、作息、不打人），其余尽量顺着探索。</li><li>不配合时用<b>转移注意力</b>和"二选一"，不用打骂。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>💗 性教育与界限</h4>
+            <ul><li>用<b>正确名称</b>说身体部位（阴茎、外阴、屁股、胸），不用"小鸡鸡""下面"这类代称。</li><li>洗澡换衣时自然说一句："这是隐私部位，除了爸妈帮你洗、医生检查（爸妈在场），别人不能看不能碰。"</li><li>别给身体的玩笑埋雷：不说"再哭就让叔叔把你抱走"这类话。</li></ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ 3-6 岁 ============ -->
+    <article class="age-card">
+      <div class="age-head" style="background:linear-gradient(135deg,var(--c-36),#34c98f)">
+        <span class="age-badge">3-6 岁</span>
+        <h3>幼儿园期 · 黄金启蒙期</h3>
+        <p>语言爆炸、社交萌芽、身体协调成形。玩耍即学习——游戏是这阶段最高级的课堂。</p>
+      </div>
+      <div class="age-body">
+        <div class="point-grid">
+          <div class="point" style="--ptc:#e67e22">
+            <h4>📚 学科学习</h4>
+            <ul><li><b>听力型英语启蒙</b>：儿歌、绘本、动画大量"磨耳朵"，不求会说，先建立语音敏感。</li><li><b>数感启蒙</b>：数数、比较多与少、分类、排序，在生活与游戏里进行。</li><li>识字：5 岁前后若孩子有兴趣再引导（认常见字、自己名字），<b>不强求、不用教材</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>🚀 超前学习</h4>
+            <ul><li><b>拒绝"小学化"抢跑</b>：提前识字、算术的短期优势到小学二年级普遍消失。</li><li>与其提前学课本知识，不如在游戏里积累词汇、数感与专注力。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#0984e3">
+            <h4>🕐 自主学习</h4>
+            <ul><li>关键抓手是<b>生活自理</b>：自己穿衣、刷牙、收拾玩具。</li><li>家长"帮一半、留一半足以完成的那一半"，多鼓励、少代劳。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#6c5ce7">
+            <h4>📱 手机与屏幕</h4>
+            <ul><li>每天不超过 <b>1 小时</b>，必须是高质量内容，<b>家长陪同观看并一起讨论</b>。</li><li>睡前 1 小时不接触屏幕；屏幕不能替代户外和同伴游戏。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00b894">
+            <h4>⚽ 体育锻炼</h4>
+            <ul><li>平衡车、亲子游泳、球类游戏、体操——<b>以"玩"为主</b>，不追求技术指标。</li><li>大运动量大能促进<b>感觉统合</b>（大脑整合视听触等信息的能力），是日后专注力的底盘。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e17055">
+            <h4>🎹 乐器</h4>
+            <ul><li>音乐启蒙：奥尔夫教学法（用身体和打击乐感受节奏）、节奏游戏、听音辨音。</li><li>这个阶段建立"乐感"比"手型"重要，钢琴等乐器不急着上。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00a8a8">
+            <h4>💊 膳食补充剂</h4>
+            <ul><li>均衡饮食覆盖大部分营养需求；维生素 D 按医嘱继续补充。</li><li><b>不跟风补锌、补复合维生素</b>——没有确认缺乏就不常规补充。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#74b9ff">
+            <h4>🦷 牙齿</h4>
+            <ul><li><b>反颌（地包天）需尽早干预，约 3-5 岁是最佳窗口</b>——骨性问题是越早越好。</li><li>纠正口呼吸、咬唇、吮指等习惯，它们会"塑造"错位牙。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#9c88ff">
+            <h4>📏 身高与视力</h4>
+            <ul><li>饮食+睡眠+户外运动三管齐下；盯着生长曲线，不看某一次数值。</li><li><b>3 岁起定期查视力，建立屈光档案</b>（记录远视储备，预测近视风险）。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#636e72">
+            <h4>😴 睡眠</h4>
+            <ul><li>3-5 岁睡 <b>10-13 小时</b>。</li><li>固定睡前程序（洗漱→讲故事→关灯），帮孩子从"兴奋"切换到"平静"。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#ff7982">
+            <h4>📖 阅读与外语</h4>
+            <ul><li><b>亲子共读的黄金期</b>：词汇量、安全感、倾听能力都在这个过程中成长。</li><li><b>听力启蒙黄金期</b>：大脑对语音的敏感度处于顶峰，儿歌、动画、音频大量输入。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#a29bfe">
+            <h4>💬 心理·社交·财商</h4>
+            <ul><li>教孩子<b>命名情绪</b>（"你有点生气对吗"）——能说出情绪，才有办法管理情绪。</li><li>性教育从这里开始：身体部位名称、隐私部位（背心短裤覆盖处）、拒绝不舒服的触碰。</li><li>财商：认识钱、给小额零花钱，"存起来"比"花掉"更被认可。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e84393">
+            <h4>🧭 怎么引导</h4>
+            <ul><li>说"不"是在练习独立，<b>给有限选择</b>："现在穿，还是数到十穿？"</li><li>规则要<b>少、清楚、每次都一样</b>；今天行明天不行，孩子就会一直试探。</li><li>用<b>自然后果</b>（不收玩具→下次找不到）代替打骂，并且真的执行。</li><li>只评行为不评人：说"你刚才推了他"，不说"你怎么这么坏"。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>💗 性教育与界限</h4>
+            <ul><li>"我从哪里来"用真话加简单话："妈妈肚子里有个小房子（子宫），你在里面长大。"</li><li><b>身体界限三句话</b>：身体是你自己的；背心短裤盖住的地方是隐私；不舒服就可以拒绝并告诉爸妈。</li><li>分清<b>好秘密和坏秘密</b>：惊喜是好秘密，让你害怕、要你瞒着爸妈的是坏秘密，必须说。</li><li>演练一次走散了找谁：店员、保安、警察。</li></ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ 6-9 岁 ============ -->
+    <article class="age-card">
+      <div class="age-head" style="background:linear-gradient(135deg,var(--c-69),#5b8bf0)">
+        <span class="age-badge">6-9 岁</span>
+        <h3>小学低年级 · 习惯养成期</h3>
+        <p>从"玩的年龄"正式转向"学的年龄"。这三年，习惯的养成高于一切知识量。</p>
+      </div>
+      <div class="age-body">
+        <div class="point-grid">
+          <div class="point" style="--ptc:#e67e22">
+            <h4>📚 学科学习</h4>
+            <ul><li><b>习惯养成优先于知识量</b>：坐得住、专注听讲、回家先做作业，比多做几页题重要得多。</li><li>语文：识字、写字、拼音系统学习；数学：从 20 以内加减过渡到乘除，<b>关键是理解算理</b>（为什么 3×4=12）而非背口诀。</li><li>英语：延续听力输入，加入<b>自然拼读</b>（把字母和读音对应起来），辅助认词。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>🚀 超前学习</h4>
+            <ul><li><b>语言类（尤其英语）可以轻松超前</b>：靠"输入量"而非"难度"，多听多读就自然领先，没有认知门槛。</li><li><b>数学不建议超前</b>：这个阶段思维还在具象阶段，不理解的"背口诀刷题"长期无效甚至有害。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#0984e3">
+            <h4>🕐 自主学习</h4>
+            <ul><li>学会整理书包、记作业、到家先写作业。</li><li>从"家长坐在旁边陪写"逐步过渡到"同房间但各做各的"——<b>建立"作业是我自己的事"</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#6c5ce7">
+            <h4>📱 手机与屏幕</h4>
+            <ul><li>屏幕要有<b>规则</b>：固定时段、固定时长，全家一致执行。</li><li>内容以学习与合作为主；需要移动设备时<b>首选平板而非手机</b>——平板是工具，手机是"全世界"。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00b894">
+            <h4>⚽ 体育锻炼</h4>
+            <ul><li><b>正式学游泳、骑自行车</b>；足、篮球等球类开始技术启蒙。</li><li>目标不是成绩，而是<b>发展协调能力与规则意识</b>——听懂规则、配合队友。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e17055">
+            <h4>🎹 乐器</h4>
+            <ul><li><b>钢琴：5-6 岁是最常见起始年龄</b>——手指独立性、小肌肉与控制力到位。</li><li>小提琴普遍 6-7 岁起（铃木教学法可早至 3-4 岁开始熏陶）。</li><li>管乐（长笛、单簧管、萨克斯）要<b>等换牙后</b>、有门牙和肺活量，约 7-8 岁起。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00a8a8">
+            <h4>💊 膳食补充剂</h4>
+            <ul><li>均衡饮食为主，多数孩子此阶段不需要额外补充。</li><li>维生素 D 遵医嘱继续；怀疑缺铁时找医生评估，不自行补。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#74b9ff">
+            <h4>🦷 牙齿</h4>
+            <ul><li>进入<b>混合牙列期</b>（乳牙恒牙交替）：早期矫治（扩弓、功能矫治器）可引导颌骨正常生长。</li><li><b>约 8-9 岁做一次正畸评估</b>——这是发现骨性问题的黄金点，错过很难再从"骨头层面"改正。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#9c88ff">
+            <h4>📏 身高与视力</h4>
+            <ul><li>继续监测生长曲线；必要时咨询骨龄（手部 X 光评估骨骺成熟度）。</li><li>护眼三件套：<b>每天 ≥2 小时户外 + 20-20-20 用眼 + 定期复查屈光档案</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#636e72">
+            <h4>😴 睡眠</h4>
+            <ul><li>6-12 岁睡 <b>9-12 小时</b>。</li><li>入睡时间直接影响第二天专注力；睡觉不是"浪费时间"，深睡眠期生长激素分泌、记忆被巩固。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#ff7982">
+            <h4>📖 阅读与外语</h4>
+            <ul><li><b>桥梁书过渡</b>：图文各半的桥梁书帮孩子从"听故事"走向"自己读"。</li><li>外语：听力输入继续 + 自然拼读入门，"听来的"开始变成"认得的"。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#a29bfe">
+            <h4>💬 心理·社交·财商</h4>
+            <ul><li><b>抗挫力</b>培养：输赢之外要让孩子看见"努力与过程"。</li><li>性教育：身体变化常识、尊重他人隐私、学会向父母报告任何"让你不舒服的事"。</li><li>财商：零花钱固定化，分三份——<b>储蓄／消费／分享</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e84393">
+            <h4>🧭 怎么引导</h4>
+            <ul><li>从"父母说了算"转向<b>一起定规矩</b>：作业、屏幕、家务写成 3-5 条家庭约定贴出来。</li><li>让孩子承担<b>可承受的后果</b>（忘带作业→自己跟老师说），别急着替他兜底。</li><li>表扬要<b>具体</b>："你今天自己收好了书包"比"你真棒"更管用。</li><li>给<b>有限自主权</b>（先做哪科、周末怎么安排），自主感是内驱力的来源。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>💗 性教育与界限</h4>
+            <ul><li>用<b>科普绘本</b>讲生命由来（精子、卵子、子宫），并说明"这是科学知识，不是脏话"。</li><li>教<b>尊重别人的身体</b>：不掀别人衣服、不拍别人隐私部位，别人说"不要"就停。</li><li>提前预告<b>青春期</b>（9 岁前后），身体会变化，不可怕。</li><li>网络隐私第一条：<b>不拍、不发隐私部位</b>，谁说"检查身体""选模特"都不行。</li></ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ 9-12 岁 ============ -->
+    <article class="age-card">
+      <div class="age-head" style="background:linear-gradient(135deg,var(--c-912),#a466e8)">
+        <span class="age-badge">9-12 岁</span>
+        <h3>小学高年级 · 抽象思维期</h3>
+        <p>抽象思维起步，自我意识增强，同伴的重要性快速上升。可以放开更多，前提是规则已经立好。</p>
+      </div>
+      <div class="age-body">
+        <div class="point-grid">
+          <div class="point" style="--ptc:#e67e22">
+            <h4>📚 学科学习</h4>
+            <ul><li><b>数学进入抽象</b>：分数、小数、几何初步——理解比重复更重要。</li><li>语文：阅读理解与写作，从"认字"转向"读懂与表达"。</li><li>英语：建立<b>初步语法体系</b>（时态、词类基本概念），阅读量开始明显上升。</li><li>科学：鼓励<b>观察与实验</b>，让孩子自己动手验证问题。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>🚀 超前学习</h4>
+            <ul><li>可<b>深耕兴趣领域</b>：科学书、历史故事、编程都可以超出课本深度。</li><li>数学：挑战"思维类题目"而非"更高年级课本"。</li><li>编程/机器人按兴趣适度超前——<b>当游戏与创造，不做功利化考级</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#0984e3">
+            <h4>🕐 自主学习</h4>
+            <ul><li>自己能安排<b>作业顺序、时间管理、自查作业</b>。</li><li>家里一张"学习计划表"由孩子自己填写，家长只做提醒、不代做。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#6c5ce7">
+            <h4>📱 手机与屏幕</h4>
+            <ul><li>12 岁前后考虑"给不给手机"看<b>成熟度而非年龄</b>：能守时、能控制情绪、不依赖消息。</li><li>建议<b>先功能机后智能手机</b>；给之前先签"家庭数字规则"：<b>睡前收起、学习免扰、隐私边界</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00b894">
+            <h4>⚽ 体育锻炼</h4>
+            <ul><li><b>单项技术深化</b>：羽毛球、乒乓球等精细控制类运动此时适龄。</li><li>团队项目（篮、足、排球）+<b>正式比赛</b>：学会赢，也学会输。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e17055">
+            <h4>🎹 乐器</h4>
+            <ul><li><b>大提琴等弦乐进阶</b>（约 8-10 岁，琴大需要手臂长度）；打击乐也可尝试。</li><li><b>吉他约 7 岁起</b>可上手指跨度训练；此阶段关键是坚持 + 兴趣，别让考级绑架热爱。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00a8a8">
+            <h4>💊 膳食补充剂</h4>
+            <ul><li>多数孩子无缺乏就<b>不常规补</b>；别盲目买钙片、多维。</li><li>接近青春期生长高峰，<b>保证奶制品供给</b>（钙的主要食物来源）即可。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#74b9ff">
+            <h4>🦷 牙齿</h4>
+            <ul><li>此阶段是<b>早期矫治窗口期</b>：扩弓、功能矫治器通常在这个年龄段完成。</li><li>是否早矫由正畸医生评估，8-9 岁已做过评估的话，现在按方案跟进即可。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#9c88ff">
+            <h4>📏 身高与视力</h4>
+            <ul><li>关注发育启动信号：女孩约 9-11 岁、男孩约 11-13 岁出现第二性征属正常，<b>过早属就诊信号</b>。</li><li>身高明显落后或超前时可以考虑查骨龄；视力保持户外+档案复查。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#636e72">
+            <h4>😴 睡眠</h4>
+            <ul><li>保持 9-12 小时；睡前 1 小时收屏幕（蓝光抑制褪黑素，推迟入睡）。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#ff7982">
+            <h4>📖 阅读与外语</h4>
+            <ul><li>进入<b>自主阅读</b>：能独立读章节书，家长提供书单与空间，而非布置"阅读作业"。</li><li>外语从"听"走向"听读结合"，分级读物大量读。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#a29bfe">
+            <h4>💬 心理·社交·财商</h4>
+            <ul><li><b>青春期前系统讲解</b>第二性征发育、月经/遗精、情绪波动的原因——"提前于发育"，孩子面对时就不慌。</li><li>同伴关系成为最重要社交场，做倾听型家长；财商升级到"攒钱计划"体验延迟满足。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e84393">
+            <h4>🧭 怎么引导</h4>
+            <ul><li><b>面子比道理重要</b>：别在同学或外人面前纠正他，回家单独谈。</li><li>用<b>协商</b>替代命令：屏幕时长、零花钱、作息底线一起定、写下来、按约定执行。</li><li>后果要<b>相关</b>：没写完作业→当天不玩游戏，而不是取消下周的足球课。</li><li>情绪起伏是发育的结果，不是"变坏了"：先共情，再谈解决。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>💗 性教育与界限</h4>
+            <ul><li><b>提前于发育</b>讲：月经、遗精、乳房发育、体毛、身高突增；备好卫生用品并教怎么用。</li><li>讲<b>同意</b>：任何身体接触都要双方愿意，"不要"就是不要，熟人也不例外。</li><li><b>色情内容辨别</b>：网上那些不是真实的样子，看到要关掉并告诉父母，不羞耻、不隐瞒。</li><li>把<b>求助名单</b>说清楚：爸妈、信任的老师、12355 青少年服务台。</li></ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ 12-15 岁 ============ -->
+    <article class="age-card">
+      <div class="age-head" style="background:linear-gradient(135deg,var(--c-1215),#f4778c)">
+        <span class="age-badge">12-15 岁</span>
+        <h3>初中 · 青春期</h3>
+        <p>青春期全面展开，独立意识最强。这个阶段关系的底盘是信任，方法是协商而非命令。</p>
+      </div>
+      <div class="age-body">
+        <div class="point-grid">
+          <div class="point" style="--ptc:#e67e22">
+            <h4>📚 学科学习</h4>
+            <ul><li>分科学习全面铺开：<b>物理（初二开设）、化学（初三开设）</b>，生物、地理、历史陆续进入。</li><li>英语走向<b>听说读写完整体系</b>；数学进入<b>代数、几何、函数</b>——抽象与建模能力成为最大分水岭。</li><li>注意从"听懂"到"能独立解题"的转化，初中靠"课上听懂"远远不够。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>🚀 超前学习</h4>
+            <ul><li>鼓励<b>深度拓展而非提前赶进度</b>：实验、纪录片先种下物理化学的兴趣。</li><li>代数、函数等抽象内容请<b>尊重课堂节奏</b>——不理解的抢跑最容易挫伤信心。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#0984e3">
+            <h4>🕐 自主学习</h4>
+            <ul><li>学会<b>制定学习计划、自我监控</b>（这周哪里没掌握）、考后复盘。</li><li>家长正式退到<b>"幕后顾问"</b>：只在孩子求助时提供建议，不再替他安排一切。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#6c5ce7">
+            <h4>📱 手机与屏幕</h4>
+            <ul><li><b>15 岁前不建议完全放开</b>；持续协商时长与内容，信任基础上的规则才有效。</li><li>即便已经给手机，也要落实睡前收起、学习免扰；遇违规，收回比没收更温和也更有效。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00b894">
+            <h4>⚽ 体育锻炼</h4>
+            <ul><li>爆发力与耐力可以<b>系统训练</b>；运动量进入"练"的阶段。</li><li><b>力量训练需谨慎</b>：骨骼未闭合（生长板未愈合），避免大重量负重——以自重（俯卧撑、引体向上）与技术训练为主。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e17055">
+            <h4>🎹 乐器</h4>
+            <ul><li>已有乐器的进入进阶阶段，考级不再是目的，<b>享受演奏与坚持本身</b>。</li><li>现在开始学乐器完全来得及，成熟的身体条件反而让入门更快，关键是本人意愿。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#00a8a8">
+            <h4>💊 膳食补充剂</h4>
+            <ul><li>青春期生长高峰：<b>保证奶制品、优质蛋白与睡眠</b>，比钙片更可靠。</li><li>确需补充（如确证缺乏）请医生评估，<b>不自行加量</b>。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#74b9ff">
+            <h4>🦷 牙齿</h4>
+            <ul><li><b>固定矫治黄金期</b>：约 12 岁恒牙基本全部萌出，排齐效率高、效果稳。</li><li>需要矫正的孩子，此阶段做固定矫治（戴托槽/隐形矫正）正合适。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#9c88ff">
+            <h4>📏 身高与视力</h4>
+            <ul><li>关注<b>青春期发育早晚与身高突增</b>，必要时查骨龄评估剩余生长空间。</li><li>近视进展快的孩子，可咨询医生了解科学控制方案（遵医嘱），别信"降度数偏方"。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#636e72">
+            <h4>😴 睡眠</h4>
+            <ul><li>13-15 岁睡 <b>8-10 小时</b>。</li><li><b>熬夜刷题反而降低效率</b>——睡眠是记忆巩固的关键环节，牺牲睡眠补作业是亏本买卖。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#ff7982">
+            <h4>📖 阅读与外语</h4>
+            <ul><li>支持<b>自主深度阅读</b>：对味书单、经典原典，阅读力就是学习力。</li><li>外语"泡"出来：阅读量与听力持续输入，比背单词书更接近真实语感。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#a29bfe">
+            <h4>💬 心理·社交·财商</h4>
+            <ul><li><b>亲子沟通从"管理"转向"理解"</b>：多听少评，允许情绪波动，划定安全底线而非全面禁行。</li><li>性教育谈边界与<b>网络交友安全</b>；财商升级到管理小额预算与"利息"概念。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#e84393">
+            <h4>🧭 怎么引导</h4>
+            <ul><li>最需要<b>被尊重 + 边界清楚</b>；管得越细，隐瞒越多。</li><li>只在<b>底线</b>上不让步（人身安全、违法、毒品、夜不归宿），其余让他决定并承担结果。</li><li>用"<b>我信息</b>"表达："你晚归我会担心"，而不是"你从来不守时"。</li><li>冲突激烈时<b>先暂停</b>："我们都冷静 20 分钟再谈"，比当场压服有效。</li></ul>
+          </div>
+          <div class="point" style="--ptc:#d63031">
+            <h4>💗 性教育与界限</h4>
+            <ul><li>谈<b>恋爱与边界</b>：喜欢一个人是正常的；关系里不能有胁迫、羞辱、监控、要挟发照片。</li><li>讲<b>性健康事实</b>：避孕与性传播疾病的基本常识；"不发生性行为"是最安全、也完全正当的选择。</li><li>讲<b>网络性剥削</b>：任何索要裸照、要求视频、威胁传播的人都是加害者，<b>立刻告诉父母并保留证据</b>。</li><li>求助渠道写下来：父母、信任的老师、<b>12355</b>、110。</li></ul>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- 按主题视图 -->
+  <section id="view-themes" class="view hidden">
+    <div class="view-head">
+      <h2>🧩 按主题：16 个养育议题</h2>
+      <p>每个主题向下拆分到年龄段——先点开你关心的议题。带 🧭 💗 🛡️ 🌐 的四个是这次新增的：怎么科学地管、性教育怎么按年龄讲、怎么防猥亵、网友怎么分辨。</p>
+    </div>
+    <!-- ============ 主题 1：学科学习 ============ -->
+    <div class="theme-grid">
+      <div class="theme-card">
+        <span class="th-emoji">📚</span>
+        <h3>1. 学科学习 · 几岁学什么</h3>
+        <p class="th-intro">每个年龄段的认知特点决定"这个阶段该学什么、怎么学"。学得对，事半功倍；学得早，不一定等于学得好。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-3 岁</span>
+          <ul>
+            <li><b>母语输入与亲子共读是重中之重</b>——大脑语言中枢快速发育，多听多说是语言地基。</li>
+            <li><b>切忌强迫过早识字</b>：3 岁前接触文字符号要靠兴趣与语境，指读认字一旦带强迫会挫伤好奇。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li><b>听力型英语启蒙</b>：儿歌、绘本、动画"磨耳朵"，建立语音敏感期优势。</li>
+            <li><b>数感启蒙</b>：数数、比较多少、分类、排序，在生活与游戏中进行。</li>
+            <li>识字：5 岁前后有兴趣再引导（认常见字、名字），不强求、不套教材。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-9 岁</span>
+          <ul>
+            <li><b>习惯养成优先于知识量</b>：专心听讲、坐得住、回家先做作业。</li>
+            <li>语文：识字、写字、拼音；数学：20 以内加减过渡到乘除，<b>重理解算理</b>；英语：听力 + <b>自然拼读</b>。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9-12 岁</span>
+          <ul>
+            <li>数学进入<b>抽象</b>（分数、小数、几何初步）；语文转向<b>阅读理解与写作</b>。</li>
+            <li>英语建立<b>初步语法体系</b>、阅读量上升；科学鼓励<b>观察与实验</b>。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>分科展开：<b>物理（初二）、化学（初三）</b>、生物、地理、历史。</li>
+            <li>英语走向<b>听说读写完整体系</b>；数学进入<b>代数、几何、函数</b>。</li>
+          </ul>
+        </div>
+        <div class="key-point">认知发展自有节奏：与其对标"别人家的进度"，不如对标"自己孩子的兴趣与状态"。</div>
+      </div>
+
+      <!-- ============ 主题 2：超前学习 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🚀</span>
+        <h3>2. 哪些科目可以超前学</h3>
+        <p class="th-intro">超前≠更好。能不能超前、敢不敢超前，取决于学科对认知成熟度的依赖程度。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-3 岁</span>
+          <ul>
+            <li>不存在"超前"概念：<b>输入丰富度 &gt; 学了多少</b>，多说话、多唱歌、多拥抱即可。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li>拒绝"小学化"抢跑：提前识字、算术的<b>短期优势到二年级普遍消失</b>。</li>
+            <li>在游戏里积累词汇、数感、专注力，比提前学课本更有效。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-9 岁</span>
+          <ul>
+            <li><b>语言类（尤其英语）可相对安全超前</b>：靠"输入量"而非"难度"，多听多读自然领先。</li>
+            <li><b>数学需谨慎超前</b>：具象思维阶段，不理解的机械刷题长期无效甚至有害。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9-12 岁</span>
+          <ul>
+            <li>可深耕兴趣领域（科学书、历史、编程），超出课本深度。</li>
+            <li>编程/机器人按兴趣适度超前，<b>当游戏与创造，不做功利化考级</b>。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>鼓励深度拓展而非赶进度：实验、纪录片提前种兴趣。</li>
+            <li>代数、函数等抽象内容请<b>尊重课堂节奏</b>。</li>
+          </ul>
+        </div>
+        <div class="key-point">认知发展不可逾越：抢跑识字、计算的短期优势会消失，超前≠更好；关键是保护兴趣与内驱力。</div>
+      </div>
+
+      <!-- ============ 主题 3：自主学习 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🕐</span>
+        <h3>3. 什么时候能自主学习</h3>
+        <p class="th-intro">自主不是"某天突然放手"，而是逐年渐进放权——每一步的垫脚石都是生活自理。</p>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li><b>生活自理先行</b>：自己穿衣、刷牙、收拾玩具，先"管好自己"再谈"管好学习"。</li>
+            <li>家长帮一半、留一半，鼓励而非代劳。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-8 岁</span>
+          <ul>
+            <li>整理书包、按时完成作业；从"家长陪着写"过渡到"独立完成"。</li>
+            <li>目标不是做对，而是建立<b>"作业是我自己的事"</b>。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9-11 岁</span>
+          <ul>
+            <li>自己安排<b>作业顺序、时间管理、自查作业</b>。</li>
+            <li>学习计划表由孩子自己填，家长只做提醒不代做。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12 岁起</span>
+          <ul>
+            <li>会制定<b>学习计划、自我监控</b>、考后复盘。</li>
+            <li>家长转为<b>幕后顾问</b>：只在求助时给建议。</li>
+          </ul>
+        </div>
+        <div class="key-point">自主学习是"渐进放权"：从替孩子做 → 陪孩子做 → 看孩子做，每一步都离不开早立下的小责任。</div>
+      </div>
+
+      <!-- ============ 主题 4：手机与屏幕 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">📱</span>
+        <h3>4. 什么时候给手机/屏幕</h3>
+        <p class="th-intro">屏幕管理的关键不是"几岁给设备"，而是"先立规则，再给设备"。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-2 岁</span>
+          <ul>
+            <li><b>建议基本不接触屏幕</b>（视频通话除外）——2 岁前大脑需要的是真实互动、语言与抚摸。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">2-5 岁</span>
+          <ul>
+            <li>每天 <b>≤1 小时</b>，高质量内容，<b>家长陪同</b>观看并讨论；睡前不碰屏幕。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-12 岁</span>
+          <ul>
+            <li>屏幕有规则：固定时段与时长，内容以<b>学习与合作为主</b>。</li>
+            <li>需要设备时<b>首选平板而非手机</b>——对孩子的自控来说，平板是工具，手机是"全世界"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">12 岁前后</span>
+          <ul>
+            <li>给手机<b>看成熟度而非年龄</b>：能守时、能控制情绪、不依赖消息。</li>
+            <li><b>先功能机、后智能手机</b>；先立"家庭数字规则"：<b>睡前收起、学习免扰、隐私边界</b>。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">15 岁前</span>
+          <ul>
+            <li><b>不建议完全放开</b>，规则持续协商、逐步放权。</li>
+          </ul>
+        </div>
+        <div class="key-point">给得越晚，通常越省心；先立规则，再给设备。</div>
+      </div>
+
+      <!-- ============ 主题 5：体育锻炼 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">⚽</span>
+        <h3>5. 什么时候练哪类体育</h3>
+        <p class="th-intro">遵循动作发育规律排序：先多样后专项，避免过早专项化——专项化早了容易受伤、容易倦怠。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-2 岁</span>
+          <ul>
+            <li><b>大运动发展</b>：趴、爬、走、跑、跳、攀爬；少抱多放，安全地面自由活动。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-5 岁</span>
+          <ul>
+            <li>平衡车、亲子游泳、球类游戏、体操——<b>以"玩"为主</b>。</li>
+            <li>大运动促进<b>感觉统合</b>，是日后运动与专注的底盘。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-8 岁</span>
+          <ul>
+            <li><b>正式学游泳、骑自行车</b>；足篮球等球类技术启蒙。</li>
+            <li>目标在发展<b>协调能力与规则意识</b>，而非出成绩。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9-12 岁</span>
+          <ul>
+            <li>单项技术深化：羽毛球、乒乓球等<b>精细控制类适龄</b>。</li>
+            <li>团队项目 + 正式比赛：学会赢，也学会输。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>爆发力与耐力可<b>系统训练</b>。</li>
+            <li><b>力量训练需谨慎</b>：生长板未闭合，避免大重量负重；以自重与技术为主。</li>
+          </ul>
+        </div>
+        <div class="key-point">先多样后专项；游泳、田径是打底子的良好基础运动。</div>
+      </div>
+
+      <!-- ============ 主题 6：乐器学习 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🎹</span>
+        <h3>6. 什么时候学哪种乐器</h3>
+        <p class="th-intro">学乐器的关键是"身体条件到位"与"兴趣在位"同时出现，缺一不可。</p>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-5 岁</span>
+          <ul>
+            <li><b>音乐启蒙</b>：奥尔夫教学法、节奏游戏、听音辨音——建立"乐感"优先于"手型"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">5-6 岁</span>
+          <ul>
+            <li><b>钢琴是最常见起始年龄</b>——手指独立性、小肌群控制与理解力基本到位。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-7 岁</span>
+          <ul>
+            <li><b>小提琴</b>：铃木教学法可早至 3-4 岁熏陶，但普遍 6 岁起（持琴与音准需要成熟度）。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">7-8 岁起</span>
+          <ul>
+            <li><b>管乐</b>（长笛、单簧管、萨克斯等）：需<b>换牙后</b>、有门牙支撑与足够肺活量。</li>
+            <li><b>吉他约 7 岁起</b>（手指跨度需要）。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">8-10 岁</span>
+          <ul>
+            <li><b>大提琴等弦乐进阶</b>——琴身较大，需要手臂长度与身体条件。</li>
+          </ul>
+        </div>
+        <div class="key-point">钢琴是双手协调与小肌肉训练的基础；管乐要等恒牙与肺活量；兴趣优先于考级，别让考级扼杀热爱。</div>
+      </div>
+
+      <!-- ============ 主题 7：膳食补充剂 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">💊</span>
+        <h3>7. 什么时候补什么营养</h3>
+        <p class="th-intro">请先记住一句话：均衡饮食永远是第一位；补充剂不是保健品，一律遵医嘱，不自行加量。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-1 岁</span>
+          <ul>
+            <li><b>维生素 D：出生后即常规补充</b>（尤其纯母乳喂养，母乳中维 D 含量低），具体剂量遵医嘱。</li>
+            <li><b>铁</b>：足月儿 4-6 个月起从辅食补铁（强化铁米粉、红肉）；<b>早产儿遵医嘱</b>提前安排。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li>均衡饮食覆盖大部分需求；维生素 D 遵医嘱继续。</li>
+            <li><b>锌、复合维生素：无缺乏不常规补</b>，怀疑缺乏由医生评估。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-12 岁</span>
+          <ul>
+            <li>多数孩子不需要额外补充——重点是<b>不挑食、食物多样化</b>。</li>
+            <li><b>DHA</b>：以母乳/配方奶/深海鱼为主，饮食不足才考虑；两岁后一般无需额外补。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>青春期生长高峰：<b>保证奶制品与优质蛋白</b>（钙以饮食为主，不盲目补钙片）。</li>
+            <li>确需补充时由医生评估，<b>切勿自行加量</b>。</li>
+          </ul>
+        </div>
+        <div class="key-point">多数孩子不需要额外补充营养品；需要补什么、补多少，交给医生判断。</div>
+      </div>
+
+      <!-- ============ 主题 8：牙齿矫正 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🦷</span>
+        <h3>8. 什么时候矫正牙齿</h3>
+        <p class="th-intro">正畸不是"越大越整齐"，很多问题有明确的"干预窗口"，错过就要付出更高代价。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-3 岁</span>
+          <ul>
+            <li>口腔清洁、<b>防龋</b>、定期涂氟；奶瓶使用注意控制，避免"奶瓶龋"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li><b>反颌（地包天）尽早干预，约 3-5 岁</b>——骨性问题越早处理越简单。</li>
+            <li>纠正口呼吸、咬唇、吮指等不良习惯。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">7-12 岁</span>
+          <ul>
+            <li>混合牙列期：<b>早期矫治/生长改良</b>（扩弓、功能矫治器）引导颌骨生长。</li>
+            <li><b>约 8-9 岁是正畸评估黄金期</b>——此时能发现骨性问题，错过很难从"骨头层面"改。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li><b>恒牙期固定矫治黄金期</b>——约 12 岁恒牙基本全部萌出，排齐效率高、效果稳。</li>
+          </ul>
+        </div>
+        <div class="key-point">反颌越早越好；不是每个孩子都要早矫，但 8-9 岁做一次正畸评估非常重要。</div>
+      </div>
+
+      <!-- ============ 主题 9：身高与视力 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">📏</span>
+        <h3>9. 身高与视力管理</h3>
+        <p class="th-intro">两项都是"长期工程"：身高看曲线与骨龄，视力防远比治容易。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-3 岁</span>
+          <ul>
+            <li>身高：<b>建立生长曲线档案</b>，每 3-6 个月测量记录——曲线比单次数值重要。</li>
+            <li>视力：不过早不过多接触电子屏，观察是否频繁眯眼、歪头。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li>身高：饮食+睡眠+户外三管齐下。</li>
+            <li>视力：<b>3 岁起定期查视力，建立屈光档案</b>（记录远视储备，预测近视风险）。</li>
+            <li>护眼第一招：<b>每天 ≥2 小时户外</b>（自然光促进视网膜多巴胺分泌、抑制眼轴过快变长）。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-12 岁</span>
+          <ul>
+            <li>身高：必要时查<b>骨龄</b>（手部 X 光评估骨骺成熟度）；保证足量睡眠。</li>
+            <li>视力：坚持户外 + <b>20-20-20 用眼</b>（每看近 20 分钟，看 6 米外 20 秒）+ 定期复查。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>身高：<b>关注青春期发育早晚</b>与身高突增；发育过早会提前结束生长，需专科评估。</li>
+            <li>视力：近视进展快的咨询医生科学控方案（遵医嘱），警惕"物理降度数"偏方。</li>
+          </ul>
+        </div>
+        <div class="key-point">身高=曲线监测+睡眠+营养+运动；近视防大于治，户外 2 小时+20-20-20+定期检查是可靠组合拳。</div>
+      </div>
+
+      <!-- ============ 主题 10：睡眠 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">😴</span>
+        <h3>10. 睡眠与作息</h3>
+        <p class="th-intro">睡眠是孩子的"隐形营养"：深睡眠期分泌生长激素、巩固白天所学——睡得好，才长得高、记得牢。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-1 岁</span>
+          <ul><li>每天 <b>12-16 小时</b>（含白天小睡），按需喂养、规律作息。</li></ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">1-2 岁</span>
+          <ul><li>每天 <b>11-14 小时</b>，白天小睡逐步缩短为 1-2 次。</li></ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-5 岁</span>
+          <ul><li>每天 <b>10-13 小时</b>；固定睡前程序（洗漱→故事→关灯）帮助入睡。</li></ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-12 岁</span>
+          <ul><li>每天 <b>9-12 小时</b>；入睡时间直接影响第二天专注力。</li></ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">13-15 岁</span>
+          <ul><li>每天 <b>8-10 小时</b>；熬夜刷题降低效率——睡眠是记忆巩固的关键环节。</li></ul>
+        </div>
+        <div class="key-point">全年龄段通用：睡前 1 小时收起屏幕（蓝光抑制褪黑素、推迟入睡）。睡眠优先级不低于吃饭和运动。</div>
+      </div>
+
+      <!-- ============ 主题 11：阅读与外语 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">📖</span>
+        <h3>11. 阅读与外语启蒙</h3>
+        <p class="th-intro">阅读是理解世界的梯子，外语的优势在于"耳濡目染"——两者都是越早开始越从容。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-6 岁</span>
+          <ul>
+            <li><b>亲子共读黄金期</b>：布书、绘本到简单故事，重在"在一起读"的体验——词汇、倾听、安全感同时积累。</li>
+            <li>外语：<b>3-6 岁是听力启蒙黄金期</b>——大脑对语音敏感度顶峰，儿歌动画大量"磨耳朵"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-8 岁</span>
+          <ul>
+            <li>阅读：<b>桥梁书过渡</b>——图文各半，帮孩子从"听故事"走向"自己读"。</li>
+            <li>外语：听力继续 + <b>自然拼读入门</b>，"听来的"变成"认得的"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9 岁起</span>
+          <ul>
+            <li><b>自主阅读</b>：能独立读章节书，家长给书单与空间，不布置"阅读作业"。</li>
+            <li>外语进入"听读结合"：分级读物大量读，阅读量决定语感。</li>
+          </ul>
+        </div>
+        <div class="key-point">儿童外语不是"考出来的"，是"泡出来的"——输入量决定语感，阅读量决定理解力。</div>
+      </div>
+
+      <!-- ============ 主题 12：心理社交财商 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">💬</span>
+        <h3>12. 心理社交 · 财商</h3>
+        <p class="th-intro">情绪被接住的孩子才愿意合作；钱的概念要在真实场景里长出来，讲道理不如给一次决定权。</p>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li>心理：教孩子<b>命名情绪</b>（"我看到你现在很生气"），学习轮流、等待与分享。</li>
+            <li>财商：认识钱、给小额零花钱，让他体会"存起来能买更大的"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-9 岁</span>
+          <ul>
+            <li>心理：<b>抗挫力</b>——输了先看见他的努力，再谈下次怎么做；同伴评价开始有分量。</li>
+            <li>财商：零花钱分三份（<b>储蓄/消费/分享</b>），让他自己决定怎么花并承担结果。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">10-12 岁</span>
+          <ul>
+            <li>心理：自我认同成形中，容易比较；每天留一段<b>不谈成绩</b>的聊天时间。</li>
+            <li>财商：做一次"攒钱计划"，体验延迟满足；带他参与一次家庭采购比价。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>心理：<b>从"管理"转向"理解"</b>，多听少评，允许情绪波动，划安全底线而不是全面禁行。</li>
+            <li>财商：管理小额预算、接触"利息"概念，参与家庭消费讨论。</li>
+          </ul>
+        </div>
+        <div class="key-point">心理营养与身体营养一样需要日常与持续；财商的核心是"延迟满足"与"为自己负责"。性教育已单列在主题 14。</div>
+      </div>
+
+      <!-- ============ 主题 13：科学引导 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🧭</span>
+        <h3>13. 科学引导 · 分年龄怎么管</h3>
+        <p class="th-intro">管教的目的是"教会"，不是"赢过孩子"。同一种方法在不同年龄效果完全相反——先看孩子处在哪个阶段，再决定用什么手段。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-3 岁</span>
+          <ul>
+            <li>这个年龄<b>讲道理无效</b>，靠环境：把危险物品收走，比反复说"不许碰"有用得多。</li>
+            <li><b>及时回应不会宠坏孩子</b>——被抱够、被回应的孩子，后来反而更容易配合。</li>
+            <li>硬底线只留 3-5 条（安全、作息、不打人），其余尽量顺着他的探索走。</li>
+            <li>不配合时用<b>转移注意力</b>和"二选一"，不打、不吼、不恐吓（"不要你了"这类话会伤安全感）。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li>说"不"是在练习独立，不是挑衅。给他<b>有限选择</b>："现在穿，还是数到十穿？"</li>
+            <li>规则要<b>少、清楚、每次都一样</b>；今天行明天不行，孩子就会一直试探边界。</li>
+            <li>用<b>自然后果</b>代替打骂：不收玩具→下次找不到；提前说清后果，并且真的执行。</li>
+            <li>只评行为不评人：说"你刚才推了他"，不说"你怎么这么坏"——贴标签会被孩子当成事实。</li>
+            <li>发脾气时<b>先接情绪再讲规则</b>：蹲下来、说出他的感受，等平静了再复盘。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-9 岁</span>
+          <ul>
+            <li>从"父母说了算"过渡到<b>一起定规矩</b>：作业、屏幕、家务写成 3-5 条家庭约定，贴出来，双方都签。</li>
+            <li>让孩子承担<b>可承受的后果</b>（忘带作业→自己跟老师解释），别急着替他兜底。</li>
+            <li>表扬要<b>具体到行为</b>："你今天自己把书包收好了"，比"你真棒"更能固定习惯。</li>
+            <li>给<b>有限自主权</b>（先做哪科、周末半天怎么安排）；自主感是内驱力的来源。</li>
+            <li>撒谎多因怕惩罚：把"说实话"的代价降下来，比追问"为什么骗我"有效。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9-12 岁</span>
+          <ul>
+            <li><b>面子比道理重要</b>：别在同学或外人面前纠正他，回家单独谈。</li>
+            <li>用<b>协商</b>替代命令：屏幕时长、零花钱额度、作息底线一起定，写下来，违约按约定处理。</li>
+            <li>后果要<b>相关</b>：没写完作业→当天不玩游戏，而不是取消下周的足球课。</li>
+            <li>情绪起伏大是激素与大脑发育的结果，不是"变坏了"：先共情，再谈解决办法。</li>
+            <li>开始放手让他自己处理同学冲突，父母做<b>顾问</b>，不做代办。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>青少年最需要<b>被尊重 + 边界清楚</b>；管得越细，隐瞒越多。</li>
+            <li>只在<b>安全底线</b>上不让步（人身安全、违法、毒品、夜不归宿），其余尽量让他自己决定并承担结果。</li>
+            <li>沟通用<b>"我信息"</b>："你晚归我会担心"，而不是"你从来不守时"。</li>
+            <li>冲突激烈时<b>先暂停</b>："我们都冷静 20 分钟再谈"，比当场压服有效得多。</li>
+            <li>允许<b>试错</b>：小错的代价，远低于"什么都不敢试"的代价。</li>
+          </ul>
+        </div>
+        <div class="key-point">0-6 岁靠"环境 + 稳定的规则"，6-9 岁靠"约定 + 自然后果"，9 岁以上靠"协商 + 底线"。所有年龄通用一条：<b>先连接，再纠正</b>。</div>
+      </div>
+
+      <!-- ============ 主题 14：性教育分年龄 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">💗</span>
+        <h3>14. 性教育 · 分年龄怎么讲</h3>
+        <p class="th-intro">性教育不是"一次谈话"，而是从 2 岁开始、每年递进的一串小对话。四条原则：用正确名称、只回答被问到的、不回避不恐吓、随年龄加深。</p>
+        <div class="age-row" style="--agec:var(--c-03)">
+          <span class="age-tag" style="background:var(--c-03)">0-3 岁</span>
+          <ul>
+            <li>教<b>身体部位的正确名称</b>（阴茎、外阴、臀部、胸部），和鼻子耳朵一样平常。正确名称是孩子遭遇侵害时能把事情说清楚的前提。</li>
+            <li>洗澡换衣时自然说一句："这是你的隐私部位，除了爸妈帮你洗、医生检查（爸妈在场），别人不可以看、不可以碰。"</li>
+            <li>不把身体当玩笑："再哭就让叔叔把你抱走"这类话，会破坏孩子对成年人的判断力。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-36)">
+          <span class="age-tag" style="background:var(--c-36)">3-6 岁</span>
+          <ul>
+            <li>"我从哪里来"先问"你觉得呢"，再用真话加简单话回答："妈妈肚子里有个小房子（子宫），你在里面长大。"不编"垃圾桶捡的"。</li>
+            <li><b>身体界限三句话</b>：你的身体属于你自己；背心短裤盖住的地方是隐私；任何人让你不舒服，都可以拒绝并告诉爸妈。</li>
+            <li><b>好秘密 / 坏秘密</b>：开心的惊喜是好秘密；让你害怕、要你瞒着爸妈的是坏秘密，一定要说。</li>
+            <li>认识"<b>谁能帮我</b>"：爸妈、老师、警察、穿制服的工作人员；演练一次"如果走散了找谁"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-69)">
+          <span class="age-tag" style="background:var(--c-69)">6-9 岁</span>
+          <ul>
+            <li>用<b>科普绘本</b>讲生命由来（精子、卵子、子宫），并明确"这是科学知识，不是脏话"。</li>
+            <li>讲<b>尊重别人的身体</b>：不掀别人衣服、不拍别人隐私部位、别人说"不要"就立刻停。</li>
+            <li>提前<b>预告青春期</b>（9 岁前后开始），知道身体会变，遇到时就不慌。</li>
+            <li>网络隐私第一条：<b>不拍、不发、不给任何人看隐私部位</b>，哪怕对方说"检查身体""选模特"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-912)">
+          <span class="age-tag" style="background:var(--c-912)">9-12 岁</span>
+          <ul>
+            <li><b>提前于发育</b>讲月经、遗精、乳房发育、体毛、身高突增；备好卫生用品并教怎么用，第一次不至于慌乱。</li>
+            <li>讲<b>性行为与怀孕避孕的基本事实</b>（以科学为主，不渲染细节），并说明"要等身心都准备好"。</li>
+            <li><b>色情内容的辨别</b>：网上那些不是真实的样子；看到要关掉并告诉父母，不羞耻、不隐瞒。</li>
+            <li>讲<b>同意</b>：任何身体接触都要双方愿意，"不要"就是不要，熟人、玩笑也不例外。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:var(--c-1215)">
+          <span class="age-tag" style="background:var(--c-1215)">12-15 岁</span>
+          <ul>
+            <li>谈<b>恋爱与边界</b>：喜欢一个人是正常的；关系里不能有胁迫、羞辱、监控、要挟发照片。</li>
+            <li>讲<b>性健康与安全</b>：避孕与性传播疾病的基本常识；"不发生性行为"是最安全、也完全正当的选择。</li>
+            <li>讲<b>网络性剥削</b>：任何索要裸照、要求视频、威胁传播的人，无论年龄多大都是加害者，<b>立刻告诉父母并保留证据</b>。</li>
+            <li>把<b>求助渠道</b>写下来：父母、信任的老师、12355 青少年服务台、110。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#8e44ad">
+          <span class="age-tag" style="background:#8e44ad">家长怎么说</span>
+          <ul>
+            <li>用"<b>你问得很好</b>"开头，接住问题再回答；答不上来就说"我查清楚，明天告诉你"，别糊弄。</li>
+            <li>不说"羞不羞""小孩子别问"——这类回应会让孩子以后去别处找答案，而那更危险。</li>
+            <li>一次只讲一点点，讲完问一句"还有想知道的吗"，留一个随时能再问的口子。</li>
+            <li>借日常场景讲：洗澡、换牙、看到孕妇、看到相关新闻，都比"正襟危坐谈一次"有效。</li>
+          </ul>
+        </div>
+        <div class="key-point">性教育的目标不是"知道多少"，而是三件事：<b>知道自己身体的名字</b>、<b>知道边界在哪里</b>、<b>知道出事了有人会帮他</b>。</div>
+      </div>
+
+      <!-- ============ 主题 15：防范猥亵 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🛡️</span>
+        <h3>15. 防范猥亵 · 家长要做的几件事</h3>
+        <p class="th-intro">儿童性侵绝大多数是<b>熟人作案</b>、<b>长期多次</b>、<b>用"保密"控制</b>。所以重点不是"别跟陌生人说话"，而是让孩子在熟人场景里也能说不，并且确信父母会站在他这边。</p>
+        <div class="age-row" style="--agec:#c0392b">
+          <span class="age-tag" style="background:#c0392b">教孩子 8 条</span>
+          <ul>
+            <li>隐私部位（背心短裤覆盖处）<b>任何人都不能</b>看、不能摸、不能拍照——熟人、亲戚、老师、哥哥姐姐一样适用。</li>
+            <li><b>不舒服就说"不"、就走开、就告诉爸妈</b>：这三件事按顺序练一遍，比讲一百遍道理有用。</li>
+            <li>不跟任何大人单独去封闭空间（房间、车里、仓库、办公室），被叫去就说"我先告诉妈妈"。</li>
+            <li>不脱衣服、不拍照片、不拍视频——不管对方给礼物、给钱，说是"游戏"还是"检查身体"。</li>
+            <li><b>让你保密的事一定要说</b>。这是最重要的一条，反复讲，讲到孩子能背出来。</li>
+            <li>不帮陌生人"找小狗""带路""搬东西"——真正的大人不需要小孩帮忙。</li>
+            <li>穿衣服的地方别人不能碰，<b>你自己也不去碰别人</b>；别人让你摸他，也要立刻走开告诉爸妈。</li>
+            <li><b>如果被伤害，一定不是你的错</b>。这句话要提前说，不要等出事才说。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#e67e22">
+          <span class="age-tag" style="background:#e67e22">识别信号（孩子常常不会主动说）</span>
+          <ul>
+            <li><b>身体</b>：走路或坐下疼痛、内裤有异常分泌物或血迹、反复尿路不适、身体有不明淤青。</li>
+            <li><b>行为</b>：突然抗拒某个人或某个地点、突然不愿上学、噩梦失眠、退行（尿床、吮手指）、突然懂了很多与年龄不符的性知识。</li>
+            <li><b>情绪</b>：变得沉默、易怒、自责、说"我很脏""我不好"，甚至自伤。</li>
+            <li><b>物质</b>：突然多了来路不明的礼物、钱、手机、游戏皮肤。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#8e44ad">
+          <span class="age-tag" style="background:#8e44ad">加害者常见手法（讲给孩子听）</span>
+          <ul>
+            <li><b>假借权威</b>："我是老师／医生／警察，你得听我的"——真警察不会单独把孩子带走。</li>
+            <li><b>制造独处</b>："帮我搬个东西""到我办公室拿奖品""带你去看小动物"。</li>
+            <li><b>以秘密控制</b>："这是我们的秘密，说出去就没人喜欢你了。"</li>
+            <li><b>以礼物收买</b>：先给糖、给钱、给皮肤，再慢慢提要求。</li>
+            <li><b>倒打一耙</b>："是你先勾引我的""说出去你爸妈会打死你"——这是威胁，不是事实。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#c0392b">
+          <span class="age-tag" style="background:#c0392b">发现之后怎么做（顺序很重要）</span>
+          <ul>
+            <li><b>第一句先相信</b>："谢谢你告诉我，这不是你的错。"不要说"你怎么不早说""真的假的"。</li>
+            <li><b>别让孩子反复复述</b>：反复询问会造成二次伤害，也可能污染证据；细节交给警方与专业机构。</li>
+            <li><b>保留证据</b>：不急着洗澡、洗衣服、清理现场；聊天记录、礼物、监控线索都拍照留存。</li>
+            <li><b>立刻报警 110 并就医</b>：做检查与取证，由医生评估是否需要紧急避孕、性病预防等处置。</li>
+            <li><b>切断接触</b>，不要私下"找对方谈谈"或收钱私了——私下处理往往让伤害继续，也可能涉嫌违法。</li>
+            <li><b>找专业心理支持</b>：孩子和家庭都需要，越早介入越好。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#16a085">
+          <span class="age-tag" style="background:#16a085">求助渠道（存进手机）</span>
+          <ul>
+            <li><b>110</b> 报警：正在发生或刚刚发生，第一时间打。</li>
+            <li><b>12309</b> 检察机关未成年人保护热线：立案监督、法律咨询。</li>
+            <li><b>12338</b> 妇联维权热线：妇女儿童权益受侵害时。</li>
+            <li><b>12355</b> 青少年服务台：心理与法律咨询。</li>
+            <li>学校<b>法治副校长 / 心理老师</b>、社区<b>儿童主任</b>，也是可用的正式渠道。</li>
+          </ul>
+        </div>
+        <div class="key-point">防性侵教育里最重要的一句不是"小心陌生人"，而是：<b>"不管是谁，让你不舒服的触碰都可以拒绝，而且我一定会相信你。"</b></div>
+      </div>
+
+      <!-- ============ 主题 16：网络社交辨别 ============ -->
+      <div class="theme-card">
+        <span class="th-emoji">🌐</span>
+        <h3>16. 网络社交 · 怎么辨别好坏</h3>
+        <p class="th-intro">孩子迟早会有网友。与其禁止，不如给他一把尺子：什么样的交往是健康的，什么样的人必须立刻拉黑并告诉父母。</p>
+        <div class="age-row" style="--agec:#27ae60">
+          <span class="age-tag" style="background:#27ae60">健康的网上交往长这样</span>
+          <ul>
+            <li>同龄、同兴趣，聊的是游戏、动漫、学习，<b>不打听隐私</b>。</li>
+            <li>愿意让你知道这段关系，<b>没有"别告诉爸妈"的前提</b>。</li>
+            <li>不索要照片、不要钱、不要求单独视频、不催你瞒着大人。</li>
+            <li>说话让你感觉被尊重；你拒绝，他不会翻脸、冷暴力或威胁。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#c0392b">
+          <span class="age-tag" style="background:#c0392b">出现这些，立刻拉黑并告诉父母</span>
+          <ul>
+            <li>认识没几天就"特别懂你""我们是最好的朋友"，<b>熟得太快</b>。</li>
+            <li>问你<b>在哪个学校、几年级、家住哪、父母做什么、几点一个人在家</b>。</li>
+            <li>要照片，尤其是"发张穿少点的""拍个视频给我看看"。</li>
+            <li>给钱、给皮肤、给礼物，然后<b>提要求</b>："收了就要听我的。"</li>
+            <li>要求"这是我们俩的秘密""别告诉你爸妈"。</li>
+            <li>要求<b>转到别的软件私聊</b>、删聊天记录、用爸妈的手机偷偷联系。</li>
+            <li>约见面，或者说"我来接你""我送你回家"。</li>
+            <li>用<b>威胁</b>控制："你不发我就把之前的发出去""我能找到你"。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#2980b9">
+          <span class="age-tag" style="background:#2980b9">孩子该记住的四句话</span>
+          <ul>
+            <li><b>不给</b>：真实姓名、学校、住址、电话、位置、照片、密码、验证码，一律不给。</li>
+            <li><b>不见</b>：网友不单独见面；真要见，必须父母陪同、白天、公共场所。</li>
+            <li><b>不瞒</b>：任何让你害怕、羞耻、要你保密的事，第一时间告诉爸妈——<b>说了不会被没收手机</b>。</li>
+            <li><b>留证</b>：先截图保存聊天记录，再拉黑、举报，不要自己删掉。</li>
+          </ul>
+        </div>
+        <div class="age-row" style="--agec:#8e44ad">
+          <span class="age-tag" style="background:#8e44ad">家长该做的</span>
+          <ul>
+            <li><b>不搞突袭没收</b>：孩子一说就被收手机，下次他就不说了。先把"遇到怪事必须告诉我，我不会因此收手机"讲成约定。</li>
+            <li><b>共看而不是偷看</b>：一起翻好友列表，问"这个人怎么认识的""他说话让你舒服吗"，比查手机更有效。</li>
+            <li><b>把账号年龄设对</b>：多数平台 13 岁起才允许注册；不满年龄就用青少年模式，别用大人身份帮他过验证。</li>
+            <li><b>开青少年模式 / 家长控制</b>：限定时长、关闭陌生人私信、关闭位置与"附近的人"。</li>
+            <li><b>自己先做示范</b>：不在孩子面前轻信"客服"来电与陌生私信——孩子学的是你的行为，不是你的说教。</li>
+          </ul>
+        </div>
+        <div class="key-point">辨别好坏的标准不是"陌生人 = 坏人"，而是三条：<b>是否打听隐私</b>、<b>是否要求保密</b>、<b>是否让你不舒服</b>。任意一条成立，就该停下并告诉父母。</div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- ================= 免责声明 ================= -->
+<section class="container">
+  <div class="disclaimer" id="disclaimer">
+    <h2>⚠️ 重要提示 · 请务必阅读</h2>
+    <ul>
+      <li>本站内容为<strong>通用的成长知识整理与科普</strong>，所有信息仅供参考，<strong>不构成任何医疗、营养或治疗建议</strong>。</li>
+      <li>涉及<strong>医疗、营养补充剂、正畸、用药、视力与身高干预</strong>等内容，个体差异极大，一律以<strong>医生／专业机构的面诊评估为准</strong>，请严格遵医嘱执行，切勿自行加量、自行用药、自行选择治疗方案。</li>
+      <li>文中不涉及任何具体药品剂量与医疗器械型号，如有具体问题请咨询<strong>儿科、口腔正畸科、眼科、营养科</strong>等对应科室医生。</li>
+      <li>成长建议只代表"大多数孩子的一般规律"，<strong>每个孩子都有自己的节奏</strong>，一点早晚不必焦虑；若明显偏离或家长有担忧，请专业评估而非盲目对照。</li>
+      <li>性教育、防范猥亵与网络社交三节为<strong>通用科普与行动建议</strong>；<strong>若怀疑孩子已遭受侵害，请立即拨打 110 报警并寻求医院与专业心理机构帮助</strong>，不要自行调查、不要反复追问孩子细节，以免造成二次伤害或破坏证据。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= 页脚 ================= -->
+<footer id="footer">
+  <div class="container">
+    <div>
+      <h3>📗 0-15 岁儿童成长指南</h3>
+      <p>一份面向家长的成长时刻表：按年龄规划重点，按主题厘清方法。不贩卖焦虑，只提供线索——最了解孩子的，永远是你。</p>
+    </div>
+    <div>
+      <small>本站为信息型静态页面 · 内容综合常见儿科/儿童心理/运动与营养常识整理</small>
+      <small>内容离线内置，不联网也能翻；按住 Ctrl 收藏本页，随时回来看看 🍀</small>
+    </div>
+  </div>
+</footer>
+
+<button id="backTop" aria-label="返回顶部">↑</button>
+
+<script>
+(function(){
+  var tabs=document.querySelectorAll('.tab-btn');
+  var ages=document.getElementById('view-ages');
+  var themes=document.getElementById('view-themes');
+  tabs.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var v=this.getAttribute('data-view');
+      tabs.forEach(function(b){b.classList.remove('active');b.setAttribute('aria-selected','false')});
+      this.classList.add('active');this.setAttribute('aria-selected','true');
+      if(v==='ages'){ages.classList.remove('hidden');themes.classList.add('hidden')}
+      else{themes.classList.remove('hidden');ages.classList.add('hidden')}
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+  var btn=document.getElementById('backTop');
+  window.addEventListener('scroll',function(){
+    if(window.scrollY>500)btn.classList.add('show');else btn.classList.remove('show');
+  });
+  btn.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'})});
+})();
+</script>
+</body>
+</html>

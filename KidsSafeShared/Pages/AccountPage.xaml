@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KidsSafeDesktop.ViewModels"
+             xmlns:models="clr-namespace:KidsSafeDesktop.Models"
+             xmlns:services="clr-namespace:KidsSafeDesktop.Services"
+             x:Class="KidsSafeDesktop.Pages.AccountPage"
+             Title="我的账号"
+             Padding="0">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 主题背景大图 -->
+        <Image Grid.Row="0" Grid.RowSpan="2"
+               Source="{Binding Source={x:Static services:ThemeService.Instance}, Path=CurrentTheme.BackgroundFile}"
+               Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" />
+
+        <!-- 顶部栏 -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Padding="16,14"
+              BackgroundColor="#B3FFFFFF">
+            <Button Text="← 返回" TextColor="#5D4037" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="👤 我的账号" TextColor="#5D4037" FontSize="20" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="🌈" FontSize="22" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20,12,20,40">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- 头像 + 昵称 -->
+                <Frame CornerRadius="26" HasShadow="False" Padding="18"
+                       BackgroundColor="#CCFFFFFF">
+                    <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Frame WidthRequest="96" HeightRequest="96" CornerRadius="48" Padding="0"
+                               HasShadow="False" BackgroundColor="White">
+                            <Label Text="{Binding Avatar}" FontSize="54"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Frame>
+                        <Entry Text="{Binding Name}" FontSize="20" FontAttributes="Bold"
+                               TextColor="#5D4037" HorizontalTextAlignment="Center"
+                               MaxLength="8" Placeholder="小朋友昵称" WidthRequest="220" />
+                        <Label Text="👆 选一个喜欢的头像" FontSize="13" TextColor="#8D6E63"
+                               HorizontalOptions="Center" />
+                        <CollectionView x:Name="AvatarView" ItemsSource="{Binding Avatars}"
+                                        HorizontalOptions="Center" MaximumWidthRequest="360">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Horizontal" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Frame WidthRequest="46" HeightRequest="46" CornerRadius="23" Padding="0"
+                                           HasShadow="False" BackgroundColor="#F3E5F5"
+                                           Margin="4">
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnAvatarPick" NumberOfTapsRequired="1" />
+                                        </Frame.GestureRecognizers>
+                                        <Label Text="{Binding .}" FontSize="26"
+                                               HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        <Button Text="💾 保存资料" FontSize="16" BackgroundColor="#7E57C2" TextColor="White"
+                                CornerRadius="14" HeightRequest="46" Clicked="OnSaveProfile" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 运行模式 -->
+                <Frame CornerRadius="22" HasShadow="False" Padding="16" BackgroundColor="#CCFFFFFF">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🌐 运行模式" FontSize="18" FontAttributes="Bold" TextColor="#5D4037" />
+                        <Label Text="{Binding ModeText, StringFormat='当前：{0}模式'}"
+                               FontSize="15" TextColor="#33691E" FontAttributes="Bold" />
+                        <Label Text="离线模式：所有设置保存在本机，无需网络也能使用。连接家长服务器后可云端同步配置。"
+                               FontSize="13" TextColor="#8D6E63" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 离线 → 连接服务器 -->
+                <Frame CornerRadius="22" HasShadow="False" Padding="16" BackgroundColor="#FFF8E1"
+                       BorderColor="#FFD54F" IsVisible="{Binding IsOffline}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="☁️ 连接到家长服务器" FontSize="18" FontAttributes="Bold" TextColor="#E65100" />
+                        <Label Text="在家庭电脑运行家长端服务器后，填入地址即可云端同步。" FontSize="13" TextColor="#8D6E63" />
+                        <Entry Placeholder="服务器地址，如 http://192.168.1.10:5180"
+                               FontSize="15" Text="{Binding ServerUrl}" Keyboard="Url" />
+                        <Entry Placeholder="家长账号（可留空）" FontSize="15" MaxLength="32"
+                               Text="{Binding ServerUser}" />
+                        <Entry Placeholder="密码 或 6 位配对码" IsPassword="True" FontSize="15" MaxLength="64"
+                               Text="{Binding ServerPin}" />
+                        <Label Text="没有账号时，可在家长后台「账号与设备」生成 6 位配对码；用配对码连接只能同步，不能修改配置。"
+                               FontSize="12" TextColor="#A1887F" />
+                        <Button Text="🔗 连接并同步" FontSize="16" BackgroundColor="#FB8C00" TextColor="White"
+                                CornerRadius="14" HeightRequest="46" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                                Clicked="OnConnect" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 在线 → 断开 -->
+                <Frame CornerRadius="22" HasShadow="False" Padding="16" BackgroundColor="#E8F5E9"
+                       BorderColor="#A5D6A7" IsVisible="{Binding IsOffline, Converter={StaticResource InverseBool}}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="☁️ 已连接家长服务器" FontSize="18" FontAttributes="Bold" TextColor="#2E7D32" />
+                        <Label Text="{Binding ServerUrl}" FontSize="14" TextColor="#33691E" />
+                        <Button Text="🔌 断开连接（转离线模式）" FontSize="16" BackgroundColor="#EF5350"
+                                TextColor="White" CornerRadius="14" HeightRequest="46"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                                Clicked="OnDisconnect" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="{Binding Status}" FontSize="15" TextColor="#2E7D32"
+                       HorizontalOptions="Center" IsVisible="{Binding HasStatus}" />
+
+                <Label Text="{Binding VersionText}" FontSize="13" TextColor="#B0BEC5"
+                       HorizontalOptions="Center" Margin="0,4,0,8" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

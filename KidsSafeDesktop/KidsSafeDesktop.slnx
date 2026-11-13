@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../KidsSafeServer/KidsSafeServer.csproj" />
+  <Project Path="../KidsSafeShared/KidsSafeShared.csproj" />
+  <Project Path="../KidsSafeParent/KidsSafeParent.csproj" />
+  <Project Path="KidsSafeDesktop.csproj" />
+</Solution>

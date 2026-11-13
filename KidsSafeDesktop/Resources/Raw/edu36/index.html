@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="人民日报推荐的教育孩子 36 计：放手、纵容、处罚、倾听、疏导……36 条具体可用的教育方法，按 6 类场景整理，帮家长在具体情境里找到该怎么做。">
+<title>教育孩子 36 计</title>
+<style>
+  :root{
+    --c1:#f0932b;  /* 放手与抗挫 */
+    --c2:#10ac84;  /* 自信与认可 */
+    --c3:#3867d6;  /* 沟通与情绪 */
+    --c4:#8854d0;  /* 规则与纠错 */
+    --c5:#0abde3;  /* 学习与榜样 */
+    --c6:#eb3b5a;  /* 品格与生活 */
+    --bg:#f7f5f0;
+    --card:#fff;
+    --ink:#2d3436;
+    --muted:#636e72;
+    --line:#eadfd0;
+    --shadow:0 6px 24px rgba(80,60,30,.08);
+    --maxw:1180px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;overflow-anchor:none;max-width:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.75;
+    -webkit-font-smoothing:antialiased;max-width:100%;overflow-x:hidden;
+  }
+  .container{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:linear-gradient(135deg,#fff2e6 0%,#fdf8f0 42%,#eef4ff 100%);
+    padding:54px 0 28px;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero::before,.hero::after{content:"";position:absolute;border-radius:50%;filter:blur(6px);opacity:.38;pointer-events:none}
+  .hero::before{width:220px;height:220px;background:#ffd9a8;top:-70px;left:-50px}
+  .hero::after{width:180px;height:180px;background:#b8e0ff;bottom:-70px;right:-40px}
+  .hero-inner{position:relative;z-index:1}
+  .flag{
+    display:inline-block;background:#fff;border:1px solid var(--line);color:#a07c2e;
+    font-size:.84rem;font-weight:600;padding:6px 16px;border-radius:999px;margin-bottom:16px;box-shadow:var(--shadow);
+  }
+  .hero h1{font-size:clamp(1.85rem,4.8vw,3rem);font-weight:800;letter-spacing:.5px;text-wrap:balance}
+  .hero h1 .grad{background:linear-gradient(90deg,#e17055,#e84393,#6c5ce7);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brk{display:block}
+  @media (min-width:641px){.brk{display:none}}
+  .hero p.sub{max-width:680px;margin:14px auto 0;color:var(--muted);font-size:clamp(.98rem,2.2vw,1.1rem)}
+  .hero .meta{margin-top:12px;color:#a89b84;font-size:.82rem}
+
+  /* ---------- 筛选 ---------- */
+  .filters{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
+    max-width:var(--maxw);margin:24px auto 0;padding:0 20px;
+  }
+  .fpill{
+    border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;
+    font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;
+    transition:.18s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .fpill:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+  .fpill .dot{width:8px;height:8px;border-radius:50%;background:var(--c,#bbb);flex:0 0 auto}
+  .fpill .cnt{font-weight:500;opacity:.6;font-size:.76rem}
+  .fpill.active{background:var(--c,#2d3436);border-color:transparent;color:#fff}
+  .fpill.active .dot{background:#fff}
+  .fpill.active .cnt{opacity:.8}
+
+  /* ---------- 主体 ---------- */
+  main{padding:30px 0 10px}
+  .view-head{margin-bottom:20px;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .view-head h2{font-size:1.3rem;font-weight:800}
+  .view-head p{color:var(--muted);font-size:.9rem;margin-top:4px}
+  .view-head .count{font-size:.82rem;color:#a89b84;white-space:nowrap}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:16px}
+
+  .card{
+    position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 18px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;
+    transition:transform .18s,box-shadow .18s;min-width:0;overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+  .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(80,60,30,.13)}
+  .card.hide{display:none}
+
+  .card-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .num{
+    font-size:1.45rem;font-weight:800;line-height:1;color:var(--c);opacity:.32;
+    font-variant-numeric:tabular-nums;letter-spacing:-.5px;
+  }
+  .card h3{font-size:1.06rem;font-weight:800;color:var(--ink)}
+  .card .sub{font-size:.83rem;font-weight:700;color:var(--c);letter-spacing:.2px}
+  .card .text{font-size:.875rem;color:#454c52;line-height:1.78}
+
+  .tag{
+    align-self:flex-start;margin-top:2px;font-size:.72rem;font-weight:600;color:var(--c);
+    background:color-mix(in srgb, var(--c) 10%, #fff);border:1px solid color-mix(in srgb, var(--c) 22%, #fff);
+    border-radius:999px;padding:2px 9px;
+  }
+
+  /* ---------- 用法提示 ---------- */
+  .howto{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:30px 0 0;
+  }
+  .howto h2{font-size:1.05rem;margin-bottom:10px}
+  .howto ol{margin-left:18px;display:flex;flex-direction:column;gap:7px}
+  .howto li{font-size:.88rem;color:#4b5157;line-height:1.75}
+
+  .disclaimer{
+    background:#fff;border:1px solid var(--line);border-left:5px solid #e17055;border-radius:14px;
+    padding:20px 24px;margin:18px 0 10px;
+  }
+  .disclaimer h2{font-size:1rem;margin-bottom:8px}
+  .disclaimer ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .disclaimer li{position:relative;padding-left:17px;font-size:.86rem;color:#4b5157;line-height:1.72}
+  .disclaimer li::before{content:"·";position:absolute;left:5px;font-weight:800;color:#e17055}
+
+  footer{background:#2f2b26;color:#cfc6b8;margin-top:32px;padding:28px 0}
+  .foot-grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between}
+  footer h3{color:#fff;font-size:1rem;margin-bottom:7px}
+  footer p{font-size:.85rem;line-height:1.75;max-width:520px}
+  footer small{display:block;font-size:.78rem;color:#9b9285;line-height:1.9}
+  footer a{color:#f6c99b;text-decoration:none;border-bottom:1px dotted rgba(246,201,155,.5)}
+  footer a:hover{color:#ffe0bd}
+
+  #backTop{
+    position:fixed;right:22px;bottom:24px;width:44px;height:44px;border-radius:50%;border:0;
+    background:#fff;color:#e17055;font-size:1.1rem;font-weight:800;cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.16);opacity:0;pointer-events:none;transition:.25s;z-index:60;
+  }
+  #backTop.show{opacity:1;pointer-events:auto}
+  #backTop:hover{transform:translateY(-2px)}
+
+  @media (max-width:640px){
+    .hero{padding:38px 0 22px}
+    .container{padding:0 14px}
+    .filters{padding:0 14px;gap:7px}
+    .fpill{padding:6px 11px;font-size:.78rem}
+    .grid{grid-template-columns:minmax(0,1fr);gap:13px}
+    .card{padding:16px}
+    .howto{padding:18px}
+  }
+  @media print{
+    .filters,#backTop{display:none}
+    .card{break-inside:avoid;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container hero-inner">
+    <span class="flag">📌 人民日报推荐 · 家长收藏版</span>
+    <h1>教育孩子<span class="grad"> 36 计</span><br class="brk"></h1>
+    <p class="sub">孩子太自卑怎么建立信心？厌学怎么循循善诱？逆反太强怎么调节关系？36 条具体做法，按场景分好类，遇到问题直接翻到那一类。</p>
+    <p class="meta">6 类场景 · 36 条方法 · 每条都能今天就用</p>
+  </div>
+  <div class="filters" id="filters"></div>
+</header>
+
+<main class="container">
+  <div class="view-head">
+    <div>
+      <h2 id="viewTitle">📖 全部 36 计</h2>
+      <p id="viewDesc">点上方分类可只看某一类场景。</p>
+    </div>
+    <span class="count" id="viewCount">共 36 条</span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <section class="howto">
+    <h2>🧭 这 36 计怎么用才有效</h2>
+    <ol>
+      <li><b>一次只用一两计。</b>36 条同时上，孩子只会感到被"套路"，反而失效。</li>
+      <li><b>按场景找，不按顺序背。</b>当下最头疼的是哪件事，就去对应分类里挑，不要从头到尾执行。</li>
+      <li><b>先做"关系类"，再做"管教类"。</b>倾听、对等、尊子没做到，处罚、训诫往往只会激起对抗。</li>
+      <li><b>方法要配年龄。</b>同一个"放手计"，对 3 岁是让他自己吃饭，对 15 岁是让他自己排周末计划。</li>
+      <li><b>允许自己做不到。</b>今天没忍住发了火，明天补一句道歉，本身就是"样板计"。</li>
+    </ol>
+  </section>
+
+  <section class="disclaimer">
+    <h2>⚠️ 关于这份清单</h2>
+    <ul>
+      <li>本页内容整理自人民日报推荐、微信公众号「光明少年杂志」发布的《教育孩子"36计"》，<strong>版权归原作者所有</strong>，此处仅作家庭教育参考。</li>
+      <li>36 计是<strong>经验性的教育方法</strong>，不是诊断或治疗方案，也没有哪一条适用于所有孩子。</li>
+      <li>涉及体罚、羞辱、冷暴力等方式<strong>不可取</strong>：原文所说"处罚""冷淡"均指<strong>适度、有边界</strong>的管教，请勿理解为打骂或长期忽视。</li>
+      <li>若孩子出现持续的情绪低落、拒学、自伤言语或行为，请及时寻求<strong>儿童心理科或学校心理老师</strong>的专业帮助。</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div class="container foot-grid">
+    <div>
+      <h3>📌 教育孩子 36 计</h3>
+      <p>父母是孩子的第一任老师，也是一生的老师。没有一把万能钥匙能打开孩子的一切，但多备几把，总能找到当下合适的那一把。</p>
+    </div>
+    <div>
+      <small>内容整理自微信公众号「光明少年杂志」2023 年 5 月 8 日文章<br>《人民日报推荐：教育孩子"36计"，助力孩子领先同龄人》</small>
+      <small>原文链接：<a href="https://mp.weixin.qq.com/s/SCp0uiubQ-bXtoNUetGJFA" target="_blank" rel="noopener">mp.weixin.qq.com/s/SCp0uiubQ-bXtoNUetGJFA</a></small>
+      <small>本页仅作家庭教育参考 · 不构成心理诊断或医疗建议</small>
+    </div>
+  </div>
+</footer>
+
+<button id="backTop" aria-label="返回顶部">↑</button>
+
+<script>
+const CATS = [
+  { id:"c1", name:"放手与抗挫", color:"#f0932b", desc:"把做事的机会还给孩子，也让他有机会输一次。" },
+  { id:"c2", name:"自信与认可", color:"#10ac84", desc:"孩子对自己的判断，最先来自父母看他的眼神。" },
+  { id:"c3", name:"沟通与情绪", color:"#3867d6", desc:"先接住情绪，再谈道理；先做朋友，再做父母。" },
+  { id:"c4", name:"规则与纠错", color:"#8854d0", desc:"爱不是没有边界，管教也可以不带伤害。" },
+  { id:"c5", name:"学习与榜样", color:"#0abde3", desc:"点燃兴趣，比按住他坐下更省力。" },
+  { id:"c6", name:"品格与生活", color:"#eb3b5a", desc:"节俭、共情、开阔，都在日常里慢慢长出来。" }
+];
+
+const ITEMS = [
+  { n:1,  c:"c1", name:"放手计", sub:"自己的事情自己做",
+    text:"不要什么都替孩子做好，家长要试着放开手，让他自己去试。第一次也许做不好，但以后会做得又快又好；包办越多，孩子越没有自立的机会。" },
+  { n:2,  c:"c1", name:"纵容计", sub:"让孩子在“淘气”中开发潜能",
+    text:"爱“破坏”的孩子往往更聪明，求知欲、好奇心更强，意志力也更坚定。聪明的家长会“纵容”这份淘气，借机挖掘潜能、培养兴趣。" },
+  { n:3,  c:"c4", name:"处罚计", sub:"让孩子正视错误",
+    text:"教育要赏罚分明：做得好就奖励，做错事不姑息。哪怕是小错也要适度处理，孩子才能正视错误、及时改正，不在错误里越陷越深。" },
+  { n:4,  c:"c4", name:"制冷计", sub:"给自负的孩子泼冷水",
+    text:"自负是自我评价过高、目中无人，对成长极为不利。发现苗头时，父母要适时泼点冷水，让孩子学会理性评价、正确认识自己。" },
+  { n:5,  c:"c2", name:"包容计", sub:"让孩子感受父母无条件的爱",
+    text:"孩子也许不够聪明，也许有很多缺点，但父母不能对他存有偏见，更不能羞辱或嫌弃。包容和信心，是孩子安全感的底子。" },
+  { n:6,  c:"c6", name:"扮弱计", sub:"让孩子当一次“小大人”",
+    text:"如果父母总表现得风雨无惧，孩子会以为父母不需要关心。偶尔扮弱向他求助，你会看到他突然变得懂事，你也能从被帮助里收获很多。" },
+  { n:7,  c:"c2", name:"补强计", sub:"让孩子由自卑变自信",
+    text:"补强法则说：一个行为得到满意结果时，这个行为就会重复出现。孩子被认可，自信被激发，好行为不断重复，慢慢就摆脱了自卑。" },
+  { n:8,  c:"c5", name:"诱导计", sub:"帮孩子跨过厌学的泥潭",
+    text:"几乎每个孩子都有厌学情绪，可以理解但不能放任。强制学习只会加深反感，聪明的做法是诱导兴趣，让孩子自发地学。" },
+  { n:9,  c:"c4", name:"冷淡计", sub:"让孩子有一点自控力",
+    text:"被无微不至照顾的孩子容易任性，这会给未来埋下隐患。孩子任性时不妨试试冷处理，他因得不到注意，会慢慢收敛脾气。" },
+  { n:10, c:"c1", name:"受挫计", sub:"给孩子体验失败的机会",
+    text:"逆境可以出人才，经过挫折成长起来的孩子更有生存竞争力。有意识地创造适度的挫折，是增强心理承受力的好办法。" },
+  { n:11, c:"c5", name:"样板计", sub:"父母要给孩子当好第一任老师",
+    text:"父母是孩子的榜样，孩子是父母的镜子。严于律己、言行一致，比任何说教都有效。" },
+  { n:12, c:"c2", name:"鼓励计", sub:"让孩子不断进取的力量",
+    text:"孩子很容易失去信心，也容易因为困难放弃。持续的鼓励给他前进的勇气，他才会带着期待改正缺点、不断进步。" },
+  { n:13, c:"c3", name:"倾听计", sub:"认真了解孩子的感受",
+    text:"每个孩子都有自己的心声，耐心倾听才能真正了解他的想法和感受。在此基础上，才谈得上良好的沟通和和谐的亲子关系。" },
+  { n:14, c:"c2", name:"赏善计", sub:"让孩子在赞美声中进步",
+    text:"教育孩子，奖励比惩罚更有效：多奖励、适当惩罚。用肯定优点代替否定缺点，既不伤人，进步也更快。" },
+  { n:15, c:"c5", name:"点拨计", sub:"巧妙提示孩子自觉走正途",
+    text:"絮絮叨叨说教、凡事包办，是孩子最不喜欢的。聪明的家长只在他遇到难题或犯错时，从旁稍加提示，帮他自己解决。" },
+  { n:16, c:"c2", name:"虚拟计", sub:"让孩子产生“我很棒”的感觉",
+    text:"“有了天才的感觉，你会成为天才；有了英雄的感觉，你会成为英雄。”给孩子制造一个“我很棒”的自我感觉，他会慢慢真的棒起来。" },
+  { n:17, c:"c4", name:"容过计", sub:"让孩子在错误中学到更多",
+    text:"孩子难免犯错，有无意的，也有故意的。性质不严重时给予宽容谅解，他会在内疚中更认真地改正，也学会宽容别人。" },
+  { n:18, c:"c4", name:"训诫计", sub:"让孩子认识错误、改过自新",
+    text:"有些错误可以宽容，有些不能姑息，必须进行合理有效的批评，保证不再犯。再宽大的父母，也不能让合理管教缺位。" },
+  { n:19, c:"c5", name:"熏陶计", sub:"在生活中给孩子好的影响",
+    text:"家庭是孩子的第一课堂，影响深远。通过讲故事、一起做事等方式培养健康的兴趣，情趣和品行就在日常里长出来。" },
+  { n:20, c:"c3", name:"疏导计", sub:"让孩子由对立变成合作",
+    text:"大禹治水成功在“疏”不在“堵”。教育太过专制只会引起逆反，明智开放的疏导，孩子才愿意跟你合作。" },
+  { n:21, c:"c3", name:"尊子计", sub:"让孩子与父母贴得更近",
+    text:"亲子冲突往往源于不够尊重，孩子心怀恐惧和不满，距离就越拉越开。试着尊重他，你们会成为最受欢迎的父母。" },
+  { n:22, c:"c3", name:"对等计", sub:"与孩子实现良好的沟通",
+    text:"良好沟通的前提是平等，先做他的好朋友。总摆家长架子、要求服从，沟通的大门会慢慢关上。" },
+  { n:23, c:"c4", name:"攻防计", sub:"先给孩子打好“预防针”",
+    text:"最好的防守是进攻。与其等孩子出了问题再管教、发怒，不如提前提高他的“免疫力”，让他少走弯路、少犯错。" },
+  { n:24, c:"c6", name:"训俭计", sub:"帮孩子克服骄奢之气",
+    text:"要什么给什么，容易养成骄奢习惯：花钱大手大脚、不爱惜物品。理直气壮地教他勤俭节约，才是真正的爱。" },
+  { n:25, c:"c5", name:"伴教计", sub:"在参与中教出好孩子",
+    text:"多抽时间陪孩子做事，既增进亲子感情，也能鼓舞他。陪伴中你会更了解他，这对开发潜力非常重要。" },
+  { n:26, c:"c6", name:"防微计", sub:"别让小毛病变成大问题",
+    text:"霸道、无礼、懒惰，这些毛病看着小，也要严管。防微杜渐，不姑息小毛病，严管同样是爱的表现。" },
+  { n:27, c:"c6", name:"劝和计", sub:"让孩子与老师相互包容",
+    text:"师生之间也会有摩擦和误会。家长要当“和事佬”，帮双方消除误会、互相理解，让孩子依旧尊敬老师，老师继续爱护孩子。" },
+  { n:28, c:"c6", name:"立规计", sub:"用合理的规则让孩子学会自控",
+    text:"孩子自控力差，“不要这样”“不要那样”的说教又容易让人厌烦。为他建立一套行之有效的规则，让他有判断自己行为的依据。" },
+  { n:29, c:"c1", name:"减负计", sub:"别给孩子太大的压力",
+    text:"有心理障碍的孩子越来越多，压力过大是重要原因。给孩子减负已经成了当务之急，别让他背着超载的期待长大。" },
+  { n:30, c:"c5", name:"激发计", sub:"激励孩子爱学习",
+    text:"劝导、说教都不奏效时，可以试试激发计。利用好胜心、逆反心去“刺激”他，让他从不想学变成主动学。" },
+  { n:31, c:"c2", name:"悦纳计", sub:"让孩子喜欢并接受自己",
+    text:"孩子若不能全面认识自己、看到自己的长处，就容易自卑、嫉妒。让他看见优点、喜欢自己，才能自信地面对生活。" },
+  { n:32, c:"c3", name:"用忍计", sub:"温和地纠正孩子“出格”的行为",
+    text:"孩子常做出让人无法容忍的“出格”行为，“急风骤雨”只会把他推向极端。压下火气，多理解包容，再引导回正途。" },
+  { n:33, c:"c1", name:"鼓勇计", sub:"培养孩子大胆探索的个性",
+    text:"勇于探索、大胆无畏的人更容易取得成就。不要过度保护，不要只强调“听话”，多给锻炼机会，鼓励他做勇敢的孩子。" },
+  { n:34, c:"c3", name:"感化计", sub:"以真情感动孩子的心灵",
+    text:"教育不能只有说教、责骂、劝导，有时必须以情动人，才能撼动心灵。但感化必须情真意切，否则效果大打折扣。" },
+  { n:35, c:"c6", name:"平等计", sub:"培养胸怀开阔的孩子",
+    text:"孩子习惯以自我为中心，这对人际交往不利。不要给他特殊地位，培养分享与合作，慢慢养出胸怀开阔的孩子。" },
+  { n:36, c:"c1", name:"苦磨计", sub:"培养孩子的意志和毅力",
+    text:"生活太安逸，孩子缺少战胜困难的勇气。多让他经受一些磨练，才能养出坚韧不拔的意志，在未来的竞争里站得住。" }
+];
+
+const catMap = {};
+CATS.forEach(c => catMap[c.id] = c);
+const esc = s => String(s).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const pad = n => (n < 10 ? "0" : "") + n;
+
+/* 筛选按钮 */
+const filters = document.getElementById("filters");
+filters.innerHTML =
+  `<button class="fpill active" data-cat="all" style="--c:#5b5148"><span class="dot"></span>全部<span class="cnt">36</span></button>` +
+  CATS.map(c => {
+    const n = ITEMS.filter(i => i.c === c.id).length;
+    return `<button class="fpill" data-cat="${c.id}" style="--c:${c.color}"><span class="dot"></span>${c.name}<span class="cnt">${n}</span></button>`;
+  }).join("");
+
+/* 卡片 */
+document.getElementById("grid").innerHTML = ITEMS.map(it => {
+  const c = catMap[it.c];
+  return `
+  <article class="card" data-cat="${it.c}" style="--c:${c.color}">
+    <div class="card-top">
+      <span class="num">${pad(it.n)}</span>
+      <h3>${esc(it.name)}</h3>
+    </div>
+    <p class="sub">${esc(it.sub)}</p>
+    <p class="text">${esc(it.text)}</p>
+    <span class="tag">${c.name}</span>
+  </article>`;
+}).join("");
+
+/* 筛选交互 */
+let cur = "all";
+filters.addEventListener("click", e => {
+  const btn = e.target.closest(".fpill");
+  if (!btn) return;
+  cur = btn.dataset.cat;
+  filters.querySelectorAll(".fpill").forEach(b => b.classList.toggle("active", b === btn));
+
+  let shown = 0;
+  document.querySelectorAll(".card").forEach(card => {
+    const ok = cur === "all" || card.dataset.cat === cur;
+    card.classList.toggle("hide", !ok);
+    if (ok) shown++;
+  });
+
+  const title = document.getElementById("viewTitle");
+  const desc = document.getElementById("viewDesc");
+  if (cur === "all") {
+    title.textContent = "📖 全部 36 计";
+    desc.textContent = "点上方分类可只看某一类场景。";
+  } else {
+    title.textContent = "📖 " + catMap[cur].name;
+    desc.textContent = catMap[cur].desc;
+  }
+  document.getElementById("viewCount").textContent = "共 " + shown + " 条";
+
+  const head = document.querySelector(".view-head");
+  window.scrollTo(0, Math.max(0, head.getBoundingClientRect().top + window.scrollY - 20));
+});
+
+/* 返回顶部 */
+const backTop = document.getElementById("backTop");
+window.addEventListener("scroll", () => backTop.classList.toggle("show", window.scrollY > 600), { passive: true });
+backTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+window.addEventListener("load", () => setTimeout(() => window.scrollTo(0, 0), 50));
+</script>
+</body>
+</html>

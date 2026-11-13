@@ -1,0 +1,2775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>💎 萌趣宝石消消乐 - 智趣休闲游戏乐园</title>
+  <style>
+    :root {
+      --primary-purple: #8b5cf6;
+      --primary-pink: #ec4899;
+      --primary-cyan: #06b6d4;
+      --primary-gold: #f59e0b;
+      --bg-dark: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.88);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      height: 100vh;
+      height: 100dvh;
+      background: 
+        radial-gradient(circle at 10% 15%, rgba(216, 180, 254, 0.45) 0%, transparent 40%),
+        radial-gradient(circle at 90% 20%, rgba(254, 205, 211, 0.5) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(186, 230, 253, 0.5) 0%, transparent 50%),
+        #f1f5f9;
+      font-family: var(--font-family);
+      color: #1e293b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    /* 背景柔光装饰球 */
+    .bg-glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(70px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+      animation: floatGlow 16s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 360px; height: 360px;
+      background: linear-gradient(135deg, #fbcfe8, #f472b6);
+      top: -60px; left: -80px;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: linear-gradient(135deg, #ddd6fe, #a78bfa);
+      top: 100px; right: -100px;
+      animation-delay: -6s;
+    }
+    .orb-3 {
+      width: 420px; height: 420px;
+      background: linear-gradient(135deg, #bae6fd, #67e8f9);
+      bottom: -80px; left: 20%;
+      animation-delay: -11s;
+    }
+
+    @keyframes floatGlow {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(25px, 20px) scale(1.06); }
+      100% { transform: translate(-20px, 35px) scale(0.96); }
+    }
+
+    /* 主容器：严格自适应视口宽高，彻底消除滚动条 */
+    .game-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      max-height: 100vh;
+      max-width: min(540px, calc(100vh - 200px), calc(100vw - 16px));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* 顶部导航控制条 */
+    .top-navbar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-back-hub {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+    }
+    .btn-back-hub:hover {
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      color: #0f172a;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      color: #334155;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+    }
+    .icon-btn:hover {
+      background: #ffffff;
+      transform: scale(1.06);
+    }
+
+    /* 模式切换胶囊栏 */
+    .mode-switch-bar {
+      display: flex;
+      background: rgba(241, 245, 249, 0.85);
+      border: 1px solid rgba(203, 213, 225, 0.7);
+      padding: 3px;
+      border-radius: 12px;
+      gap: 3px;
+    }
+    .mode-tab {
+      padding: 4px 11px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    .mode-tab.active {
+      background: #ffffff;
+      color: var(--primary-purple);
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.18);
+    }
+
+    /* 计分与状态看板 */
+    .dashboard-card {
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 6px 18px -4px rgba(15, 23, 42, 0.06);
+      padding: 7px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      color: #ffffff;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 800;
+      box-shadow: 0 3px 8px rgba(236, 72, 153, 0.2);
+    }
+
+    .goal-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(248, 250, 252, 0.9);
+      padding: 3px 10px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .goal-target-icon {
+      font-size: 15px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .stat-pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-pill-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 1px;
+    }
+
+    .stat-pill-val {
+      font-size: 15px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .stat-pill-val.highlight {
+      color: #ea580c;
+    }
+
+    /* 游戏棋盘区域容器 */
+    .board-container {
+      position: relative;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 8px;
+      box-shadow: 
+        0 14px 30px -8px rgba(139, 92, 246, 0.18),
+        0 0 0 3px rgba(255, 255, 255, 0.9),
+        0 0 0 5px rgba(226, 232, 240, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      touch-action: none;
+      flex-shrink: 1;
+      min-height: 0;
+      aspect-ratio: 1 / 1;
+    }
+
+    canvas#gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      background: #f8fafc;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+    }
+
+    /* 连击爆发横幅 (Combo Banner) */
+    .combo-banner {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      pointer-events: none;
+      z-index: 40;
+      font-size: 28px;
+      font-weight: 900;
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      color: #ffffff;
+      padding: 6px 20px;
+      border-radius: 26px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+      opacity: 0;
+    }
+    .combo-banner.show {
+      transform: translate(-50%, -50%) scale(1.1);
+      opacity: 1;
+    }
+
+    /* 底部辅助操作栏 */
+    .bottom-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s ease;
+    }
+    .btn-action:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-action-restart {
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-action-restart:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .btn-action-hint {
+      background: linear-gradient(135deg, #06b6d4, #0284c7);
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(6, 182, 212, 0.25);
+    }
+    .btn-action-hint:hover {
+      box-shadow: 0 5px 14px rgba(6, 182, 212, 0.35);
+    }
+
+    .btn-action-rule {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(139, 92, 246, 0.25);
+    }
+    .btn-action-rule:hover {
+      box-shadow: 0 5px 14px rgba(139, 92, 246, 0.35);
+    }
+
+    /* 弹窗通用样式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 420px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      padding: 20px 18px 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-overlay.active .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 52px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 14.5px;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .modal-stars {
+      display: flex;
+      gap: 10px;
+      font-size: 34px;
+      margin-bottom: 18px;
+    }
+
+    .modal-stats-list {
+      width: 100%;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .modal-stat-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #475569;
+    }
+    .modal-stat-item strong {
+      color: #0f172a;
+    }
+
+    .modal-btn-row {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-modal {
+      flex: 1;
+      padding: 13px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    .btn-modal-primary {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(236, 72, 153, 0.35);
+    }
+    .btn-modal-primary:hover {
+      box-shadow: 0 8px 22px rgba(236, 72, 153, 0.45);
+      transform: translateY(-2px);
+    }
+    .btn-modal-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .btn-modal-secondary:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    /* 规则弹窗图解卡片 */
+    .rules-card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .rule-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .rule-card-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rule-card-desc {
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    /* 宝石形状与图鉴样式 */
+    .gem-catalog-card {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .gem-catalog-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .gem-catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .gem-catalog-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #334155;
+      background: #ffffff;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .gem-catalog-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    @media (max-width: 480px) {
+      .game-wrapper {
+        gap: 6px;
+      }
+      .stat-pill-val {
+        font-size: 14px;
+      }
+      .stat-pill {
+        padding: 3px 5px;
+      }
+      .btn-action {
+        padding: 7px 6px;
+        font-size: 12px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 背景柔光球 -->
+  <div class="bg-glow-orb orb-1"></div>
+  <div class="bg-glow-orb orb-2"></div>
+  <div class="bg-glow-orb orb-3"></div>
+
+  <div class="game-wrapper">
+
+    <!-- 顶部导航 -->
+    <header class="top-navbar">
+      <a href="../index.html" class="btn-back-hub">
+        <span>🏠</span> 乐园大厅
+      </a>
+
+      <!-- 模式切换 -->
+      <div class="mode-switch-bar">
+        <button class="mode-tab active" id="tabLevel" onclick="game.switchMode('level')">关卡挑战</button>
+        <button class="mode-tab" id="tabEndless" onclick="game.switchMode('endless')">休闲无尽</button>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" id="soundBtn" onclick="game.audio.toggleMute()" title="音效开关">🔊</button>
+        <button class="icon-btn" onclick="game.showRules()" title="游戏规则">❓</button>
+      </div>
+    </header>
+
+    <!-- 计分与目标看板 -->
+    <section class="dashboard-card">
+      <div class="status-row">
+        <div class="level-badge" id="levelBadge">
+          <span>🌟</span> <span id="levelText">第 1 关</span>
+        </div>
+        <div class="goal-box" id="goalBox">
+          <span class="goal-target-icon" id="goalIcon">❤️</span>
+          <span id="goalText">目标：收集 15 颗心形红宝石</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-pill">
+          <span class="stat-pill-label" id="movesLabel">剩余步数</span>
+          <span class="stat-pill-val highlight" id="movesVal">25</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-label">当前得分</span>
+          <span class="stat-pill-val" id="scoreVal">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-label">历史最高</span>
+          <span class="stat-pill-val" id="highScoreVal">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 棋盘容器 -->
+    <main class="board-container">
+      <canvas id="gameCanvas" width="560" height="560"></canvas>
+      <div class="combo-banner" id="comboBanner">GREAT! 🔥</div>
+    </main>
+
+    <!-- 底部操作按钮 -->
+    <footer class="bottom-bar">
+      <button class="btn-action btn-action-restart" onclick="game.restartGame()">
+        <span>🔄</span> 重新开始
+      </button>
+      <button class="btn-action btn-action-hint" onclick="game.triggerHint()">
+        <span>💡</span> 提示一步
+      </button>
+      <button class="btn-action btn-action-rule" onclick="game.showRules()">
+        <span>📖</span> 特殊合成
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- 关卡成功弹窗 -->
+  <div class="modal-overlay" id="modalWin">
+    <div class="modal-dialog">
+      <div class="modal-icon">🏆</div>
+      <h2 class="modal-title">关卡挑战成功！</h2>
+      <div class="modal-stars" id="winStars">⭐⭐⭐</div>
+      <p class="modal-desc" id="winDesc">太棒了！你凭借出色的消除技巧完成了所有目标！</p>
+      <div class="modal-stats-list">
+        <div class="modal-stat-item">
+          <span>本关得分</span>
+          <strong id="winScore">0</strong>
+        </div>
+        <div class="modal-stat-item">
+          <span>剩余步数奖励</span>
+          <strong id="winBonus">0</strong>
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="btn-modal btn-modal-secondary" onclick="game.restartGame()">重玩本关</button>
+        <button class="btn-modal btn-modal-primary" onclick="game.nextLevel()">下一关 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步数耗尽 / 游戏结束弹窗 -->
+  <div class="modal-overlay" id="modalLose">
+    <div class="modal-dialog">
+      <div class="modal-icon">💔</div>
+      <h2 class="modal-title">步数已用尽！</h2>
+      <p class="modal-desc">距离完成目标还差一点点，不要灰心，再接再厉！</p>
+      <div class="modal-stats-list">
+        <div class="modal-stat-item">
+          <span>最终得分</span>
+          <strong id="loseScore">0</strong>
+        </div>
+        <div class="modal-stat-item">
+          <span>达成目标进度</span>
+          <strong id="loseProgress">0%</strong>
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="btn-modal btn-modal-secondary" onclick="game.switchMode('endless')">休闲无尽</button>
+        <button class="btn-modal btn-modal-primary" onclick="game.restartGame()">再来一次 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 规则与特殊宝石弹窗 -->
+  <div class="modal-overlay" id="modalRules">
+    <div class="modal-dialog">
+      <div class="modal-icon">✨</div>
+      <h2 class="modal-title">消除与特殊宝石秘籍</h2>
+      <p class="modal-desc">移动相邻两颗宝石，凑齐3颗或更多相同宝石即可消除！</p>
+      
+      <!-- 宝石形状与颜色专属图鉴 -->
+      <div class="gem-catalog-card">
+        <div class="gem-catalog-title"><span>💎</span> 萌趣宝石图鉴（不同形状与立体切面）：</div>
+        <div class="gem-catalog-grid">
+          <div class="gem-catalog-item"><span class="gem-catalog-icon">❤️</span><span>心形 · 红宝石</span></div>
+          <div class="gem-catalog-item"><span class="gem-catalog-icon">🔷</span><span>菱形 · 蓝宝石</span></div>
+          <div class="gem-catalog-item"><span class="gem-catalog-icon">🟩</span><span>方形 · 绿翡翠</span></div>
+          <div class="gem-catalog-item"><span class="gem-catalog-icon">🔺</span><span>三角 · 金黄钻</span></div>
+          <div class="gem-catalog-item"><span class="gem-catalog-icon">🔮</span><span>六边 · 紫水晶</span></div>
+          <div class="gem-catalog-item"><span class="gem-catalog-icon">🟠</span><span>圆形 · 橙玛瑙</span></div>
+        </div>
+      </div>
+
+      <div class="rules-card-grid">
+        <div class="rule-card">
+          <div class="rule-card-title"><span>⚡</span> 直线4消 · 闪电宝石</div>
+          <div class="rule-card-desc">横向或竖向消除整行/整列宝石，摧毁整条防线！</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title"><span>💣</span> L/T型5消 · 炸弹宝石</div>
+          <div class="rule-card-desc">引爆 3×3 范围巨型爆炸，瞬间消清周围所有阻碍！</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title"><span>🌈</span> 直线5消 · 彩虹晶星</div>
+          <div class="rule-card-desc">与任意宝石互换，消灭全场所有同色宝石；双星互换全屏清空！</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title"><span>🔥</span> 连击加成 · 爽快爆分</div>
+          <div class="rule-card-desc">单次消除触发连锁连击，得分指数级翻倍！</div>
+        </div>
+      </div>
+
+      <button class="btn-modal btn-modal-primary" style="width: 100%;" onclick="game.closeRules()">我明白了，开始畅玩！</button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Web Audio API 音效合成引擎
+     * 纯原生合成，无需外部音频资源，零延迟响应
+     */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('gem_match_muted') === 'true';
+        this.updateBtnUI();
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.ctx = new AudioContextClass();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('gem_match_muted', this.muted);
+        this.updateBtnUI();
+        if (!this.muted) {
+          this.playTone(659.25, 0.1, 'sine', 0.2);
+        }
+      }
+
+      updateBtnUI() {
+        const btn = document.getElementById('soundBtn');
+        if (btn) btn.textContent = this.muted ? '🔇' : '🔊';
+      }
+
+      playTone(freq, duration, type = 'sine', gainVal = 0.15) {
+        if (this.muted) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      }
+
+      // 宝石选中
+      playSelect() {
+        this.playTone(600, 0.06, 'sine', 0.15);
+      }
+
+      // 宝石互换
+      playSwap() {
+        if (this.muted) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(350, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(550, this.ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.1);
+        } catch (e) {}
+      }
+
+      // 互换失败回弹
+      playBounce() {
+        this.playTone(280, 0.12, 'sine', 0.16);
+      }
+
+      // 普通消除根据 combo 层级提升音调
+      playMatch(combo = 1) {
+        if (this.muted) return;
+        const baseFreqs = [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98]; // C5 ~ G6
+        const startIdx = Math.min(combo - 1, baseFreqs.length - 2);
+        const f1 = baseFreqs[startIdx];
+        const f2 = baseFreqs[startIdx + 1];
+        this.playTone(f1, 0.12, 'sine', 0.18);
+        setTimeout(() => this.playTone(f2, 0.16, 'sine', 0.2), 60);
+      }
+
+      // 闪电雷电音效 (激光穿透)
+      playLightning() {
+        if (this.muted) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.25);
+        } catch (e) {}
+      }
+
+      // 炸弹爆炸音效 (震撼低音)
+      playBomb() {
+        if (this.muted) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.4);
+          gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.4);
+        } catch (e) {}
+      }
+
+      // 彩虹星星音效 (梦幻琶音)
+      playRainbow() {
+        if (this.muted) return;
+        const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 0.2, 'sine', 0.16), idx * 60);
+        });
+      }
+
+      // 胜利号角
+      playWin() {
+        if (this.muted) return;
+        const fanfare = [
+          { f: 523.25, d: 0.12, t: 0 },
+          { f: 659.25, d: 0.12, t: 120 },
+          { f: 783.99, d: 0.12, t: 240 },
+          { f: 1046.5, d: 0.35, t: 360 }
+        ];
+        fanfare.forEach(item => {
+          setTimeout(() => this.playTone(item.f, item.d, 'triangle', 0.25), item.t);
+        });
+      }
+
+      // 失败提示
+      playLose() {
+        if (this.muted) return;
+        const notes = [440, 392, 349.23, 293.66];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 0.2, 'sine', 0.18), idx * 120);
+        });
+      }
+    }
+
+    /**
+     * 宝石定义与配色配置（包含专属几何形状与切面）
+     * 0: 心形红宝石 (Heart)
+     * 1: 菱形蓝宝石 (Rhombus)
+     * 2: 方形绿翡翠 (Emerald-cut Square)
+     * 3: 三角金黄钻 (Triangle)
+     * 4: 六边紫水晶 (Hexagon)
+     * 5: 圆形橙玛瑙 (Circle)
+     */
+    const GEM_TYPES = [
+      { id: 0, name: '红宝石', shape: 'heart', shapeName: '心形', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.45)', icon: '❤️', dark: '#991b1b' },
+      { id: 1, name: '蓝宝石', shape: 'rhombus', shapeName: '菱形', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.45)', icon: '🔷', dark: '#1e3a8a' },
+      { id: 2, name: '绿翡翠', shape: 'square', shapeName: '方形', color: '#10b981', glow: 'rgba(16, 185, 129, 0.45)', icon: '🟩', dark: '#064e3b' },
+      { id: 3, name: '金黄钻', shape: 'triangle', shapeName: '三角', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.45)', icon: '🔺', dark: '#92400e' },
+      { id: 4, name: '紫水晶', shape: 'hexagon', shapeName: '六边', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.45)', icon: '🔮', dark: '#581c87' },
+      { id: 5, name: '橙玛瑙', shape: 'circle', shapeName: '圆形', color: '#f97316', glow: 'rgba(249, 115, 22, 0.45)', icon: '🟠', dark: '#7c2d12' }
+    ];
+
+    // 特殊宝石类型常量
+    const SPECIAL_NORMAL = 0;
+    const SPECIAL_LINE_H = 1; // 横向整行闪电
+    const SPECIAL_LINE_V = 2; // 纵向整列闪电
+    const SPECIAL_BOMB = 3;   // 3x3 范围炸弹
+    const SPECIAL_RAINBOW = 4;// 全场同色彩虹星
+
+    /**
+     * 关卡配置
+     */
+    const LEVELS = [
+      {
+        level: 1,
+        name: '初试身手',
+        targetType: 'collect',
+        targetGemId: 0, // 心形红宝石
+        targetCount: 15,
+        targetScore: 1200,
+        moves: 22,
+        desc: '收集 15 颗心形红宝石'
+      },
+      {
+        level: 2,
+        name: '星海遨游',
+        targetType: 'collect',
+        targetGemId: 1, // 菱形蓝宝石
+        targetCount: 18,
+        targetScore: 2500,
+        moves: 24,
+        desc: '收集 18 颗菱形蓝宝石'
+      },
+      {
+        level: 3,
+        name: '黄金试炼',
+        targetType: 'collect',
+        targetGemId: 3, // 三角金黄钻
+        targetCount: 20,
+        targetScore: 4000,
+        moves: 25,
+        desc: '收集 20 颗三角金黄钻'
+      },
+      {
+        level: 4,
+        name: '翡翠仙境',
+        targetType: 'collect',
+        targetGemId: 2, // 方形绿翡翠
+        targetCount: 22,
+        targetScore: 6000,
+        moves: 24,
+        desc: '收集 22 颗方形绿翡翠'
+      },
+      {
+        level: 5,
+        name: '紫晶幻境',
+        targetType: 'score',
+        targetGemId: -1,
+        targetCount: 0,
+        targetScore: 10000,
+        moves: 22,
+        desc: '挑战 10,000 分大关'
+      }
+    ];
+
+    /**
+     * 主游戏类
+     */
+    class GemMatchGame {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.audio = new SoundEngine();
+
+        this.rows = 8;
+        this.cols = 8;
+        this.grid = []; // [row][col] = Gem
+        this.tileSize = this.canvas.width / this.cols;
+
+        this.mode = 'level'; // 'level' | 'endless'
+        this.currentLevelIndex = 0;
+        this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('gem_match_highscore') || '0', 10);
+        this.moves = 25;
+        this.collectedCount = 0;
+
+        // 连击数与状态机
+        this.combo = 0;
+        this.isBusy = false; // 是否在动画流程中
+        this.selectedTile = null; // { r, c }
+        this.hintPair = null; // [ {r, c}, {r, c} ]
+        this.hintTimer = null; // 提示自动隐藏倒计时
+
+        // 粒子与浮动文字特效
+        this.particles = [];
+        this.floatingTexts = [];
+        this.shockwaves = [];
+
+        // 触屏滑动处理
+        this.dragStart = null;
+
+        this.init();
+      }
+
+      init() {
+        this.updateHighScoreDisplay();
+        this.setupEventListeners();
+        this.startLevel(this.currentLevelIndex);
+        this.lastTime = performance.now();
+        requestAnimationFrame((t) => this.gameLoop(t));
+      }
+
+      updateHighScoreDisplay() {
+        const el = document.getElementById('highScoreVal');
+        if (el) el.textContent = this.highScore;
+      }
+
+      // 清除当前提示
+      clearHint() {
+        this.hintPair = null;
+        if (this.hintTimer) {
+          clearTimeout(this.hintTimer);
+          this.hintTimer = null;
+        }
+      }
+
+      // 切换模式
+      switchMode(newMode) {
+        this.clearHint();
+        this.mode = newMode;
+        document.getElementById('tabLevel').classList.toggle('active', newMode === 'level');
+        document.getElementById('tabEndless').classList.toggle('active', newMode === 'endless');
+        this.restartGame();
+      }
+
+      // 启动关卡
+      startLevel(idx) {
+        this.currentLevelIndex = idx;
+        const lvl = LEVELS[this.currentLevelIndex % LEVELS.length];
+
+        this.score = 0;
+        this.combo = 0;
+        this.collectedCount = 0;
+        this.isBusy = false;
+        this.selectedTile = null;
+        this.clearHint();
+
+        if (this.mode === 'level') {
+          this.moves = lvl.moves;
+          document.getElementById('levelBadge').style.display = 'inline-flex';
+          document.getElementById('goalBox').style.display = 'flex';
+          document.getElementById('movesLabel').textContent = '剩余步数';
+          document.getElementById('movesVal').textContent = this.moves;
+          document.getElementById('levelText').textContent = `第 ${this.currentLevelIndex + 1} 关`;
+
+          if (lvl.targetType === 'collect') {
+            const gem = GEM_TYPES[lvl.targetGemId];
+            document.getElementById('goalIcon').textContent = gem.icon;
+            document.getElementById('goalText').textContent = `目标：收集 ${lvl.targetCount} 颗${gem.shapeName}${gem.name} (0/${lvl.targetCount})`;
+          } else {
+            document.getElementById('goalIcon').textContent = '🎯';
+            document.getElementById('goalText').textContent = `目标：达成 ${lvl.targetScore} 分`;
+          }
+        } else {
+          // 无尽休闲模式
+          this.moves = 999;
+          document.getElementById('levelBadge').style.display = 'none';
+          document.getElementById('goalBox').style.display = 'flex';
+          document.getElementById('movesLabel').textContent = '消除步数';
+          document.getElementById('movesVal').textContent = '无尽';
+          document.getElementById('goalIcon').textContent = '☕';
+          document.getElementById('goalText').textContent = '休闲畅消 · 刷新最高分！';
+        }
+
+        this.updateDashboard();
+        this.createBoard();
+      }
+
+      restartGame() {
+        this.clearHint();
+        this.closeAllModals();
+        this.startLevel(this.currentLevelIndex);
+      }
+
+      nextLevel() {
+        this.clearHint();
+        this.closeAllModals();
+        this.startLevel(this.currentLevelIndex + 1);
+      }
+
+      updateDashboard() {
+        document.getElementById('scoreVal').textContent = this.score;
+        if (this.mode === 'level') {
+          document.getElementById('movesVal').textContent = this.moves;
+          const lvl = LEVELS[this.currentLevelIndex % LEVELS.length];
+          if (lvl.targetType === 'collect') {
+            const gem = GEM_TYPES[lvl.targetGemId];
+            document.getElementById('goalText').textContent = `目标：收集 ${lvl.targetCount} 颗${gem.shapeName}${gem.name} (${Math.min(this.collectedCount, lvl.targetCount)}/${lvl.targetCount})`;
+          }
+        }
+
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('gem_match_highscore', this.highScore);
+          this.updateHighScoreDisplay();
+        }
+      }
+
+      // 生成没有预先 3 连的初始棋盘
+      createBoard() {
+        this.grid = [];
+        for (let r = 0; r < this.rows; r++) {
+          this.grid[r] = [];
+          for (let c = 0; c < this.cols; c++) {
+            let gemType;
+            do {
+              gemType = Math.floor(Math.random() * GEM_TYPES.length);
+            } while (
+              (c >= 2 && this.grid[r][c - 1].type === gemType && this.grid[r][c - 2].type === gemType) ||
+              (r >= 2 && this.grid[r - 1][c].type === gemType && this.grid[r - 2][c].type === gemType)
+            );
+
+            this.grid[r][c] = {
+              type: gemType,
+              special: SPECIAL_NORMAL,
+              r: r,
+              c: c,
+              x: c * this.tileSize,
+              y: r * this.tileSize,
+              scale: 1,
+              alpha: 1,
+              isClearing: false
+            };
+          }
+        }
+
+        // 确保开局有可消除步数
+        if (!this.findPossibleMove()) {
+          this.reshuffleBoard();
+        }
+      }
+
+      // 寻找一个可用移动（用于提示或死局检测）
+      findPossibleMove() {
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            // 尝试与右侧互换
+            if (c + 1 < this.cols) {
+              if (this.testSwapMatches(r, c, r, c + 1)) {
+                return [{ r, c }, { r, c: c + 1 }];
+              }
+            }
+            // 尝试与下方互换
+            if (r + 1 < this.rows) {
+              if (this.testSwapMatches(r, c, r + 1, c)) {
+                return [{ r, c }, { r: r + 1, c }];
+              }
+            }
+          }
+        }
+        return null;
+      }
+
+      // 测试互换后是否能形成匹配或特殊效果
+      testSwapMatches(r1, c1, r2, c2) {
+        const g1 = this.grid[r1][c1];
+        const g2 = this.grid[r2][c2];
+        if (!g1 || !g2) return false;
+
+        // 如果包含彩虹星，任意交换都有效
+        if (g1.special === SPECIAL_RAINBOW || g2.special === SPECIAL_RAINBOW) {
+          return true;
+        }
+
+        // 临时互换
+        const tempType = g1.type;
+        const tempSpecial = g1.special;
+        g1.type = g2.type;
+        g1.special = g2.special;
+        g2.type = tempType;
+        g2.special = tempSpecial;
+
+        const hasMatch = this.checkMatchesOnGrid().length > 0;
+
+        // 还原互换
+        g2.type = g1.type;
+        g2.special = g1.special;
+        g1.type = tempType;
+        g1.special = tempSpecial;
+
+        return hasMatch;
+      }
+
+      // 自动洗牌
+      reshuffleBoard() {
+        this.showFloatingText('棋盘重排中～', this.canvas.width / 2, this.canvas.height / 2, '#8b5cf6', 28);
+        let valid = false;
+        let attempts = 0;
+        while (!valid && attempts < 100) {
+          attempts++;
+          for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+              this.grid[r][c].type = Math.floor(Math.random() * GEM_TYPES.length);
+              this.grid[r][c].special = SPECIAL_NORMAL;
+            }
+          }
+          // 消除天然匹配
+          let matches = this.checkMatchesOnGrid();
+          while (matches.length > 0) {
+            matches.forEach(m => {
+              this.grid[m.r][m.c].type = (this.grid[m.r][m.c].type + 1) % GEM_TYPES.length;
+            });
+            matches = this.checkMatchesOnGrid();
+          }
+          valid = this.findPossibleMove() !== null;
+        }
+      }
+
+      // 玩家提示（仅由点击“提示一步”按钮触发）
+      triggerHint() {
+        if (this.isBusy) return;
+        const move = this.findPossibleMove();
+        if (move) {
+          this.hintPair = move;
+          if (this.hintTimer) clearTimeout(this.hintTimer);
+          this.hintTimer = setTimeout(() => {
+            if (this.hintPair === move) {
+              this.hintPair = null;
+            }
+          }, 4500);
+          this.audio.playTone(880, 0.1, 'sine', 0.2);
+          this.showFloatingText('提示在这里！💡', this.canvas.width / 2, 60, '#06b6d4', 20);
+        } else {
+          this.reshuffleBoard();
+        }
+      }
+
+      // 事件绑定
+      setupEventListeners() {
+        const getCanvasCoord = (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+          };
+        };
+
+        const onPointerDown = (e) => {
+          if (this.isBusy) return;
+          this.audio.initCtx();
+          const pos = getCanvasCoord(e);
+          const col = Math.floor(pos.x / this.tileSize);
+          const row = Math.floor(pos.y / this.tileSize);
+          if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
+            this.dragStart = { row, col, x: pos.x, y: pos.y };
+          }
+        };
+
+        const onPointerUp = (e) => {
+          if (this.isBusy || !this.dragStart) return;
+          const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+          const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          const endX = (clientX - rect.left) * scaleX;
+          const endY = (clientY - rect.top) * scaleY;
+
+          const dx = endX - this.dragStart.x;
+          const dy = endY - this.dragStart.y;
+          const dist = Math.hypot(dx, dy);
+
+          const r1 = this.dragStart.row;
+          const c1 = this.dragStart.col;
+          this.dragStart = null;
+
+          // 若发生明显拖拽/划动
+          if (dist > this.tileSize * 0.35) {
+            let r2 = r1;
+            let c2 = c1;
+            if (Math.abs(dx) > Math.abs(dy)) {
+              c2 = dx > 0 ? c1 + 1 : c1 - 1;
+            } else {
+              r2 = dy > 0 ? r1 + 1 : r1 - 1;
+            }
+            if (r2 >= 0 && r2 < this.rows && c2 >= 0 && c2 < this.cols) {
+              this.selectedTile = null;
+              this.clearHint();
+              this.trySwap(r1, c1, r2, c2);
+              return;
+            }
+          }
+
+          // 否则视作普通点击
+          this.handleTileClick(r1, c1);
+        };
+
+        this.canvas.addEventListener('mousedown', onPointerDown);
+        window.addEventListener('mouseup', onPointerUp);
+
+        this.canvas.addEventListener('touchstart', onPointerDown, { passive: true });
+        window.addEventListener('touchend', onPointerUp, { passive: true });
+      }
+
+      // 点击方块
+      handleTileClick(r, c) {
+        this.clearHint();
+        if (!this.selectedTile) {
+          this.selectedTile = { r, c };
+          this.audio.playSelect();
+        } else {
+          const r1 = this.selectedTile.r;
+          const c1 = this.selectedTile.c;
+          this.selectedTile = null;
+
+          // 判断是否相邻
+          const isAdjacent = (Math.abs(r1 - r) + Math.abs(c1 - c)) === 1;
+          if (isAdjacent) {
+            this.trySwap(r1, c1, r, c);
+          } else {
+            // 点击非相邻宝石，切换选中
+            this.selectedTile = { r, c };
+            this.audio.playSelect();
+          }
+        }
+      }
+
+      // 执行互换尝试
+      async trySwap(r1, c1, r2, c2) {
+        this.isBusy = true;
+        const g1 = this.grid[r1][c1];
+        const g2 = this.grid[r2][c2];
+
+        this.audio.playSwap();
+
+        // 动画互换
+        await this.animateSwap(g1, g2);
+
+        // 数据互换
+        this.swapGridData(r1, c1, r2, c2);
+
+        // 特殊组合检测（彩虹星与任意交换，或双彩虹互换）
+        let specialSwapTriggered = false;
+        if (g1.special === SPECIAL_RAINBOW || g2.special === SPECIAL_RAINBOW) {
+          specialSwapTriggered = true;
+          await this.executeRainbowSwap(r1, c1, r2, c2);
+        }
+
+        const matches = this.checkMatchesOnGrid();
+        if (!specialSwapTriggered && matches.length === 0) {
+          // 无效互换，弹回
+          this.audio.playBounce();
+          await this.animateSwap(g1, g2);
+          this.swapGridData(r1, c1, r2, c2);
+          this.isBusy = false;
+          return;
+        }
+
+        // 成功互换，步数消耗与连击重置
+        if (this.mode === 'level') {
+          this.moves--;
+        }
+        this.combo = 0;
+        this.updateDashboard();
+
+        // 进入消除与级联下落处理流程
+        await this.resolveMatchesAndCascades(r2, c2);
+
+        this.isBusy = false;
+        this.checkGameStatus();
+      }
+
+      // 两个宝石数据交换
+      swapGridData(r1, c1, r2, c2) {
+        const temp = this.grid[r1][c1];
+        this.grid[r1][c1] = this.grid[r2][c2];
+        this.grid[r2][c2] = temp;
+        this.grid[r1][c1].r = r1;
+        this.grid[r1][c1].c = c1;
+        this.grid[r2][c2].r = r2;
+        this.grid[r2][c2].c = c2;
+      }
+
+      // 平滑互换动画
+      animateSwap(g1, g2, duration = 180) {
+        return new Promise(resolve => {
+          const startX1 = g1.x, startY1 = g1.y;
+          const startX2 = g2.x, startY2 = g2.y;
+          const targetX1 = startX2, targetY1 = startY2;
+          const targetX2 = startX1, targetY2 = startY1;
+          const startTime = performance.now();
+
+          const step = (now) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            // 缓动曲线
+            const ease = 0.5 - Math.cos(progress * Math.PI) / 2;
+
+            g1.x = startX1 + (targetX1 - startX1) * ease;
+            g1.y = startY1 + (targetY1 - startY1) * ease;
+            g2.x = startX2 + (targetX2 - startX2) * ease;
+            g2.y = startY2 + (targetY2 - startY2) * ease;
+
+            if (progress < 1) {
+              requestAnimationFrame(step);
+            } else {
+              g1.x = targetX1; g1.y = targetY1;
+              g2.x = targetX2; g2.y = targetY2;
+              resolve();
+            }
+          };
+          requestAnimationFrame(step);
+        });
+      }
+
+      // 彩虹星特殊互换逻辑
+      async executeRainbowSwap(r1, c1, r2, c2) {
+        const g1 = this.grid[r1][c1];
+        const g2 = this.grid[r2][c2];
+
+        // 双彩虹互换：全屏大消除！
+        if (g1.special === SPECIAL_RAINBOW && g2.special === SPECIAL_RAINBOW) {
+          this.audio.playRainbow();
+          this.showFloatingText('💥 宇宙大爆发！全屏清空！', this.canvas.width / 2, this.canvas.height / 2, '#ec4899', 24);
+          for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+              this.grid[r][c].isClearing = true;
+            }
+          }
+          return;
+        }
+
+        // 单彩虹互换：消灭全场对应颜色的宝石
+        const rainbowGem = g1.special === SPECIAL_RAINBOW ? g1 : g2;
+        const targetGem = g1.special === SPECIAL_RAINBOW ? g2 : g1;
+        const targetColor = targetGem.type;
+
+        this.audio.playRainbow();
+        rainbowGem.isClearing = true;
+        this.showFloatingText(`🌈 彩虹消除：全部${GEM_TYPES[targetColor].shapeName}${GEM_TYPES[targetColor].name}！`, this.canvas.width / 2, 70, GEM_TYPES[targetColor].color, 20);
+
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            if (this.grid[r][c].type === targetColor) {
+              this.grid[r][c].isClearing = true;
+            }
+          }
+        }
+      }
+
+      // 检测棋盘所有匹配集合
+      checkMatchesOnGrid() {
+        const matched = [];
+        const matchSet = new Set();
+
+        // 水平检测
+        for (let r = 0; r < this.rows; r++) {
+          let count = 1;
+          for (let c = 1; c <= this.cols; c++) {
+            if (c < this.cols && this.grid[r][c].type === this.grid[r][c - 1].type) {
+              count++;
+            } else {
+              if (count >= 3) {
+                for (let k = c - count; k < c; k++) {
+                  const key = `${r},${k}`;
+                  if (!matchSet.has(key)) {
+                    matchSet.add(key);
+                    matched.push({ r, c: k, count, dir: 'H' });
+                  }
+                }
+              }
+              count = 1;
+            }
+          }
+        }
+
+        // 垂直检测
+        for (let c = 0; c < this.cols; c++) {
+          let count = 1;
+          for (let r = 1; r <= this.rows; r++) {
+            if (r < this.rows && this.grid[r][c].type === this.grid[r - 1][c].type) {
+              count++;
+            } else {
+              if (count >= 3) {
+                for (let k = r - count; k < r; k++) {
+                  const key = `${k},${c}`;
+                  if (!matchSet.has(key)) {
+                    matchSet.add(key);
+                    matched.push({ r: k, c, count, dir: 'V' });
+                  }
+                }
+              }
+              count = 1;
+            }
+          }
+        }
+
+        return matched;
+      }
+
+      // 级联消除与下落主循环
+      async resolveMatchesAndCascades(lastSwapR = -1, lastSwapC = -1) {
+        let hasMatches = true;
+
+        while (hasMatches) {
+          let matches = this.checkMatchesOnGrid();
+          let clearingGems = [];
+
+          // 收集所有要被消除的格子（包括彩虹触发的）
+          for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+              if (this.grid[r][c].isClearing) {
+                clearingGems.push({ r, c });
+              }
+            }
+          }
+
+          if (matches.length === 0 && clearingGems.length === 0) {
+            hasMatches = false;
+            break;
+          }
+
+          this.combo++;
+          this.audio.playMatch(this.combo);
+
+          // 显示连击横幅
+          if (this.combo >= 2) {
+            this.showComboBadge(this.combo);
+          }
+
+          // 统计合成特殊宝石
+          const specialCreated = this.analyzeSpecialGemCreation(matches, lastSwapR, lastSwapC);
+
+          // 合并所有待消除格子
+          const toClearSet = new Set();
+          matches.forEach(m => toClearSet.add(`${m.r},${m.c}`));
+          clearingGems.forEach(m => toClearSet.add(`${m.r},${m.c}`));
+
+          // 触发可能涉及的特殊宝石连锁引爆
+          await this.triggerSpecialGemsExplosions(toClearSet);
+
+          // 动画消除与计分
+          await this.animateClearTiles(toClearSet, specialCreated);
+
+          // 宝石重力下落与新宝石补充
+          await this.applyGravityAndRefill();
+
+          // 重置上次互换坐标
+          lastSwapR = -1;
+          lastSwapC = -1;
+        }
+      }
+
+      // 分析是否合成特殊宝石（4消闪电、5消炸弹/彩虹）
+      analyzeSpecialGemCreation(matches, swapR, swapC) {
+        const specialCreated = [];
+        if (matches.length === 0) return specialCreated;
+
+        // 统计各连线长度
+        const hRuns = [];
+        const vRuns = [];
+
+        // 水平连线分组（必须是相同颜色的宝石连续匹配）
+        for (let r = 0; r < this.rows; r++) {
+          let run = [];
+          for (let c = 0; c < this.cols; c++) {
+            const isMatch = matches.some(m => m.r === r && m.c === c);
+            const curGem = this.grid[r][c];
+            if (isMatch && curGem) {
+              if (run.length === 0 || curGem.type === this.grid[run[0].r][run[0].c].type) {
+                run.push({ r, c });
+              } else {
+                if (run.length >= 4) hRuns.push([...run]);
+                run = [{ r, c }];
+              }
+            } else {
+              if (run.length >= 4) hRuns.push([...run]);
+              run = [];
+            }
+          }
+          if (run.length >= 4) hRuns.push([...run]);
+        }
+
+        // 垂直连线分组（必须是相同颜色的宝石连续匹配）
+        for (let c = 0; c < this.cols; c++) {
+          let run = [];
+          for (let r = 0; r < this.rows; r++) {
+            const isMatch = matches.some(m => m.r === r && m.c === c);
+            const curGem = this.grid[r][c];
+            if (isMatch && curGem) {
+              if (run.length === 0 || curGem.type === this.grid[run[0].r][run[0].c].type) {
+                run.push({ r, c });
+              } else {
+                if (run.length >= 4) vRuns.push([...run]);
+                run = [{ r, c }];
+              }
+            } else {
+              if (run.length >= 4) vRuns.push([...run]);
+              run = [];
+            }
+          }
+          if (run.length >= 4) vRuns.push([...run]);
+        }
+
+        // 直线 5 消 -> 彩虹星
+        for (let run of [...hRuns, ...vRuns]) {
+          if (run.length >= 5) {
+            const pos = run.find(p => p.r === swapR && p.c === swapC) || run[2];
+            specialCreated.push({ r: pos.r, c: pos.c, type: Math.floor(Math.random() * GEM_TYPES.length), special: SPECIAL_RAINBOW });
+            this.showFloatingText('🌈 获得彩虹星！', pos.c * this.tileSize + 30, pos.r * this.tileSize, '#ec4899', 20);
+            return specialCreated;
+          }
+        }
+
+        // 直线 4 消 -> 闪电宝石
+        for (let run of hRuns) {
+          if (run.length === 4) {
+            const pos = run.find(p => p.r === swapR && p.c === swapC) || run[1];
+            specialCreated.push({ r: pos.r, c: pos.c, type: this.grid[pos.r][pos.c].type, special: SPECIAL_LINE_H });
+            this.showFloatingText('⚡ 获得闪电宝石！', pos.c * this.tileSize + 30, pos.r * this.tileSize, '#06b6d4', 18);
+            return specialCreated;
+          }
+        }
+        for (let run of vRuns) {
+          if (run.length === 4) {
+            const pos = run.find(p => p.r === swapR && p.c === swapC) || run[1];
+            specialCreated.push({ r: pos.r, c: pos.c, type: this.grid[pos.r][pos.c].type, special: SPECIAL_LINE_V });
+            this.showFloatingText('⚡ 获得闪电宝石！', pos.c * this.tileSize + 30, pos.r * this.tileSize, '#06b6d4', 18);
+            return specialCreated;
+          }
+        }
+
+        return specialCreated;
+      }
+
+      // 连锁触发已在消除集合中的特殊宝石
+      async triggerSpecialGemsExplosions(toClearSet) {
+        const detonatedSet = new Set();
+        let addedNew = true;
+        while (addedNew) {
+          addedNew = false;
+          const currentList = Array.from(toClearSet);
+          for (let key of currentList) {
+            if (detonatedSet.has(key)) continue;
+            const [rStr, cStr] = key.split(',');
+            const r = parseInt(rStr, 10);
+            const c = parseInt(cStr, 10);
+            const gem = this.grid[r] && this.grid[r][c];
+            if (!gem) continue;
+
+            if (gem.special === SPECIAL_LINE_H) {
+              detonatedSet.add(key);
+              this.audio.playLightning();
+              this.createLaserParticles(r, -1, 'H');
+              for (let col = 0; col < this.cols; col++) {
+                const k = `${r},${col}`;
+                if (!toClearSet.has(k)) {
+                  toClearSet.add(k);
+                  addedNew = true;
+                }
+              }
+            } else if (gem.special === SPECIAL_LINE_V) {
+              detonatedSet.add(key);
+              this.audio.playLightning();
+              this.createLaserParticles(-1, c, 'V');
+              for (let row = 0; row < this.rows; row++) {
+                const k = `${row},${c}`;
+                if (!toClearSet.has(k)) {
+                  toClearSet.add(k);
+                  addedNew = true;
+                }
+              }
+            } else if (gem.special === SPECIAL_BOMB) {
+              detonatedSet.add(key);
+              this.audio.playBomb();
+              this.createShockwave(c * this.tileSize + this.tileSize / 2, r * this.tileSize + this.tileSize / 2);
+              for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                  const nr = r + dr;
+                  const nc = c + dc;
+                  if (nr >= 0 && nr < this.rows && nc >= 0 && nc < this.cols) {
+                    const k = `${nr},${nc}`;
+                    if (!toClearSet.has(k)) {
+                      toClearSet.add(k);
+                      addedNew = true;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 消除动画、计分与粒子生成
+      animateClearTiles(toClearSet, specialCreated) {
+        return new Promise(resolve => {
+          const clearedItems = Array.from(toClearSet).map(k => {
+            const [r, c] = k.split(',').map(Number);
+            return { r, c, gem: this.grid[r] ? this.grid[r][c] : null };
+          }).filter(item => item.gem !== null);
+
+          // 计分
+          const basePoints = 50;
+          const comboBonus = Math.max(1, this.combo);
+          const gainedScore = clearedItems.length * basePoints * comboBonus;
+          this.score += gainedScore;
+
+          // 关卡目标收集
+          if (this.mode === 'level') {
+            const lvl = LEVELS[this.currentLevelIndex % LEVELS.length];
+            clearedItems.forEach(item => {
+              if (lvl.targetType === 'collect' && item.gem.type === lvl.targetGemId) {
+                this.collectedCount++;
+              }
+            });
+          }
+
+          this.updateDashboard();
+
+          // 粒子爆散与文字
+          clearedItems.forEach(item => {
+            const gem = item.gem;
+            const px = item.c * this.tileSize + this.tileSize / 2;
+            const py = item.r * this.tileSize + this.tileSize / 2;
+            this.createBurstParticles(px, py, GEM_TYPES[gem.type].color);
+          });
+
+          if (clearedItems.length > 0) {
+            const centerItem = clearedItems[Math.floor(clearedItems.length / 2)];
+            this.showFloatingText(`+${gainedScore}`, centerItem.c * this.tileSize + 30, centerItem.r * this.tileSize + 15, '#f59e0b', 20);
+          }
+
+          // 缩放渐隐
+          const startTime = performance.now();
+          const duration = 160;
+
+          const step = (now) => {
+            const p = Math.min((now - startTime) / duration, 1);
+            clearedItems.forEach(item => {
+              item.gem.scale = 1 - p;
+              item.gem.alpha = 1 - p;
+            });
+
+            if (p < 1) {
+              requestAnimationFrame(step);
+            } else {
+              // 实际清除并放置新合成的特殊宝石
+              clearedItems.forEach(item => {
+                this.grid[item.r][item.c] = null;
+              });
+
+              specialCreated.forEach(sc => {
+                this.grid[sc.r][sc.c] = {
+                  type: sc.type,
+                  special: sc.special,
+                  r: sc.r,
+                  c: sc.c,
+                  x: sc.c * this.tileSize,
+                  y: sc.r * this.tileSize,
+                  scale: 1,
+                  alpha: 1,
+                  isClearing: false
+                };
+              });
+
+              resolve();
+            }
+          };
+          requestAnimationFrame(step);
+        });
+      }
+
+      // 重力下落与顶部新宝石填充
+      applyGravityAndRefill() {
+        return new Promise(resolve => {
+          const fallingGems = [];
+
+          for (let c = 0; c < this.cols; c++) {
+            let emptyCount = 0;
+            // 自底向上统计空缺
+            for (let r = this.rows - 1; r >= 0; r--) {
+              if (this.grid[r][c] === null) {
+                emptyCount++;
+              } else if (emptyCount > 0) {
+                // 宝石下移
+                const gem = this.grid[r][c];
+                const newRow = r + emptyCount;
+                this.grid[newRow][c] = gem;
+                this.grid[r][c] = null;
+                gem.r = newRow;
+                gem.startY = gem.y;
+                gem.targetY = newRow * this.tileSize;
+                fallingGems.push(gem);
+              }
+            }
+
+            // 顶部填充新宝石
+            for (let i = 0; i < emptyCount; i++) {
+              const targetRow = emptyCount - 1 - i;
+              const newGem = {
+                type: Math.floor(Math.random() * GEM_TYPES.length),
+                special: SPECIAL_NORMAL,
+                r: targetRow,
+                c: c,
+                x: c * this.tileSize,
+                y: -(i + 1) * this.tileSize, // 从棋盘上方掉落
+                startY: -(i + 1) * this.tileSize,
+                targetY: targetRow * this.tileSize,
+                scale: 1,
+                alpha: 1,
+                isClearing: false
+              };
+              this.grid[targetRow][c] = newGem;
+              fallingGems.push(newGem);
+            }
+          }
+
+          if (fallingGems.length === 0) {
+            resolve();
+            return;
+          }
+
+          const startTime = performance.now();
+          const duration = 220;
+
+          const step = (now) => {
+            const p = Math.min((now - startTime) / duration, 1);
+            // 弹性缓动曲线 (轻微回弹)
+            const ease = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+
+            fallingGems.forEach(gem => {
+              gem.y = gem.startY + (gem.targetY - gem.startY) * ease;
+            });
+
+            if (p < 1) {
+              requestAnimationFrame(step);
+            } else {
+              fallingGems.forEach(gem => {
+                gem.y = gem.targetY;
+              });
+              resolve();
+            }
+          };
+          requestAnimationFrame(step);
+        });
+      }
+
+      // 检查输赢状态
+      checkGameStatus() {
+        if (this.mode === 'level') {
+          const lvl = LEVELS[this.currentLevelIndex % LEVELS.length];
+          const isTargetMet = (lvl.targetType === 'collect' && this.collectedCount >= lvl.targetCount) ||
+                              (lvl.targetType === 'score' && this.score >= lvl.targetScore);
+
+          if (isTargetMet) {
+            this.handleLevelWin();
+            return;
+          }
+
+          if (this.moves <= 0) {
+            this.handleLevelLose();
+            return;
+          }
+        }
+
+        // 检查是否有可用步数，若没有则自动重新洗牌
+        if (!this.findPossibleMove()) {
+          this.reshuffleBoard();
+        }
+      }
+
+      // 关卡胜利
+      handleLevelWin() {
+        this.audio.playWin();
+        const bonus = this.moves * 100;
+        this.score += bonus;
+        this.updateDashboard();
+
+        document.getElementById('winScore').textContent = this.score;
+        document.getElementById('winBonus').textContent = `+${bonus} (${this.moves} 步 × 100)`;
+
+        // 星级评定
+        let stars = '⭐⭐⭐';
+        if (this.moves <= 2) stars = '⭐';
+        else if (this.moves <= 6) stars = '⭐⭐';
+        document.getElementById('winStars').textContent = stars;
+
+        document.getElementById('modalWin').classList.add('active');
+      }
+
+      // 步数耗尽失败
+      handleLevelLose() {
+        this.audio.playLose();
+        const lvl = LEVELS[this.currentLevelIndex % LEVELS.length];
+        let progress = 0;
+        if (lvl.targetType === 'collect') {
+          progress = Math.min(100, Math.floor((this.collectedCount / lvl.targetCount) * 100));
+        } else {
+          progress = Math.min(100, Math.floor((this.score / lvl.targetScore) * 100));
+        }
+
+        document.getElementById('loseScore').textContent = this.score;
+        document.getElementById('loseProgress').textContent = `${progress}%`;
+        document.getElementById('modalLose').classList.add('active');
+      }
+
+      closeAllModals() {
+        document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+      }
+
+      showRules() {
+        document.getElementById('modalRules').classList.add('active');
+      }
+      closeRules() {
+        document.getElementById('modalRules').classList.remove('active');
+      }
+
+      // 连击浮动横幅
+      showComboBadge(combo) {
+        const banner = document.getElementById('comboBanner');
+        let text = 'GREAT! 🔥';
+        let bg = 'linear-gradient(135deg, #06b6d4, #0284c7)';
+
+        if (combo === 2) {
+          text = 'GOOD! ⚡';
+          bg = 'linear-gradient(135deg, #3b82f6, #6366f1)';
+        } else if (combo === 3) {
+          text = 'GREAT! 🔥';
+          bg = 'linear-gradient(135deg, #10b981, #059669)';
+        } else if (combo === 4) {
+          text = 'AMAZING! 🌟';
+          bg = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        } else {
+          text = `UNBELIEVABLE! x${combo} 🚀`;
+          bg = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
+        }
+
+        banner.textContent = text;
+        banner.style.background = bg;
+        banner.classList.add('show');
+
+        clearTimeout(this.comboTimeout);
+        this.comboTimeout = setTimeout(() => {
+          banner.classList.remove('show');
+        }, 900);
+      }
+
+      // 特效：飘字
+      showFloatingText(text, x, y, color = '#f59e0b', size = 18) {
+        this.floatingTexts.push({
+          text,
+          x,
+          y,
+          color,
+          size,
+          alpha: 1,
+          vy: -1.2,
+          life: 45
+        });
+      }
+
+      // 特效：散落粒子
+      createBurstParticles(x, y, color) {
+        for (let i = 0; i < 14; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 4 + 1.5;
+          this.particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: Math.random() * 6 + 3,
+            color,
+            alpha: 1,
+            decay: Math.random() * 0.03 + 0.02
+          });
+        }
+      }
+
+      // 特效：激光贯穿粒子
+      createLaserParticles(r, c, dir) {
+        if (dir === 'H') {
+          const y = r * this.tileSize + this.tileSize / 2;
+          for (let x = 0; x < this.canvas.width; x += 15) {
+            this.particles.push({
+              x: x + Math.random() * 10,
+              y: y + (Math.random() - 0.5) * 20,
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 6,
+              size: Math.random() * 5 + 3,
+              color: '#38bdf8',
+              alpha: 1,
+              decay: 0.04
+            });
+          }
+        } else {
+          const x = c * this.tileSize + this.tileSize / 2;
+          for (let y = 0; y < this.canvas.height; y += 15) {
+            this.particles.push({
+              x: x + (Math.random() - 0.5) * 20,
+              y: y + Math.random() * 10,
+              vx: (Math.random() - 0.5) * 6,
+              vy: (Math.random() - 0.5) * 2,
+              size: Math.random() * 5 + 3,
+              color: '#38bdf8',
+              alpha: 1,
+              decay: 0.04
+            });
+          }
+        }
+      }
+
+      // 特效：炸弹冲击波
+      createShockwave(x, y) {
+        this.shockwaves.push({
+          x,
+          y,
+          radius: 10,
+          maxRadius: this.tileSize * 2.2,
+          alpha: 1
+        });
+      }
+
+      // 游戏主渲染与更新循环 (60 FPS)
+      gameLoop(now) {
+        const dt = (now - this.lastTime) / 1000;
+        this.lastTime = now;
+
+        // 注意：不在此处自动显示空闲提示，必须由玩家点击“提示一步”按钮触发
+
+        this.render(now);
+        requestAnimationFrame((t) => this.gameLoop(t));
+      }
+
+      // 渲染画布
+      render(now) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // 绘制棋盘底格与交错柔和网格
+        this.drawBoardBackground();
+
+        // 绘制提示高亮呼吸光晕（仅在玩家主动点击提示时触发）
+        if (this.hintPair && !this.isBusy) {
+          this.drawHintGlow(now);
+        }
+
+        // 绘制所有宝石
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            const gem = this.grid[r][c];
+            if (gem) {
+              const isSelected = this.selectedTile && this.selectedTile.r === r && this.selectedTile.c === c;
+              this.drawGem(gem, isSelected, now);
+            }
+          }
+        }
+
+        // 绘制冲击波特效
+        this.drawShockwaves();
+
+        // 绘制散落粒子
+        this.drawParticles();
+
+        // 绘制浮动计分文字
+        this.drawFloatingTexts();
+      }
+
+      // 绘制棋盘背景交替网格
+      drawBoardBackground() {
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            const isAlt = (r + c) % 2 === 1;
+            this.ctx.fillStyle = isAlt ? 'rgba(241, 245, 249, 0.75)' : 'rgba(255, 255, 255, 0.85)';
+            const x = c * this.tileSize;
+            const y = r * this.tileSize;
+            const pad = 3;
+            this.roundRect(this.ctx, x + pad, y + pad, this.tileSize - pad * 2, this.tileSize - pad * 2, 12);
+            this.ctx.fill();
+          }
+        }
+      }
+
+      // 提示晃动高亮与连接动态流光（仅由提示按钮触发）
+      drawHintGlow(now) {
+        if (!this.hintPair || this.hintPair.length < 2) return;
+        const pulse = (Math.sin(now / 160) + 1) / 2; // 0 ~ 1
+        const p1 = this.hintPair[0];
+        const p2 = this.hintPair[1];
+
+        this.ctx.save();
+        this.hintPair.forEach(p => {
+          const x = p.c * this.tileSize;
+          const y = p.r * this.tileSize;
+          this.ctx.strokeStyle = `rgba(6, 182, 212, ${0.45 + pulse * 0.5})`;
+          this.ctx.lineWidth = 4;
+          this.ctx.shadowColor = '#06b6d4';
+          this.ctx.shadowBlur = 10 * pulse + 4;
+          this.roundRect(this.ctx, x + 4, y + 4, this.tileSize - 8, this.tileSize - 8, 14);
+          this.ctx.stroke();
+        });
+
+        // 在两个提示方块之间绘制动态交互流动虚线连接
+        const cx1 = p1.c * this.tileSize + this.tileSize / 2;
+        const cy1 = p1.r * this.tileSize + this.tileSize / 2;
+        const cx2 = p2.c * this.tileSize + this.tileSize / 2;
+        const cy2 = p2.r * this.tileSize + this.tileSize / 2;
+
+        this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 + pulse * 0.4})`;
+        this.ctx.lineWidth = 3;
+        this.ctx.setLineDash([6, 6]);
+        this.ctx.lineDashOffset = -now / 40;
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx1, cy1);
+        this.ctx.lineTo(cx2, cy2);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+        this.ctx.restore();
+      }
+
+      // 创建不同几何宝石的基准路径
+      createGemPath(ctx, type, r) {
+        switch (type) {
+          case 0: // ❤️ 心形红宝石
+            this.pathHeart(ctx, r);
+            break;
+          case 1: // 🔷 菱形蓝宝石
+            this.pathRhombus(ctx, r);
+            break;
+          case 2: // 🟩 八角方形绿翡翠
+            this.pathSquare(ctx, r);
+            break;
+          case 3: // 🔺 三角金黄钻
+            this.pathTriangle(ctx, r);
+            break;
+          case 4: // 🔮 六边紫水晶
+            this.pathHexagon(ctx, r);
+            break;
+          case 5: // 🟠 正圆橙玛瑙
+          default:
+            this.pathCircle(ctx, r);
+            break;
+        }
+      }
+
+      // 0: 心形路径
+      pathHeart(ctx, r) {
+        const w = r * 0.95;
+        const h = r * 0.95;
+        const offsetY = -h * 0.05;
+        const topY = -h * 0.32 + offsetY;
+        const bottomY = h * 0.95 + offsetY;
+        ctx.beginPath();
+        ctx.moveTo(0, topY);
+        ctx.bezierCurveTo(-w * 0.55, -h * 1.02 + offsetY, -w * 1.12, -h * 0.38 + offsetY, -w * 0.96, h * 0.12 + offsetY);
+        ctx.bezierCurveTo(-w * 0.78, h * 0.52 + offsetY, -w * 0.35, h * 0.78 + offsetY, 0, bottomY);
+        ctx.bezierCurveTo(w * 0.35, h * 0.78 + offsetY, w * 0.78, h * 0.52 + offsetY, w * 0.96, h * 0.12 + offsetY);
+        ctx.bezierCurveTo(w * 1.12, -h * 0.38 + offsetY, w * 0.55, -h * 1.02 + offsetY, 0, topY);
+        ctx.closePath();
+      }
+
+      // 1: 菱形路径
+      pathRhombus(ctx, r) {
+        const rx = r * 0.88;
+        const ry = r * 1.08;
+        ctx.beginPath();
+        ctx.moveTo(0, -ry);
+        ctx.lineTo(rx, 0);
+        ctx.lineTo(0, ry);
+        ctx.lineTo(-rx, 0);
+        ctx.closePath();
+      }
+
+      // 2: 祖母绿切工八角方形路径
+      pathSquare(ctx, r) {
+        const half = r * 0.82;
+        const c = r * 0.28;
+        ctx.beginPath();
+        ctx.moveTo(-half + c, -half);
+        ctx.lineTo(half - c, -half);
+        ctx.lineTo(half, -half + c);
+        ctx.lineTo(half, half - c);
+        ctx.lineTo(half - c, half);
+        ctx.lineTo(-half + c, half);
+        ctx.lineTo(-half, half - c);
+        ctx.lineTo(-half, -half + c);
+        ctx.closePath();
+      }
+
+      // 3: 三角形路径
+      pathTriangle(ctx, r) {
+        const topY = -r * 1.05;
+        const bottomY = r * 0.68;
+        const halfW = r * 0.98;
+        ctx.beginPath();
+        ctx.moveTo(0, topY);
+        ctx.lineTo(halfW, bottomY);
+        ctx.lineTo(-halfW, bottomY);
+        ctx.closePath();
+      }
+
+      // 4: 六边形路径
+      pathHexagon(ctx, r) {
+        const R = r * 1.02;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI / 3) - (Math.PI / 2);
+          const x = Math.cos(angle) * R;
+          const y = Math.sin(angle) * R;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+      }
+
+      // 5: 圆形路径
+      pathCircle(ctx, r) {
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.95, 0, Math.PI * 2);
+        ctx.closePath();
+      }
+
+      // 渲染多形状宝石的精致 3D 切面与折射高光
+      renderShapedGem(ctx, type, radius, gDef, now) {
+        // 1. 底层沉稳阴影
+        ctx.save();
+        ctx.fillStyle = gDef.dark;
+        ctx.translate(0, 3.5);
+        this.createGemPath(ctx, type, radius);
+        ctx.fill();
+        ctx.restore();
+
+        // 2. 主体宝石径向立体渐变
+        const grad = ctx.createRadialGradient(-radius * 0.35, -radius * 0.35, radius * 0.08, 0, 0, radius * 1.15);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.28, gDef.color);
+        grad.addColorStop(1, gDef.dark);
+
+        ctx.fillStyle = grad;
+        this.createGemPath(ctx, type, radius);
+        ctx.fill();
+
+        // 3. 各形状专属切面与高光晶莹处理
+        ctx.save();
+        switch (type) {
+          case 0: { // ❤️ 心形红宝石
+            // 中心台面小同心心形
+            const innerGrad = ctx.createRadialGradient(-radius * 0.2, -radius * 0.2, 1, 0, 0, radius * 0.6);
+            innerGrad.addColorStop(0, '#ff9999');
+            innerGrad.addColorStop(0.7, '#ef4444');
+            innerGrad.addColorStop(1, '#b91c1c');
+            ctx.fillStyle = innerGrad;
+            this.pathHeart(ctx, radius * 0.54);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // 切面分割连线
+            const w = radius * 0.95, h = radius * 0.95, offY = -h * 0.05;
+            const iw = w * 0.54, ih = h * 0.54, ioffY = -ih * 0.05;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.beginPath();
+            ctx.moveTo(0, ih * 0.95 + ioffY);
+            ctx.lineTo(0, h * 0.95 + offY);
+            ctx.moveTo(0, -ih * 0.32 + ioffY);
+            ctx.lineTo(0, -h * 0.32 + offY);
+            ctx.stroke();
+
+            // 左上瓣柔和高光弧
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
+            ctx.beginPath();
+            ctx.ellipse(-radius * 0.38, -radius * 0.42, radius * 0.26, radius * 0.12, -Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 晶芒亮点
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.42, -radius * 0.46, 2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 1: { // 🔷 菱形蓝宝石
+            const rx = radius * 0.88;
+            const ry = radius * 1.08;
+            const s = 0.46;
+            const irx = rx * s;
+            const iry = ry * s;
+
+            // 4个外切面梯形
+            // 左上迎光切面
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+            ctx.beginPath();
+            ctx.moveTo(0, -ry); ctx.lineTo(-rx, 0); ctx.lineTo(-irx, 0); ctx.lineTo(0, -iry);
+            ctx.closePath(); ctx.fill();
+
+            // 右上侧光切面
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+            ctx.beginPath();
+            ctx.moveTo(0, -ry); ctx.lineTo(rx, 0); ctx.lineTo(irx, 0); ctx.lineTo(0, -iry);
+            ctx.closePath(); ctx.fill();
+
+            // 左下微阴影切面
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.beginPath();
+            ctx.moveTo(-rx, 0); ctx.lineTo(0, ry); ctx.lineTo(0, iry); ctx.lineTo(-irx, 0);
+            ctx.closePath(); ctx.fill();
+
+            // 右下深阴影切面
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+            ctx.beginPath();
+            ctx.moveTo(rx, 0); ctx.lineTo(0, ry); ctx.lineTo(0, iry); ctx.lineTo(irx, 0);
+            ctx.closePath(); ctx.fill();
+
+            // 中心台面菱形
+            const rhGrad = ctx.createRadialGradient(-irx * 0.3, -iry * 0.3, 1, 0, 0, Math.max(irx, iry));
+            rhGrad.addColorStop(0, '#bfdbfe');
+            rhGrad.addColorStop(0.5, '#3b82f6');
+            rhGrad.addColorStop(1, '#1d4ed8');
+            ctx.fillStyle = rhGrad;
+            this.pathRhombus(ctx, radius * s);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // 左上高光亮点
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.beginPath();
+            ctx.arc(-irx * 0.5, -iry * 0.5, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 2: { // 🟩 祖母绿八角方形绿翡翠
+            const half = radius * 0.82;
+            const c = radius * 0.28;
+            const s = 0.48;
+            const ih = half * s;
+            const ic = c * s;
+
+            // 上边缘迎光面
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.32)';
+            ctx.beginPath();
+            ctx.moveTo(-half + c, -half); ctx.lineTo(half - c, -half); ctx.lineTo(ih - ic, -ih); ctx.lineTo(-ih + ic, -ih);
+            ctx.closePath(); ctx.fill();
+
+            // 左上角斜切面（强高光）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.52)';
+            ctx.beginPath();
+            ctx.moveTo(-half, -half + c); ctx.lineTo(-half + c, -half); ctx.lineTo(-ih + ic, -ih); ctx.lineTo(-ih, -ih + ic);
+            ctx.closePath(); ctx.fill();
+
+            // 左侧边缘
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(-half, -half + c); ctx.lineTo(-half, half - c); ctx.lineTo(-ih, ih - ic); ctx.lineTo(-ih, -ih + ic);
+            ctx.closePath(); ctx.fill();
+
+            // 下边与右下边阴影
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+            ctx.beginPath();
+            ctx.moveTo(-half + c, half); ctx.lineTo(half - c, half); ctx.lineTo(ih - ic, ih); ctx.lineTo(-ih + ic, ih);
+            ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.beginPath();
+            ctx.moveTo(half - c, half); ctx.lineTo(half, half - c); ctx.lineTo(ih, ih - ic); ctx.lineTo(ih - ic, ih);
+            ctx.closePath(); ctx.fill();
+
+            // 中心台面方块
+            const sqGrad = ctx.createRadialGradient(-ih * 0.3, -ih * 0.3, 1, 0, 0, ih * 1.5);
+            sqGrad.addColorStop(0, '#a7f3d0');
+            sqGrad.addColorStop(0.5, '#10b981');
+            sqGrad.addColorStop(1, '#047857');
+            ctx.fillStyle = sqGrad;
+            this.pathSquare(ctx, radius * s);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // 左上高光切角线
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.moveTo(-half + c * 0.4, -half + c * 0.1);
+            ctx.lineTo(-half + c * 0.1, -half + c * 0.4);
+            ctx.stroke();
+            break;
+          }
+          case 3: { // 🔺 三角金黄钻
+            const topY = -radius * 1.05;
+            const bottomY = radius * 0.68;
+            const halfW = radius * 0.98;
+            const s = 0.45;
+            const itopY = topY * s;
+            const ibottomY = bottomY * s;
+            const ihalfW = halfW * s;
+
+            // 左侧切面（强迎光）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
+            ctx.beginPath();
+            ctx.moveTo(0, topY); ctx.lineTo(-halfW, bottomY); ctx.lineTo(-ihalfW, ibottomY); ctx.lineTo(0, itopY);
+            ctx.closePath(); ctx.fill();
+
+            // 右侧切面
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+            ctx.beginPath();
+            ctx.moveTo(0, topY); ctx.lineTo(halfW, bottomY); ctx.lineTo(ihalfW, ibottomY); ctx.lineTo(0, itopY);
+            ctx.closePath(); ctx.fill();
+
+            // 底部切面
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(-halfW, bottomY); ctx.lineTo(halfW, bottomY); ctx.lineTo(ihalfW, ibottomY); ctx.lineTo(-ihalfW, ibottomY);
+            ctx.closePath(); ctx.fill();
+
+            // 中心台面三角
+            const triGrad = ctx.createRadialGradient(-ihalfW * 0.2, itopY * 0.3, 1, 0, 0, radius * 0.7);
+            triGrad.addColorStop(0, '#fef9c3');
+            triGrad.addColorStop(0.5, '#f59e0b');
+            triGrad.addColorStop(1, '#b45309');
+            ctx.fillStyle = triGrad;
+            this.pathTriangle(ctx, radius * s);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // 顶部金芒亮点
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, topY + 4, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 4: { // 🔮 六边紫水晶
+            const R = radius * 1.02;
+            const s = 0.48;
+            const iR = R * s;
+
+            const oPts = [];
+            const iPts = [];
+            for (let i = 0; i < 6; i++) {
+              const angle = (i * Math.PI / 3) - (Math.PI / 2);
+              oPts.push({ x: Math.cos(angle) * R, y: Math.sin(angle) * R });
+              iPts.push({ x: Math.cos(angle) * iR, y: Math.sin(angle) * iR });
+            }
+
+            const facetFills = [
+              'rgba(255, 255, 255, 0.18)', // 0: 右上
+              'rgba(0, 0, 0, 0.15)',        // 1: 右下
+              'rgba(0, 0, 0, 0.32)',        // 2: 底右
+              'rgba(0, 0, 0, 0.24)',        // 3: 底左
+              'rgba(255, 255, 255, 0.22)', // 4: 左下
+              'rgba(255, 255, 255, 0.42)'  // 5: 左上 (强迎光)
+            ];
+
+            for (let i = 0; i < 6; i++) {
+              const next = (i + 1) % 6;
+              ctx.fillStyle = facetFills[i];
+              ctx.beginPath();
+              ctx.moveTo(oPts[i].x, oPts[i].y);
+              ctx.lineTo(oPts[next].x, oPts[next].y);
+              ctx.lineTo(iPts[next].x, iPts[next].y);
+              ctx.lineTo(iPts[i].x, iPts[i].y);
+              ctx.closePath();
+              ctx.fill();
+            }
+
+            // 中心台面六边形
+            const hexGrad = ctx.createRadialGradient(-iR * 0.3, -iR * 0.3, 1, 0, 0, iR * 1.2);
+            hexGrad.addColorStop(0, '#e9d5ff');
+            hexGrad.addColorStop(0.5, '#8b5cf6');
+            hexGrad.addColorStop(1, '#6d28d9');
+            ctx.fillStyle = hexGrad;
+            this.pathHexagon(ctx, radius * s);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // 左上亮点
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(iPts[5].x, iPts[5].y, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 5: // 🟠 正圆橙玛瑙 (圆润素面蛋面切工)
+          default: {
+            const R = radius * 0.95;
+            // 弧面高光斑
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+            ctx.beginPath();
+            ctx.ellipse(-R * 0.3, -R * 0.34, R * 0.38, R * 0.18, -Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 底部反光透光
+            ctx.fillStyle = 'rgba(255, 237, 213, 0.32)';
+            ctx.beginPath();
+            ctx.ellipse(R * 0.28, R * 0.32, R * 0.34, R * 0.12, -Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 晶莹高光点
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-R * 0.34, -R * 0.38, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+        }
+        ctx.restore();
+
+        // 4. 精致外晶棱轮廓线
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.32)';
+        ctx.lineWidth = 1;
+        this.createGemPath(ctx, type, radius);
+        ctx.stroke();
+      }
+
+      // 绘制单个宝石晶体与拟真光泽
+      drawGem(gem, isSelected, now) {
+        const gDef = GEM_TYPES[gem.type];
+        const cx = gem.x + this.tileSize / 2;
+        const cy = gem.y + this.tileSize / 2;
+        const radius = (this.tileSize / 2 - 6) * gem.scale;
+
+        if (radius <= 0) return;
+
+        this.ctx.save();
+        this.ctx.globalAlpha = gem.alpha;
+        this.ctx.translate(cx, cy);
+
+        // 选中缩放与呼吸弹跳
+        if (isSelected) {
+          const bounce = Math.sin(now / 120) * 0.08;
+          this.ctx.scale(1.15 + bounce, 1.15 + bounce);
+
+          // 选中外轮廓呼吸光圈（跟随宝石自身几何形状）
+          this.ctx.save();
+          this.ctx.strokeStyle = '#ffffff';
+          this.ctx.lineWidth = 3.5;
+          this.ctx.shadowColor = gDef.color;
+          this.ctx.shadowBlur = 12;
+          this.createGemPath(this.ctx, gem.type, radius + 4);
+          this.ctx.stroke();
+          this.ctx.restore();
+        }
+
+        // 彩虹星特殊渲染（流光七彩球）
+        if (gem.special === SPECIAL_RAINBOW) {
+          const rot = (now / 400) % (Math.PI * 2);
+          this.ctx.rotate(rot);
+
+          const grad = this.ctx.createRadialGradient(0, 0, 2, 0, 0, radius);
+          grad.addColorStop(0, '#ffffff');
+          grad.addColorStop(0.3, '#f472b6');
+          grad.addColorStop(0.6, '#a78bfa');
+          grad.addColorStop(1, '#38bdf8');
+
+          this.ctx.fillStyle = grad;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          this.ctx.strokeStyle = '#ffffff';
+          this.ctx.lineWidth = 2.5;
+          this.ctx.stroke();
+
+          // 晶莹十字星芒
+          this.ctx.fillStyle = '#ffffff';
+          this.ctx.font = `${radius * 1.1}px sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText('⭐', 0, 1);
+
+          this.ctx.restore();
+          return;
+        }
+
+        // 渲染专属形状宝石主体与多切面立体晶体质感
+        this.renderShapedGem(this.ctx, gem.type, radius, gDef, now);
+
+        // 特殊宝石标志覆盖
+        if (gem.special === SPECIAL_LINE_H || gem.special === SPECIAL_LINE_V) {
+          // 闪电宝石标志
+          this.ctx.fillStyle = '#ffffff';
+          this.ctx.font = `bold ${radius * 0.95}px sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.shadowColor = 'rgba(6, 182, 212, 0.8)';
+          this.ctx.shadowBlur = 8;
+          this.ctx.fillText('⚡', 0, 1);
+
+          // 闪烁光环（跟随宝石自身形状）
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          this.ctx.lineWidth = 2.5;
+          this.createGemPath(this.ctx, gem.type, radius);
+          this.ctx.stroke();
+        } else if (gem.special === SPECIAL_BOMB) {
+          // 炸弹宝石标志
+          this.ctx.fillStyle = '#ffffff';
+          this.ctx.font = `bold ${radius * 0.9}px sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.shadowColor = 'rgba(249, 115, 22, 0.8)';
+          this.ctx.shadowBlur = 8;
+          this.ctx.fillText('💣', 0, 1);
+
+          // 脉动火花外圈（跟随宝石自身形状）
+          const bombPulse = Math.sin(now / 100) * 2;
+          this.ctx.strokeStyle = 'rgba(249, 115, 22, 0.85)';
+          this.ctx.lineWidth = 3;
+          this.createGemPath(this.ctx, gem.type, radius + bombPulse);
+          this.ctx.stroke();
+        }
+
+        this.ctx.restore();
+      }
+
+      // 绘制粒子
+      drawParticles() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= p.decay;
+          p.size *= 0.96;
+
+          if (p.alpha <= 0 || p.size <= 0.5) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = p.alpha;
+          this.ctx.fillStyle = p.color;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+      }
+
+      // 绘制冲击波
+      drawShockwaves() {
+        for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+          const sw = this.shockwaves[i];
+          sw.radius += 6;
+          sw.alpha -= 0.045;
+
+          if (sw.alpha <= 0 || sw.radius >= sw.maxRadius) {
+            this.shockwaves.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = sw.alpha;
+          this.ctx.strokeStyle = '#f97316';
+          this.ctx.lineWidth = 4;
+          this.ctx.beginPath();
+          this.ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+          this.ctx.stroke();
+          this.ctx.restore();
+        }
+      }
+
+      // 绘制浮动数字
+      drawFloatingTexts() {
+        for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+          const ft = this.floatingTexts[i];
+          ft.y += ft.vy;
+          ft.life--;
+          ft.alpha = Math.max(0, ft.life / 45);
+
+          if (ft.life <= 0) {
+            this.floatingTexts.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = ft.alpha;
+          this.ctx.fillStyle = ft.color;
+          this.ctx.font = `900 ${ft.size}px -apple-system, sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+          this.ctx.shadowBlur = 6;
+          this.ctx.fillText(ft.text, ft.x, ft.y);
+          this.ctx.restore();
+        }
+      }
+
+      // 圆角矩形辅助
+      roundRect(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      }
+    }
+
+    // 全局启动
+    const game = new GemMatchGame();
+  </script>
+</body>
+</html>

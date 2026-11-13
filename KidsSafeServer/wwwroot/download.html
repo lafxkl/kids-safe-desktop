@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>下载安装 · 儿童安全桌面</title>
+<meta name="description" content="下载儿童安全桌面 Android / Windows 安装包，查看最新版本号、文件大小与 SHA-256 校验值。" />
+<style>
+  :root{
+    --p:#7E57C2; --p2:#5C6BC0; --teal:#26C6DA; --ink:#2E3A4D; --soft:#7A8290;
+    --card:#fff; --bg:#F6F1FF; --radius:22px;
+    --grad:linear-gradient(135deg,#7E57C2 0%,#26C6DA 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--p);text-decoration:none}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#F3EEFB;border-radius:6px;padding:2px 6px;word-break:break-all}
+  .wrap{max-width:960px;margin:0 auto;padding:0 18px}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #EEE5FF}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;color:var(--p);white-space:nowrap}
+  .brand span.dot{width:26px;height:26px;border-radius:8px;background:var(--grad);display:inline-block}
+  .nav nav{display:flex;gap:16px;font-size:14px;font-weight:600;flex-wrap:wrap}
+  .nav nav a{color:var(--ink)}
+  .nav nav a:hover,.nav nav a.on{color:var(--p)}
+
+  .hero{padding:38px 0 8px;text-align:center}
+  .hero h1{font-size:32px;font-weight:900;line-height:1.25}
+  .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--soft);font-size:15.5px;margin-top:10px}
+  .verline{margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .pill{background:#fff;border:1px solid #ECE3FB;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--p2)}
+  .pill.live{background:#E8F5E9;border-color:#C8E6C9;color:#2E7D32}
+
+  section{padding:24px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:0 10px 28px rgba(94,53,177,.08);border:1px solid #F1EAFF}
+  .plat{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .plat .ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:#F3E9FF;font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
+  .plat h3{font-size:19px}
+  .plat .sub{font-size:12.5px;color:var(--soft);font-weight:500}
+  .meta{font-size:13.5px;color:var(--soft);margin:10px 0 14px;line-height:1.9}
+  .meta b{color:var(--ink)}
+  .btn{display:block;width:100%;text-align:center;padding:13px 18px;border-radius:16px;font-weight:800;font-size:16px;background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(126,87,194,.3);border:none;cursor:pointer}
+  .btn.disabled{background:#E8E2F3;color:#9C93B0;box-shadow:none;cursor:not-allowed}
+  .btn.ghost{background:#F4EEFE;color:var(--p);box-shadow:none}
+  .note{margin-top:10px;font-size:12.5px;color:#A1887F;line-height:1.7}
+
+  h2.sec{font-size:21px;font-weight:900;margin:6px 0 14px;display:flex;align-items:center;gap:8px}
+  ol.steps{list-style:none;counter-reset:s;display:grid;gap:12px}
+  ol.steps li{counter-increment:s;position:relative;padding-left:38px;font-size:14.5px;color:#3E4A54}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:#EDE4FC;color:var(--p);font-weight:800;font-size:13px;display:grid;place-items:center}
+
+  .files{display:grid;gap:10px}
+  .file{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid #F0E8FF;border-radius:14px;background:#FCFAFF}
+  .file .fi{font-size:20px;line-height:1.2;font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
+  .file .fname{font-weight:700;font-size:14px;word-break:break-all}
+  .file .fmeta{font-size:12px;color:var(--soft);margin-top:2px}
+  .file .fhash{font-size:11.5px;color:#8C86A0;margin-top:5px;word-break:break-all;line-height:1.5}
+  .file .fgo{margin-left:auto;white-space:nowrap;font-size:13px;font-weight:800;padding:7px 13px;border-radius:999px;background:var(--grad);color:#fff}
+  .empty{font-size:14px;color:var(--soft);background:#FBF8FF;border:1px dashed #E3D8F7;border-radius:14px;padding:18px;text-align:center}
+
+  .rel-list{display:grid;gap:0}
+  .rel{padding:14px 0;border-top:1px solid #F0E8FF}
+  .rel:first-child{border-top:none}
+  .rel .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .rel .v{font-weight:900;color:var(--p);font-size:16px}
+  .rel .d{font-size:12.5px;color:var(--soft)}
+  .rel .t{font-weight:700;font-size:14.5px;margin-top:3px}
+  .rel .tags{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
+  .tag{font-size:11.5px;font-weight:800;background:#F1E8FE;color:#6B2BB8;border-radius:6px;padding:2px 8px}
+
+  footer{padding:30px 0 44px;text-align:center;color:var(--soft);font-size:12.5px}
+
+  @media(max-width:760px){
+    .grid2{grid-template-columns:1fr}
+    .hero h1{font-size:25px}
+    .hero{padding:26px 0 4px}
+    .nav nav{gap:12px;font-size:13px}
+    .brand{font-size:15px}
+  }
+  @media(max-width:420px){
+    .wrap{padding:0 14px}
+    .card{padding:17px;border-radius:18px}
+    .hero h1{font-size:22px}
+    .file{flex-wrap:wrap}
+    .file .fgo{margin-left:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>儿童安全桌面</div>
+    <nav>
+      <a href="index.html">家长后台</a>
+      <a class="on" href="download.html">下载安装</a>
+      <a href="docs.html">服务端说明</a>
+      <a href="books.html">电子课本</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>下载 <em>儿童安全桌面</em></h1>
+    <p>手机、平板、Windows 电脑都能装，同一个版本、同一套内容</p>
+    <div class="verline">
+      <span class="pill live" id="verPill">正在读取版本…</span>
+      <span class="pill" id="codePill">versionCode –</span>
+      <span class="pill" id="timePill">–</span>
+    </div>
+  </div>
+
+  <section>
+    <div class="grid2">
+      <div class="card">
+        <div class="plat">
+          <div class="ico">📱</div>
+          <div>
+            <h3>Android 版</h3>
+            <div class="sub">手机 / 折叠屏 / 平板 · Android 8.0 及以上</div>
+          </div>
+        </div>
+        <div class="meta" id="andMeta">安装包信息读取中…</div>
+        <a class="btn disabled" id="andBtn" href="#">暂无安装包</a>
+        <div class="note">首次安装需在系统设置里允许「安装未知来源应用」。若之前装过旧签名版本，请先卸载再装。</div>
+      </div>
+
+      <div class="card">
+        <div class="plat">
+          <div class="ico">💻</div>
+          <div>
+            <h3>Windows 版</h3>
+            <div class="sub">Windows 10 / 11 · 64 位</div>
+          </div>
+        </div>
+        <div class="meta" id="winMeta">安装包信息读取中…</div>
+        <a class="btn disabled" id="winBtn" href="#">暂无安装包</a>
+        <div class="note">解压后运行，首次启动如遇 SmartScreen 提示，选择「更多信息 → 仍要运行」。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2 class="sec">📦 安装包与校验值</h2>
+      <div class="files" id="fileList"><div class="empty">读取中…</div></div>
+      <p class="note">
+        把安装包放进服务端目录 <code>wwwroot/downloads/</code>，刷新本页就会自动出现在上面；
+        也可以在 <code>appsettings.json</code> 里配置 <code>Site:DownloadUrl</code> 指向应用市场或对象存储，
+        下载页会优先使用那个地址。
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid2">
+      <div class="card">
+        <h2 class="sec">📲 安卓安装步骤</h2>
+        <ol class="steps">
+          <li>点上面的「下载 Android 版」，等浏览器下载完成。</li>
+          <li>在通知栏点开安装包；若提示「禁止安装」，进入设置允许该来源安装。</li>
+          <li>安装完成后打开应用，先阅读并同意隐私政策，再进入儿童桌面。</li>
+          <li>家长点右下角「家长」进入后台，可设置每日时长、开关小游戏。</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2 class="sec">🖥️ 电脑端说明</h2>
+        <ol class="steps">
+          <li>下载 Windows 压缩包并解压到任意目录（不要直接在压缩包里运行）。</li>
+          <li>双击主程序启动；首次运行可能被 SmartScreen 拦截，选择「仍要运行」。</li>
+          <li>电脑端与手机端功能一致，数据各自保存在本机，互不影响。</li>
+          <li>需要远程管理孩子设备时，另外启动家长端服务端（见「服务端说明」）。</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2 class="sec">🕘 最近版本</h2>
+      <div class="rel-list" id="relList"><div class="empty">读取中…</div></div>
+      <p class="note"><a href="/api/app/changelog">查看完整更新日志（JSON）</a> · 官网的 changelog.html 有同样内容</p>
+    </div>
+  </section>
+
+  <footer>
+    儿童安全桌面 · 安装包由家长端服务端（KidsSafeServer）本机提供<br/>
+    建议只在家庭局域网内使用；如需公网访问，请自行配置 HTTPS 与访问控制。
+  </footer>
+</div>
+
+<script>
+const API = "/api";
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function fmtDate(s){
+  if(!s) return "–";
+  const d = new Date(s);
+  if(isNaN(d)) return "–";
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+async function load(){
+  let info = null, rel = null;
+  try{
+    const [a,b] = await Promise.all([
+      fetch(API+"/download/list").then(r=>r.json()),
+      fetch(API+"/app/release?limit=5").then(r=>r.json())
+    ]);
+    info = a; rel = b;
+  }catch(e){
+    $("verPill").textContent = "无法连接服务端";
+    $("fileList").innerHTML = '<div class="empty">读取失败：' + esc(e.message||e) + '</div>';
+    return;
+  }
+
+  const latest = rel && rel.latest ? rel.latest : {};
+  $("verPill").textContent = "最新版 v" + (latest.version || info.latestAppVersion || "?");
+  $("codePill").textContent = "versionCode " + (latest.versionCode || info.latestVersionCode || "?");
+  $("timePill").textContent = latest.date ? latest.date + " 更新" : "–";
+
+  const files = info.files || [];
+  const external = info.downloadUrl || "";
+  const preferred = info.preferred || {};
+
+  const android = files.find(f=>f.platform==="android");
+  const windows = files.find(f=>f.platform==="windows");
+
+  // 安卓主按钮
+  const andBtn = $("andBtn");
+  const andUrl = external || (android ? android.url : (preferred.android || ""));
+  if(andUrl){
+    andBtn.href = andUrl; andBtn.textContent = "⬇ 下载 Android 版"; andBtn.className = "btn";
+    $("andMeta").innerHTML = android
+      ? "文件：<b>"+esc(android.name)+"</b><br/>大小："+esc(android.sizeText)+"　·　上传 "+fmtDate(android.updatedAt)
+      : (external ? "下载地址已配置为外部链接" : "");
+  }else{
+    andBtn.textContent = "暂无安装包"; andBtn.className = "btn disabled"; andBtn.removeAttribute("href");
+    $("andMeta").textContent = "还没有往 wwwroot/downloads 放入 APK。";
+  }
+
+  const winBtn = $("winBtn");
+  if(windows){
+    winBtn.href = windows.url; winBtn.textContent = "⬇ 下载 Windows 版"; winBtn.className = "btn";
+    $("winMeta").innerHTML = "文件：<b>"+esc(windows.name)+"</b><br/>大小："+esc(windows.sizeText)+"　·　上传 "+fmtDate(windows.updatedAt);
+  }else{
+    winBtn.textContent = "暂无安装包"; winBtn.className = "btn disabled"; winBtn.removeAttribute("href");
+    $("winMeta").textContent = "还没有往 wwwroot/downloads 放入 Windows 压缩包。";
+  }
+
+  // 文件清单
+  if(files.length === 0){
+    $("fileList").innerHTML = '<div class="empty">目录里还没有安装包。把 apk / zip 放进 wwwroot/downloads 后刷新本页即可。</div>';
+  }else{
+    $("fileList").innerHTML = files.map(f=>`
+      <div class="file">
+        <div class="fi">${f.platform==="android"?"📱":"💻"}</div>
+        <div style="min-width:0;flex:1">
+          <div class="fname">${esc(f.name)}</div>
+          <div class="fmeta">${esc(f.sizeText)} · ${fmtDate(f.updatedAt)} · ${f.platform==="android"?"Android":"Windows"}</div>
+          ${f.sha256 ? `<div class="fhash">SHA-256：${esc(f.sha256)}</div>` : ""}
+        </div>
+        <a class="fgo" href="${esc(f.url)}">下载</a>
+      </div>`).join("");
+  }
+
+  // 版本历史
+  const history = (rel && rel.history) || [];
+  $("relList").innerHTML = history.length ? history.map(r=>`
+    <div class="rel">
+      <div class="top"><span class="v">v${esc(r.version)}</span><span class="d">${esc(r.date)} · versionCode ${esc(r.versionCode)}</span></div>
+      <div class="t">${esc(r.title)}</div>
+      <div class="tags">${(r.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+    </div>`).join("") : '<div class="empty">暂无发布记录</div>';
+}
+
+load();
+</script>
+</body>
+</html>
