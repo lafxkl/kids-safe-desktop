@@ -51,11 +51,15 @@
 
 ## 界面截图
 
-| 主页 | 小游戏 | 学习天地 | 听一听 |
-|:---:|:---:|:---:|:---:|
-| <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" width="180"> | <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" width="180"> | <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" width="180"> | <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" width="180"> |
+五张均为 Android 真机截图（v1.19 / v1.20 界面），没有用示意图代替：
 
-> 截图来自 `KidsSafeDesktop/Website/assets/`，官网与 README 共用同一批素材。
+| 桌面式首页 | 游戏乐园 | 学习天地 |
+|:---:|:---:|:---:|
+| <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" width="210"> | <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" width="210"> | <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" width="210"> |
+| **听一听 · 媒体中心** | **关爱中心** | *更多界面见[官网](https://kids.siguangblog.cc/)* |
+| <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" width="210"> | <img src="KidsSafeDesktop/Website/assets/screenshot_care.png" width="210"> | |
+
+> 截图与官网共用同一批素材，都在 `KidsSafeDesktop/Website/assets/`，换图时两边自动同步。顶部头图 `header.png` 也用这三张真机截图拼成。
 
 ## 功能一览
 

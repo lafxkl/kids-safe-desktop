@@ -51,11 +51,15 @@ Handing a device to a child is rarely a question of "is there a kids mode". The 
 
 ## Screenshots
 
-| Home | Mini-games | Study | Listen |
-|:---:|:---:|:---:|:---:|
-| <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" width="180"> | <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" width="180"> | <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" width="180"> | <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" width="180"> |
+All five are real Android screenshots of v1.19 / v1.20 — no mockups:
 
-> Screenshots live in `KidsSafeDesktop/Website/assets/` and are shared by the website and this README.
+| Home | Games | Study |
+|:---:|:---:|:---:|
+| <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" width="210"> | <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" width="210"> | <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" width="210"> |
+| **Listen · Media** | **Care Center** | *More on the [website](https://kids.siguangblog.cc/)* |
+| <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" width="210"> | <img src="KidsSafeDesktop/Website/assets/screenshot_care.png" width="210"> | |
+
+> The website and this README share the same files in `KidsSafeDesktop/Website/assets/`; the header image `header.png` is stitched from the same three real screenshots.
 
 ## Features
 

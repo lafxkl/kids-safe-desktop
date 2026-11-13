@@ -7,24 +7,24 @@
 <meta name="description" content="儿童安全桌面是面向 3–12 岁孩子的桌面式安全应用：图标化入口、家长守护、护眼与时长限制，21 款益智小游戏、26 首古诗、科学实验与睡前故事离线可玩，无广告无充值，还有孩子自己设密码的日记本。" />
 <style>
   :root{
-    --purple:#7E57C2; --purple-d:#5C6BC0; --teal:#26C6DA; --pink:#FF8A65;
-    --green:#26A69A; --orange:#EF6C00; --ink:#2E3A4D; --soft:#8D6E63;
-    --bg:#F6F1FF; --card:#FFFFFF; --radius:22px;
-    --grad:linear-gradient(135deg,#7E57C2 0%,#26C6DA 100%);
+    --purple:#E2603D; --purple-d:#B4552F; --teal:#2FB8CE; --pink:#F08A5D;
+    --green:#26A69A; --orange:#EF6C00; --ink:#3A2B22; --soft:#7C6353;
+    --bg:#FDF6EC; --card:#FFFFFF; --radius:22px;
+    --grad:linear-gradient(135deg,#F2A03D 0%,#E2603D 100%);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
   a{color:var(--purple);text-decoration:none}
   .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
   /* Nav */
-  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid #EEE5FF}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
   .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple)}
-  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(126,87,194,.3)}
+  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
   .nav nav{display:flex;gap:22px;font-size:15px}
   .nav nav a{color:var(--ink);font-weight:600}
   .nav nav a:hover{color:var(--purple)}
-  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(126,87,194,.35)}
+  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(214,110,74,.35)}
   /* Hero */
   .hero{position:relative;overflow:hidden;padding:56px 0 40px}
   .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
@@ -33,27 +33,27 @@
   .hero p.lead{margin:18px 0 26px;font-size:18px;color:var(--soft);max-width:520px}
   .cta{display:flex;gap:14px;flex-wrap:wrap}
   .cta a{padding:13px 26px;border-radius:26px;font-weight:800;font-size:16px}
-  .cta .primary{background:var(--grad);color:#fff;box-shadow:0 10px 24px rgba(126,87,194,.4)}
-  .cta .ghost{background:#fff;color:var(--purple);border:2px solid #E1D5FB}
+  .cta .primary{background:var(--grad);color:#fff;box-shadow:0 10px 24px rgba(214,110,74,.4)}
+  .cta .ghost{background:#fff;color:var(--purple);border:2px solid #F3D2B8}
   .hero .phone{display:flex;justify-content:center}
-  .hero .phone img{width:260px;height:auto;border-radius:30px;box-shadow:0 24px 60px rgba(94,53,177,.35);border:6px solid #fff}
+  .hero .phone img{width:260px;height:auto;border-radius:30px;box-shadow:0 24px 60px rgba(176,96,54,.35);border:6px solid #fff}
   .badges{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
-  .badge{background:#fff;border:1px solid #ECE3FB;border-radius:14px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--purple-d)}
+  .badge{background:#fff;border:1px solid #F6E0C9;border-radius:14px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--purple-d)}
   /* Section */
   section{padding:60px 0}
   .sec-title{text-align:center;font-size:32px;font-weight:900;margin-bottom:10px}
   .sec-sub{text-align:center;color:var(--soft);margin-bottom:40px;font-size:17px}
   /* Features */
   .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-  .feat{background:var(--card);border-radius:var(--radius);padding:26px;box-shadow:0 10px 30px rgba(94,53,177,.08);border:1px solid #F1EAFF}
+  .feat{background:var(--card);border-radius:var(--radius);padding:26px;box-shadow:0 10px 30px rgba(176,96,54,.08);border:1px solid #F4E5D3}
   .feat .ico{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:28px;margin-bottom:14px}
   .feat h3{font-size:20px;margin-bottom:8px}
   .feat p{color:var(--soft);font-size:15px}
   /* Screenshots */
-  .shots{display:flex;gap:20px;overflow-x:auto;padding:8px 2px 22px;scroll-snap-type:x mandatory}
-  .shots figure{flex:0 0 auto;width:230px;scroll-snap-align:center;margin:0}
-  .shots img{width:100%;height:auto;border-radius:26px;border:6px solid #fff;box-shadow:0 16px 40px rgba(94,53,177,.22)}
-  .shots figcaption{text-align:center;margin-top:10px;font-weight:700;color:var(--purple-d);font-size:15px}
+  .shots{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;padding:6px 2px 4px}
+  .shots figure{margin:0}
+  .shots img{width:100%;height:auto;border-radius:20px;border:5px solid #fff;box-shadow:0 14px 34px rgba(176,96,54,.20)}
+  .shots figcaption{text-align:center;margin-top:10px;font-weight:700;color:var(--purple-d);font-size:14.5px}
   /* Parent */
   .parent{background:var(--grad);border-radius:34px;color:#fff;padding:48px;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
   .parent h2{font-size:30px;margin-bottom:14px}
@@ -63,34 +63,34 @@
   .parent .ptag{background:rgba(255,255,255,.18);border-radius:14px;padding:10px 14px;font-size:14px}
   /* Safety */
   .safe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-  .safe{background:#fff;border-radius:18px;padding:22px;text-align:center;box-shadow:0 8px 22px rgba(94,53,177,.07)}
+  .safe{background:#fff;border-radius:18px;padding:22px;text-align:center;box-shadow:0 8px 22px rgba(176,96,54,.07)}
   .safe .e{font-size:34px}
   .safe h4{margin:10px 0 6px;font-size:17px}
   .safe p{color:var(--soft);font-size:14px}
   /* Download */
   .download{text-align:center}
-  .store-card{display:inline-flex;flex-direction:column;align-items:center;gap:14px;background:#fff;border-radius:26px;padding:34px 44px;box-shadow:0 16px 44px rgba(94,53,177,.15);border:1px solid #F0E8FF}
-  .store-card .qr{width:160px;height:160px;border-radius:16px;background:repeating-conic-gradient(#2E3A4D 0 25%, #fff 0 50%) 50%/22px 22px;display:grid;place-items:center;color:#fff;font-size:13px;text-align:center;font-weight:700}
-  .store-card .dl-icon{width:88px;height:88px;border-radius:28px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,#F3E9FF,#E1F7FB);box-shadow:0 8px 22px rgba(126,87,194,.18)}
+  .store-card{display:inline-flex;flex-direction:column;align-items:center;gap:14px;background:#fff;border-radius:26px;padding:34px 44px;box-shadow:0 16px 44px rgba(176,96,54,.15);border:1px solid #F0E8FF}
+  .store-card .qr{width:160px;height:160px;border-radius:16px;background:repeating-conic-gradient(#3A2B22 0 25%, #fff 0 50%) 50%/22px 22px;display:grid;place-items:center;color:#fff;font-size:13px;text-align:center;font-weight:700}
+  .store-card .dl-icon{width:88px;height:88px;border-radius:28px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,#FCEBD7,#F7E3CE);box-shadow:0 8px 22px rgba(214,110,74,.18)}
   .store-card .hl{font-size:18px;font-weight:800;color:var(--purple)}
   .store-card .sub{color:var(--soft);font-size:14px;max-width:240px}
-  .store-card .ver{font-size:13px;color:#A1887F;border-top:1px dashed #EFE6FF;padding-top:12px;width:100%;text-align:center;line-height:1.9}
+  .store-card .ver{font-size:13px;color:#A1887F;border-top:1px dashed #F5E7D5;padding-top:12px;width:100%;text-align:center;line-height:1.9}
   .store-card .ver b{color:var(--purple);font-weight:800}
   .store-links{margin-top:18px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
   .store-links a{padding:11px 22px;border-radius:22px;font-weight:700;background:var(--grad);color:#fff}
-  .dl-note{margin-top:16px;font-size:13px;color:#8D6E63;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8}
+  .dl-note{margin-top:16px;font-size:13px;color:#7C6353;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8}
   .dl-more{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-  .dl-more a{font-size:13.5px;font-weight:700;color:var(--purple);background:#F6F1FF;border:1px solid #EADDFB;border-radius:20px;padding:8px 16px}
-  .dl-more a:hover{background:#EFE6FF;border-color:#DCCBF6}
+  .dl-more a{font-size:13.5px;font-weight:700;color:var(--purple);background:#FDF6EC;border:1px solid #EADDFB;border-radius:20px;padding:8px 16px}
+  .dl-more a:hover{background:#F5E7D5;border-color:#F0D5BE}
   /* 交流渠道：QQ 群 / 微信群 / 公众号 三卡 */
   .chan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:790px;margin:0 auto}
-  .chan{background:#fff;border:1px solid #F1EAFF;border-radius:22px;padding:22px 18px 20px;text-align:center;
-        box-shadow:0 10px 30px rgba(94,53,177,.08);transition:transform .25s ease,box-shadow .25s ease}
-  .chan:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(94,53,177,.14)}
+  .chan{background:#fff;border:1px solid #F4E5D3;border-radius:22px;padding:22px 18px 20px;text-align:center;
+        box-shadow:0 10px 30px rgba(176,96,54,.08);transition:transform .25s ease,box-shadow .25s ease}
+  .chan:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(176,96,54,.14)}
   .chan img{width:100%;max-width:168px;height:auto;border-radius:12px;background:#fff;display:block;
-            margin:0 auto 14px;box-shadow:0 6px 18px rgba(94,53,177,.12)}
+            margin:0 auto 14px;box-shadow:0 6px 18px rgba(176,96,54,.12)}
   .chan h3{font-size:16.5px;margin-bottom:7px}
-  .chan .meta{display:inline-block;background:#F3E9FF;color:#5C6BC0;font-weight:800;border-radius:10px;
+  .chan .meta{display:inline-block;background:#FCEBD7;color:#B4552F;font-weight:800;border-radius:10px;
               padding:5px 12px;font-size:12.5px;letter-spacing:.02em;margin-bottom:10px}
   .chan p{font-size:12.5px;color:var(--soft);line-height:1.75;margin:0}
   .chan .expire{font-size:11px;color:#B45309;background:#FFF7ED;border:1px solid #FDE7CE;border-radius:9px;
@@ -102,11 +102,11 @@
     .chan img{max-width:190px}
   }
   /* Footer */
-  footer{background:#2E2452;color:#D9D2F0;padding:42px 0;font-size:14px}
+  footer{background:#3A2A20;color:#EFE1D0;padding:42px 0;font-size:14px}
   footer .wrap{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:30px}
   footer h4{color:#fff;margin-bottom:12px;font-size:16px}
-  footer a{color:#C9BEF2;display:block;margin:6px 0}
-  footer .copy{grid-column:1/-1;text-align:center;margin-top:24px;color:#9A8FC8;border-top:1px solid #443A6B;padding-top:18px}
+  footer a{color:#F0C8AC;display:block;margin:6px 0}
+  footer .copy{grid-column:1/-1;text-align:center;margin-top:24px;color:#BC9F86;border-top:1px solid #57402F;padding-top:18px}
   @media(max-width:880px){
     .hero{padding:34px 0 20px}
     .hero .wrap{grid-template-columns:1fr;text-align:center}
@@ -119,6 +119,7 @@
     .feat-grid{grid-template-columns:1fr}
     .parent{grid-template-columns:1fr;padding:30px}
     .safe-grid{grid-template-columns:repeat(2,1fr)}
+    .shots{grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto}
     .nav nav{display:none}
     footer .wrap{grid-template-columns:1fr}
   }
@@ -143,8 +144,8 @@
 <link rel="canonical" href="https://kids.siguangblog.cc/" />
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon.png" />
-<link rel="apple-touch-icon" href="assets/icon.png" />
-<meta name="theme-color" content="#7E57C2" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<meta name="theme-color" content="#E2603D" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="儿童安全桌面" />
@@ -236,7 +237,7 @@
 <section class="hero">
   <div class="wrap">
     <div>
-      <h1>给孩子一个<br><span class="hl">安全、好玩</span>的成长空间</h1>
+      <h1>给孩子一个<br><span class="hl">安全又好玩</span>的成长空间</h1>
       <p class="lead">儿童安全桌面，用孩子熟悉的「手机桌面」方式组织一切：圆角图标 + 名称，点一点就能玩、能学。家长可控、护眼、离线可玩，纯净无广告。也支持视障、听障与社交情绪等特需儿童的分通道训练。</p>
       <div class="cta">
         <a class="primary" href="download.html">下载体验</a>
@@ -247,7 +248,7 @@
         <span class="badge">👨‍👩‍👧 家长守护</span>
         <span class="badge">👁️ 护眼模式</span>
         <span class="badge">🚫 无广告无外链</span>
-        <a class="badge" href="changelog.html" style="color:#5C6BC0">🆕 最新 v1.19</a>
+        <a class="badge" href="changelog.html" style="color:#B4552F">🆕 最新 v1.19</a>
         <a class="badge" href="https://gitee.com/lafxluc/kids-safe-desktop" target="_blank" rel="noopener" style="color:#C0392B">📖 开源在 Gitee</a>
       </div>
     </div>
@@ -261,22 +262,22 @@
     <h2 class="sec-title">为什么选择儿童安全桌面</h2>
     <p class="sec-sub">把复杂留给家长，把简单和安全留给孩子</p>
     <div class="feat-grid">
-      <div class="feat"><div class="ico" style="background:#F3E9FF">🖥️</div><h3>桌面式图标入口</h3><p>首页即桌面，所有功能以图标呈现，图标下方显示名称，孩子一看就会用。</p></div>
-      <div class="feat"><div class="ico" style="background:#E1F7FB">👨‍👩‍👧</div><h3>家长守护</h3><p>独立鉴权的家长入口，可管理可用应用、每日时长、小游戏开关，到点自动休息。</p></div>
+      <div class="feat"><div class="ico" style="background:#FCEBD7">🖥️</div><h3>桌面式图标入口</h3><p>首页即桌面，所有功能以图标呈现，图标下方显示名称，孩子一看就会用。</p></div>
+      <div class="feat"><div class="ico" style="background:#E3F5F8">👨‍👩‍👧</div><h3>家长守护</h3><p>独立鉴权的家长入口，可管理可用应用、每日时长、小游戏开关，到点自动休息。</p></div>
       <div class="feat"><div class="ico" style="background:#FFEDE6">👁️</div><h3>护眼模式</h3><p>按时段自动切换柔光护眼，降低蓝光，保护孩子视力。</p></div>
       <div class="feat"><div class="ico" style="background:#E6F4EA">🎵</div><h3>儿歌故事听一听</h3><p>海量儿歌故事，旋转 CD 播放器，支持后台播放与连播。</p></div>
       <div class="feat"><div class="ico" style="background:#FDEFE0">🚀</div><h3>科学实验室</h3><p>物理 / 化学 / 生命 / 太空 / 身体奥秘，十余个亲子小实验，边玩边学。</p></div>
-      <div class="feat"><div class="ico" style="background:#F3E9FF">📚</div><h3>趣味学习</h3><p>口算练习从一年级练到初三（自动批改、语音读题），英语词库 411 词同样覆盖到初中毕业，另有 26 首古诗朗读与注释、语音训练、口诀乐园。</p></div>
+      <div class="feat"><div class="ico" style="background:#FCEBD7">📚</div><h3>趣味学习</h3><p>口算练习从一年级练到初三（自动批改、语音读题），英语词库 411 词同样覆盖到初中毕业，另有 26 首古诗朗读与注释、语音训练、口诀乐园。</p></div>
       <div class="feat"><div class="ico" style="background:#FFEBEE">📝</div><h3>模拟考试</h3><p>三年级到初三，语文 / 数学 / 英语共 21 套期末模拟卷、252 道题。一次一题可回头改答案，交卷后按百分制打分，逐题列出你的答案、正确答案和解析。</p></div>
       <div class="feat"><div class="ico" style="background:#E0F2F1">📕</div><h3>电子课本</h3><p>语文 24 册、数学 106 册（人教、北师大、苏教、青岛等 11 个教材版本）放进自己的服务器，孩子点开就能一页页翻，放大看生字表和竖式，看过的页缓存在本机。</p></div>
       <div class="feat"><div class="ico" style="background:#E8F0FE">🎮</div><h3>小游戏乐园</h3><p>21 款益智小游戏，从数独、打字、俄罗斯方块到心灵感应魔法；每局结束按正确率给星星，输一局也有星星。</p></div>
       <div class="feat"><div class="ico" style="background:#FDF2F8">✨</div><h3>无限想象</h3><p>孩子说一句心愿，五个小伙伴依次上场织成四段睡前故事，可朗读、可收藏、可导出图片卡。默认离线，不出这台设备。</p></div>
-      <div class="feat"><div class="ico" style="background:#EDE7F6">🔐</div><h3>我的日记</h3><p>孩子自己设密码的本子，离开页面就自动上锁。忘密码只能请家长重置，这一点写在设密码那一页，不藏着。</p></div>
+      <div class="feat"><div class="ico" style="background:#FCEBD7">🔐</div><h3>我的日记</h3><p>孩子自己设密码的本子，离开页面就自动上锁。忘密码只能请家长重置，这一点写在设密码那一页，不藏着。</p></div>
       <div class="feat"><div class="ico" style="background:#E8F5E9">🌱</div><h3>特需关爱</h3><p>视障、听障、社交情绪三条训练通道，6 个小游戏，每个都写明练什么、家长怎么带。</p></div>
       <div class="feat"><div class="ico" style="background:#FFF8E1">📖</div><h3>0-15 岁成长指南</h3><p>给家长的长文，16 个议题按年龄展开：怎么科学地管、性教育怎么讲、怎么防侵犯、网友怎么辨别好坏。离线内置。</p></div>
       <div class="feat"><div class="ico" style="background:#E8F6F2">🧠</div><h3>儿童心理学 · 自闭症关怀（公益）</h3><p>公益科普长文，永久免费、无广告无推销。讲儿童心理发展的四条基本规律与 0-18 岁六个阶段；自闭症部分讲清早期识别的六个信号、国家 11 次免费筛查、确诊三级流程、2026 版指南的干预方法与每月 20 小时的强度要求，以及哪些「疗法」不能碰、能用什么救助政策。</p></div>
       <div class="feat"><div class="ico" style="background:#EDF3FA">💙</div><h3>抑郁症专区（公益）</h3><p>给家长的公益科普，永久免费、无广告无推销、不收集信息。讲抑郁和普通情绪低落的区别、孩子最容易被漏掉的六类信号、判断要不要就医的三条线、家庭预防六件事，以及《中国抑郁障碍防治指南（2025版）》的全病程治疗。专区里直接列出 12356、12355、010-82951332、400-161-9995 与 120 等求助电话，安卓上点号码即可拨出。</p></div>
-      <div class="feat"><div class="ico" style="background:#E3F2FD">☁️</div><h3>远程改配置</h3><p>家长在电脑上改设置，孩子设备 1 秒内生效；配置只走你自己的服务器。</p></div>
+      <div class="feat"><div class="ico" style="background:#F5EEE2">☁️</div><h3>远程改配置</h3><p>家长在电脑上改设置，孩子设备 1 秒内生效；配置只走你自己的服务器。</p></div>
       <div class="feat"><div class="ico" style="background:#FFF3E0">🔒</div><h3>隐私看得见</h3><p>首启先同意再进应用，政策全文与第三方 SDK 清单随时可查，授权可撤回。</p></div>
     </div>
   </div>
@@ -292,7 +293,6 @@
       <figure><img src="assets/screenshot_games.png" alt="游戏乐园真实界面：简单 / 中等 / 困难三档难度，内置与网页游戏分类，益智小游戏网格" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>游戏乐园</figcaption></figure>
       <figure><img src="assets/screenshot_learn.png" alt="学习天地真实界面：一年级到初三的口算练习与模拟考试入口" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>学习天地</figcaption></figure>
       <figure><img src="assets/screenshot_player.png" alt="媒体中心真实界面：听、看、故事、阅读四个分类，儿歌音乐盒与安睡摇篮" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>听一听 · 媒体中心</figcaption></figure>
-      <figure><img src="assets/screenshot_science.png" alt="星际科学实验室真实界面：物理、化学、天文等分类，18 个亲子小实验" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>科学实验室</figcaption></figure>
       <figure><img src="assets/screenshot_care.png" alt="关爱中心真实界面：今天心情怎么样打卡、最近 7 天趋势、加密日记与家长课" width="540" height="1200" loading="lazy" decoding="async"/><figcaption>关爱中心</figcaption></figure>
     </div>
   </div>
@@ -328,7 +328,7 @@
       <div class="safe"><div class="e">🛡️</div><h4>纯净环境</h4><p>无社交、无支付、无陌生人联系。</p></div>
     </div>
     <p style="text-align:center;margin-top:24px;font-size:15px">
-      <a href="permissions.html" style="font-weight:700;color:#7E57C2">📋 应用申请了哪些权限？逐条都在这里 →</a>
+      <a href="permissions.html" style="font-weight:700;color:#E2603D">📋 应用申请了哪些权限？逐条都在这里 →</a>
     </p>
   </div>
 </section>

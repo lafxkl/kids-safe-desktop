@@ -7,9 +7,9 @@
 <meta name="description" content="儿童安全桌面全部版本的更新记录：从 v1.0 首发到 v1.20，每个版本都写明新增了什么、修了什么、为什么改，包含功能升级与合规改造。" />
 <style>
   :root{
-    --purple:#7E57C2; --purple-d:#5C6BC0; --teal:#26C6DA;
-    --ink:#2E3A4D; --soft:#7A8290; --bg:#F6F1FF; --card:#fff;
-    --grad:linear-gradient(135deg,#7E57C2 0%,#26C6DA 100%);
+    --purple:#E2603D; --purple-d:#B4552F; --teal:#2FB8CE;
+    --ink:#3A2B22; --soft:#7A8290; --bg:#FDF6EC; --card:#fff;
+    --grad:linear-gradient(135deg,#F2A03D 0%,#E2603D 100%);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
@@ -17,14 +17,14 @@
   .wrap{max-width:880px;margin:0 auto;padding:0 22px}
 
   /* 顶部导航：与首页保持一致 */
-  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #EEE5FF}
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
   .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1120px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple)}
-  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(126,87,194,.3)}
+  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
   .nav nav{display:flex;gap:24px;font-size:15px}
   .nav nav a{color:var(--ink);font-weight:600}
   .nav nav a:hover,.nav nav a.on{color:var(--purple)}
-  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(126,87,194,.35)}
+  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(214,110,74,.35)}
 
   /* 头部 */
   .hero{padding:52px 0 10px}
@@ -33,22 +33,22 @@
   .hero p.lead{margin-top:14px;font-size:17px;color:var(--soft);max-width:640px}
   .hero p.lead b{color:var(--purple)}
   .meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-  .pill{background:#fff;border:1px solid #ECE3FB;border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--purple-d)}
+  .pill{background:#fff;border:1px solid #F6E0C9;border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--purple-d)}
 
   /* 筛选 */
   .filters{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 8px}
   .fbtn{border:1px solid #E4D9FA;background:#fff;color:var(--ink);border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
   .fbtn:hover{border-color:var(--purple);color:var(--purple)}
-  .fbtn.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(126,87,194,.3)}
+  .fbtn.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(214,110,74,.3)}
 
   /* 时间线 */
   .list{padding:14px 0 60px}
   .rel{display:grid;grid-template-columns:104px 1fr;gap:22px;padding:26px 0 26px 0;position:relative}
   .rel + .rel{border-top:1px solid #EADFFB}
   .rel .side{position:relative;padding-left:18px}
-  .rel .side::before{content:"";position:absolute;left:0;top:9px;width:10px;height:10px;border-radius:50%;background:var(--grad);box-shadow:0 0 0 4px #F0E7FE}
+  .rel .side::before{content:"";position:absolute;left:0;top:9px;width:10px;height:10px;border-radius:50%;background:var(--grad);box-shadow:0 0 0 4px #FBEEDF}
   /* 时间线竖线：连接相邻版本，最后一个不画 */
-  .rel .side::after{content:"";position:absolute;left:4px;top:24px;bottom:-52px;width:2px;background:linear-gradient(#E3D6FA,#F3ECFE)}
+  .rel .side::after{content:"";position:absolute;left:4px;top:24px;bottom:-52px;width:2px;background:linear-gradient(#F6DFC7,#FCF1E3)}
   .rel:last-of-type .side::after{display:none}
   .rel .vno{font-size:26px;font-weight:900;color:var(--purple);line-height:1.1}
   .rel .date{font-size:12.5px;color:var(--soft);margin-top:4px}
@@ -58,26 +58,26 @@
   .tag{font-size:12px;font-weight:800;border-radius:7px;padding:3px 9px}
   .t-new{background:#E6F6EC;color:#1B7A3E}
   .t-fix{background:#FFF0E3;color:#B45309}
-  .t-opt{background:#E7F1FE;color:#1D4ED8}
-  .t-law{background:#F1E8FE;color:#6B2BB8}
+  .t-opt{background:#FBEEDF;color:#B4552F}
+  .t-law{background:#FBEEDF;color:#8C4A2A}
   .t-key{background:#FDE7E7;color:#B3261E}
   .t-first{background:#FFF6DA;color:#8A6100}
   .rel ul{list-style:none;display:grid;gap:7px}
   .rel li{position:relative;padding-left:17px;font-size:15px;color:#3E4A54}
-  .rel li::before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:#C9B8ED}
+  .rel li::before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:#EFD3BB}
   .rel .warn{margin-top:12px;background:#FFF8E1;border-left:3px solid #FB8C00;border-radius:0 10px 10px 0;padding:10px 14px;font-size:14px;color:#6B4E00}
 
   /* 底部 */
-  .tail{background:#fff;border-radius:24px;padding:30px;text-align:center;box-shadow:0 12px 34px rgba(94,53,177,.1);margin-bottom:60px}
+  .tail{background:#fff;border-radius:24px;padding:30px;text-align:center;box-shadow:0 12px 34px rgba(176,96,54,.1);margin-bottom:60px}
   .tail h3{font-size:20px;margin-bottom:8px}
   .tail p{color:var(--soft);font-size:14.5px;margin-bottom:18px}
   .tail .links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   .tail a{padding:11px 22px;border-radius:22px;font-weight:700;font-size:15px}
-  .tail .primary{background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(126,87,194,.3)}
-  .tail .ghost{background:#F4EEFE;color:var(--purple)}
+  .tail .primary{background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(214,110,74,.3)}
+  .tail .ghost{background:#FCF1E3;color:var(--purple)}
 
-  footer{background:#2E2452;color:#D9D2F0;padding:30px 0;font-size:13.5px;text-align:center}
-  footer a{color:#C9BEF2;margin:0 8px}
+  footer{background:#3A2A20;color:#EFE1D0;padding:30px 0;font-size:13.5px;text-align:center}
+  footer a{color:#F0C8AC;margin:0 8px}
 
   @media(max-width:720px){
     .hero h1{font-size:30px}
@@ -97,8 +97,8 @@
 <link rel="canonical" href="https://kids.siguangblog.cc/changelog.html" />
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="512x512" href="assets/icon.png" />
-<link rel="apple-touch-icon" href="assets/icon.png" />
-<meta name="theme-color" content="#7E57C2" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<meta name="theme-color" content="#E2603D" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="儿童安全桌面" />
