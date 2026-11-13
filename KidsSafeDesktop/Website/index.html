@@ -82,24 +82,48 @@
   .dl-more{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   .dl-more a{font-size:13.5px;font-weight:700;color:var(--purple);background:#FDF6EC;border:1px solid #EADDFB;border-radius:20px;padding:8px 16px}
   .dl-more a:hover{background:#F5E7D5;border-color:#F0D5BE}
-  /* 交流渠道：QQ 群 / 微信群 / 公众号 三卡 */
-  .chan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:790px;margin:0 auto}
-  .chan{background:#fff;border:1px solid #F4E5D3;border-radius:22px;padding:22px 18px 20px;text-align:center;
+  /* 备用下载：蓝奏云（官网带宽有限时兜底） */
+  .alt-dl{display:flex;gap:26px;align-items:center;text-align:left;margin:22px auto 0;max-width:660px;
+          background:#fff;border:1px solid #F4E5D3;border-radius:22px;padding:22px 26px;
+          box-shadow:0 12px 30px rgba(176,96,54,.10)}
+  .alt-qr{flex:0 0 auto;text-align:center}
+  .alt-qr img{width:130px;height:130px;display:block;border-radius:14px;border:1px solid #F0DEC9;background:#fff}
+  .alt-qr span{display:block;margin-top:8px;font-size:12px;color:#9C8371}
+  .alt-body{min-width:0}
+  .alt-body h3{font-size:17px;margin-bottom:8px;color:var(--ink)}
+  .alt-body p{font-size:13.5px;color:var(--soft);line-height:1.85;margin:0}
+  .alt-pw{margin:11px 0 13px;font-size:13.5px;color:#B4552F;font-weight:700}
+  .alt-pw code{font-family:Consolas,"Courier New",monospace;background:#FCEBD7;border:1px solid #F0D5BE;
+               border-radius:9px;padding:3px 11px;margin-left:4px;font-size:15px;letter-spacing:1.5px}
+  .alt-btn{display:inline-block;background:#E2603D;color:#fff;font-weight:800;font-size:14px;
+           padding:10px 22px;border-radius:22px}
+  .alt-btn:hover{background:#B4552F}
+  .alt-tip{margin-top:10px;font-size:12px;color:#9C8371;line-height:1.7}
+  /* 交流渠道：QQ 群 / QQ 频道 / 微信群 / 公众号 四卡 */
+  .chan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1020px;margin:0 auto}
+  .chan{background:#fff;border:1px solid #F4E5D3;border-radius:22px;padding:20px 15px 18px;text-align:center;
         box-shadow:0 10px 30px rgba(176,96,54,.08);transition:transform .25s ease,box-shadow .25s ease}
   .chan:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(176,96,54,.14)}
-  .chan img{width:100%;max-width:168px;height:auto;border-radius:12px;background:#fff;display:block;
+  .chan img{width:100%;max-width:150px;height:auto;border-radius:12px;background:#fff;display:block;
             margin:0 auto 14px;box-shadow:0 6px 18px rgba(176,96,54,.12)}
-  .chan h3{font-size:16.5px;margin-bottom:7px}
+  .chan h3{font-size:16px;margin-bottom:7px}
   .chan .meta{display:inline-block;background:#FCEBD7;color:#B4552F;font-weight:800;border-radius:10px;
               padding:5px 12px;font-size:12.5px;letter-spacing:.02em;margin-bottom:10px}
   .chan p{font-size:12.5px;color:var(--soft);line-height:1.75;margin:0}
+  .chan .chan-link{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:800;color:#E2603D}
+  .chan .chan-link:hover{text-decoration:underline}
   .chan .expire{font-size:11px;color:#B45309;background:#FFF7ED;border:1px solid #FDE7CE;border-radius:9px;
                 padding:6px 9px;margin-top:11px;line-height:1.6;text-align:left}
   .chan-note{max-width:790px;margin:16px auto 0;text-align:center;font-size:11.5px;color:#A79BC0;line-height:1.8}
 
+  @media(max-width:900px){
+    .chan-grid{grid-template-columns:repeat(2,1fr);max-width:520px}
+  }
   @media(max-width:760px){
     .chan-grid{grid-template-columns:1fr;max-width:330px}
     .chan img{max-width:190px}
+    .alt-dl{flex-direction:column;text-align:center;padding:24px 20px}
+    .alt-qr img{width:150px;height:150px}
   }
   /* Footer */
   footer{background:#3A2A20;color:#EFE1D0;padding:42px 0;font-size:14px}
@@ -359,10 +383,29 @@
       <a href="download.html#server">🖥️ 服务端部署（可选）</a>
       <a href="https://gitee.com/lafxluc/kids-safe-desktop" target="_blank" rel="noopener">📖 Gitee 源码</a>
     </div>
+
     <p class="dl-note">
       安卓首次安装需在系统设置里允许「安装未知来源应用」。若之前装过更早的旧签名的包，请先卸载再安装。<br/>
       Windows 两个版本内容一样，区别只有一处：<b>安装版</b>（约 111 MB）会装进「开始菜单」，并在<b>桌面空白处右键</b>加一个启动项，可从系统设置正常卸载；<b>免安装版</b>（约 140 MB）解压即用、不写注册表，因此没有右键菜单。
     </p>
+
+    <div class="alt-dl">
+      <div class="alt-qr">
+        <img src="assets/lanzou-qr.png" alt="蓝奏云备用下载二维码（仅 Android 版），提取密码 fovz" width="360" height="360" decoding="async"/>
+        <span>手机扫码直达</span>
+      </div>
+      <div class="alt-body">
+        <h3>📱 蓝奏云备用下载（只有 Android 版）</h3>
+        <p>
+          官网是自费的小服务器，<b>带宽和存储都有限</b>，赶上人多的时候下载会变慢甚至中途断掉。
+          蓝奏云不限速、不用登录、支持断点续传，装不上或者下不动时走这条更省事，内容与直链完全一致。
+        </p>
+        <div class="alt-pw">提取密码<code>fovz</code></div>
+        <a class="alt-btn" href="https://kids.lanzouu.com/iW1St4ft5cef" target="_blank" rel="noopener">打开蓝奏云下载页 →</a>
+        <div class="alt-tip">Windows 安装版与免安装版体积较大，蓝奏云放不下，仍请用上面的官网直链；直链会一直保留。</div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -370,13 +413,20 @@
 <section id="community">
   <div class="wrap">
     <h2 class="sec-title">加入交流群</h2>
-    <p class="sec-sub">装不上、用不顺、想加什么功能，进群里直接说</p>
+    <p class="sec-sub">装不上、用不顺、想加什么功能，群里和频道里直接说</p>
     <div class="chan-grid">
       <div class="chan">
         <img src="assets/qq-group.png" alt="儿童安全桌面开发者交流群 QQ 群二维码，群号 1134839505" width="562" height="562" decoding="async"/>
         <h3>QQ 交流群</h3>
         <div class="meta">群号 1134839505</div>
         <p>群里就是开发者本人。安装问题、bug、功能建议都可以直接说，不用走工单。</p>
+      </div>
+      <div class="chan">
+        <img src="assets/qq-channel.png" alt="儿童安全桌面 QQ 频道二维码" width="370" height="370" decoding="async"/>
+        <h3>QQ 频道</h3>
+        <div class="meta">扫一扫直达</div>
+        <p>不用加好友、不用等通过。版本更新通知、使用答疑、新功能预告都发在频道里。</p>
+        <a class="chan-link" href="https://pd.qq.com/s/doahjnw75" target="_blank" rel="noopener">电脑上点此打开 →</a>
       </div>
       <div class="chan">
         <img src="assets/wechat-group.png" alt="儿童安全桌面开发者交流群 微信群二维码" width="847" height="847" decoding="async"/>
@@ -415,6 +465,8 @@
       <h4>支持</h4>
       <a href="about.html">关于我们</a>
       <a href="#community">交流群</a>
+      <a href="https://pd.qq.com/s/doahjnw75" target="_blank" rel="noopener">QQ 频道</a>
+      <a href="https://kids.lanzouu.com/iW1St4ft5cef" target="_blank" rel="noopener">蓝奏云备用下载</a>
       <a href="privacy.html">隐私政策</a>
       <a href="permissions.html">应用权限说明</a>
       <a href="care-sources.html">关爱中心内容来源</a>
