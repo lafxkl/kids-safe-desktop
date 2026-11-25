@@ -7,7 +7,7 @@
 <p align="center">
   <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet">
   <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows-512BD4">
-  <img alt="平台" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B-informational">
+  <img alt="平台" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20Linux%20%7C%20HarmonyOS-informational">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
@@ -17,9 +17,9 @@
 
 一个给 3–12 岁孩子用的 **受控桌面环境**：孩子打开平板或电脑，看到的是一个只有动画、儿歌、绘本、小游戏和学习内容的童趣桌面，没有浏览器、没有短视频、没有应用商店；家长用另一台设备（网页或家长端 App）决定「能看什么、能玩多久」。
 
-原生客户端，**.NET 10 + .NET MAUI 单代码库**，一套代码出 Android 与 Windows。全部界面离线可用，不依赖任何云服务；需要远程管理时再自己起一个几十 MB 的 ASP.NET Core 服务端。
+原生客户端，**.NET 10 + .NET MAUI 单代码库**，一套代码出 Android 与 Windows；另有两个不复用 XAML 层的独立前端——**Linux**（Qt 6 + Kirigami，KDE Plasma 全屏会话）与**鸿蒙**（ArkTS + ArkUI）。全部界面离线可用，不依赖任何云服务；需要远程管理时再自己起一个几十 MB 的 ASP.NET Core 服务端。
 
-> 当前版本：客户端 **v1.20**（versionCode 21），服务端 **1.3**。变更见 [更新记录](KidsSafeDesktop/Docs/更新记录.md)。
+> 当前版本：客户端 **v1.20**（versionCode 21），服务端 **1.4.1**。变更见 [更新记录](KidsSafeDesktop/Docs/更新记录.md)。
 
 ---
 
@@ -28,6 +28,7 @@
 - [它解决什么问题](#它解决什么问题)
 - [界面截图](#界面截图)
 - [功能一览](#功能一览)
+- [官网与反馈](#官网与反馈)
 - [架构](#架构)
 - [快速开始](#快速开始)
 - [配置与密钥](#配置与密钥)
@@ -74,7 +75,7 @@
 | 阅读 | 故事屋、绘本、古诗、电子课本书架（需自备教材文件）、文章阅读器 |
 | 学习天地 | 一至九年级口算练习与批改（五～九年级走 SQLite 题库）、成绩报告、错题回顾、中文 TTS 报题 |
 | 英语学习 | 按年级 / 主题的单词卡与练习模式，音标 + 英文 TTS |
-| 关爱中心 | 心情打卡与 7 天趋势、加密日记（孩子自己设密码）、心理小课堂 10 节、呼吸放松、想对爸妈说、10 节家长课、0–15 岁成长指南、抑郁症专区（公益科普） |
+| 关爱中心 | 心情打卡与 7 天趋势、加密日记（孩子自己设密码）、心理小课堂 10 节、呼吸放松、想对爸妈说、10 节家长课、0–15 岁成长指南、抑郁症专区（公益科普）、**绘本怎么找**（三家免费且合法的绘本来源 + 5 本经典绘本清单 + 网盘合集版权风险提示） |
 | 安全与健康 | 安全知识（交通 / 防火 / 防骗 / 防溺水）、安全小问答、眼保健操、身体百科 |
 | 激励 | 星星、勋章墙、连续打卡、排行榜 |
 | 家长入口 | 4 位 PIN 保护的家长后台（本地），可改全部设置 |
@@ -85,6 +86,7 @@
 
 - 使用时长与时段限制、应用白名单（枚举已安装应用）
 - 游戏开关、主题、护眼模式（强度 + 定时）、在线内容总开关
+- 小游戏工坊：内置网页编辑器，不写代码就能做「接住 / 躲避 / 点一点」小游戏 —— 三种模板、6 类内置 emoji 素材、可导入自己的图片，作品能试玩、能导出成 `.json` 换设备打开（Windows / Android / Linux / 鸿蒙四端都有）
 - 成长指南、家长课、专项训练指南
 - 连接家长服务器：填地址 + 账号密码或 6 位配对码，即可远程下发配置
 
@@ -97,6 +99,28 @@
 | 配置隔离 | 每个账号一份 `data/profiles/{accountId}.json`，一台服务器服务多个家庭 |
 | 实时下发 | 长轮询 `/api/watch`，家长一保存，孩子设备 1 秒内应用，不用 WebSocket / 厂商推送 |
 | 内容与版本 | 更新日志、安装包列表、内容清单、故事代理（第三方密钥只留服务端） |
+
+## 官网与反馈
+
+官网 <https://kids.siguangblog.cc/> 就是 `KidsSafeDesktop/Website/` 这一份纯静态站，丢到 Nginx / GitHub Pages / OSS 都能跑；首页截图与上面 README 用的是同一批素材。
+
+对外有四个「能说话」的页面，接口都走 `KidsSafeServer` 的 `/api/feedback/*`：
+
+| 页面 | 作用 | 数据从哪来 |
+|---|---|---|
+| `comments.html` | 公开评论区：页内直接发表、按平台与星级筛选、点赞、加载更多 | `Website/data/comments.json`（14 条静态精选，改文件即改页面）+ 服务端实时留言，按正文去重后合并 |
+| `feedback.html` | 意见反馈 / 满意度调查 / 使用问卷三合一，右侧实时公开统计（份数、平均分、NPS、分项） | 同上，精选留言取 3 条 |
+| `feedback-admin.html` | 明细列表与 CSV 导出 | 需管理密钥（服务端 `Feedback:AdminKey`） |
+| `care-sources.html` | 关爱中心的内容来源与引用：22 条出处逐条可点开 | 静态维护 |
+
+几条刻意的取舍：
+
+- **昵称可选，IP 不落库**：限流按 `X-Forwarded-For` 取真实 IP，只做计数（10 分钟 12 条 / 24 小时 60 条），不写进留言记录；
+- **点赞只存本机**：不做服务端计数，不值得为了一个数字引入账号体系；
+- **提交是乐观的**：接口返回成功就先把这条插进列表并标「刚刚提交」；断网时进 `localStorage` 队列，回到页面再补发；
+- **静态精选优先**：`data/comments.json` 的条目排前面，服务端新留言按 `sortKey` 排在后面，两边同一条按正文前 40 字去重。
+
+四端的入口、接口契约、存储与验收步骤见 **[Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md)**；Nginx 的两处反代配置（`/api/`、`/patches/`）见 **[Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md)**。
 
 ## 架构
 
@@ -218,6 +242,9 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 │   ├── Scripts/              发布、部署、隐私政策导出、PDF 转页图等工具
 │   ├── Installer/            Inno Setup 安装脚本
 │   ├── Linux/                KDE Plasma 版前端（Qt 6 + Kirigami，独立于 MAUI）
+│   ├── Harmony/              鸿蒙版前端（ArkTS + ArkUI，独立于 MAUI）
+│   ├── Baby36Server/         「宝贝三十六计」联机陪练的本机小服务（纯 Node 内置模块，不装依赖）
+│   ├── Video/                宣传片的采集 / 合成脚本（帧序列与成片不入库，见其 README）
 │   └── Docs/                 设计与技术文档、更新记录、上架材料
 ├── KidsSafeShared/           共享库：全部页面、视图模型、服务、模型、控件
 ├── KidsSafeParent/           家长端 App（独立外壳，复用共享库）
@@ -239,15 +266,19 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 | [Docs/账号体系.md](KidsSafeDesktop/Docs/账号体系.md) | 账号 / 配对码 / 令牌设计与迁移路径 |
 | [Docs/实时下发通道.md](KidsSafeDesktop/Docs/实时下发通道.md) | 长轮询版本号机制与重连策略 |
 | [Docs/更新记录.md](KidsSafeDesktop/Docs/更新记录.md) | 逐版本变更（含服务端） |
+| [Docs/小游戏工坊.md](KidsSafeDesktop/Docs/小游戏工坊.md) | 四端共用的网页编辑器：接口约定、作品存哪、改完怎么同步 |
+| [Docs/星星奖励与关爱中心.md](KidsSafeDesktop/Docs/星星奖励与关爱中心.md) | 星星与勋章规则、关爱中心各栏目、绘本来源的存储方案与版权红线 |
+| [Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md) | 官网三页 + 四端入口、接口契约、离线队列、隐私边界、验收步骤 |
+| [Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md) | 官网与接口上线后的运维动作：Nginx 反代、缓存、备份 |
 | [KidsSafeServer/wwwroot/docs.html](KidsSafeServer/wwwroot/docs.html) | 面向家长的部署与排障手册 |
 
 ## 已知限制
 
 这些是真实存在的边界，不是待办清单的修辞：
 
-- **只支持 Android 与 Windows**。iOS / macOS 没有验证过，`KidsSafeShared` 里虽然留了 `#if IOS` 分支，但没跑通。
-- **Linux 版是第三个前端**（`KidsSafeDesktop/Linux/`，Qt 6 + Kirigami，KDE Plasma 全屏儿童桌面）。它不复用 XAML 层，是独立实现，本次开源未做完整回归，见该目录的 README。
-- **服务端只适合局域网**。没有 HTTPS、没有反向代理配置、令牌是自签而非标准 JWT。**不要做端口映射暴露到公网**；确需公网访问，请自行在前面挂一层带 HTTPS 和限流的反代。
+- **主力是 Android 与 Windows**（同一份 MAUI 代码库）。iOS / macOS 没有验证过，`KidsSafeShared` 里虽然留了 `#if IOS` 分支，但没跑通。
+- **Linux 与鸿蒙是另外两个独立前端**：`KidsSafeDesktop/Linux/`（Qt 6 + Kirigami，KDE Plasma 全屏儿童桌面）与 `KidsSafeDesktop/Harmony/`（ArkTS + ArkUI）。都不复用 XAML 层，功能与桌面端不完全对等，本次开源未做完整回归，差异写在各自目录的 README 里。
+- **服务端本身不做 HTTPS，也不自带限流**。它默认只监听 `127.0.0.1:5180`，公网访问必须挂一层带 HTTPS 的反向代理（官网就是这么做的：nginx 把 `/api/*` 转到 5180，并按 `X-Forwarded-For` 让服务端拿到真实 IP）。**不要直接把 5180 端口映射到公网**。
 - **家长端还没有自己的图标与发布脚本**，`ApplicationId` 是占位的 `com.companyname.kidssafeparent`，打包需手动改。
 - **教材 PDF 不随仓库分发**。`KidsSafeServer/wwwroot/books/` 下的 130 份教材版权归各出版社，仓库只留书目元数据；没有 PDF 时书架是空的。
 - **内容版权**。儿歌、白噪音为项目内合成；故事与绘本为原创或在公有领域素材基础上改写；诗词为公有领域。若要商用请自行复核 `Docs/第三方SDK清单.md`。
@@ -257,6 +288,7 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 ## 路线图
 
 - [ ] 家长端独立图标、版本号与一键打包脚本
+- [ ] Linux 与鸿蒙端做一次完整回归，把与桌面端的功能差异补齐
 - [ ] 两端配置合并（服务端已就绪，客户端 LiveSync 已实现，缺完整的冲突合并策略）
 - [ ] 多孩子档案（一个账号下多个孩子，各自时长与内容）
 - [ ] 教材书架改用开放许可教材，去掉版权依赖

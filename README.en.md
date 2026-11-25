@@ -17,9 +17,9 @@
 
 A **supervised desktop environment** for children aged 3–12. When a kid picks up the tablet or the family PC, they get a playful home screen with cartoons, songs, picture books, mini-games and study material — and nothing else: no browser, no short videos, no app store. Parents decide what is available and for how long, from a web console or a separate parent app.
 
-Native client, **.NET 10 + .NET MAUI from a single codebase**, shipping Android and Windows from one set of sources. Everything works offline and depends on no cloud service; if you want remote management, you run a small ASP.NET Core server yourself.
+Native client, **.NET 10 + .NET MAUI from a single codebase**, shipping Android and Windows from one set of sources; plus two independent front ends that do not reuse the XAML layer — **Linux** (Qt 6 + Kirigami, full-screen KDE Plasma session) and **HarmonyOS** (ArkTS + ArkUI). Everything works offline and depends on no cloud service; if you want remote management, you run a small ASP.NET Core server yourself.
 
-> Current versions: client **v1.20** (versionCode 21), server **1.3**. See the [changelog](KidsSafeDesktop/Docs/更新记录.md) (Chinese).
+> Current versions: client **v1.20** (versionCode 21), server **1.4.1**. See the [changelog](KidsSafeDesktop/Docs/更新记录.md) (Chinese).
 
 ---
 
@@ -28,6 +28,7 @@ Native client, **.NET 10 + .NET MAUI from a single codebase**, shipping Android 
 - [Why this exists](#why-this-exists)
 - [Screenshots](#screenshots)
 - [Features](#features)
+- [Website and feedback](#website-and-feedback)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
 - [Configuration and secrets](#configuration-and-secrets)
@@ -74,7 +75,7 @@ All five are real Android screenshots of v1.19 / v1.20 — no mockups:
 | Reading | Story house, picture books, classical poetry, textbook shelf (bring your own files), article reader |
 | Study | Grade 1–9 mental arithmetic with auto-marking (grades 5–9 draw from a SQLite question bank), score reports, mistake review, Chinese TTS reading the questions aloud |
 | English | Grade- and topic-based flashcards plus a quiz mode, phonetics and English TTS |
-| Care centre | Mood check-in with a 7-day trend, PIN-locked diary, 10 psychology lessons, breathing exercise, "a letter to mum and dad", 10 parent lessons, 0–15 age guide, depression information pages |
+| Care centre | Mood check-in with a 7-day trend, PIN-locked diary, 10 psychology lessons, breathing exercise, "a letter to mum and dad", 10 parent lessons, 0–15 age guide, depression information pages, and **where to find picture books** (three free and legal sources, five classics worth starting with, and why "600-book collections" floating around on file-sharing sites are a copyright risk) |
 | Safety and health | Safety knowledge (traffic, fire, strangers, drowning), safety quiz, eye exercises, body encyclopedia |
 | Motivation | Stars, badge wall, streaks, leaderboards |
 | Parent entry | 4-digit PIN gate to the local parent console, where every setting can be changed |
@@ -97,6 +98,21 @@ Same parent console, different entry point: it launches straight into the parent
 | Per-account isolation | One `data/profiles/{accountId}.json` per account, so one server can serve several families |
 | Live push | Long polling on `/api/watch`; a save on the parent side reaches the child device in about a second, without WebSockets or vendor push SDKs |
 | Content and releases | Changelog, installer listing, content manifests, story proxy (third-party keys stay server-side) |
+
+## Website and feedback
+
+The official site, <https://kids.siguangblog.cc/>, is just `KidsSafeDesktop/Website/` — plain static files that run on Nginx, GitHub Pages or an object store. Four of its pages talk to `/api/feedback/*` on the server:
+
+| Page | Purpose | Data source |
+|---|---|---|
+| `comments.html` | Public comment wall: post in place, filter by platform and rating, like, load more | 14 curated entries in `Website/data/comments.json` (edit the file, the page follows) merged with live server comments, de-duplicated by body text |
+| `feedback.html` | Feedback form, satisfaction survey and usage questionnaire in one page, with live public stats beside it | Same store; shows three featured quotes |
+| `feedback-admin.html` | Full listing and CSV export | Requires `Feedback:AdminKey` |
+| `care-sources.html` | Every source the care centre cites: 22 references, each one clickable | Maintained by hand |
+
+Deliberate choices: nicknames are optional and **IPs are counted, never stored** (10 minutes / 12 posts, 24 hours / 60); **likes live only in the browser**, so no account system had to be invented for a counter; posting is optimistic — a successful POST is inserted immediately and marked "just posted", while offline posts queue in `localStorage`; curated entries always sort ahead of new ones.
+
+See **[Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md)** for the client entry points and API contract, and **[Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md)** for the two Nginx proxy blocks (`/api/`, `/patches/`).
 
 ## Architecture
 
@@ -218,6 +234,8 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 │   ├── Scripts/              Release, deploy, privacy export, PDF-to-image tooling
 │   ├── Installer/            Inno Setup script
 │   ├── Linux/                KDE Plasma front end (Qt 6 + Kirigami, independent of MAUI)
+│   ├── Harmony/              HarmonyOS front end (ArkTS + ArkUI, independent of MAUI)
+│   ├── Baby36Server/         Local companion server for the "36 stratagems" role-play game (Node built-ins only)
 │   └── Docs/                 Design and technical docs, changelog, store material
 ├── KidsSafeShared/           Shared library: every page, view model, service, model, control
 ├── KidsSafeParent/           Parent app (separate shell, reuses the shared library)
@@ -241,15 +259,17 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 | [Docs/账号体系.md](KidsSafeDesktop/Docs/账号体系.md) | Accounts, pairing codes, tokens and the migration path |
 | [Docs/实时下发通道.md](KidsSafeDesktop/Docs/实时下发通道.md) | Long-polling version numbers and reconnect strategy |
 | [Docs/更新记录.md](KidsSafeDesktop/Docs/更新记录.md) | Version-by-version changelog (client and server) |
+| [Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md) | Feedback pages, API contract, offline queue, privacy boundaries, acceptance steps |
+| [Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md) | Post-launch operations: Nginx proxying, caching, backups |
 | [KidsSafeServer/wwwroot/docs.html](KidsSafeServer/wwwroot/docs.html) | Deployment and troubleshooting guide for parents |
 
 ## Known limitations
 
 These are real boundaries, not roadmap prose:
 
-- **Android and Windows only.** iOS and macOS are untested; `KidsSafeShared` still has `#if IOS` branches, but nothing has been verified.
-- **The Linux build is a third front end** (`KidsSafeDesktop/Linux/`, Qt 6 + Kirigami, a full-screen KDE Plasma kids desktop). It does not reuse the XAML layer and was not regression-tested for this release; see the README in that folder.
-- **The server is meant for a home LAN.** There is no HTTPS, no reverse-proxy setup, and tokens are self-signed rather than standard JWTs. **Do not port-forward it to the internet**; if you need remote access, put it behind a reverse proxy with TLS and rate limiting.
+- **Android and Windows are the primary targets** (one MAUI codebase). iOS and macOS are untested; `KidsSafeShared` still has `#if IOS` branches, but nothing has been verified.
+- **Linux and HarmonyOS are separate front ends** (`KidsSafeDesktop/Linux/`, Qt 6 + Kirigami; `KidsSafeDesktop/Harmony/`, ArkTS + ArkUI). Neither reuses the XAML layer, their feature sets are not identical to the desktop app, and neither was regression-tested for this release — each folder's README lists the differences.
+- **The server has no TLS and no rate limiting of its own.** It binds to `127.0.0.1:5180`; public access must sit behind a TLS reverse proxy (the official site does exactly that, proxying `/api/*` and passing `X-Forwarded-For` through). **Do not port-forward 5180 to the internet.**
 - **The parent app has no icon or release script of its own yet**, and its `ApplicationId` is a placeholder (`com.companyname.kidssafeparent`) that must be changed before packaging.
 - **Textbook PDFs are not distributed with this repository.** The 130 textbooks under `KidsSafeServer/wwwroot/books/` are copyrighted by their publishers; only the catalogue metadata is kept. Without the files the shelf is empty.
 - **Content licensing.** Nursery rhymes and white noise are synthesised in-project; stories and picture books are original or adapted from public-domain material; poetry is public domain. Check `Docs/第三方SDK清单.md` before any commercial use.
@@ -259,6 +279,7 @@ These are real boundaries, not roadmap prose:
 ## Roadmap
 
 - [ ] Dedicated icon, version and one-command packaging for the parent app
+- [ ] A full regression pass on the Linux and HarmonyOS front ends, closing the gaps with the desktop app
 - [ ] Merge settings across both apps (server and client live sync exist; a full conflict-merge strategy does not)
 - [ ] Multiple child profiles per account, each with its own time limits and content
 - [ ] Replace textbook PDFs with openly licensed material to remove the copyright dependency
