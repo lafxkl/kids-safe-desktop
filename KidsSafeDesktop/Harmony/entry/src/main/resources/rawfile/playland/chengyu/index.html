@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F2E4C8">
+<title>成语大挑战</title>
+<style>
+  /*
+   * 原工程（egret_cydtz）是 720×1136 固定竖版的 Egret 游戏：
+   * 一张图 + 4 个答案格 + 10 个待选字，从 10 个字里挑 4 个按顺序填进去。
+   * 玩法照搬，界面重排成能跟着屏幕走的样子 —— 平板横过来也要能玩。
+   */
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden;
+    background:#E9D9B8;
+    color:#4A3520;
+    font-family:system-ui,-apple-system,"HarmonyOS Sans SC","Noto Sans SC","PingFang SC",sans-serif;
+    user-select:none; -webkit-user-select:none;
+    touch-action:manipulation;
+  }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column;
+    padding:calc(6px + env(safe-area-inset-top)) 12px calc(8px + env(safe-area-inset-bottom));
+    gap:8px;
+    background:
+      radial-gradient(ellipse at 50% -10%, #FFF8E7 0%, #F3E5C8 45%, #E7D5B0 100%);
+  }
+
+  /* ── 顶栏 ── */
+  #hud{
+    flex:none; display:flex; align-items:center; gap:10px;
+    padding:2px 2px 4px;
+  }
+  #hud .lv{ font-size:14px; letter-spacing:.5px; }
+  #hud .lv b{ font-size:21px; font-weight:900; font-variant-numeric:tabular-nums; }
+  #hud .grow{ flex:1; }
+  #hud .sc{
+    font-size:12px; padding:4px 10px; border-radius:20px;
+    background:rgba(160,110,50,.12); color:#8A5A20;
+  }
+  #hud .sc b{ font-size:14px; }
+  .icon-btn{
+    flex:none; width:36px; height:36px; border-radius:50%; border:0;
+    background:rgba(160,110,50,.13); color:#8A5A20;
+    font-size:17px; line-height:1; display:grid; place-items:center; font-family:inherit;
+  }
+  .icon-btn:active{ background:rgba(160,110,50,.24); }
+
+  /* ── 题目图 ── */
+  #play{
+    flex:1; min-height:0; display:flex; flex-direction:column;
+    justify-content:center; gap:12px;
+  }
+  .pic{
+    flex:none; display:grid; place-items:center;
+    padding:6px; border-radius:16px; background:#FFFDF6;
+    box-shadow:0 4px 14px rgba(120,80,30,.14), inset 0 0 0 1px rgba(160,110,50,.14);
+  }
+  .pic img{
+    display:block; width:100%; max-width:440px; height:auto;
+    border-radius:11px; aspect-ratio:3/2; object-fit:cover; background:#EFE2C6;
+  }
+
+  /* ── 答案格 ── */
+  .slots{ flex:none; display:flex; justify-content:center; gap:10px; }
+  .slot{
+    width:min(19vw,68px); height:min(21vw,76px);
+    border-radius:12px; border:2px dashed rgba(160,110,50,.4);
+    background:rgba(255,255,255,.55);
+    display:grid; place-items:center;
+    font-size:min(9vw,32px); font-weight:800; color:#3B2A16;
+    letter-spacing:0;
+  }
+  .slot.filled{
+    border-style:solid; border-color:#B8863C; background:#FFF8E4;
+    box-shadow:0 3px 0 rgba(184,134,60,.28);
+  }
+  .slot.right{ border-color:#3F9B57; background:#E8F6EA; color:#2C7A42; }
+  .slot.wrong{ border-color:#D9503A; background:#FBEAE6; color:#B4361F; }
+  .slots.shake{ animation:shake .38s ease-in-out; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0) }
+    20%{ transform:translateX(-7px) }
+    45%{ transform:translateX(7px) }
+    70%{ transform:translateX(-4px) }
+  }
+
+  /* ── 释义（答错两次后才给）── */
+  .hintline{
+    flex:none; min-height:0; overflow:hidden;
+    font-size:12.5px; line-height:1.6; color:#8A6A3E; text-align:center;
+    padding:0 8px; opacity:0; transition:opacity .25s;
+  }
+  .hintline.on{ opacity:1; }
+
+  /* ── 候选字 ── */
+  /*
+   * 行高必须写死：用 1fr 让两行平分剩余高度，字块会被拉成 80×300 的长条，
+   * 汉字在中间孤零零的，按起来也没有「方块字」的手感。
+   */
+  .tiles{
+    flex:none; display:grid; gap:8px;
+    grid-template-columns:repeat(5,1fr);
+    grid-template-rows:repeat(2,min(17.5vw,76px));
+  }
+  .tile{
+    border:0; border-radius:14px; font-family:inherit; min-height:0;
+    background:linear-gradient(180deg,#FFFDF6,#F4E7CB);
+    color:#3B2A16; font-size:min(8.4vw,30px); font-weight:800;
+    box-shadow:0 3px 0 rgba(170,130,70,.32), inset 0 0 0 1.5px rgba(170,130,70,.22);
+    display:grid; place-items:center; padding:0;
+    transition:transform .08s, opacity .15s;
+  }
+  .tile:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(170,130,70,.32); }
+  .tile.used{ opacity:.28; box-shadow:none; transform:translateY(2px) scale(.94); }
+
+  /* ── 底部按钮 ── */
+  .ops{ flex:none; display:flex; gap:10px; justify-content:center; padding-top:2px; }
+  .ops button{
+    flex:1; max-width:170px; height:44px; border-radius:22px; border:0;
+    font-family:inherit; font-size:15px; font-weight:700; letter-spacing:1px;
+  }
+  #btnHint{ background:#FFF4D9; color:#9A6C22; box-shadow:0 3px 0 rgba(170,130,70,.3); }
+  #btnSkip{ background:transparent; color:#9A8464; box-shadow:inset 0 0 0 1.5px rgba(154,132,100,.34); }
+  .ops button:active{ transform:translateY(2px); box-shadow:none; }
+
+  /* ── 覆盖层 ── */
+  .veil{
+    position:fixed; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:14px; padding:26px;
+    text-align:center; z-index:9;
+    background:radial-gradient(ellipse at 50% 0%, #FFFAEE 0%, #EFDFC0 55%, #E2CDA4 100%);
+  }
+  .veil.on{ display:flex; }
+
+  #home h1{
+    margin:0; font-size:34px; font-weight:900; letter-spacing:7px; color:#8A4B12;
+    font-family:"Kaiti SC","STKaiti","KaiTi",serif;
+  }
+  #home .sub{ font-size:11px; letter-spacing:5px; color:#A98A5C; margin-top:-6px; }
+  #home .seal{
+    width:96px; height:96px; border-radius:12px; display:grid; place-items:center;
+    background:#B4361F; color:#FFF3E0; font-size:30px; font-weight:900;
+    font-family:"Kaiti SC","STKaiti","KaiTi",serif;
+    box-shadow:0 6px 16px rgba(150,50,25,.28), inset 0 0 0 3px rgba(255,255,255,.3);
+    letter-spacing:2px; line-height:1.1; text-align:center;
+  }
+  #home .desc{ font-size:12.5px; line-height:1.9; color:#8A6A3E; max-width:300px; }
+  #home .btn-main{
+    margin-top:6px; padding:13px 44px; border:0; border-radius:34px;
+    background:linear-gradient(180deg,#C9502F,#A93A1E); color:#FFF6E8;
+    font-family:inherit; font-size:19px; font-weight:800; letter-spacing:3px;
+    box-shadow:0 5px 0 #8A2C13;
+  }
+  #home .btn-main:active{ transform:translateY(4px); box-shadow:0 1px 0 #8A2C13; }
+  #home .prog{ font-size:12px; color:#A98A5C; letter-spacing:1px; }
+
+  /* 答对卡片 */
+  #card{ background:rgba(40,26,10,.5); backdrop-filter:blur(3px); }
+  #card .panel{
+    width:min(88vw,420px); background:#FFFDF6; border-radius:20px;
+    padding:22px 22px 18px; box-shadow:0 18px 40px rgba(60,35,10,.35);
+    animation:pop .28s cubic-bezier(.2,1.4,.5,1);
+    max-height:80vh; overflow:auto;
+  }
+  @keyframes pop{ from{ transform:scale(.86); opacity:0 } to{ transform:scale(1); opacity:1 } }
+  #card .ok{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:800; letter-spacing:2px; color:#2C7A42;
+    background:#E4F5E7; padding:4px 12px; border-radius:20px;
+  }
+  #card .ok svg{ width:15px; height:15px; }
+  #card .idiom{
+    margin:12px 0 4px; font-size:34px; font-weight:900; letter-spacing:4px; color:#8A4B12;
+    font-family:"Kaiti SC","STKaiti","KaiTi",serif;
+  }
+  #card .mean{
+    font-size:13.5px; line-height:1.85; color:#6B5335; text-align:left;
+    margin:10px 0 4px; padding:12px 14px; border-radius:12px; background:#FBF3E0;
+  }
+  #card .next{
+    margin-top:16px; width:100%; height:48px; border:0; border-radius:24px;
+    background:linear-gradient(180deg,#5AA96F,#3F8C55); color:#fff;
+    font-family:inherit; font-size:17px; font-weight:800; letter-spacing:3px;
+    box-shadow:0 4px 0 #2F6B41;
+  }
+  #card .next:active{ transform:translateY(3px); box-shadow:0 1px 0 #2F6B41; }
+
+  /* 通关 */
+  #done h1{ font-size:30px; letter-spacing:6px; color:#8A4B12; margin:0; font-family:"Kaiti SC",serif; }
+  #done .stat{ font-size:14px; color:#8A6A3E; line-height:2; }
+
+  /* ── 横屏：左边一张图，右边从上到下排答题区 ── */
+  /*
+   * 竖屏那套是「纵向堆叠」，横过来以后可用高度只剩 390px，
+   * 用 flex-wrap 自动折行会把字块挤到屏幕外面去。
+   * 这里改成两栏 grid：图片独占左列并撑满高度，其余四块按行排在右列。
+   */
+  @media (orientation:landscape){
+    #app{ padding:50px 14px 10px; gap:0; }
+    #hud{ position:absolute; top:6px; left:14px; right:14px; z-index:2; }
+    #play{
+      display:grid; height:100%;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      grid-template-rows:auto auto auto auto;
+      align-content:center; gap:7px 18px;
+      justify-content:initial;
+    }
+    .pic{ grid-column:1; grid-row:1/5; height:100%; min-height:0; }
+    .pic img{
+      width:100%; height:100%; max-width:none;
+      aspect-ratio:auto; object-fit:contain;
+    }
+    .slots{ grid-column:2; grid-row:1; }
+    .hintline{ grid-column:2; grid-row:2; }
+    .tiles{ grid-column:2; grid-row:3; grid-template-rows:repeat(2,min(11vw,58px)); }
+    .ops{ grid-column:2; grid-row:4; }
+    .ops button{ height:38px; }
+    .slot{ width:min(9vw,56px); height:min(11vw,64px); font-size:min(6vw,26px); }
+    .tile{ font-size:min(4.6vw,24px); }
+
+    #home{ flex-direction:row; gap:34px; flex-wrap:wrap; }
+    #home .desc{ max-width:240px; }
+    #card .panel{ max-width:520px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header id="hud">
+    <button class="icon-btn" id="btnHome" aria-label="回首页">‹</button>
+    <div class="lv">第 <b id="hIdx">1</b> <span style="opacity:.55">/ 420</span></div>
+    <div class="grow"></div>
+    <div class="sc">答对 <b id="hRight">0</b></div>
+    <button class="icon-btn" id="mute" aria-label="声音">♪</button>
+  </header>
+
+  <main id="play">
+    <div class="pic"><img id="qImg" alt="看图猜成语"></div>
+    <div class="slots" id="slots"></div>
+    <div class="hintline" id="hintLine"></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="ops">
+      <button id="btnHint">提 示</button>
+      <button id="btnSkip">跳 过</button>
+    </div>
+  </main>
+</div>
+
+<div class="veil on" id="home">
+  <div class="seal">成语<br>挑战</div>
+  <h1>成语大挑战</h1>
+  <div class="sub">看 图 猜 成 语</div>
+  <div class="desc">
+    看一张图，从下面十个字里挑出四个，<br>
+    按顺序填成一句成语。
+  </div>
+  <button class="btn-main" id="btnStart">开始挑战</button>
+  <div class="prog" id="homeProg"></div>
+</div>
+
+<div class="veil" id="card">
+  <div class="panel">
+    <div class="ok">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>
+      答对了
+    </div>
+    <div class="idiom" id="cardIdiom">食言而肥</div>
+    <div class="mean" id="cardMean"></div>
+    <button class="next" id="btnNext">下 一 题</button>
+  </div>
+</div>
+
+<div class="veil" id="done">
+  <div class="seal" style="width:86px;height:86px;font-size:26px">通关</div>
+  <h1>全部完成</h1>
+  <div class="stat" id="doneStat"></div>
+  <button class="btn-main" id="btnAgain">再玩一次</button>
+</div>
+
+<script src="data.js"></script>
+<script>
+'use strict';
+
+/*
+ * 成语大挑战 —— 原作是 Egret 的《成语大挑战》（egret_cydtz）。
+ *
+ * 玩法结构照搬：420 道题，每题给一张插画 + 10 个待选字（4 个答案字 + 6 个干扰字），
+ * 玩家按顺序挑出 4 个填进答案格。差别只在界面上：
+ *   - 原版按关卡列表选关（420 个图标），这里改成顺序推进 + 自动存档；
+ *   - 原版答错没有任何提示，这里答错两次会给出释义当台阶；
+ *   - 加了「跳过」，卡住的孩子不会被一道题堵死。
+ */
+
+var DATA = window.CY_DATA || [];
+var TOTAL = DATA.length;
+
+/* ───────────────────────── 存档 ───────────────────────── */
+var KEY = 'cy.v1';
+var S = { idx: 0, right: 0, wrong: 0, skip: 0 };
+try {
+  var raw = localStorage.getItem(KEY);
+  if (raw) {
+    var o = JSON.parse(raw);
+    if (o && typeof o.idx === 'number') S = o;
+  }
+} catch (e) { /* 存档坏了就当新开一局，别拦着孩子玩 */ }
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+}
+
+/* ───────────────────────── 音效 ───────────────────────── */
+var AC = null;
+var muted = false;
+try { muted = localStorage.getItem('cy.mute') === '1'; } catch (e) {}
+
+function beep(freq, dur, type, vol) {
+  if (muted) return;
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = vol == null ? 0.14 : vol;
+    o.connect(g); g.connect(AC.destination);
+    var t = AC.currentTime;
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+
+/* ───────────────────────── 状态 ───────────────────────── */
+var q = null;              // 当前题
+var picked = [];           // [{slot:0..3, tile:0..9}]
+var tiles = [];            // 10 个字，含答案 4 字
+var misses = 0;            // 本题答错次数
+var locked = false;        // 判定动画期间锁住输入
+var state = 'home';        // home | play | card | done
+
+function $(id) { return document.getElementById(id); }
+function shuffled(a) {
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+/* ───────────────────────── 出题 ───────────────────────── */
+function render() {
+  q = DATA[S.idx];
+  if (!q) return finish();
+  state = 'play';
+  picked = [];
+  misses = 0;
+  locked = false;
+
+  $('hIdx').textContent = S.idx + 1;
+  $('hRight').textContent = S.right;
+  $('qImg').src = 'img/' + q.i + '.webp';
+  $('hintLine').textContent = '';
+  $('hintLine').classList.remove('on');
+
+  // 10 个待选字：答案 4 个 + 干扰 6 个，打散
+  tiles = shuffled(q.a.split('').concat(q.w.split('')));
+
+  var slots = $('slots');
+  slots.innerHTML = '';
+  for (var i = 0; i < 4; i++) {
+    var d = document.createElement('div');
+    d.className = 'slot';
+    d.dataset.slot = String(i);
+    slots.appendChild(d);
+  }
+
+  var box = $('tiles');
+  box.innerHTML = '';
+  tiles.forEach(function (ch, i) {
+    var b = document.createElement('button');
+    b.className = 'tile';
+    b.dataset.tile = String(i);
+    b.textContent = ch;
+    box.appendChild(b);
+  });
+
+  // 提前把下一题的图解码好，翻页时不至于白一下
+  preload(S.idx + 1);
+}
+
+var cache = {};
+function preload(i) {
+  if (i >= TOTAL) return;
+  var id = DATA[i].i;
+  if (cache[id]) return;
+  var im = new Image();
+  im.src = 'img/' + id + '.webp';
+  cache[id] = im;
+}
+
+/* ───────────────────────── 填字 ───────────────────────── */
+function tileUsed(t) {
+  for (var i = 0; i < picked.length; i++) if (picked[i].tile === t) return true;
+  return false;
+}
+
+function pickTile(t) {
+  if (locked || state !== 'play') return;
+  if (tileUsed(t)) return;
+  if (picked.length >= 4) return;
+  picked.push({ slot: picked.length, tile: t });
+  paint();
+  beep(520 + picked.length * 60, 0.06, 'triangle', 0.08);
+  if (picked.length === 4) setTimeout(judge, 160);
+}
+
+function clearSlot(slot) {
+  if (locked || state !== 'play') return;
+  var k = -1;
+  for (var i = 0; i < picked.length; i++) if (picked[i].slot === slot) k = i;
+  if (k < 0) return;
+  picked.splice(k, 1);
+  // 后面的格子往前补位，避免中间留个洞
+  for (var j = 0; j < picked.length; j++) picked[j].slot = j;
+  paint();
+  beep(360, 0.05, 'triangle', 0.07);
+}
+
+function paint() {
+  var slots = $('slots').children;
+  for (var i = 0; i < slots.length; i++) {
+    slots[i].textContent = '';
+    slots[i].className = 'slot';
+  }
+  picked.forEach(function (p) {
+    var el = slots[p.slot];
+    el.textContent = tiles[p.tile];
+    el.className = 'slot filled';
+  });
+  var btns = $('tiles').children;
+  for (var t = 0; t < btns.length; t++) {
+    btns[t].className = 'tile' + (tileUsed(t) ? ' used' : '');
+  }
+}
+
+/* ───────────────────────── 判定 ───────────────────────── */
+function trial() {
+  return picked.map(function (p) { return tiles[p.tile]; }).join('');
+}
+
+function judge() {
+  if (locked) return;
+  var got = trial();
+  var slots = $('slots').children;
+
+  if (got === q.a) {
+    locked = true;
+    for (var i = 0; i < slots.length; i++) slots[i].className = 'slot filled right';
+    S.right++;
+    save();
+    $('hRight').textContent = S.right;
+    // 一题一颗：成语是「高频小奖励」的典型 —— 420 道题，答对就该立刻有反馈。
+    // 每天封顶由桌面侧按模块算，这里不用管。
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        window.KidsSafe.award('chengyu', 1, S.right, q.a + ' · 第 ' + (S.idx + 1) + ' 题');
+      }
+    } catch (e) {}
+    beep(720, 0.1, 'sine', 0.16);
+    setTimeout(function () { beep(960, 0.16, 'sine', 0.14); }, 110);
+    setTimeout(showCard, 420);
+    return;
+  }
+
+  // 答错：抖一下、标红，再让重来。不扣命，小孩子不该被一道题判死。
+  misses++;
+  S.wrong++;
+  save();
+  locked = true;
+  for (var j = 0; j < slots.length; j++) slots[j].className = 'slot filled wrong';
+  var box = $('slots');
+  box.classList.remove('shake');
+  void box.offsetWidth;
+  box.classList.add('shake');
+  beep(220, 0.14, 'square', 0.1);
+
+  // 答错两次就把释义亮出来当台阶，别让孩子干瞪眼
+  if (misses >= 2) {
+    $('hintLine').textContent = q.t;
+    $('hintLine').classList.add('on');
+  }
+
+  setTimeout(function () {
+    picked = [];
+    paint();
+    locked = false;
+    box.classList.remove('shake');
+  }, 520);
+}
+
+/* ───────────────────────── 卡片 ───────────────────────── */
+function showCard() {
+  state = 'card';
+  $('cardIdiom').textContent = q.a;
+  $('cardMean').textContent = q.t;
+  $('card').classList.add('on');
+}
+
+function nextQuestion() {
+  $('card').classList.remove('on');
+  S.idx++;
+  save();
+  if (S.idx >= TOTAL) { finish(); return; }
+  render();
+}
+
+function skipQuestion() {
+  if (locked || state !== 'play') return;
+  S.skip++;
+  S.idx++;
+  save();
+  beep(300, 0.1, 'triangle', 0.08);
+  if (S.idx >= TOTAL) { finish(); return; }
+  render();
+}
+
+function finish() {
+  state = 'done';
+  $('card').classList.remove('on');
+  $('doneStat').innerHTML =
+    '答对 <b>' + S.right + '</b> 题<br>' +
+    '答错 <b>' + S.wrong + '</b> 次 · 跳过 <b>' + S.skip + '</b> 题';
+  $('done').classList.add('on');
+  beep(660, 0.14, 'sine', 0.16);
+  setTimeout(function () { beep(880, 0.14, 'sine', 0.14); }, 150);
+  setTimeout(function () { beep(1046, 0.22, 'sine', 0.14); }, 300);
+}
+
+/* ───────────────────────── 首页 ───────────────────────── */
+function showHome() {
+  state = 'home';
+  $('home').classList.add('on');
+  $('card').classList.remove('on');
+  $('done').classList.remove('on');
+  var p = Math.min(S.idx, TOTAL);
+  $('homeProg').textContent = p > 0 ? '上次做到第 ' + (p + (p >= TOTAL ? 0 : 1)) + ' 题' : '共 420 题';
+  $('btnStart').textContent = p > 0 && p < TOTAL ? '继续挑战' : '开始挑战';
+}
+
+function startGame() {
+  $('home').classList.remove('on');
+  $('done').classList.remove('on');
+  if (S.idx >= TOTAL) { S.idx = 0; S.right = 0; S.wrong = 0; S.skip = 0; save(); }
+  render();
+}
+
+/* ───────────────────────── 事件 ───────────────────────── */
+$('tiles').addEventListener('click', function (e) {
+  var b = e.target.closest('.tile');
+  if (b) pickTile(parseInt(b.dataset.tile, 10));
+});
+
+$('slots').addEventListener('click', function (e) {
+  var s = e.target.closest('.slot');
+  if (s) clearSlot(parseInt(s.dataset.slot, 10));
+});
+
+$('btnHint').addEventListener('click', function () {
+  if (state !== 'play') return;
+  if (!q.t) return;
+  var on = $('hintLine').classList.contains('on');
+  $('hintLine').textContent = q.t;
+  $('hintLine').classList.toggle('on', !on);
+  beep(600, 0.06, 'sine', 0.07);
+});
+
+$('btnSkip').addEventListener('click', skipQuestion);
+$('btnNext').addEventListener('click', nextQuestion);
+$('btnStart').addEventListener('click', startGame);
+$('btnAgain').addEventListener('click', function () {
+  S.idx = 0; S.right = 0; S.wrong = 0; S.skip = 0;
+  save();
+  $('done').classList.remove('on');
+  render();
+});
+$('btnHome').addEventListener('click', showHome);
+
+$('mute').addEventListener('click', function () {
+  muted = !muted;
+  try { localStorage.setItem('cy.mute', muted ? '1' : '0'); } catch (e) {}
+  $('mute').textContent = muted ? '×' : '♪';
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') showHome();
+});
+
+/* ───────────────────────── 启动 ───────────────────────── */
+$('mute').textContent = muted ? '×' : '♪';
+showHome();
+
+/* ───────────────────────── 测试钩子 ───────────────────────── */
+window.__cy = {
+  get state() { return state; },
+  get idx() { return S.idx; },
+  get right() { return S.right; },
+  get wrong() { return S.wrong; },
+  get skipCount() { return S.skip; },   // 不能叫 skip：下面有个同名方法
+  get total() { return TOTAL; },
+  get data() { return DATA; },
+  get q() { return q; },
+  get tiles() { return tiles.slice(); },
+  get picked() { return picked.map(function (p) { return tiles[p.tile]; }).join(''); },
+  get misses() { return misses; },
+  get hintShown() { return $('hintLine').classList.contains('on'); },
+  start: startGame,
+  home: showHome,
+  next: nextQuestion,
+  skip: skipQuestion,
+  // 按「字」填：测试里不想关心第几块，直接说要哪个字
+  pickChar: function (ch) {
+    for (var i = 0; i < tiles.length; i++) {
+      if (tiles[i] === ch && !tileUsed(i)) { pickTile(i); return i; }
+    }
+    return -1;
+  },
+  // 按当前题的正确顺序全部填上
+  answerRight: function () {
+    for (var i = 0; i < q.a.length; i++) this.pickChar(q.a.charAt(i));
+  },
+  answerWrong: function () {
+    // 故意挑 4 个不在答案里的字；凑不出就反过来用答案的倒序
+    var wrongChars = [];
+    for (var i = 0; i < tiles.length && wrongChars.length < 4; i++) {
+      if (q.a.indexOf(tiles[i]) < 0) wrongChars.push(tiles[i]);
+    }
+    while (wrongChars.length < 4) wrongChars.push(q.a.charAt(wrongChars.length % 4));
+    for (var k = 0; k < wrongChars.length; k++) this.pickChar(wrongChars[k]);
+  },
+  clearSlot: clearSlot,
+  judge: judge,
+  goto: function (n) { S.idx = n; save(); render(); },
+  reset: function () {
+    S = { idx: 0, right: 0, wrong: 0, skip: 0 };
+    save();
+    showHome();
+  }
+};
+</script>
+</body>
+</html>

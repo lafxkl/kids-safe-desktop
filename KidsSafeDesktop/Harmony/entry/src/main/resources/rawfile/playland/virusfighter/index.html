@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#27C66F">
+<title>病毒斗士</title>
+<style>
+  /*
+   * 原工程是 pygame 的 600×600 固定窗口，只用方向键。
+   * 搬到平板上要解决两件事：屏幕长宽比千奇百怪、儿童没有键盘。
+   * 所以改成「棋盘永远正方形 + 底部大方向键 + 整屏可滑动」。
+   */
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden; background:#1BC66F;
+    font-family:system-ui,-apple-system,"HarmonyOS Sans SC","Noto Sans SC","PingFang SC",sans-serif;
+    color:#fff; user-select:none; -webkit-user-select:none;
+    touch-action:none;
+  }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column;
+    padding:calc(6px + env(safe-area-inset-top)) 10px calc(6px + env(safe-area-inset-bottom));
+    gap:8px;
+  }
+
+  /* ── 顶栏 ── */
+  #hud{
+    flex:none; display:flex; align-items:center; gap:8px;
+    background:rgba(0,0,0,.22); border-radius:14px; padding:8px 12px;
+    font-variant-numeric:tabular-nums;
+  }
+  #hud .item{ display:flex; align-items:baseline; gap:5px; }
+  #hud .k{ font-size:11px; opacity:.72; letter-spacing:.5px; }
+  #hud .v{ font-size:19px; font-weight:800; }
+  #hud .grow{ flex:1; }
+  #hud .bonus{ color:#FFE57A; }
+  #hud .bonus.low{ color:#FF9B7A; }
+  #mute{
+    flex:none; width:34px; height:34px; border-radius:50%; border:0;
+    background:rgba(255,255,255,.18); color:#fff; font-size:16px; line-height:1;
+    display:grid; place-items:center;
+  }
+
+  /* ── 棋盘 ── */
+  #stage{ flex:1; min-height:0; display:grid; place-items:center; position:relative; }
+  #cv{
+    display:block; border-radius:16px; background:#25BE68;
+    box-shadow:0 8px 24px rgba(0,0,0,.22), inset 0 0 0 3px rgba(255,255,255,.35);
+  }
+  #stage.hurt #cv{ animation:hurt .34s ease-out; }
+  @keyframes hurt{
+    0%{ transform:translate(0,0) }
+    20%{ transform:translate(-5px,2px) }
+    45%{ transform:translate(5px,-2px) }
+    70%{ transform:translate(-3px,1px) }
+    100%{ transform:translate(0,0) }
+  }
+
+  /* ── 方向键 ── */
+  #pad{ flex:none; display:grid; place-items:center; height:auto; }
+  #pad .cross{
+    display:grid; grid-template-columns:repeat(3,62px); grid-template-rows:repeat(3,62px);
+    gap:6px;
+  }
+  #pad button{
+    border:0; border-radius:16px; background:rgba(255,255,255,.9); color:#17864A;
+    display:grid; place-items:center; padding:0;
+    box-shadow:0 4px 0 rgba(0,0,0,.18);
+  }
+  #pad button:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.18); }
+  #pad button svg{ width:26px; height:26px; }
+  #pad .up{ grid-area:1/2 } #pad .left{ grid-area:2/1 }
+  #pad .right{ grid-area:2/3 } #pad .down{ grid-area:3/2 }
+  #pad .fast{
+    grid-area:2/2; width:62px; height:62px; border-radius:50%;
+    font-size:15px; font-weight:900; letter-spacing:0;
+    background:rgba(255,255,255,.34); box-shadow:none; color:#fff;
+  }
+
+  /* ── 覆盖层 ── */
+  .veil{
+    position:fixed; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px;
+    padding:24px; text-align:center; z-index:9;
+  }
+  .veil.on{ display:flex; }
+  #home{ background:#1BC66F; }
+  #homeArt{ width:min(46vmin,220px); height:min(46vmin,220px); object-fit:contain; }
+  #home h1{ margin:0; font-size:32px; letter-spacing:6px; font-weight:900; text-shadow:0 3px 0 rgba(0,0,0,.16); }
+  #home .sub{ margin:-6px 0 0; font-size:11px; letter-spacing:4px; opacity:.8; }
+  #btnGo{
+    margin-top:6px; padding:13px 46px; border-radius:40px; border:3px solid #fff;
+    background:transparent; color:#fff; font-size:22px; font-weight:800; letter-spacing:4px;
+    font-family:inherit;
+  }
+  #btnGo:active{ background:rgba(255,255,255,.22); }
+  #howto{
+    max-width:340px; font-size:12.5px; line-height:1.85; opacity:.9;
+    background:rgba(0,0,0,.16); border-radius:12px; padding:10px 14px; text-align:left;
+  }
+  #best{ font-size:12px; opacity:.78; letter-spacing:1px; }
+
+  #load{ background:#1BC66F; }
+  #load .lvl{ font-size:40px; font-weight:900; letter-spacing:2px; }
+  #load .bar{ width:200px; height:8px; border-radius:5px; background:rgba(0,0,0,.2); overflow:hidden; }
+  #load .bar i{ display:block; height:100%; width:0; background:#fff; border-radius:5px; }
+  #load .hint{ font-size:12.5px; opacity:.85; letter-spacing:1px; }
+
+  #over{ background:#1BC66F; gap:0; }
+  #over .wood{
+    width:min(94vw,520px); height:auto; display:block; margin-bottom:-6px;
+  }
+  #over .board{
+    background:rgba(255,255,255,.95); color:#5A3A1C; border-radius:18px;
+    padding:14px 34px 16px; box-shadow:0 10px 24px rgba(0,0,0,.26);
+    min-width:190px;
+  }
+  #over .board{
+    background:rgba(255,255,255,.94); color:#5A3A1C; border-radius:16px;
+    padding:16px 26px; box-shadow:0 8px 22px rgba(0,0,0,.28);
+  }
+  #over .board .n{ font-size:38px; font-weight:900; font-variant-numeric:tabular-nums; }
+  #over .board .t{ font-size:12px; letter-spacing:2px; opacity:.7; }
+
+  #thanks{ background:#1BC66F; gap:10px; }
+  #thanks .pic{ width:min(84vw,400px); height:auto; display:block; }
+  #thanks .word{ font-size:15px; letter-spacing:2px; text-shadow:0 2px 6px rgba(0,0,0,.5); }
+  .btn2{
+    padding:11px 30px; border-radius:30px; border:0; font-family:inherit;
+    font-size:16px; font-weight:700; letter-spacing:2px;
+    background:#fff; color:#17864A; box-shadow:0 4px 0 rgba(0,0,0,.2);
+  }
+  .btn2:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.2); }
+
+  /* ── 飘字 ── */
+  #floats{ position:fixed; inset:0; pointer-events:none; z-index:8; overflow:hidden; }
+  #floats .f{
+    position:absolute; font-weight:900; font-size:17px; color:#FFF6C4;
+    text-shadow:0 2px 4px rgba(0,0,0,.35); animation:float 1s ease-out forwards;
+  }
+  @keyframes float{
+    0%{ opacity:1; transform:translateY(0) scale(.8) }
+    25%{ transform:translateY(-10px) scale(1.1) }
+    100%{ opacity:0; transform:translateY(-46px) scale(1) }
+  }
+
+  /* ── 横屏：棋盘在左，方向键在右 ── */
+  /*
+   * 不能用 align-items:center —— 那是「按内容高度居中」，
+   * 而棋盘边长又是按 #stage 的尺寸算的，两边互相等，最后塌成很小一块。
+   * 必须让 #stage 撑满可用高度（stretch + min-height:0），尺寸才有确定来源。
+   */
+  @media (orientation:landscape){
+    #app{ flex-direction:row; align-items:stretch; padding:54px 12px 12px; gap:14px; }
+    #hud{
+      position:absolute; top:6px; left:12px; right:12px; z-index:2;
+      height:42px; padding:4px 12px; background:rgba(0,0,0,.26);
+    }
+    #hud .v{ font-size:16px; }
+    #stage{ flex:1; min-height:0; min-width:0; }
+    #pad{ flex:none; width:auto; display:grid; align-content:center; }
+    #pad .cross{ grid-template-columns:repeat(3,60px); grid-template-rows:repeat(3,60px); }
+    #pad .fast{ width:60px; height:60px; }
+    #home{ flex-direction:row; gap:30px; }
+    #homeArt{ width:min(34vmin,150px); height:min(34vmin,150px); }
+    #home h1{ font-size:26px; }
+    #howto{ max-width:280px; font-size:11.5px; line-height:1.7; }
+    #over{ flex-direction:row; gap:22px; }
+    #over .wood{ width:min(40vw,300px); }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header id="hud">
+    <div class="item"><span class="k">关卡</span><span class="v" id="hStage">1</span><span class="k">/5</span></div>
+    <div class="item"><span class="k">分数</span><span class="v" id="hScore">0</span></div>
+    <div class="item bonus" id="hBonusWrap"><span class="k">奖励</span><span class="v bonus" id="hBonus">3000</span></div>
+    <div class="grow"></div>
+    <div class="item"><span class="k">队员</span><span class="v" id="hTeam">8</span></div>
+    <button id="mute" aria-label="声音">♪</button>
+  </header>
+
+  <main id="stage"><canvas id="cv"></canvas></main>
+
+  <footer id="pad">
+    <div class="cross">
+      <button class="up" data-dir="up" aria-label="上"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      <button class="left" data-dir="left" aria-label="左"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <button class="right" data-dir="right" aria-label="右"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      <button class="down" data-dir="down" aria-label="下"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+      <button class="fast" id="btnFast">快</button>
+    </div>
+  </footer>
+</div>
+
+<div class="veil on" id="home">
+  <img id="homeArt" src="img/logo1.webp" alt="">
+  <h1>病毒斗士</h1>
+  <p class="sub">VIRUS FIGHTER</p>
+  <div id="howto">
+    方向键带着医疗队走，同方向连按是<b>加速</b>。<br>
+    弹跳的<b>药片</b>会自动消灭病毒，每颗 +5 分。<br>
+    接到蓝圈<b>「驰援」</b>队伍会变长，+20 分。<br>
+    队伍碰到病毒会被<b>定住</b>——绕着走更高分。
+  </div>
+  <button id="btnGo">开始游戏</button>
+  <div id="best"></div>
+</div>
+
+<div class="veil" id="load">
+  <div class="lvl" id="loadLvl">STAGE 1</div>
+  <div class="bar"><i id="loadBar"></i></div>
+  <div class="hint" id="loadHint">准备消毒…</div>
+</div>
+
+<div class="veil" id="over">
+  <img class="wood" src="img/wood.webp" alt="恭喜过关">
+  <div class="board">
+    <div class="t">最终得分</div>
+    <div class="n" id="overScore">0</div>
+  </div>
+  <button class="btn2" id="btnAgain" style="margin-top:18px">再来一局</button>
+</div>
+
+<div class="veil" id="thanks">
+  <img class="pic" src="img/thanks.webp" alt="致敬医护 共抗疫情">
+  <button class="btn2" id="btnHome">回 首 页</button>
+</div>
+
+<div id="floats"></div>
+
+<script>
+'use strict';
+
+/*
+ * 病毒斗士 —— 原作是 pygame 的 600×600 桌面小游戏（gitee/grasspa/Adapted-game-virus-fighter）。
+ *
+ * 移植时保留的三条核心规则（改了就变味）：
+ *   1. 医疗队（蛇）撞墙自动转向，玩家只做「引导」，不是硬操控；
+ *   2. 药片球自己弹，撞到病毒就消掉并反弹，同一格可能连消两个方向；
+ *   3. 队伍撞病毒不当场死，而是截断 + 定住闪烁，比直接 GAME OVER 温和。
+ *
+ * 改掉的地方：
+ *   - 20×20 格子数不变，但格子大小随屏幕走（原来固定 30px）；
+ *   - 时间奖励按每关单独计时，HUD 实时显示（原版只在过关时加进总分）；
+ *   - 加了触屏方向键、滑动手势、键盘三套输入，平板和电脑都能玩。
+ */
+
+/* ───────────────────────── 常量 ───────────────────────── */
+var GRID = 20;              // 20×20 格
+var START_LEN = 8;          // 初始队伍人数
+var MAX_LEN = 50;           // 吃饱上限
+var PUNISH_KEEP = 15;       // 撞病毒后最多保留几人
+var STEP = 0.25;            // 蛇/球每格用时（秒），即 4 格/秒
+var STEP_FAST = 0.125;      // 同方向连按 → 加速
+var PUNISH_FLASH = 4;       // 惩罚闪烁次数
+var BONUS_FULL = 3000;      // 过关时间奖励上限
+var BONUS_DECAY = 10;       // 每秒扣多少
+
+/* 5 关地图，'1' = 有病毒（具体种类运行时随机）。取自原工程 stage.json。 */
+var STAGES = [
+  [
+    '00000000000000000000',
+    '00000010000001000000',
+    '00000111111111100000',
+    '00000010000001000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000'
+  ],
+  [
+    '00000111111111100000',
+    '00001010000001010000',
+    '00001111000010110000',
+    '00001010011001010000',
+    '00000111111111100000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000'
+  ],
+  [
+    '00000000000000000000',
+    '00100000000101000010',
+    '01110011100010000100',
+    '00100000000101001000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000'
+  ],
+  [
+    '10101110111001010111',
+    '10100100100101010100',
+    '10100100111001010111',
+    '10100100100101010001',
+    '01001110100101110111',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000'
+  ],
+  [
+    '00000010111101000000',
+    '00000100011000100000',
+    '00001010111101000000',
+    '00000001111110000000',
+    '00001011111111010000',
+    '00001111111111110000',
+    '00001111111111110000',
+    '00001011111111010000',
+    '00000001111110000000',
+    '00001010111101010000',
+    '00000100011000100000',
+    '00000010111101000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000',
+    '00000000000000000000'
+  ]
+];
+
+/* ───────────────────────── 工具 ───────────────────────── */
+function $(id) { return document.getElementById(id); }
+function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+/* ───────────────────────── 图片 ───────────────────────── */
+var IMG = {};
+function loadImages(names, done) {
+  var left = names.length, failed = [];
+  if (!left) { done(failed); return; }
+  names.forEach(function (n) {
+    var im = new Image();
+    im.onload = function () { if (--left === 0) done(failed); };
+    im.onerror = function () { failed.push(n); if (--left === 0) done(failed); };
+    im.src = 'img/' + n + '.webp';
+    IMG[n] = im;
+  });
+}
+// 只在 canvas 里用到的图才预加载；thanks / wood 由 <img> 标签自己加载。
+var IMG_NAMES = ['logo1', 'logo2', 'logo3', 'logo4'];
+(function () {
+  var i;
+  for (i = 1; i <= 10; i++) IMG_NAMES.push('v' + i);
+  for (i = 1; i <= 12; i++) IMG_NAMES.push('m' + i);
+  for (i = 1; i <= 5; i++) IMG_NAMES.push('drag' + i);
+})();
+
+/* ───────────────────────── 画布 ───────────────────────── */
+var cv = $('cv'), ctx = cv.getContext('2d');
+var SIDE = 0, U = 30;   // 画布边长 / 格子边长
+
+function fit() {
+  var box = $('stage').getBoundingClientRect();
+  var side = Math.floor(Math.min(box.width, box.height));
+  if (side < 40) side = 40;
+  if (side === SIDE) return;
+  SIDE = side;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  cv.width = Math.round(side * dpr);
+  cv.height = Math.round(side * dpr);
+  cv.style.width = side + 'px';
+  cv.style.height = side + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  U = side / GRID;
+}
+
+/* ───────────────────────── 音效 ───────────────────────── */
+var AC = null;
+function beep(freq, dur, type, vol) {
+  if (muted) return;
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = vol == null ? 0.16 : vol;
+    o.connect(g); g.connect(AC.destination);
+    var t = AC.currentTime;
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) { /* 没有音频设备就算了，不能因为这个让游戏崩 */ }
+}
+
+var bgm = new Audio(), homeBgm = new Audio();
+bgm.loop = homeBgm.loop = true;
+bgm.volume = 0.42; homeBgm.volume = 0.38;
+bgm.src = 'snd/bgm.ogg'; homeBgm.src = 'snd/home.ogg';
+var muted = false;
+try { muted = localStorage.getItem('vf.mute') === '1'; } catch (e) {}
+
+function playBgm(which) {
+  bgm.pause(); homeBgm.pause();
+  if (muted) return;
+  var a = which === 'game' ? bgm : homeBgm;
+  try { a.currentTime = 0; a.play(); } catch (e) {}
+}
+
+/* ───────────────────────── 游戏状态 ───────────────────────── */
+var state = 'home';     // home | loading | playing | win | thanks
+var stage = 1;
+var score = 0;
+var grid = [];          // grid[y][x] = 0 或 1..10（病毒种类）
+var snake = null;
+var ball = null;
+var food = { x: -1, y: -1 };
+var punish = { on: false, frames: 0, flash: 0, acc: 0, visible: true };
+var elapsed = 0;        // 本关已用秒数
+var stats = { eaten: 0, cures: 0, punished: 0, steps: 0, stages: 0 };
+var best = 0;
+try { best = parseInt(localStorage.getItem('vf.best') || '0', 10) || 0; } catch (e) {}
+
+function makeSnake() {
+  var body = [];
+  for (var k = 0; k < START_LEN; k++) body.push([START_LEN - 1 - k, 15]);
+  // 头在 (7,15)，身体向右铺开 —— 和原版 add_node 8 次的结果一致
+  return {
+    body: body,
+    dir: [1, 0],
+    step: STEP,
+    faces: body.map(function () { return ri(1, 12); })
+  };
+}
+
+function makeBall() {
+  return { x: 15, y: 15, dx: 1, dy: -1, step: STEP };
+}
+
+function loadStage(n) {
+  stage = n;
+  var rows = STAGES[n - 1];
+  grid = [];
+  for (var y = 0; y < GRID; y++) {
+    var row = [];
+    for (var x = 0; x < GRID; x++) {
+      row.push(rows[y].charAt(x) === '1' ? ri(1, 10) : 0);
+    }
+    grid.push(row);
+  }
+  snake = makeSnake();
+  ball = makeBall();
+  food = { x: -1, y: -1 };
+  punish.on = false; punish.frames = 0; punish.flash = 0; punish.acc = 0; punish.visible = true;
+  elapsed = 0;
+  setFood();
+}
+
+function virusCount() {
+  var n = 0;
+  for (var y = 0; y < GRID; y++) for (var x = 0; x < GRID; x++) if (grid[y][x]) n++;
+  return n;
+}
+
+function occupied(x, y) {
+  if (grid[y][x]) return true;
+  for (var i = 0; i < snake.body.length; i++) {
+    if (snake.body[i][0] === x && snake.body[i][1] === y) return true;
+  }
+  return ball.x === x && ball.y === y;
+}
+
+function setFood() {
+  if (snake.body.length >= MAX_LEN) { food = { x: -1, y: -1 }; return; }
+  for (var t = 0; t < 400; t++) {
+    // 原版的投放区间：x 留 1 格边，y 从第 5 行往下（避开顶部病毒阵）
+    var x = ri(1, GRID - 2), y = ri(5, GRID - 2);
+    if (!occupied(x, y)) { food = { x: x, y: y }; return; }
+  }
+  food = { x: -1, y: -1 };
+}
+
+/* ───────────────────────── 蛇 ───────────────────────── */
+function turnAtWall(x, y) {
+  // 原版规则：贴边就掉头。角落只有一个可选方向，其它位置随机上下/左右。
+  if (x < 0 || x >= GRID) {
+    if (y <= 0) snake.dir = [0, 1];
+    else if (y >= GRID - 1) snake.dir = [0, -1];
+    else snake.dir = Math.random() < 0.5 ? [0, -1] : [0, 1];
+  }
+  if (y < 0 || y >= GRID) {
+    if (x <= 0) snake.dir = [1, 0];
+    else if (x >= GRID - 1) snake.dir = [-1, 0];
+    else snake.dir = Math.random() < 0.5 ? [-1, 0] : [1, 0];
+  }
+}
+
+function snakeStep() {
+  var h = snake.body[0];
+  var nx = h[0] + snake.dir[0], ny = h[1] + snake.dir[1];
+  if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID) {
+    turnAtWall(nx, ny);
+    nx = h[0] + snake.dir[0];
+    ny = h[1] + snake.dir[1];
+  }
+  // 转头：新头从前面插进来，尾巴弹出去 —— 长度不变
+  snake.body.unshift([nx, ny]);
+  snake.body.pop();
+  snake.faces.unshift(ri(1, 12));
+  snake.faces.pop();
+  stats.steps++;
+}
+
+function snakeEats() {
+  return grid[snake.body[0][1]][snake.body[0][0]] !== 0;
+}
+
+function startPunish() {
+  punish.on = true;
+  punish.frames = 0;
+  punish.flash = 0;
+  punish.acc = 0;
+  punish.visible = true;
+  stats.punished++;
+  beep(150, 0.3, 'square', 0.2);
+  var el = $('stage');
+  el.classList.remove('hurt');
+  void el.offsetWidth;     // 强制重排，让同一段动画能重复触发
+  el.classList.add('hurt');
+  setTimeout(function () { el.classList.remove('hurt'); }, 400);
+}
+
+function punishTick(dt) {
+  punish.acc += dt;
+  punish.frames += dt;
+  // 每 1/3 秒翻一次明暗，翻够 4 次结束。
+  // 这里用累加器而不是 `frames % (1/3)`：浮点取模在 dt 抖动时会漏拍，
+  // 表现就是有时候只闪 3 下、有时候闪 5 下。
+  if (punish.acc >= 1 / 3) {
+    punish.acc -= 1 / 3;
+    punish.visible = !punish.visible;
+    punish.flash++;
+  }
+  if (punish.flash >= PUNISH_FLASH) {
+    punish.on = false;
+    punish.visible = true;
+    // 惩罚结束：截断队伍，方向回正
+    var keep = Math.min(snake.body.length, PUNISH_KEEP);
+    snake.body = snake.body.slice(0, keep);
+    snake.faces = snake.faces.slice(0, keep);
+    snake.dir = [1, 0];
+    snake.step = STEP;
+  }
+}
+
+/* ───────────────────────── 药片球 ───────────────────────── */
+function brickAt(x, y) {
+  if (x < 0 || x >= GRID || y < 0 || y >= GRID) return 0;
+  return grid[y][x];
+}
+
+function inSnake(x, y) {
+  for (var i = 0; i < snake.body.length; i++) {
+    if (snake.body[i][0] === x && snake.body[i][1] === y) return true;
+  }
+  return false;
+}
+
+function popVirus(x, y) {
+  if (brickAt(x, y) === 0) return false;
+  grid[y][x] = 0;
+  score += 5;
+  stats.eaten++;
+  beep(620 + ri(0, 5) * 40, 0.07, 'triangle', 0.12);
+  floatText('+5', x, y);
+  return true;
+}
+
+function ballStep() {
+  var b = ball;
+  var nx = b.x + b.dx, ny = b.y + b.dy;
+
+  // ① 撞墙
+  if (nx < 0 || nx >= GRID) { b.dx = -b.dx; nx = b.x + b.dx; }
+  if (ny < 0 || ny >= GRID) { b.dy = -b.dy; ny = b.y + b.dy; }
+
+  // ② 撞病毒：x 邻格、y 邻格、斜对角，三个方向各自判定后反弹
+  var hx = b.x + b.dx, hy = b.y + b.dy;
+  var hitX = popVirus(hx, b.y);
+  var hitY = popVirus(b.x, hy);
+  if (hitX) b.dx = -b.dx;
+  if (hitY) b.dy = -b.dy;
+  if (!hitX && !hitY) {
+    // 只有斜着挡住时才两面一起翻
+    if (popVirus(b.x + b.dx, b.y + b.dy)) { b.dx = -b.dx; b.dy = -b.dy; }
+  }
+
+  // ③ 撞医疗队：药片不伤人，弹开就好
+  nx = b.x + b.dx; ny = b.y + b.dy;
+  if (inSnake(nx, b.y)) b.dx = -b.dx;
+  if (inSnake(b.x, ny)) b.dy = -b.dy;
+  if (!inSnake(b.x + b.dx, b.y) && !inSnake(b.x, b.y + b.dy) && inSnake(b.x + b.dx, b.y + b.dy)) {
+    b.dx = -b.dx; b.dy = -b.dy;
+  }
+
+  // ④ 真的走一步（走不了就原地停一拍，下拍再试）
+  nx = b.x + b.dx; ny = b.y + b.dy;
+  if (nx >= 0 && nx < GRID && ny >= 0 && ny < GRID && !inSnake(nx, ny)) {
+    b.x = nx; b.y = ny;
+  } else {
+    b.dx = -b.dx; b.dy = -b.dy;
+  }
+}
+
+/* ───────────────────────── 布局 / 反馈 ───────────────────────── */
+function floatText(txt, gx, gy) {
+  var rect = cv.getBoundingClientRect();
+  var d = document.createElement('div');
+  d.className = 'f';
+  d.textContent = txt;
+  d.style.left = (rect.left + (gx + 0.5) * U - 14) + 'px';
+  d.style.top = (rect.top + (gy + 0.5) * U - 10) + 'px';
+  $('floats').appendChild(d);
+  setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 1000);
+}
+
+function hud() {
+  $('hStage').textContent = stage;
+  $('hScore').textContent = score;
+  var bonus = Math.max(0, BONUS_FULL - Math.floor(elapsed) * BONUS_DECAY);
+  $('hBonus').textContent = bonus;
+  $('hBonusWrap').classList.toggle('low', bonus < 1000);
+  $('hTeam').textContent = snake ? snake.body.length : START_LEN;
+}
+
+function veil(id) {
+  ['home', 'load', 'over', 'thanks'].forEach(function (k) {
+    $(k).classList.toggle('on', k === id);
+  });
+}
+
+/* ───────────────────────── 流程 ───────────────────────── */
+function goHome() {
+  state = 'home';
+  veil('home');
+  $('best').textContent = best > 0 ? '最高分 ' + best : '';
+  playBgm('home');
+}
+
+function beginGame() {
+  score = 0;
+  stage = 1;
+  stats = { eaten: 0, cures: 0, punished: 0, steps: 0, stages: 0 };
+  enterStage(1);
+}
+
+function enterStage(n) {
+  stage = n;
+  state = 'loading';
+  veil('load');
+  $('loadLvl').textContent = 'STAGE ' + n;
+  $('loadHint').textContent = n === 1 ? '准备消毒…' : (n === 5 ? '疫情最猛的一关' : '病毒变多了…');
+  $('loadBar').style.width = '0%';
+  loadT = 0;
+  loadStage(n);
+  playBgm('game');
+}
+
+var loadT = 0;
+function loadingTick(dt) {
+  loadT += dt;
+  var p = clamp(loadT / 1.4, 0, 1);
+  $('loadBar').style.width = (p * 100).toFixed(0) + '%';
+  if (p >= 1) {
+    state = 'playing';
+    veil('');
+    hud();
+  }
+}
+
+function nextStageOrWin() {
+  stats.stages = stage;
+  var bonus = Math.max(0, BONUS_FULL - Math.floor(elapsed) * BONUS_DECAY);
+  score += bonus;
+  beep(880, 0.12, 'sine', 0.18);
+  if (stage >= STAGES.length) {
+    winGame();
+  } else {
+    enterStage(stage + 1);
+  }
+}
+
+function winGame() {
+  state = 'win';
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('vf.best', String(best)); } catch (e) {}
+  }
+  $('overScore').textContent = score;
+  // 通关发星：每过一关 4 颗，成绩记关卡数（第 1 关也算 1）
+  try {
+    if (window.KidsSafe && window.KidsSafe.award) {
+      window.KidsSafe.award('virusfighter', 4, stage, '第 ' + stage + ' 关 · ' + score + ' 分');
+    }
+  } catch (e) {}
+  veil('over');
+  bgm.pause();
+  beep(660, 0.16, 'sine', 0.2);
+  setTimeout(function () { beep(880, 0.24, 'sine', 0.2); }, 150);
+  winTimer = 0;
+}
+
+var winTimer = 0;
+
+/* ───────────────────────── 主循环 ───────────────────────── */
+/*
+ * 用 setInterval 而不是 requestAnimationFrame：
+ * 无头 Chrome（跑断言时）基本不驱动 rAF，所有时间轴逻辑会停在原地，
+ * 之前 PvZ 的「僵尸不出现」就是被这个盲区漏过去的。
+ * 这里逻辑按 dt 累加，帧率高低只影响观感，不影响模拟结果。
+ */
+var last = 0;
+var snakeAcc = 0, ballAcc = 0;
+var dragFrame = 0;
+var autoLoop = true;
+
+function update(dt) {
+  if (state === 'loading') { loadingTick(dt); return; }
+  if (state === 'win') {
+    winTimer += dt;
+    if (winTimer > 3.4) { state = 'thanks'; veil('thanks'); }
+    return;
+  }
+  if (state !== 'playing') return;
+
+  elapsed += dt;
+  dragFrame += dt;
+
+  // 蛇
+  if (punish.on) {
+    punishTick(dt);
+  } else {
+    snakeAcc += dt;
+    var guard = 0;
+    while (snakeAcc >= snake.step && guard++ < 8) {
+      snakeAcc -= snake.step;
+      snakeStep();
+      if (snakeEats()) { startPunish(); break; }
+      // 吃驰援
+      if (food.x === snake.body[0][0] && food.y === snake.body[0][1]) {
+        score += 20;
+        stats.cures++;
+        snake.body.push(snake.body[snake.body.length - 1].slice());
+        snake.faces.push(ri(1, 12));
+        beep(760, 0.12, 'sine', 0.16);
+        floatText('+20', food.x, food.y);
+        setFood();
+      }
+    }
+  }
+
+  // 球（惩罚期间也照飞，不然画面会僵）
+  ballAcc += dt;
+  var g2 = 0;
+  while (ballAcc >= ball.step && g2++ < 8) {
+    ballAcc -= ball.step;
+    ballStep();
+  }
+
+  // 过关判定
+  if (virusCount() === 0) nextStageOrWin();
+
+  hud();
+}
+
+function draw() {
+  if (!SIDE) return;
+  ctx.clearRect(0, 0, SIDE, SIDE);
+
+  /*
+   * 原版的场地底图是「纯绿 + 一个占满整屏的半透明白病毒」。
+   * 600×600 时它只是淡淡一层水印，可铺到这块棋盘上就有半个屏幕那么大，
+   * 病毒图标和医疗队全被它压住了 —— 试过把透明度一路降到 0.24，还是抢眼。
+   * 索性换成纯色 + 细网格：格子边界清楚，站得稳的棋子反而更容易数。
+   */
+  ctx.fillStyle = '#27C66F';
+  ctx.fillRect(0, 0, SIDE, SIDE);
+  ctx.strokeStyle = 'rgba(255,255,255,.10)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (var gi = 1; gi < GRID; gi++) {
+    var gp = Math.round(gi * U) + 0.5;
+    ctx.moveTo(gp, 0); ctx.lineTo(gp, SIDE);
+    ctx.moveTo(0, gp); ctx.lineTo(SIDE, gp);
+  }
+  ctx.stroke();
+
+  if (state !== 'playing' && state !== 'loading') return;
+
+  // 病毒
+  for (var y = 0; y < GRID; y++) {
+    for (var x = 0; x < GRID; x++) {
+      var k = grid[y] && grid[y][x];
+      if (!k) continue;
+      var im = IMG['v' + k];
+      if (im && im.complete && im.naturalWidth) {
+        ctx.drawImage(im, x * U, y * U, U, U);
+      } else {
+        ctx.fillStyle = '#2E8B57';
+        ctx.beginPath();
+        ctx.arc(x * U + U / 2, y * U + U / 2, U * 0.42, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // 驰援：原素材是写着「驰援」二字的蓝色气泡，缩到 18px 一个字都糊了，
+  // 干脆画成医疗十字章 —— 小尺寸下形状比文字可靠。
+  if (food.x >= 0) {
+    var fcx = food.x * U + U / 2, fcy = food.y * U + U / 2;
+    var fr = U * 0.46 * (1 + Math.sin(dragFrame * 6) * 0.09);
+    var fg = ctx.createRadialGradient(fcx - fr * 0.32, fcy - fr * 0.32, fr * 0.15, fcx, fcy, fr);
+    fg.addColorStop(0, '#8FE0FF');
+    fg.addColorStop(1, '#1E93CE');
+    ctx.fillStyle = fg;
+    ctx.beginPath(); ctx.arc(fcx, fcy, fr, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.92)';
+    ctx.lineWidth = Math.max(1.2, U * 0.07);
+    ctx.stroke();
+    var arm = fr * 0.56, th = fr * 0.3;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(fcx - arm, fcy - th / 2, arm * 2, th);
+    ctx.fillRect(fcx - th / 2, fcy - arm, th, arm * 2);
+  }
+
+  // 医疗队：从尾巴往头画，头压在最上面
+  if (snake && (!punish.on || punish.visible)) {
+    for (var i = snake.body.length - 1; i >= 0; i--) {
+      var p = snake.body[i];
+      // 原版就是越靠后的人越小一点，队形才有纵深
+      var size = Math.max(U * 0.62, U - (i + 1) / 4);
+      var ox = p[0] * U + (U - size) / 2;
+      var oy = p[1] * U + (U - size) / 2;
+      var mi = IMG['m' + (snake.faces[i] || 1)];
+      if (mi && mi.complete && mi.naturalWidth) {
+        ctx.drawImage(mi, ox, oy, size, size);
+      } else {
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(ox + size / 2, oy + size / 2, size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // 头上一圈光，一眼能看出哪端是头
+    var h = snake.body[0];
+    ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.lineWidth = Math.max(1.5, U * 0.07);
+    ctx.beginPath();
+    ctx.arc(h[0] * U + U / 2, h[1] * U + U / 2, U * 0.46, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 药片：5 帧轮转。
+  // 它是块白瓷片，直接画在绿底上跟背景糊在一起，加投影和外圈才认得出来。
+  if (ball) {
+    var f = Math.floor(dragFrame * 10) % 5 + 1;
+    var bi = IMG['drag' + f];
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.38)';
+    ctx.shadowBlur = Math.max(3, U * 0.34);
+    ctx.shadowOffsetY = Math.max(1, U * 0.1);
+    if (bi && bi.complete && bi.naturalWidth) {
+      ctx.drawImage(bi, ball.x * U - U * 0.06, ball.y * U - U * 0.06, U * 1.12, U * 1.12);
+    }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.lineWidth = Math.max(1, U * 0.05);
+    ctx.beginPath();
+    ctx.arc(ball.x * U + U / 2, ball.y * U + U / 2, U * 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 惩罚提示
+  if (punish.on) {
+    ctx.strokeStyle = 'rgba(228,64,44,' + (0.35 + Math.abs(Math.sin(punish.frames * 9)) * 0.45) + ')';
+    ctx.lineWidth = Math.max(3, U * 0.16);
+    ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, SIDE - ctx.lineWidth, SIDE - ctx.lineWidth);
+  }
+}
+
+function loop() {
+  var now = performance.now();
+  if (!last) last = now;
+  var dt = (now - last) / 1000;
+  last = now;
+  if (!autoLoop) return;      // 测试接管时只走 __vf.step()，避免两边同时推进时间
+  // 切后台回来时 dt 会很大，钳一下免得一帧跳十几格
+  if (dt > 0.12) dt = 0.12;
+  if (dt < 0) dt = 0;
+  update(dt);
+  draw();
+}
+
+/* ───────────────────────── 输入 ───────────────────────── */
+function setDir(name) {
+  if (state !== 'playing') return;
+  if (punish.on) return;
+  var d = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[name];
+  if (!d) return;
+  var cur = snake.dir;
+  if (cur[0] === d[0] && cur[1] === d[1]) {
+    snake.step = STEP_FAST;          // 同向连按 = 加速
+  } else if (cur[0] === -d[0] && cur[1] === -d[1]) {
+    snake.step = STEP;               // 反向 = 回到常速（不掉头，防自杀）
+  } else {
+    snake.dir = d;
+    snake.step = STEP;
+  }
+  beep(cur[0] === d[0] && cur[1] === d[1] ? 520 : 380, 0.05, 'square', 0.07);
+}
+
+document.querySelectorAll('#pad button[data-dir]').forEach(function (b) {
+  var fire = function (e) { e.preventDefault(); setDir(b.dataset.dir); };
+  b.addEventListener('touchstart', fire, { passive: false });
+  b.addEventListener('mousedown', fire);
+});
+
+$('btnFast').addEventListener('touchstart', function (e) {
+  e.preventDefault();
+  if (state === 'playing' && !punish.on) snake.step = STEP_FAST;
+}, { passive: false });
+$('btnFast').addEventListener('mousedown', function () {
+  if (state === 'playing' && !punish.on) snake.step = STEP_FAST;
+});
+
+document.addEventListener('keydown', function (e) {
+  var k = e.key;
+  if (k === 'ArrowLeft' || k === 'a' || k === 'A') { setDir('left'); e.preventDefault(); }
+  else if (k === 'ArrowRight' || k === 'd' || k === 'D') { setDir('right'); e.preventDefault(); }
+  else if (k === 'ArrowUp' || k === 'w' || k === 'W') { setDir('up'); e.preventDefault(); }
+  else if (k === 'ArrowDown' || k === 's' || k === 'S') { setDir('down'); e.preventDefault(); }
+  else if (k === ' ' && state === 'home') { beginGame(); e.preventDefault(); }
+});
+
+// 整块棋盘可滑动：手指往哪划就往哪拐
+(function () {
+  var sx = 0, sy = 0, tracking = false;
+  var stageEl = $('stage');
+  stageEl.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+  }, { passive: true });
+  stageEl.addEventListener('touchmove', function (e) {
+    if (!tracking || e.touches.length !== 1) return;
+    var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (Math.abs(dx) < 26 && Math.abs(dy) < 26) return;
+    if (Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 'right' : 'left');
+    else setDir(dy > 0 ? 'down' : 'up');
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+  }, { passive: true });
+  stageEl.addEventListener('touchend', function () { tracking = false; }, { passive: true });
+})();
+
+/* ───────────────────────── 按钮 ───────────────────────── */
+$('btnGo').onclick = function () { beginGame(); };
+$('btnAgain').onclick = function () { beginGame(); };
+$('btnHome').onclick = function () { goHome(); };
+
+$('mute').onclick = function () {
+  muted = !muted;
+  try { localStorage.setItem('vf.mute', muted ? '1' : '0'); } catch (e) {}
+  $('mute').textContent = muted ? '×' : '♪';
+  if (muted) { bgm.pause(); homeBgm.pause(); }
+  else playBgm(state === 'playing' || state === 'loading' ? 'game' : 'home');
+};
+
+/* 首页 4 帧循环 —— 原来是 pygame 每帧 blit 不同图 */
+var homeIdx = 0;
+setInterval(function () {
+  if (state !== 'home' || !IMG.logo1) return;
+  homeIdx = (homeIdx + 1) % 4;
+  $('homeArt').src = 'img/logo' + (homeIdx + 1) + '.webp';
+}, 260);
+
+/* ───────────────────────── 启动 ───────────────────────── */
+window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', function () { setTimeout(fit, 120); });
+
+$('mute').textContent = muted ? '×' : '♪';
+
+loadImages(IMG_NAMES, function (failed) {
+  if (failed.length) console.warn('素材缺失：' + failed.join(','));
+  fit();
+  loadStage(1);
+  goHome();
+  // 加载阴影下先把 5 关都读一遍，避免第一次进关时抽帧
+  draw();
+});
+
+last = performance.now();
+setInterval(loop, 16);
+
+/* ───────────────────────── 测试钩子 ─────────────────────────
+ * 无头 Chrome 里 setInterval 会跑，但真实时间不可控，所以额外暴露 step(dt)
+ * 让测试能一口气把逻辑推到指定秒数。
+ */
+window.__vf = {
+  get state() { return state; },
+  get stage() { return stage; },
+  get score() { return score; },
+  get elapsed() { return elapsed; },
+  get grid() { return grid; },
+  get snake() { return snake; },
+  get ball() { return ball; },
+  get food() { return food; },
+  get punish() { return punish; },
+  get stats() { return stats; },
+  get best() { return best; },
+  get side() { return SIDE; },
+  get unit() { return U; },
+  virusCount: virusCount,
+  start: beginGame,
+  home: goHome,
+  setDir: setDir,
+  step: function (dt) { update(dt); draw(); },
+  pause: function (v) { autoLoop = !v; },
+  tick: function (dt) { update(dt); },
+  // 把蛇头挪到最近的病毒旁边，用来测「撞到病毒会惩罚」
+  crashIntoVirus: function () {
+    for (var y = 0; y < GRID; y++) {
+      for (var x = 0; x < GRID; x++) {
+        if (!grid[y][x]) continue;
+        var from = null, dir = null;
+        if (x - 1 >= 0) { from = [x - 1, y]; dir = [1, 0]; }
+        else if (x + 1 < GRID) { from = [x + 1, y]; dir = [-1, 0]; }
+        if (!from) continue;
+        snake.body = [];
+        snake.faces = [];
+        for (var i = 0; i < START_LEN; i++) {
+          snake.body.push([clamp(from[0] - dir[0] * i, 0, GRID - 1), from[1]]);
+          snake.faces.push(1);
+        }
+        snake.dir = dir;
+        snake.step = STEP;
+        snakeStep();
+        if (snakeEats()) { startPunish(); return true; }
+        return false;
+      }
+    }
+    return false;
+  },
+  // 把病毒全清掉，用来测过关流转
+  clearVirus: function () {
+    for (var y = 0; y < GRID; y++) for (var x = 0; x < GRID; x++) grid[y][x] = 0;
+  },
+  // 把「驰援」直接放到蛇头的下一格。放当前格没用 —— 吃食物的判定发生在蛇移动之后，
+  // 那时头已经挪走了，钩子看上去生效、实际永远吃不到。
+  putFoodAtHead: function () {
+    var h = snake.body[0];
+    food = {
+      x: clamp(h[0] + snake.dir[0], 0, GRID - 1),
+      y: clamp(h[1] + snake.dir[1], 0, GRID - 1)
+    };
+  },
+  // 定点投放：断言里要精确制造「球迎面撞上病毒」「队伍一步踏进病毒」这种局面，
+  // 靠随机跑出来太慢也不稳定。
+  placeBall: function (x, y, dx, dy) {
+    ball.x = x; ball.y = y; ball.dx = dx; ball.dy = dy;
+    ballAcc = 0;
+  },
+  placeSnake: function (x, y, dir, len) {
+    var n = len || START_LEN;
+    snake.body = []; snake.faces = [];
+    for (var i = 0; i < n; i++) {
+      snake.body.push([clamp(x - dir[0] * i, 0, GRID - 1), clamp(y - dir[1] * i, 0, GRID - 1)]);
+      snake.faces.push(1);
+    }
+    snake.dir = dir.slice();
+    snake.step = STEP;
+    snakeAcc = 0;
+  },
+  addVirus: function (x, y, kind) { grid[y][x] = kind || 1; },
+  kindRange: function () {
+    var lo = 99, hi = 0;
+    for (var y = 0; y < GRID; y++) {
+      for (var x = 0; x < GRID; x++) {
+        var k = grid[y][x];
+        if (!k) continue;
+        if (k < lo) lo = k;
+        if (k > hi) hi = k;
+      }
+    }
+    return [lo, hi];
+  },
+  headInBounds: function () {
+    var h = snake.body[0];
+    return h[0] >= 0 && h[0] < GRID && h[1] >= 0 && h[1] < GRID;
+  }
+};
+</script>
+</body>
+</html>

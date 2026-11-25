@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>宝贝三十六计</title>
+<style>
+  :root {
+    --cream: #FFF7EF;
+    --ink: #4A2E1B;
+    --ink2: #8A6A52;
+    --gold: #F2B231;
+    --red: #E4572E;
+    --green: #3FA45B;
+    --blue: #3E8FD0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; background: #2A1B12;
+    font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    color: var(--ink);
+  }
+  #app { position: fixed; inset: 0; overflow: hidden; background: var(--cream); }
+  .page { position: absolute; inset: 0; display: none; flex-direction: column; }
+  .page.on { display: flex; }
+
+  button { font: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+
+  /* ─────────── 菜单 ─────────── */
+  #pgMenu { align-items: center; justify-content: center; background:
+      radial-gradient(120% 80% at 50% 0%, #FFE9C4 0%, #FFF7EF 55%, #F6E6D2 100%); }
+  .menuBlob { position: absolute; border-radius: 50%; opacity: .55; filter: blur(2px); }
+  .menuBox { position: relative; width: 82%; max-width: 460px; display: flex; flex-direction: column; gap: 3.2vmin; }
+  .logo { text-align: center; line-height: 1.05; font-weight: 900; letter-spacing: .06em; }
+  .logo b { display: block; font-size: 11vmin; color: var(--red); text-shadow: 0 3px 0 #FFD9A0, 0 6px 14px rgba(180,90,40,.25); }
+  .logo i { display: block; font-style: normal; font-size: 6.4vmin; color: var(--ink); margin-top: 1vmin; }
+  .sub { text-align: center; font-size: 3.3vmin; color: var(--ink2); margin: -1vmin 0 1vmin; }
+  .bigBtn {
+    display: flex; align-items: center; justify-content: center; gap: 1.6vmin;
+    width: 100%; padding: 3.2vmin 0; border-radius: 3vmin;
+    font-size: 4.6vmin; font-weight: 800; color: #fff;
+    background: linear-gradient(180deg, #FF9A3D, #F2741F);
+    box-shadow: 0 1vmin 0 #C85512, 0 1.6vmin 3vmin rgba(200,85,18,.25);
+  }
+  .bigBtn:active { transform: translateY(.8vmin); box-shadow: 0 0.2vmin 0 #C85512; }
+  .bigBtn.ghost {
+    color: var(--ink); background: #fff;
+    box-shadow: 0 .8vmin 0 #E2CDB6, 0 1.2vmin 2.4vmin rgba(180,140,100,.18);
+  }
+  .bigBtn.ghost:active { box-shadow: 0 .12vmin 0 #E2CDB6; }
+  .bigBtn b { font-size: 3.4vmin; color: var(--ink2); font-weight: 700; }
+  .foot { text-align: center; font-size: 2.8vmin; color: #B99C82; }
+
+  #soundBtn {
+    position: absolute; right: 4vmin; top: calc(3vmin + env(safe-area-inset-top));
+    width: 10vmin; height: 10vmin; border-radius: 50%; font-size: 4.6vmin;
+    background: #fff; box-shadow: 0 .6vmin 0 #E2CDB6; display: grid; place-items: center;
+  }
+
+  /* ─────────── 地图 ─────────── */
+  #pgMap { background: #9ED97C; }
+  /*
+   * 地图用「舞台」而不是铺满：
+   * 原来 .mapBg 是 object-fit:cover，竖屏时 4:3 的图会被裁掉两侧，
+   * 而入口标记是按屏幕百分比定位的 —— 结果「动物园」的牌子浮在空草地上，
+   * 建筑根本不在屏幕上。改成按图片比例缩放的舞台，标记按舞台百分比摆，
+   * 建筑和牌子就永远对得上（见 fitMap()）。
+   */
+  .mapStage { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .mapBg { display: block; width: 100%; height: 100%; }
+  .mapTop {
+    position: relative; z-index: 3; display: flex; align-items: center; gap: 2vmin;
+    padding: calc(2vmin + env(safe-area-inset-top)) 3vmin 2vmin;
+  }
+  .chip {
+    padding: 1.6vmin 3vmin; border-radius: 99px; font-size: 3.4vmin; font-weight: 800;
+    background: rgba(255,255,255,.94); color: var(--ink); box-shadow: 0 .5vmin 0 rgba(0,0,0,.12);
+  }
+  .chip.grow { flex: 1; text-align: center; }
+  .marker {
+    position: absolute; transform: translate(-50%, -50%); z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: .8vmin;
+  }
+  .marker .door {
+    position: relative; width: 13vmin; height: 13vmin; border-radius: 50%;
+    background: rgba(255,255,255,.9); display: grid; place-items: center;
+    box-shadow: 0 .8vmin 0 rgba(0,0,0,.16), 0 0 0 .6vmin rgba(255,255,255,.45);
+  }
+  .marker .door img { width: 7vmin; height: 7vmin; object-fit: contain; }
+  .marker .name {
+    font-size: 3.2vmin; font-weight: 800; color: #fff; padding: .4vmin 1.8vmin;
+    border-radius: 99px; background: rgba(74,46,27,.78);
+  }
+  .marker .prog {
+    position: absolute; right: -.6vmin; top: -.6vmin;
+    min-width: 5.2vmin; height: 5.2vmin; border-radius: 99px;
+    background: var(--red); color: #fff; font-size: 2.6vmin; font-weight: 800;
+    display: grid; place-items: center; padding: 0 .8vmin;
+  }
+  .marker.done .prog { background: var(--green); }
+  .marker:active { transform: translate(-50%, -50%) scale(.94); }
+
+  /* ─────────── 场景 / 对话 ─────────── */
+  #pgScene { background: #000; }
+  .sceneBg { position: absolute; inset: 0; background: center/cover no-repeat; }
+  /* 底部压暗，保证气泡和按钮上的字看得清 */
+  .sceneShade {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0) 46%, rgba(0,0,0,.72) 100%);
+  }
+  .hud {
+    position: relative; z-index: 4; display: flex; align-items: center; gap: 2vmin;
+    padding: calc(2vmin + env(safe-area-inset-top)) 3vmin 0;
+  }
+  .hudTitle {
+    flex: 1; text-align: center; font-size: 3.4vmin; font-weight: 800; color: #fff;
+    text-shadow: 0 1px 6px rgba(0,0,0,.6);
+  }
+  .hearts { font-size: 4.2vmin; letter-spacing: .3vmin; color: #FF5A5A;
+            text-shadow: 0 1px 4px rgba(0,0,0,.55); }
+  .hearts .off { opacity: .28; }
+
+  .actors { position: absolute; left: 0; right: 0; top: 10%; bottom: 36%; z-index: 2; }
+  .actor {
+    position: absolute; bottom: 0; overflow: hidden;
+    filter: drop-shadow(0 .8vmin .8vmin rgba(0,0,0,.35));
+    transition: left .9s cubic-bezier(.3,.8,.4,1);
+  }
+  /* 行走 5 帧：img 宽 = 5 帧，按格宽 20% 平移一帧。
+     用 <img> 而不是 background-position —— CSS 精灵图在个别内核里不绘制。 */
+  .actor img { display: block; height: 100%; width: auto; }
+  .actor.kid { left: 6%; }
+  .actor.foe { left: 96%; }
+  .actor.hideFoe { opacity: 0; transition: opacity .5s; }
+
+  .bubble {
+    position: relative; z-index: 5; margin: 0 3.5vmin; margin-top: auto;
+    background: #fff; border-radius: 3.4vmin; padding: 3vmin 3.4vmin;
+    min-height: 20vmin; box-shadow: 0 1.2vmin 3vmin rgba(0,0,0,.28);
+  }
+  .bubble::after {
+    content: ''; position: absolute; top: -1.8vmin; right: 7vmin;
+    border: 1.8vmin solid transparent; border-bottom-color: #fff; border-top: 0;
+  }
+  .who { display: inline-block; font-size: 2.9vmin; font-weight: 800; color: #fff;
+         background: var(--red); border-radius: 99px; padding: .3vmin 1.8vmin; margin-bottom: 1.2vmin; }
+  .who.safe { background: var(--blue); }
+  .line { font-size: 4.2vmin; line-height: 1.55; min-height: 9vmin; }
+  .line .caret { opacity: .35; }
+
+  .choices {
+    position: relative; z-index: 5; display: flex; justify-content: space-between;
+    align-items: flex-end; padding: 2vmin 5vmin calc(2vmin + env(safe-area-inset-bottom));
+    gap: 3vmin;
+  }
+  .pickWrap { display: flex; flex-direction: column; align-items: center; gap: .6vmin; }
+  .pickWrap span {
+    font-size: 2.9vmin; font-weight: 800; color: #fff;
+    text-shadow: 0 1px 5px rgba(0,0,0,.75);
+  }
+  /* 按钮自己画：原工程的 Ybutton/Nbutton 是 144x244 的椭圆 PNG，
+     放进方形盒子会被裁边，干脆用 SVG 描一遍，缩放不糊。 */
+  .pick {
+    width: 21vmin; height: 21vmin; border-radius: 50%; padding: 0;
+    display: grid; place-items: center;
+    border: .65vmin solid #2A1A0C;
+    box-shadow: 0 .9vmin 1.4vmin rgba(0,0,0,.35), inset 0 -1.2vmin 2vmin rgba(0,0,0,.12);
+    transition: transform .12s;
+  }
+  .pick:active { transform: scale(.92); }
+  .pick.no { background: radial-gradient(circle at 34% 28%, #FFC08A 0%, #F0862F 55%, #CE6410 100%); }
+  .pick.yes { background: radial-gradient(circle at 34% 28%, #C6EBFB 0%, #6EC1EE 55%, #2F82C4 100%); }
+  .pick svg { width: 62%; height: 62%; display: block; }
+  .pick svg path { stroke: #E23A1C; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+  .pick[disabled] { opacity: .5; }
+
+  /* 判定卡片 */
+  .card {
+    position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%) scale(.9);
+    width: 82%; max-width: 420px; z-index: 8;
+    background: #fff; border-radius: 3.2vmin; padding: 3.4vmin;
+    box-shadow: 0 2vmin 5vmin rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s;
+  }
+  .card.on { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+  .card h3 { margin: 0 0 1vmin; font-size: 5.2vmin; display: flex; align-items: center; gap: 1.6vmin; }
+  .card h3 .badge {
+    width: 8.4vmin; height: 8.4vmin; border-radius: 50%; flex: none;
+    display: grid; place-items: center;
+  }
+  .card h3 .badge.ok { background: #3FA45B; }
+  .card h3 .badge.bad { background: #E4572E; }
+  .card h3 .badge svg { width: 66%; height: 66%; }
+  .card h3 .badge svg path { stroke: #fff; stroke-width: 15; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .card .nm { font-size: 3vmin; color: var(--ink2); margin-bottom: 2vmin; }
+  .card p { margin: 0 0 2.6vmin; font-size: 3.8vmin; line-height: 1.6; }
+  .card .ok { color: var(--green); }
+  .card .bad { color: var(--red); }
+  .card button {
+    display: block; width: 100%; padding: 2.6vmin; border-radius: 2.4vmin;
+    background: var(--gold); color: #6A3E00; font-size: 4vmin; font-weight: 800;
+    box-shadow: 0 .8vmin 0 #C98B12;
+  }
+  .card button:active { transform: translateY(.6vmin); box-shadow: 0 .2vmin 0 #C98B12; }
+
+  /* 飘字 */
+  .float {
+    position: absolute; z-index: 9; font-size: 9vmin; font-weight: 900; pointer-events: none;
+    animation: floatUp .9s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { transform: translate(-50%, 0) scale(.6); opacity: 0; }
+    30% { transform: translate(-50%, -2vmin) scale(1.1); opacity: 1; }
+    100% { transform: translate(-50%, -12vmin) scale(1); opacity: 0; }
+  }
+  .shake { animation: shake .32s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-2.4vmin); }
+    75% { transform: translateX(2.4vmin); }
+  }
+
+  /* ─────────── 结算 ─────────── */
+  .mask {
+    position: absolute; inset: 0; z-index: 10; display: none;
+    align-items: center; justify-content: center; background: rgba(20,12,6,.72);
+    padding: 6vmin;
+  }
+  .mask.on { display: flex; }
+  .maskBox {
+    width: 100%; max-width: 440px; background: #FFF7EF; border-radius: 4vmin;
+    padding: 4vmin 4vmin 5vmin; text-align: center; box-shadow: 0 3vmin 6vmin rgba(0,0,0,.45);
+  }
+  .maskBox img { width: 46vmin; max-width: 70%; }
+  .maskBox h2 { margin: 1vmin 0 1vmin; font-size: 6vmin; }
+  .maskBox p { margin: 0 0 3.4vmin; font-size: 3.6vmin; color: var(--ink2); line-height: 1.5; }
+  .maskBox .row { display: flex; gap: 2.4vmin; }
+  .maskBox .row button {
+    flex: 1; padding: 2.8vmin 0; border-radius: 2.6vmin; font-size: 4vmin; font-weight: 800;
+  }
+  .maskBox .row .main { background: linear-gradient(180deg,#FF9A3D,#F2741F); color: #fff; box-shadow: 0 .8vmin 0 #C85512; }
+  .maskBox .row .ghost2 { background: #fff; color: var(--ink); box-shadow: 0 .8vmin 0 #E2CDB6; }
+
+  /* ─────────── 图鉴 ─────────── */
+  #pgBook { background: #FFF7EF; }
+  .pageHead {
+    display: flex; align-items: center; gap: 2vmin;
+    padding: calc(2vmin + env(safe-area-inset-top)) 3vmin 2vmin;
+  }
+  .pageHead h1 { flex: 1; margin: 0; font-size: 4.4vmin; text-align: center; }
+  .bookGrid {
+    flex: 1; overflow-y: auto; padding: 0 3vmin calc(3vmin + env(safe-area-inset-bottom));
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2vmin;
+    align-content: start;
+  }
+  .jie {
+    background: #fff; border-radius: 2.4vmin; padding: 2vmin 1.6vmin; text-align: center;
+    box-shadow: 0 .6vmin 0 #EAD9C4; min-height: 22vmin;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8vmin;
+  }
+  .jie .no { font-size: 2.4vmin; color: #C9AE94; font-weight: 800; }
+  .jie .t { font-size: 3vmin; font-weight: 800; line-height: 1.25; }
+  .jie .l { font-size: 2.3vmin; color: var(--ink2); }
+  .jie.lock { background: #F3E7D8; box-shadow: none; color: #B9A18B; }
+  .jie.lock .t { color: #B9A18B; }
+  .jie.got { box-shadow: 0 .6vmin 0 var(--gold); }
+  .jie.got .t { color: var(--red); }
+
+  /* ─────────── 家长联机 ─────────── */
+  #pgLink { background: linear-gradient(180deg,#EAF4FF,#FFF7EF); }
+  .linkBox { padding: 3vmin 4vmin; display: flex; flex-direction: column; gap: 2.4vmin; }
+  .field { display: flex; flex-direction: column; gap: 1vmin; }
+  .field label { font-size: 3.1vmin; color: var(--ink2); font-weight: 700; }
+  .field input {
+    font-size: 4.4vmin; padding: 2.4vmin 3vmin; border-radius: 2.4vmin; border: .4vmin solid #E3D0BC;
+    background: #fff; color: var(--ink); width: 100%; outline: none;
+  }
+  .field input:focus { border-color: var(--gold); }
+  .linkTip { font-size: 3vmin; color: var(--ink2); line-height: 1.6; }
+  .linkTip b { color: var(--red); }
+  .status { font-size: 3.2vmin; text-align: center; min-height: 4vmin; color: var(--ink2); }
+  .status.ok { color: var(--green); font-weight: 800; }
+  .status.bad { color: var(--red); font-weight: 800; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════ 菜单 ══════════ -->
+  <section id="pgMenu" class="page on">
+    <div class="menuBlob" style="left:-16vmin;top:6vmin;width:52vmin;height:52vmin;background:#FFD9A0"></div>
+    <div class="menuBlob" style="right:-18vmin;bottom:-8vmin;width:58vmin;height:58vmin;background:#FFE7C9"></div>
+    <button id="soundBtn" aria-label="声音"></button>
+    <div class="menuBox">
+      <div class="logo"><b>宝贝</b><i>三十六计</i></div>
+      <div class="sub">看穿坏人的 36 种小伎俩</div>
+      <button class="bigBtn" id="btnPlay">开始闯关</button>
+      <button class="bigBtn ghost" id="btnLink">家长陪我玩</button>
+      <button class="bigBtn ghost" id="btnBook">三十六计图鉴 <b id="bookCount">0 / 36</b></button>
+      <div class="foot">适合 3–6 岁 · 不用联网也能玩</div>
+    </div>
+  </section>
+
+  <!-- ══════════ 地图 ══════════ -->
+  <section id="pgMap" class="page">
+    <div class="mapStage" id="mapStage">
+      <img class="mapBg" src="img/map.svg" alt="">
+    </div>
+    <div class="mapTop">
+      <button class="chip" id="mapBack">‹ 返回</button>
+      <div class="chip grow" id="mapTitle">今天去哪里玩？</div>
+      <div class="chip" id="mapScore">0/36</div>
+    </div>
+  </section>
+
+  <!-- ══════════ 场景 / 对话 ══════════ -->
+  <section id="pgScene" class="page">
+    <div class="sceneBg" id="sceneBg"></div>
+    <div class="sceneShade"></div>
+
+    <div class="hud">
+      <button class="chip" id="sceneBack">‹ 回去</button>
+      <div class="hudTitle" id="hudTitle">动物园</div>
+      <div class="hearts" id="hearts"></div>
+    </div>
+
+    <div class="actors">
+      <div class="actor kid" id="kid"><img alt=""></div>
+      <div class="actor foe" id="foe"><img alt=""></div>
+    </div>
+
+    <div class="bubble">
+      <span class="who" id="who">陌生人</span>
+      <div class="line" id="line"></div>
+    </div>
+
+    <div class="choices">
+      <div class="pickWrap">
+        <button class="pick no" id="btnNo" aria-label="不理他">
+          <svg viewBox="0 0 100 100"><path d="M30 30 L70 70 M70 30 L30 70"/></svg>
+        </button>
+        <span>不理他</span>
+      </div>
+      <div class="pickWrap">
+        <button class="pick yes" id="btnYes" aria-label="听他的">
+          <svg viewBox="0 0 100 100"><path d="M24 52 L42 70 L78 30"/></svg>
+        </button>
+        <span>听他的</span>
+      </div>
+    </div>
+
+    <div class="card" id="card">
+      <h3><span class="badge ok" id="cardIcon"></span><span id="cardTitle">识破了！</span></h3>
+      <div class="nm" id="cardName">这一计叫「礼物诱饵」</div>
+      <p id="cardTip"></p>
+      <button id="cardNext">知道啦</button>
+    </div>
+
+    <div class="mask" id="maskEnd">
+      <div class="maskBox">
+        <img id="endImg" src="img/win.svg" alt="">
+        <h2 id="endTitle">真棒！</h2>
+        <p id="endSub">你识破了 9 个伎俩</p>
+        <div class="row">
+          <button class="ghost2" id="endMap">回地图</button>
+          <button class="main" id="endAgain">再玩一次</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 图鉴 ══════════ -->
+  <section id="pgBook" class="page">
+    <div class="pageHead">
+      <button class="chip" id="bookBack">‹ 返回</button>
+      <h1>三十六计图鉴</h1>
+      <div class="chip" id="bookScore">0/36</div>
+    </div>
+    <div class="bookGrid" id="bookGrid"></div>
+  </section>
+
+  <!-- ══════════ 家长联机 ══════════ -->
+  <section id="pgLink" class="page">
+    <div class="pageHead">
+      <button class="chip" id="linkBack">‹ 返回</button>
+      <h1>家长陪我玩</h1>
+    </div>
+    <div class="linkBox">
+      <div class="linkTip">
+        请爸爸妈妈在自己手机上打开 <b>家长端网页</b>，创建一个房间，
+        然后把 4 位房号告诉你。
+      </div>
+      <div class="field">
+        <label>房号</label>
+        <input id="inCode" inputmode="numeric" maxlength="4" placeholder="4 位数字">
+      </div>
+      <div class="field">
+        <label>家长端地址（第一次要让爸爸妈妈填）</label>
+        <input id="inSrv" placeholder="http://192.168.1.8:8099">
+      </div>
+      <button class="bigBtn" id="btnConnect">连 接</button>
+      <div class="status" id="linkStatus"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ═══════════════════════════════════════════════════════════
+  // 数据：36 计（4 个场景 × 9）
+  // 前 6 句是原工程 Resources/Data.json 的原文（4 组 × 6 句），
+  // 后 3 句是补齐「三十六计」补写的常见骗术，语气与原作保持一致。
+  // 每一句的正确做法都是「不跟他走」，但要点不同，识破后进图鉴。
+  // ═══════════════════════════════════════════════════════════
+  var JI = [
+    // ── 动物园 ──
+    ['zoo', '礼物诱饵', '小朋友，我有一个礼物给你。你想知道是什么吗？快和我到前面车里去看看吧。',
+      '礼物不能要，车更不能上。说完「我不要」，马上跑回爸爸妈妈身边。'],
+    ['zoo', '假问路', '叔叔第一次来这个地方，很喜欢熊猫，却不知道地方，你可以帮叔叔吗？',
+      '大人不会找小孩问路。你可以说「我不知道」，然后去找穿制服的叔叔阿姨。'],
+    ['zoo', '零食收买', '叔叔这里有很多好吃的零食，你帮了叔叔，我把它全给你吃。',
+      '陌生人给的东西不能吃、不能拿。想吃零食，回家告诉爸爸妈妈。'],
+    ['zoo', '答谢邀请', '你真棒啊，帮叔叔找到了熊猫馆，为了谢谢你，叔叔带你去吃麦当劳好吗？',
+      '不跟陌生人走，哪怕他刚说过谢谢。真想去，让爸爸妈妈带你去。'],
+    ['zoo', '玩具诱惑', '要是不吃好吃的，我带你去买个玩具送给你怎么样？',
+      '用玩具换你跟他走，都是骗人的。玩具可以让家里人给你买。'],
+    ['zoo', '打消顾虑', '你放心，很快就可以买好东西，把你送回来，走吧。',
+      '「很快就回来」是最常听见的一句话。不去，就不会回不来。'],
+    ['zoo', '找宠物引路', '小朋友，你能帮叔叔去那边的角落找一下我的小狗吗？它跑丢了。',
+      '偏僻的角落不能跟着去。你可以说「那边有保安叔叔，你找他帮忙」。'],
+    ['zoo', '借电话', '叔叔的手机没电了，能借你的手表电话用一下吗？',
+      '手表电话不给陌生人。要打电话，让他去找工作人员。'],
+    ['zoo', '冒充熟人', '我认识你爸爸，他让我来接你，你跟我上车吧。',
+      '只有爸爸妈妈亲口说过的人才能接你。先打个电话问爸爸妈妈。'],
+
+    // ── 医院 ──
+    ['hosp', '先套名字', '小朋友，你是张鑫的儿子吗？',
+      '名字不要告诉陌生人。就算他说对了，也要先找到家里人。'],
+    ['hosp', '谎报事故', '你的妈妈出事故了，这会儿已经到了医院。',
+      '听到家人出事别慌。请老师或保安帮忙打电话给爸爸妈妈。'],
+    ['hosp', '编造身份', '我是你妈妈的同事，她在红光小学当老师。',
+      '说得出单位也不一定是真的。让大人打电话核实。'],
+    ['hosp', '编造细节', '她是语文老师，很受学生欢迎的。',
+      '知道得越多越要小心，这些事谁都能打听到。'],
+    ['hosp', '细节加码', '今天她的手臂不小心受伤了。',
+      '越说越像真的，越要先打电话确认。'],
+    ['hosp', '不停催促', '快点跟叔叔走吧。',
+      '越催越可疑。停下来，找人帮忙。'],
+    ['hosp', '假签字', '你妈妈在手术，需要家属签字，你快跟我去。',
+      '医院不会让小孩签字。去护士站找阿姨帮忙打电话。'],
+    ['hosp', '假扮医护', '医生让我来接你，车就在门口，快点。',
+      '穿白大褂也可能是假的。不上陌生人的车。'],
+    ['hosp', '道德绑架', '你不去的话，妈妈就没救了，你忍心吗？',
+      '用「你不去就害了妈妈」逼你的，一定是坏人。'],
+
+    // ── 学校 ──
+    ['school', '试探独处', '小朋友一个人吗？',
+      '别回答「我一个人」。就说「我爸爸妈妈马上就来」。'],
+    ['school', '糖果', '叔叔这里有棒棒糖，你吃吗？',
+      '不接、不吃、不拿，走开就好。'],
+    ['school', '冰淇淋', '带你去吃冰淇淋好吗？超好吃的。',
+      '不跟他走。想吃什么，让家里人买。'],
+    ['school', '玩具赛车', '玩具要吗？带去买电动玩具赛车，超好玩的。',
+      '玩具是钩子，不是礼物。'],
+    ['school', '看电影', '你在这里等家长很无聊的，叔叔带你去看电影。',
+      '等家长就站在原地等，不乱走。'],
+    ['school', '假冒同意', '我已经和你爸说了，跟我走吧。',
+      '「你爸同意了」要当面或打电话确认过才算。'],
+    ['school', '冒充老师', '我是新来的体育老师，带你们去校外上活动课。',
+      '老师不会单独带一个小朋友出校门。先问班主任。'],
+    ['school', '谎称车祸', '你爸爸出车祸了，快跟我去医院。',
+      '先找老师，让老师打电话。不跟任何人走。'],
+    ['school', '帮忙搬东西', '帮我搬一下这个箱子到车上，叔叔给你十块钱。',
+      '大人不会请小孩搬东西。不帮，走开找大人。'],
+
+    // ── 商店 ──
+    ['shop', '直接带走', '小朋友，叔叔带你回家。',
+      '不认识的人说带你回家，就是拐骗。立刻跑向收银台。'],
+    ['shop', '假冒受托', '你妈妈今天有事来不了了，她让我带你回去，跟我走吧。',
+      '妈妈说没说过，要自己打电话确认。'],
+    ['shop', '说出名字', '你的妈妈叫张鑫。',
+      '知道名字不代表认识你。这些信息可能是打听来的。'],
+    ['shop', '说出住址', '你的家在湖滨小区。',
+      '住址也不能当证据。'],
+    ['shop', '说出细节', '周围有一个大湖，对吧？',
+      '细节越多越要警惕，那是让你放松的套路。'],
+    ['shop', '天黑加好吃的', '现在已经很晚了，我带你去吃肯德基，走吧。',
+      '天黑了更要待在亮的地方、人多的地方，等家里人来。'],
+    ['shop', '扫码送礼', '扫这个码就送你一个玩具，用你妈妈的手机扫一下。',
+      '不扫陌生人的码，也不把妈妈的手机给别人用。'],
+    ['shop', '拍照', '小朋友，叔叔给你拍张照片发给你妈妈看好不好？',
+      '不跟陌生人去拍照，也不让他拍你。'],
+    ['shop', '商场走散', '你妈妈在那边试衣服，让我带你过去。',
+      '走散了就站在原地，找穿制服的店员或保安。']
+  ];
+
+  var SCENES = [
+    { k: 'zoo',    name: '动物园', bg: 'img/scene-zoo.svg',    foe: 'img/foe1.svg', at: [20, 30] },
+    { k: 'hosp',   name: '医院',   bg: 'img/scene-hosp.svg',   foe: 'img/foe2.svg', at: [76, 26] },
+    { k: 'school', name: '学校',   bg: 'img/scene-school.svg', foe: 'img/foe3.svg', at: [18, 70] },
+    { k: 'shop',   name: '商店',   bg: 'img/scene-shop.svg',   foe: 'img/foe4.svg', at: [78, 66] }
+  ];
+
+  var KEY = 'bb36.v1';
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ── 存档 ──
+  var S = {
+    solved: {},          // 计 id → true（第一次答对才算识破）
+    sound: true,
+    srv: '',
+    page: 'menu'
+  };
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var o = JSON.parse(raw);
+      if (o && o.solved) S.solved = o.solved;
+      if (typeof o.sound === 'boolean') S.sound = o.sound;
+      if (typeof o.srv === 'string') S.srv = o.srv;
+    } catch (e) { /* 存档坏了就当新开局 */ }
+  }
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ solved: S.solved, sound: S.sound, srv: S.srv }));
+    } catch (e) { /* 隐私模式写不进去，忽略 */ }
+  }
+
+  // 给每条计一个稳定 id：场景 + 序号
+  var COUNTER = {};
+  JI.forEach(function (j) {
+    COUNTER[j[0]] = (COUNTER[j[0]] || 0) + 1;
+    j.push(j[0] + COUNTER[j[0]]);     // id
+  });
+
+  function sceneOf(k) {
+    for (var i = 0; i < SCENES.length; i++) if (SCENES[i].k === k) return SCENES[i];
+    return SCENES[0];
+  }
+  function linesOf(k) {
+    return JI.filter(function (j) { return j[0] === k; });
+  }
+  function solvedCount() {
+    var n = 0;
+    for (var k in S.solved) if (S.solved[k]) n++;
+    return n;
+  }
+  function solvedIn(k) {
+    return linesOf(k).filter(function (j) { return S.solved[j[4]]; }).length;
+  }
+
+  // ── 声音：WebAudio 合成，不额外占体积 ──
+  var actx = null, bgm = null;
+  function beep(freq, dur, type, vol) {
+    if (!S.sound) return;
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      g.gain.value = vol || 0.05;
+      o.connect(g); g.connect(actx.destination);
+      var t = actx.currentTime;
+      g.gain.setValueAtTime(g.gain.value, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) { /* 没有音频权限就算了 */ }
+  }
+  function startBgm() {
+    if (bgm || !S.sound) return;
+    try {
+      bgm = new Audio('snd/bgm.mp3');
+      bgm.loop = true;
+      bgm.volume = 0.32;
+      bgm.play().catch(function () { bgm = null; });
+    } catch (e) { bgm = null; }
+  }
+  function syncSound() {
+    $('soundBtn').textContent = S.sound ? '♪' : '×';
+    if (!S.sound && bgm) { bgm.pause(); bgm = null; }
+    if (S.sound) startBgm();
+  }
+
+  // ── 页面切换 ──
+  function go(page) {
+    S.page = page;
+    ['Menu', 'Map', 'Scene', 'Book', 'Link'].forEach(function (p) {
+      $('pg' + p).classList.toggle('on', p.toLowerCase() === page);
+    });
+  }
+
+  // ── 角色行走动画：JS 驱动，帧数写死 5 ──
+  var FPS = 5, actors = [];
+  function bindActor(el, src, scale) {
+    el.style.width = (46 * scale) + 'px';
+    el.style.height = (64 * scale) + 'px';
+    var img = el.querySelector('img');
+    if (!img) { img = document.createElement('img'); el.appendChild(img); }
+    img.src = src;
+    img.alt = '';
+    el.dataset.frame = '0';
+    el.dataset.playing = '1';
+    img.style.transform = 'translateX(0%)';
+    if (actors.indexOf(el) < 0) actors.push(el);
+  }
+  setInterval(function () {
+    actors.forEach(function (el) {
+      if (el.dataset.playing !== '1') return;
+      var f = (parseInt(el.dataset.frame, 10) + 1) % FPS;
+      el.dataset.frame = f;
+      var img = el.querySelector('img');
+      if (img) img.style.transform = 'translateX(' + (-f * 20) + '%)';
+    });
+  }, 130);
+
+  // ══════════════ 地图 ══════════════
+  /**
+   * 按 1088×768 的比例把舞台塞进屏幕：能放下就整张显示，放不下按短边缩放。
+   * 标记是舞台的子元素、按百分比定位，所以缩放到多大都对得上建筑。
+   */
+  function fitMap() {
+    var stage = $('mapStage');
+    if (!stage) return;
+    var R = 1088 / 768;
+    var W = window.innerWidth, H = window.innerHeight;
+    var w = W, h = W / R;
+    if (h > H) { h = H; w = H * R; }
+    stage.style.width = w + 'px';
+    stage.style.height = h + 'px';
+  }
+
+  function openMap() {
+    // 入口标记只建一次
+    var pg = $('pgMap');
+    var stage = $('mapStage');
+    fitMap();
+    if (!pg.dataset.built) {
+      SCENES.forEach(function (sc) {
+        var d = document.createElement('div');
+        d.className = 'marker';
+        d.dataset.scene = sc.k;
+        d.style.left = sc.at[0] + '%';
+        d.style.top = sc.at[1] + '%';
+        d.innerHTML = '<div class="door"><img src="img/enter.svg" alt=""></div>' +
+                      '<div class="name">' + sc.name + '</div>' +
+                      '<div class="prog">0</div>';
+        d.addEventListener('click', function () { enterScene(sc.k); });
+        stage.appendChild(d);
+      });
+      pg.dataset.built = '1';
+    }
+    refreshMap();
+    go('map');
+  }
+  function refreshMap() {
+    var m = $('pgMap').querySelectorAll('.marker');
+    for (var i = 0; i < m.length; i++) {
+      var k = m[i].dataset.scene;
+      var n = solvedIn(k);
+      m[i].querySelector('.prog').textContent = n;
+      m[i].classList.toggle('done', n >= 9);
+    }
+    $('mapScore').textContent = solvedCount() + '/36';
+  }
+
+  // ══════════════ 场景 ══════════════
+  var curKey = 'zoo';
+  function curSceneKey() { return curKey; }
+  var cur = null;         // 当前这条计
+  var curLines = [];
+  var idx = 0;
+  var hearts = 3;
+  var typing = null;
+  var lineTimer = null;
+  var busy = false;
+  var foeName = '陌生人';
+
+  function enterScene(k) {
+    var sc = sceneOf(k);
+    curKey = k;
+    $('sceneBg').style.backgroundImage = 'url(' + sc.bg + ')';
+    $('hudTitle').textContent = sc.name;
+    curLines = linesOf(k);
+    idx = 0;
+    hearts = 3;
+    drawHearts();
+    $('card').classList.remove('on');
+    $('maskEnd').classList.remove('on');
+    $('foe').classList.remove('hideFoe');
+
+    // 竖屏按屏宽折算，横屏用高度，避免人物过大
+    var base = Math.min(window.innerWidth, window.innerHeight) / 100;
+    bindActor($('kid'), 'img/kid.svg', base * 0.70);
+    bindActor($('foe'), sc.foe, base * 0.70);
+
+    // 入场：孩子从左边走进来，坏人在右边等着
+    $('kid').style.left = '2%';
+    $('foe').style.left = '96%';
+    go('scene');
+    setTimeout(function () {
+      $('kid').style.left = '16%';
+      $('foe').style.left = '62%';
+    }, 60);
+    clearTimeout(lineTimer);
+    lineTimer = setTimeout(showLine, 900);
+  }
+
+  function drawHearts() {
+    var s = '';
+    for (var i = 0; i < 3; i++) {
+      s += '<span class="' + (i < hearts ? '' : 'off') + '">❤</span>';
+    }
+    $('hearts').innerHTML = s;
+  }
+
+  function typeLine(text) {
+    var el = $('line');
+    clearInterval(typing);
+    el.textContent = '';
+    var n = 0;
+    typing = setInterval(function () {
+      n += 1;
+      el.textContent = text.slice(0, n);
+      if (n >= text.length) { clearInterval(typing); typing = null; }
+    }, 34);
+  }
+
+  function showLine() {
+    clearTimeout(lineTimer);
+    lineTimer = null;
+    if (idx >= curLines.length) { finish(); return; }
+    cur = curLines[idx];
+    busy = false;
+    $('who').textContent = foeName;
+    $('who').className = 'who';
+    $('btnNo').disabled = false;
+    $('btnYes').disabled = false;
+    $('card').classList.remove('on');
+    typeLine(cur[2]);
+  }
+
+  function skipTyping() {
+    if (typing) { clearInterval(typing); typing = null; $('line').textContent = cur[2]; }
+  }
+
+  // 所有对话里，正确做法都是「不听他的」——这正是这游戏要教的
+  function pick(agree) {
+    if (busy || !cur) return;
+    skipTyping();
+    busy = true;
+    $('btnNo').disabled = true;
+    $('btnYes').disabled = true;
+
+    if (!agree) {
+      // 答对：识破
+      var first = !S.solved[cur[4]];
+      S.solved[cur[4]] = true;
+      if (first) save();
+      // 只给「第一次识破」发星：同一计反复点没有意义，也不该反复给星。
+      try {
+        if (first && window.KidsSafe && window.KidsSafe.award) {
+          window.KidsSafe.award('baobei36', 2, solvedCount(), cur[1] + ' · 第 ' + solvedCount() + ' 计');
+        }
+      } catch (e) {}
+      beep(880, 0.1, 'sine', 0.07);
+      setTimeout(function () { beep(1180, 0.12, 'sine', 0.06); }, 90);
+      floatText('✓', '#4CE07A', 62, 62);
+      openCard(true, cur);
+    } else {
+      hearts -= 1;
+      drawHearts();
+      beep(160, 0.22, 'sawtooth', 0.07);
+      floatText('✕', '#FF6B4A', 62, 62);
+      $('foe').classList.add('shake');
+      $('kid').classList.add('shake');
+      setTimeout(function () {
+        $('foe').classList.remove('shake');
+        $('kid').classList.remove('shake');
+      }, 340);
+      // 答错也把正确的做法讲清楚，不然孩子只知道自己错了
+      openCard(false, cur);
+    }
+  }
+
+  var TICK = '<svg viewBox="0 0 100 100"><path d="M24 52 L42 70 L78 30"/></svg>';
+  var CROSS = '<svg viewBox="0 0 100 100"><path d="M30 30 L70 70 M70 30 L30 70"/></svg>';
+  function openCard(right, j) {
+    var b = $('cardIcon');
+    b.className = 'badge ' + (right ? 'ok' : 'bad');
+    b.innerHTML = right ? TICK : CROSS;
+    $('cardTitle').textContent = right ? '识破了！' : '上当啦！';
+    $('cardTitle').className = right ? 'ok' : 'bad';
+    $('cardName').textContent = '这一计叫「' + j[1] + '」';
+    $('cardTip').textContent = right
+      ? j[3]
+      : '记住：' + j[3];
+    $('cardNext').textContent = right ? '知道啦' : '我记住了';
+    $('card').classList.add('on');
+  }
+
+  function nextAfterCard() {
+    $('card').classList.remove('on');
+    if (hearts <= 0) { finish(); return; }
+    idx += 1;
+    if (idx >= curLines.length) { finish(); return; }
+    showLine();
+  }
+
+  function finish() {
+    var win = hearts > 0;
+    // 原工程的 win.png 画的是「坏人把小孩带走」、lose.png 才是「警察救下孩子」，
+    // 两张图在代码里正好反着用（通关反而看到孩子被拐）。重绘时按语义重新出图：
+    // win.svg = 警察护住孩子，lose.svg = 被陌生人牵走。
+    $('endImg').src = win ? 'img/win.svg' : 'img/lose.svg';
+    $('endTitle').textContent = win ? '真棒！' : '被拐走了…';
+    $('endSub').textContent = win
+      ? '你识破了 ' + curLines.length + ' 个伎俩，还有 ' + (36 - solvedCount()) + ' 个等你发现'
+      : '别灰心。这一关有 3 颗心，用完了就再来一次。';
+    $('maskEnd').classList.add('on');
+    // 一关 9 计全识破，额外给 4 颗：整关的成就感比一计一计攒要强
+    try {
+      if (win && window.KidsSafe && window.KidsSafe.award) {
+        window.KidsSafe.award('baobei36', 4, solvedCount(), '通关「' + sceneOf(curSceneKey()).name + '」');
+      }
+    } catch (e) {}
+    beep(win ? 990 : 180, 0.35, 'triangle', 0.07);
+    refreshMap();
+  }
+
+  function floatText(txt, color, l, t) {
+    var d = document.createElement('div');
+    d.className = 'float';
+    d.textContent = txt;
+    d.style.color = color;
+    d.style.left = l + '%';
+    d.style.top = t + '%';
+    $('pgScene').appendChild(d);
+    setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 950);
+  }
+
+  // ══════════════ 图鉴 ══════════════
+  function openBook() {
+    var g = $('bookGrid');
+    g.innerHTML = '';
+    JI.forEach(function (j, i) {
+      var got = !!S.solved[j[4]];
+      var d = document.createElement('div');
+      d.className = 'jie ' + (got ? 'got' : 'lock');
+      d.innerHTML = '<div class="no">第 ' + (i + 1) + ' 计</div>' +
+                    '<div class="t">' + (got ? j[1] : '？？？') + '</div>' +
+                    '<div class="l">' + (got ? sceneOf(j[0]).name : '还没识破') + '</div>';
+      d.addEventListener('click', function () {
+        if (!got) { beep(180, .1, 'square', .04); return; }
+        alert('「' + j[1] + '」\n\n他说：' + j[2] + '\n\n这样做：' + j[3]);
+      });
+      g.appendChild(d);
+    });
+    $('bookScore').textContent = solvedCount() + '/36';
+    go('book');
+  }
+
+  // ══════════════ 家长联机 ══════════════
+  var link = { es: null, code: '', srv: '', role: 'kid' };
+
+  function normSrv(s) {
+    s = (s || '').trim();
+    if (!s) return '';
+    if (!/^https?:\/\//i.test(s)) s = 'http://' + s;
+    return s.replace(/\/+$/, '');
+  }
+
+  function setStatus(txt, cls) {
+    var el = $('linkStatus');
+    el.textContent = txt || '';
+    el.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  function connect() {
+    var code = ($('inCode').value || '').trim();
+    var srv = normSrv($('inSrv').value);
+    if (!/^\d{4}$/.test(code)) { setStatus('房号是 4 位数字哦', 'bad'); return; }
+    if (!srv) { setStatus('要填家长端地址', 'bad'); return; }
+    S.srv = srv;
+    save();
+    link.srv = srv;
+    link.code = code;
+    disconnect();
+    setStatus('正在连接…');
+    try {
+      link.es = new EventSource(srv + '/api/rooms/' + code + '/events?role=kid');
+    } catch (e) {
+      setStatus('连不上：' + e.message, 'bad');
+      return;
+    }
+    link.es.onopen = function () { setStatus('连上啦，等爸爸妈妈说话…', 'ok'); };
+    link.es.onerror = function () { setStatus('连接断了，检查一下地址和房号', 'bad'); };
+    link.es.onmessage = function (ev) {
+      var m;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      onLinkMsg(m);
+    };
+  }
+
+  function disconnect() {
+    if (link.es) { try { link.es.close(); } catch (e) {} link.es = null; }
+  }
+
+  // 进入「家长陪我玩」的场景。hello 和 say 都要用：
+  // 家长可能先点了开始、又念了一句，孩子才连上来 —— 那时进来的第一帧
+  // 是 say 而不是 hello，只靠 hello 切场景的话这句就丢了。
+  function enterLinkScene() {
+    var sc = sceneOf('zoo');
+    $('sceneBg').style.backgroundImage = 'url(' + sc.bg + ')';
+    var base = Math.min(window.innerWidth, window.innerHeight) / 100;
+    bindActor($('kid'), 'img/kid.svg', base * 0.70);
+    bindActor($('foe'), 'img/foe4.svg', base * 0.70);
+    $('kid').style.left = '16%';
+    $('foe').style.left = '62%';
+    $('hudTitle').textContent = '家长陪我玩';
+    hearts = 3;
+    drawHearts();
+    go('scene');
+    setStatus('');
+  }
+
+  function onLinkMsg(m) {
+    if (m.type === 'joined') { setStatus('房间里有人啦', 'ok'); return; }
+    if (m.type === 'hello') {
+      // 家长端刚进来：进入场景，等第一句
+      enterLinkScene();
+      return;
+    }
+    if (m.type === 'say') {
+      if (S.page !== 'scene') enterLinkScene();
+      foeName = m.who || '家长';
+      cur = ['link', '家长出题', m.text, '', 'link-' + (m.id || '0')];
+      $('who').textContent = foeName;
+      $('who').className = 'who safe';
+      $('btnNo').disabled = false;
+      $('btnYes').disabled = false;
+      $('card').classList.remove('on');
+      typeLine(m.text);
+      return;
+    }
+    if (m.type === 'end') {
+      $('endImg').src = m.win ? 'img/win.svg' : 'img/lose.svg';
+      $('endTitle').textContent = m.win ? '真棒！' : '被拐走了…';
+      $('endSub').textContent = m.text || '';
+      $('maskEnd').classList.add('on');
+      return;
+    }
+  }
+
+  function reportAnswer(agree, text) {
+    if (!link.srv || !link.code) return;
+    fetch(link.srv + '/api/rooms/' + link.code + '/act', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'kid', type: 'answer', ok: !agree, text: text || '' })
+    }).catch(function () { setStatus('答案没送出去，检查网络', 'bad'); });
+  }
+
+  // ══════════════ 事件绑定 ══════════════
+  $('btnPlay').onclick = function () { startBgm(); openMap(); };
+  $('btnBook').onclick = function () { beep(660, .06, 'sine', .04); openBook(); };
+  $('btnLink').onclick = function () {
+    $('inSrv').value = S.srv || '';
+    setStatus('');
+    go('link');
+  };
+  $('mapBack').onclick = function () { go('menu'); };
+  $('bookBack').onclick = function () { go('menu'); };
+  $('linkBack').onclick = function () { disconnect(); go('menu'); };
+  $('btnConnect').onclick = connect;
+
+  $('sceneBack').onclick = function () {
+    clearInterval(typing); typing = null;
+    if (link.es) { disconnect(); }
+    openMap();
+  };
+  $('btnNo').onclick = function () {
+    // 联机模式下也要先记一笔
+    if (link.es && cur && cur[4].indexOf('link-') === 0) {
+      reportAnswer(false, cur[2]);
+      setTimeout(function () { go('scene'); setStatus('答对啦，等下一句…', 'ok'); }, 300);
+      return;
+    }
+    pick(false);
+  };
+  $('btnYes').onclick = function () {
+    if (link.es && cur && cur[4].indexOf('link-') === 0) {
+      reportAnswer(true, cur[2]);
+      setTimeout(function () { setStatus('答错了，等爸爸妈妈说下一句…', 'bad'); }, 300);
+      return;
+    }
+    pick(true);
+  };
+  $('line').onclick = skipTyping;
+  $('bubbleClickHost') && ($('bubbleClickHost').onclick = skipTyping);
+  $('cardNext').onclick = nextAfterCard;
+
+  $('endAgain').onclick = function () {
+    $('maskEnd').classList.remove('on');
+    // 重新进当前场景：从地图标记里找
+    var k = 'zoo';
+    for (var i = 0; i < SCENES.length; i++) {
+      if ($('sceneBg').style.backgroundImage.indexOf(SCENES[i].bg) >= 0) k = SCENES[i].k;
+    }
+    enterScene(k);
+  };
+  $('endMap').onclick = function () {
+    $('maskEnd').classList.remove('on');
+    if (link.es) { disconnect(); link.srv = ''; link.code = ''; }
+    openMap();
+  };
+
+  $('soundBtn').onclick = function () {
+    S.sound = !S.sound;
+    save();
+    syncSound();
+    if (S.sound) beep(720, .08, 'sine', .05);
+  };
+
+  window.addEventListener('resize', function () {
+    fitMap();
+    // 转屏后角色尺寸要重算
+    if (S.page !== 'scene') return;
+    var base = Math.min(window.innerWidth, window.innerHeight) / 100;
+    [['kid', 'img/kid.svg'], ['foe', sceneOf(curSceneKey()).foe]].forEach(function (p) {
+      var el = $(p[0]);
+      var img = el.querySelector('img');
+      bindActor(el, img ? img.src : p[1], base * 0.70);
+    });
+  });
+
+  // ══════════════ 测试钩子 ══════════════
+  window.__bb36 = {
+    ji: JI,
+    scenes: SCENES,
+    state: function () { return S; },
+    page: function () { return S.page; },
+    solvedCount: solvedCount,
+    solvedIn: solvedIn,
+    enterScene: enterScene,
+    openMap: openMap,
+    openBook: openBook,
+    pick: pick,
+    next: nextAfterCard,
+    showLine: showLine,
+    cur: function () { return cur; },
+    idx: function () { return idx; },
+    hearts: function () { return hearts; },
+    lineText: function () { return $('line').textContent; },
+    cardOn: function () { return $('card').classList.contains('on'); },
+    cardTip: function () { return $('cardTip').textContent; },
+    endOpen: function () { return $('maskEnd').classList.contains('on'); },
+    endText: function () { return $('endTitle').textContent; },
+    reset: function () { S.solved = {}; save(); },
+    setSrv: function (s) { S.srv = s; save(); },
+    connect: connect,
+    onLinkMsg: onLinkMsg,
+    goto: go
+  };
+
+  // ── 启动 ──
+  load();
+  syncSound();
+  $('bookCount').textContent = solvedCount() + ' / 36';
+  $('inSrv').value = S.srv || '';
+})();
+</script>
+</body>
+</html>

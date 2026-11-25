@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>中国象棋</title>
+<style>
+  * { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+
+  /*
+   * 美术全部来自 Chess-Chess 工程（picture/ 与 Sounds/），不再自绘：
+   * 棋盘 767×842 是一张画好的木纹图，网格在图上占 x∈[110,650]、y∈[96,703.5]，
+   * 步长 67.5px。棋子原图 66×66，直接按 66 摆会几乎贴着相邻棋子，
+   * 所以显示直径取格距的 0.90（见 JS 里 PSIZE），留出正常的缝隙。
+   */
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #2A1B0B;
+    font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  }
+  #app {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    background: radial-gradient(circle at 50% 0%, #4A3218 0%, #2A1B0B 70%);
+  }
+
+  header {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 10px 8px 10px;
+    padding-top: calc(8px + env(safe-area-inset-top));
+    background: rgba(0,0,0,.22);
+  }
+  .turn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 13px; border-radius: 999px;
+    background: #F6E7C6; box-shadow: inset 0 0 0 1px #C9A263;
+    font-size: 15px; font-weight: 800; color: #6B4A18;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+  .dot.red { background: #D32F2F; }
+  .dot.black { background: #333; }
+  .spacer { flex: 1; }
+  button {
+    font: inherit; font-size: 13.5px; font-weight: 700;
+    color: #5A3D12; background: #F6E7C6;
+    border: none; border-radius: 12px; padding: 9px 11px; min-height: 40px;
+    white-space: nowrap;
+    box-shadow: 0 2px 0 #B98F4E, inset 0 0 0 1px #E4CC9C;
+  }
+  button:active { transform: translateY(1px); box-shadow: 0 1px 0 #B98F4E, inset 0 0 0 1px #E4CC9C; }
+  button.on { background: #E8C87A; }
+
+  /*
+   * 象棋盘近似正方形，手机屏是竖长的，棋盘按宽度撑满之后上下必然还有空。
+   * 这些空不浪费：被吃掉的棋子放棋盘下面（顺手是局势提示），再下面是象棋走法说明。
+   *
+   * 竖屏：[棋盘] / [吃子] / [规则]，规则面板由 JS 定高（最多吃 stage 的 26%），其余全给棋盘；
+   * 横屏：[棋盘] | [吃子 + 规则]，规则铺满右侧整列。
+   */
+  #stage { flex: 1; position: relative; min-height: 0; display: flex; flex-direction: column; }
+  #boardArea { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 4px; }
+  #side { flex: none; min-height: 0; display: flex; flex-direction: column; }
+  #taken { padding: 2px 14px 4px; }
+
+  /* 规则面板：可折叠。刻意不写 overflow:hidden —— 圆角 + 裁剪在 ArkWeb 上会连文字一起丢，
+     真正的滚动交给里面那个不带圆角的 .rBody。 */
+  #rules {
+    flex: none; min-height: 0; margin: 0 12px 2px; display: flex; flex-direction: column;
+    border-radius: 14px; background: rgba(255, 246, 226, .055);
+    box-shadow: inset 0 0 0 1px rgba(246, 231, 198, .16);
+  }
+  .rHead {
+    flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; font-size: 12.5px; font-weight: 800; color: #F0D9A8;
+  }
+  .rHead .rToggle { font-size: 11.5px; font-weight: 600; color: #C6A97A; }
+  .rBody { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 12px 0; }
+  /* 规则放不下时，底部渐隐说明「还有更多」，避免最后一行被切一半像是坏了 */
+  .rBody::after {
+    content: ''; display: block; position: sticky; bottom: 0; height: 16px; margin-top: -16px;
+    background: linear-gradient(to bottom, rgba(42, 27, 11, 0), rgba(42, 27, 11, .92));
+    pointer-events: none;
+  }
+  #rules.fold .rBody { display: none; }
+  .rRow { font-size: 11.8px; line-height: 1.45; color: #D9C098; padding: 1px 0; }
+  .rRow b { color: #F6E7C6; margin-right: 5px; }
+  .rRow.tip { color: #C6A97A; margin-top: 4px; padding-top: 5px; border-top: 1px dashed rgba(246, 231, 198, .2); }
+  .tkRow { display: flex; align-items: center; gap: 6px; min-height: 30px; }
+  .tkLabel { font-size: 12px; font-weight: 700; color: #C6A97A; flex: none; width: 52px; }
+  .tkList { display: flex; flex-wrap: nowrap; gap: 3px; overflow: hidden; }
+  .tkList img { width: 26px; height: 26px; opacity: .92; }
+  .tkEmpty { font-size: 12px; color: #7A6440; }
+
+  /* 棋盘容器按图片比例固定，棋子用百分比定位，跟着一起缩放 */
+  #board { position: relative; }
+  #boardImg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+
+  .pc {
+    position: absolute; width: 90%; height: auto; margin: 0;
+    transform: translate(-50%, -50%);
+    transition: left .20s ease-out, top .20s ease-out, opacity .18s;
+    will-change: left, top;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 2px rgba(60,30,0,.35));
+  }
+  .pc.sel { filter: drop-shadow(0 0 6px #FFD54F) drop-shadow(0 2px 3px rgba(60,30,0,.5)); }
+  .pc.cap { opacity: 0; transform: translate(-50%, -50%) scale(.5) rotate(25deg); }
+
+  /* 走法提示点、上一步标记 */
+  .hint, .mark {
+    position: absolute; transform: translate(-50%, -50%); pointer-events: none;
+  }
+  .hint { width: 5.2%; height: 0; padding-bottom: 5.2%; border-radius: 50%; background: rgba(46,125,50,.55); }
+  .hint.eat { width: 8.6%; height: 0; padding-bottom: 8.6%; background: none; box-shadow: inset 0 0 0 3px rgba(211,47,47,.75); }
+  .mark { width: 8.4%; height: 0; padding-bottom: 8.4%; border: 3px solid rgba(255,213,79,.9); border-radius: 50%; box-sizing: border-box; }
+  .mark.last { border-color: rgba(255,152,0,.95); }
+
+  /* 悔棋 / 重新开始放到底部：拇指够得着，顶栏也就不用挤两行了 */
+  .bar {
+    padding: 6px 12px calc(10px + env(safe-area-inset-bottom)) 12px;
+    background: rgba(0,0,0,.22);
+  }
+  .barRow { display: flex; gap: 10px; margin-top: 6px; }
+  .barRow button { flex: 1; min-height: 46px; font-size: 15px; }
+  #tip { font-size: 12.5px; color: #D9C098; text-align: center; min-height: 17px; }
+
+  #toast {
+    position: absolute; left: 50%; top: 42%; transform: translate(-50%,-50%) scale(.75);
+    padding: 12px 26px; border-radius: 16px; background: rgba(198,40,40,.95);
+    color: #fff; font-size: 22px; font-weight: 900; letter-spacing: 5px;
+    opacity: 0; transition: opacity .16s, transform .16s; pointer-events: none; z-index: 6;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  #over {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(20,12,4,.62); z-index: 7;
+  }
+  #over.hidden { display: none; }
+  .card {
+    background: #F6E7C6; border-radius: 22px; padding: 24px 28px; text-align: center;
+    box-shadow: 0 14px 34px rgba(0,0,0,.4), inset 0 0 0 2px #C9A263; min-width: 210px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 25px; color: #6B4A18; letter-spacing: 2px; }
+  .card p { margin: 0 0 16px; font-size: 13.5px; color: #9A7A4A; }
+  .card button { padding: 12px 28px; font-size: 16px; background: #C62828; color: #fff; box-shadow: 0 3px 0 #8E1F1F; }
+
+  /* 横屏：棋盘在左，吃子 + 规则在右 —— 竖着堆会把棋盘压成一条 */
+  @media (orientation: landscape) {
+    #stage { flex-direction: row; }
+    #boardArea { flex: 1 1 auto; }
+    #side { width: 36%; max-width: 430px; border-left: 1px solid rgba(246, 231, 198, .12); }
+    #taken { padding: 6px 12px 2px; }
+    #rules { flex: 1 1 auto; margin: 0 10px 8px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="turn"><span id="turnDot" class="dot red"></span><span id="turnText">红方走棋</span></div>
+    <div class="spacer"></div>
+    <button id="btnMode" class="on">人机</button>
+    <button id="btnLevel">普通</button>
+  </header>
+
+  <div id="stage">
+    <div id="boardArea">
+      <div id="board">
+        <img id="boardImg" src="img/board.png" alt="">
+      </div>
+    </div>
+
+    <div id="side">
+      <div id="taken">
+        <div class="tkRow"><span class="tkLabel">红方吃</span><span class="tkList" id="tkByRed"></span></div>
+        <div class="tkRow"><span class="tkLabel">黑方吃</span><span class="tkList" id="tkByBlack"></span></div>
+      </div>
+
+      <!-- 象棋走法说明：点标题栏可以收起，收起后棋盘能再大一点 -->
+      <section id="rules">
+        <div class="rHead" id="rulesHead">
+          <span>📖 象棋怎么走</span>
+          <span class="rToggle" id="rulesToggle">收起</span>
+        </div>
+        <div class="rBody" id="rulesBody">
+          <div class="rRow"><b>车</b>直走横走，路要空着</div>
+          <div class="rRow"><b>马</b>走「日」字，贴着的子别住马腿就走不了</div>
+          <div class="rRow"><b>炮</b>不吃子时和车一样，吃子必须隔一个子</div>
+          <div class="rRow"><b>相·象</b>走「田」字，不过河，田心有子就塞象眼</div>
+          <div class="rRow"><b>士·仕</b>九宫里斜着走一步</div>
+          <div class="rRow"><b>将·帅</b>九宫里走一步，两边不能照面</div>
+          <div class="rRow"><b>兵·卒</b>过河前只向前，过河后能左右</div>
+          <div class="rRow tip">将死对方的将／帅就赢；绿点是可以走的位置。</div>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast"></div>
+    <div id="over" class="hidden">
+      <div class="card">
+        <h2 id="overTitle">红方胜</h2>
+        <p id="overSub">再来一局？</p>
+        <button id="btnAgain">再来一局</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div id="tip">点自己的棋子，再点要去的位置</div>
+    <div class="barRow">
+      <button id="btnUndo">悔棋</button>
+      <button id="btnReset">重新开始</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ────────── 棋盘几何（与 board.png 里的网格一致）──────────
+  var ROWS = 10, COLS = 9;
+  var RED = 'r', BLACK = 'b';
+  var IMG_W = 767, IMG_H = 842;   // 棋盘图尺寸
+  var GX = 110, GY = 96;          // 左上交叉点
+  var STEP = 67.5;                // 格距
+  var PSIZE = STEP * 0.87;        // 棋子显示直径（原版约 0.84，这里略大一点更好点）
+
+  var NAME = {
+    r: { K: '帥', A: '仕', B: '相', N: '馬', R: '車', C: '炮', P: '兵' },
+    b: { K: '將', A: '士', B: '象', N: '馬', R: '車', C: '砲', P: '卒' }
+  };
+
+  // 第 0 行黑方底线（棋盘图是黑上红下），第 9 行红方底线
+  var INIT = [
+    ['bR','bN','bB','bA','bK','bA','bB','bN','bR'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,'bC',null,null,null,null,null,'bC',null],
+    ['bP',null,'bP',null,'bP',null,'bP',null,'bP'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null],
+    ['rP',null,'rP',null,'rP',null,'rP',null,'rP'],
+    [null,'rC',null,null,null,null,null,'rC',null],
+    [null,null,null,null,null,null,null,null,null],
+    ['rR','rN','rB','rA','rK','rA','rB','rN','rR']
+  ];
+
+  var board, turn, selected, legal, history, lastMove, over, kpos, seq;
+  var mode = 'pve';      // pve 人机 / pvp 双人
+  var level = 2;         // 1 简单 / 2 普通 / 3 困难
+  var thinking = false;
+
+  var elBoard = document.getElementById('board');
+  var elTurnDot = document.getElementById('turnDot');
+  var elTurnText = document.getElementById('turnText');
+  var elTip = document.getElementById('tip');
+  var elToast = document.getElementById('toast');
+  var elOver = document.getElementById('over');
+
+  // ────────── 音效（来自 Chess-Chess/Sounds）──────────
+  var SND = {};
+  ['select','go','eat','goerror','gamewin','gamelose','Man_jiangjun'].forEach(function (n) {
+    var a = new Audio('snd/' + n + '.mp3');
+    a.preload = 'auto';
+    SND[n] = a;
+  });
+  function sfx(n) {
+    var a = SND[n];
+    if (!a) return;
+    try {
+      a.currentTime = 0;
+      var p = a.play();
+      if (p && p.catch) p.catch(function () {});
+    } catch (e) { /* 首次手势前会被浏览器拦，忽略即可 */ }
+  }
+
+  // ────────── 局面初始化 ──────────
+  function newGame() {
+    seq = 0;
+    // 每颗子给一个稳定 id，渲染层靠它复用 DOM，走子才有过渡动画
+    board = INIT.map(function (row) {
+      return row.map(function (id) {
+        if (!id) return null;
+        return { i: 'p' + (seq++), t: id[1], s: id[0] };
+      });
+    });
+    kpos = { r: [9, 4], b: [0, 4] };
+    turn = RED;
+    selected = null;
+    legal = [];
+    history = [];
+    lastMove = null;
+    over = false;
+    thinking = false;
+    elOver.classList.add('hidden');
+    rebuild();
+    updateHud();
+    refreshTaken();
+    if (mode === 'pve') checkTurnAuto();
+  }
+
+  // ────────── 走法规则 ──────────
+  function inBoard(r, c) { return r >= 0 && r < ROWS && c >= 0 && c < COLS; }
+  function inPalace(r, c, side) {
+    if (c < 3 || c > 5) return false;
+    return side === RED ? (r >= 7 && r <= 9) : (r >= 0 && r <= 2);
+  }
+  function ownHalf(r, side) { return side === RED ? r >= 5 : r <= 4; }
+  function forward(side) { return side === RED ? -1 : 1; }
+  function crossedRiver(r, side) { return side === RED ? r <= 4 : r >= 5; }
+  function other(side) { return side === RED ? BLACK : RED; }
+
+  function pseudoMoves(r, c) {
+    var p = board[r][c];
+    if (!p) return [];
+    var out = [];
+    var i, rr, cc, q;
+
+    if (p.t === 'R' || p.t === 'C') {
+      var dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+      for (i = 0; i < 4; i++) {
+        rr = r + dirs[i][0]; cc = c + dirs[i][1];
+        var screen = false;
+        while (inBoard(rr, cc)) {
+          q = board[rr][cc];
+          if (p.t === 'R') {
+            if (!q) out.push([rr, cc]);
+            else { if (q.s !== p.s) out.push([rr, cc]); break; }
+          } else {
+            if (!screen) { if (!q) out.push([rr, cc]); else screen = true; }
+            else { if (q) { if (q.s !== p.s) out.push([rr, cc]); break; } }
+          }
+          rr += dirs[i][0]; cc += dirs[i][1];
+        }
+      }
+      return out;
+    }
+
+    if (p.t === 'N') {
+      var jumps = [[-2,-1,-1,0],[-2,1,-1,0],[2,-1,1,0],[2,1,1,0],[-1,-2,0,-1],[1,-2,0,-1],[-1,2,0,1],[1,2,0,1]];
+      for (i = 0; i < 8; i++) {
+        var jp = jumps[i];
+        if (board[r + jp[2]] && board[r + jp[2]][c + jp[3]]) continue; // 蹩马腿
+        rr = r + jp[0]; cc = c + jp[1];
+        if (!inBoard(rr, cc)) continue;
+        q = board[rr][cc];
+        if (!q || q.s !== p.s) out.push([rr, cc]);
+      }
+      return out;
+    }
+
+    if (p.t === 'B') {
+      var diag = [[-2,-2],[-2,2],[2,-2],[2,2]];
+      for (i = 0; i < 4; i++) {
+        rr = r + diag[i][0]; cc = c + diag[i][1];
+        if (!inBoard(rr, cc) || !ownHalf(rr, p.s)) continue;
+        if (board[r + diag[i][0] / 2][c + diag[i][1] / 2]) continue; // 塞象眼
+        q = board[rr][cc];
+        if (!q || q.s !== p.s) out.push([rr, cc]);
+      }
+      return out;
+    }
+
+    if (p.t === 'A') {
+      var ad = [[1,1],[1,-1],[-1,1],[-1,-1]];
+      for (i = 0; i < 4; i++) {
+        rr = r + ad[i][0]; cc = c + ad[i][1];
+        if (!inPalace(rr, cc, p.s)) continue;
+        q = board[rr][cc];
+        if (!q || q.s !== p.s) out.push([rr, cc]);
+      }
+      return out;
+    }
+
+    if (p.t === 'K') {
+      var kd = [[1,0],[-1,0],[0,1],[0,-1]];
+      for (i = 0; i < 4; i++) {
+        rr = r + kd[i][0]; cc = c + kd[i][1];
+        if (!inPalace(rr, cc, p.s)) continue;
+        q = board[rr][cc];
+        if (!q || q.s !== p.s) out.push([rr, cc]);
+      }
+      return out;
+    }
+
+    if (p.t === 'P') {
+      rr = r + forward(p.s);
+      if (inBoard(rr, c)) {
+        q = board[rr][c];
+        if (!q || q.s !== p.s) out.push([rr, c]);
+      }
+      if (crossedRiver(r, p.s)) {
+        [c - 1, c + 1].forEach(function (cc2) {
+          if (!inBoard(r, cc2)) return;
+          var q2 = board[r][cc2];
+          if (!q2 || q2.s !== p.s) out.push([r, cc2]);
+        });
+      }
+      return out;
+    }
+
+    return out;
+  }
+
+  function doMove(mv) {
+    var p = board[mv.fr][mv.fc];
+    var cap = board[mv.tr][mv.tc];
+    board[mv.tr][mv.tc] = p;
+    board[mv.fr][mv.fc] = null;
+    if (p.t === 'K') kpos[p.s] = [mv.tr, mv.tc];
+    return cap;
+  }
+  function undoMove(mv, cap) {
+    var p = board[mv.tr][mv.tc];
+    board[mv.fr][mv.fc] = p;
+    board[mv.tr][mv.tc] = cap;
+    if (p.t === 'K') kpos[p.s] = [mv.fr, mv.fc];
+  }
+
+  /**
+   * 是否被将军。不用「生成对方全部走法再看能否吃到王」这种慢办法，
+   * 而是从王的位置反向射线检查：车/炮/照面、马、兵。搜索里会调用几十万次。
+   */
+  function isChecked(side) {
+    var kp = kpos[side];
+    if (!kp) return true;
+    var kr = kp[0], kc = kp[1], enemy = other(side);
+    var drs = [1, -1, 0, 0], dcs = [0, 0, 1, -1];
+    var d, rr, cc, q, n, i;
+
+    for (d = 0; d < 4; d++) {
+      n = 0; rr = kr + drs[d]; cc = kc + dcs[d];
+      while (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS) {
+        q = board[rr][cc];
+        if (q) {
+          n++;
+          if (n === 1) {
+            if (q.s === enemy) {
+              if (q.t === 'R') return true;
+              if (q.t === 'K' && dcs[d] === 0) return true; // 同列无子 → 将帅照面
+            }
+          } else if (n === 2) {
+            if (q.s === enemy && q.t === 'C') return true;
+            break;
+          }
+        }
+        rr += drs[d]; cc += dcs[d];
+      }
+    }
+
+    var hs = [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[1,-2],[-1,2],[1,2]];
+    for (i = 0; i < 8; i++) {
+      var hr = kr + hs[i][0], hc = kc + hs[i][1];
+      if (!inBoard(hr, hc)) continue;
+      var h = board[hr][hc];
+      if (!h || h.s !== enemy || h.t !== 'N') continue;
+      var legR, legC;
+      if (Math.abs(hs[i][0]) === 2) { legR = hr - hs[i][0] / 2; legC = hc; }
+      else { legR = hr; legC = hc - hs[i][1] / 2; }
+      if (!board[legR] || !board[legR][legC]) return true; // 马腿没堵
+    }
+
+    var f = forward(enemy);
+    var pr = kr - f;
+    if (pr >= 0 && pr < ROWS) {
+      var pp = board[pr][kc];
+      if (pp && pp.s === enemy && pp.t === 'P') return true;
+    }
+    // 兵过河后能横吃，所以同一行的左右两格也要看
+    if (crossedRiver(kr, enemy)) {
+      var ql = inBoard(kr, kc - 1) ? board[kr][kc - 1] : null;
+      var qr = inBoard(kr, kc + 1) ? board[kr][kc + 1] : null;
+      if ((ql && ql.s === enemy && ql.t === 'P') || (qr && qr.s === enemy && qr.t === 'P')) return true;
+    }
+
+    return false;
+  }
+
+  function legalMoves(r, c) {
+    var p = board[r][c];
+    if (!p) return [];
+    var ms = pseudoMoves(r, c), out = [];
+    for (var i = 0; i < ms.length; i++) {
+      var mv = { fr: r, fc: c, tr: ms[i][0], tc: ms[i][1] };
+      var cap = doMove(mv);
+      if (!isChecked(p.s)) out.push([ms[i][0], ms[i][1]]);
+      undoMove(mv, cap);
+    }
+    return out;
+  }
+
+  function hasAnyMove(side) {
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        var p = board[r][c];
+        if (p && p.s === side && legalMoves(r, c).length) return true;
+      }
+    }
+    return false;
+  }
+
+  // ────────── 电脑走棋 ──────────
+  var VAL = { K: 6000, R: 900, N: 400, C: 450, A: 180, B: 180, P: 100 };
+
+  function evaluate(side) {
+    var s = 0;
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        var p = board[r][c];
+        if (!p) continue;
+        var v = VAL[p.t];
+        if (p.t === 'P') {
+          if (crossedRiver(r, p.s)) v += 70;              // 过河兵值钱
+          if (p.s === RED ? r <= 2 : r >= 7) v += 40;      // 逼近对方九宫
+        }
+        if (p.t === 'N' || p.t === 'C') {
+          v += (4 - Math.abs(c - 4)) * 4;                  // 略偏中路
+        }
+        s += (p.s === side ? v : -v);
+      }
+    }
+    return s;
+  }
+
+  function genMoves(side) {
+    var out = [];
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        var p = board[r][c];
+        if (!p || p.s !== side) continue;
+        var ms = pseudoMoves(r, c);
+        for (var i = 0; i < ms.length; i++) {
+          var mv = { fr: r, fc: c, tr: ms[i][0], tc: ms[i][1] };
+          var cap = doMove(mv);
+          if (!isChecked(side)) {
+            out.push({ fr: r, fc: c, tr: ms[i][0], tc: ms[i][1], cv: cap ? VAL[cap.t] : 0 });
+          }
+          undoMove(mv, cap);
+        }
+      }
+    }
+    // 先试吃大子的走法，剪枝效率高很多
+    out.sort(function (a, b) { return b.cv - a.cv; });
+    return out;
+  }
+
+  function search(depth, alpha, beta, side) {
+    if (depth === 0) return evaluate(side);
+    var moves = genMoves(side);
+    if (!moves.length) return -29000 - depth * 10;   // 被将死或困死
+    var best = -99999;
+    for (var i = 0; i < moves.length; i++) {
+      var mv = moves[i];
+      var cap = doMove(mv);
+      var v = -search(depth - 1, -beta, -alpha, other(side));
+      undoMove(mv, cap);
+      if (v > best) best = v;
+      if (v > alpha) alpha = v;
+      if (alpha >= beta) break;
+    }
+    return best;
+  }
+
+  /**
+   * 迭代加深：从 1 层往上加，超过时间预算就收手。
+   *
+   * 为什么不是「固定深度」：纯 2 层搜索看不出「吃了子会被反吃」，
+   * 开局会直接把炮送到车口上骗自己。加一层就正常了，
+   * 但手机性能参差，所以用时间预算兜底——慢的机器少想一层，不会卡死。
+   */
+  function pickMove() {
+    var moves = genMoves(BLACK);
+    if (!moves.length) return null;
+
+    var maxDepth = [0, 2, 3, 4][level];
+    var budget = [0, 100, 500, 1400][level];
+    var t0 = Date.now();
+    var best = moves[0];
+
+    for (var d = 1; d <= maxDepth; d++) {
+      var localBest = null, localScore = -99999, alpha = -99999;
+      for (var i = 0; i < moves.length; i++) {
+        var mv = moves[i];
+        var cap = doMove(mv);
+        var v = -search(d - 1, -99999, -alpha, RED);
+        undoMove(mv, cap);
+        mv.score = v;
+        if (v > localScore) { localScore = v; localBest = mv; }
+        if (v > alpha) alpha = v;
+      }
+      best = localBest;
+      // 本层的好棋排前面，下一层剪枝更狠
+      moves.sort(function (a, b) { return (b.score || 0) - (a.score || 0); });
+      if (Date.now() - t0 > budget) break;
+    }
+
+    if (level === 1) {
+      // 简单档在前几名里随机挑一手，别每局开头都一模一样
+      var top = moves.filter(function (m) { return m.score >= best.score - 60; });
+      if (top.length) return top[Math.floor(Math.random() * top.length)];
+    }
+    return best;
+  }
+
+  /* ────────── 渲染 ────────── */
+  var elMap = {};
+
+  function posLeft(c) { return ((GX + c * STEP) / IMG_W * 100) + '%'; }
+  function posTop(r) { return ((GY + r * STEP) / IMG_H * 100) + '%'; }
+  function pieceW() { return (PSIZE / IMG_W * 100) + '%'; }
+
+  function makeEl(p) {
+    var img = document.createElement('img');
+    img.className = 'pc';
+    img.src = 'img/' + p.s + p.t + '.png';
+    img.style.width = pieceW();
+    elBoard.appendChild(img);
+    elMap[p.i] = img;
+    return img;
+  }
+
+  function rebuild() {
+    // 清掉所有棋子和标记，按当前局面重新挂
+    Array.prototype.slice.call(elBoard.querySelectorAll('.pc, .hint, .mark')).forEach(function (e) {
+      e.parentNode.removeChild(e);
+    });
+    elMap = {};
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        var p = board[r][c];
+        if (!p) continue;
+        var el = makeEl(p);
+        el.style.left = posLeft(c);
+        el.style.top = posTop(r);
+      }
+    }
+    drawMarks();
+  }
+
+  function syncPieces() {
+    // 只动位置，保留元素 → CSS transition 自动做出走子动画
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        var p = board[r][c];
+        if (!p) continue;
+        var el = elMap[p.i] || makeEl(p);
+        el.style.left = posLeft(c);
+        el.style.top = posTop(r);
+      }
+    }
+  }
+
+  function drawMarks() {
+    Array.prototype.slice.call(elBoard.querySelectorAll('.hint, .mark')).forEach(function (e) {
+      e.parentNode.removeChild(e);
+    });
+    if (lastMove) {
+      [[lastMove.fr, lastMove.fc], [lastMove.tr, lastMove.tc]].forEach(function (rc) {
+        var d = document.createElement('div');
+        d.className = 'mark last';
+        d.style.left = posLeft(rc[1]);
+        d.style.top = posTop(rc[0]);
+        elBoard.appendChild(d);
+      });
+    }
+    legal.forEach(function (rc) {
+      var d = document.createElement('div');
+      d.className = 'hint' + (board[rc[0]][rc[1]] ? ' eat' : '');
+      d.style.left = posLeft(rc[1]);
+      d.style.top = posTop(rc[0]);
+      elBoard.appendChild(d);
+    });
+  }
+
+  /**
+   * 被吃的棋子直接由 history 推导，不另外维护数组——
+   * 悔棋、重开只要改 history，这里自然就对了，不会出现「退了两步吃子栏没退」。
+   */
+  function refreshTaken() {
+    var byRed = [], byBlack = [];
+    history.forEach(function (h) {
+      if (!h.cap) return;
+      (h.cap.s === BLACK ? byRed : byBlack).push(h.cap);
+    });
+    [['tkByRed', byRed], ['tkByBlack', byBlack]].forEach(function (pair) {
+      var box = document.getElementById(pair[0]);
+      box.innerHTML = '';
+      var list = pair[1];
+      if (!list.length) {
+        var sp = document.createElement('span');
+        sp.className = 'tkEmpty';
+        sp.textContent = '还没吃子';
+        box.appendChild(sp);
+        return;
+      }
+      // 按子力从大到小排，一眼看得出谁占便宜
+      var order = { K: 0, R: 1, C: 2, N: 3, B: 4, A: 5, P: 6 };
+      list.slice().sort(function (a, b) { return order[a.t] - order[b.t]; }).forEach(function (pc) {
+        var im = document.createElement('img');
+        im.src = 'img/' + pc.s + pc.t + '.png';
+        box.appendChild(im);
+      });
+    });
+  }
+
+  function updateHud() {
+    elTurnDot.className = 'dot ' + (turn === RED ? 'red' : 'black');
+    elTurnText.textContent = over ? '本局结束' : (turn === RED ? '红方走棋' : '黑方走棋');
+    document.getElementById('btnMode').textContent = mode === 'pve' ? '人机' : '双人';
+    document.getElementById('btnMode').classList.toggle('on', mode === 'pve');
+    document.getElementById('btnLevel').textContent = ['', '简单', '普通', '困难'][level];
+    document.getElementById('btnLevel').style.visibility = mode === 'pve' ? 'visible' : 'hidden';
+  }
+
+  function toast(msg) {
+    elToast.textContent = msg;
+    elToast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { elToast.classList.remove('show'); }, 1100);
+  }
+
+  // ────────── 交互 ──────────
+  function tapAt(ev) {
+    if (over || thinking) return;
+    var rect = elBoard.getBoundingClientRect();
+    var x = (ev.clientX - rect.left) / rect.width * IMG_W;
+    var y = (ev.clientY - rect.top) / rect.height * IMG_H;
+    var c = Math.round((x - GX) / STEP);
+    var r = Math.round((y - GY) / STEP);
+    if (!inBoard(r, c)) return;
+    // 离交叉点太远就算点空白，避免误触
+    if (Math.abs(x - (GX + c * STEP)) > STEP * 0.52 || Math.abs(y - (GY + r * STEP)) > STEP * 0.52) return;
+    onTap(r, c);
+  }
+
+  function onTap(r, c) {
+    if (mode === 'pve' && turn !== RED) return;
+    var p = board[r][c];
+
+    if (selected) {
+      var hit = legal.some(function (m) { return m[0] === r && m[1] === c; });
+      if (hit) { play(r, c); return; }
+      if (p && p.s === turn) { choose(r, c); return; }
+      if (p && p.s !== turn) { sfx('goerror'); toast('轮到' + (turn === RED ? '红方' : '黑方')); return; }
+      clearSel();
+      return;
+    }
+
+    if (!p) return;
+    if (p.s !== turn) { sfx('goerror'); toast('这是对方的棋子'); return; }
+    choose(r, c);
+  }
+
+  function choose(r, c) {
+    var ms = legalMoves(r, c);
+    selected = [r, c];
+    legal = ms;
+    sfx('select');
+    Object.keys(elMap).forEach(function (k) { elMap[k].classList.remove('sel'); });
+    var p = board[r][c];
+    if (p && elMap[p.i]) elMap[p.i].classList.add('sel');
+    if (!ms.length) toast('这颗棋子现在走不了');
+    drawMarks();
+  }
+
+  function clearSel() {
+    selected = null;
+    legal = [];
+    Object.keys(elMap).forEach(function (k) { elMap[k].classList.remove('sel'); });
+    drawMarks();
+  }
+
+  function play(tr, tc) {
+    var fr = selected[0], fc = selected[1];
+    var captured = board[tr][tc];
+    var mover = board[fr][fc];
+
+    if (captured) {
+      // 被吃的棋子先淡出再删，不能等 syncPieces 直接抠掉
+      var cel = elMap[captured.i];
+      if (cel) {
+        cel.classList.add('cap');
+        (function (el, id) {
+          setTimeout(function () {
+            if (el.parentNode) el.parentNode.removeChild(el);
+            if (elMap[id] === el) delete elMap[id];
+          }, 200);
+        })(cel, captured.i);
+        delete elMap[captured.i];
+      }
+    }
+
+    history.push({ fr: fr, fc: fc, tr: tr, tc: tc, cap: captured, mover: mover });
+    var mv = { fr: fr, fc: fc, tr: tr, tc: tc };
+    doMove(mv);
+    lastMove = { fr: fr, fc: fc, tr: tr, tc: tc };
+    turn = other(turn);
+    clearSel();
+    syncPieces();
+    refreshTaken();
+    sfx(captured ? 'eat' : 'go');
+
+    var opp = turn;
+    var inChk = isChecked(opp);
+    var any = hasAnyMove(opp);
+
+    if (!any) {
+      setTimeout(function () { finish(inChk); }, 320);
+      return;
+    }
+    if (inChk) {
+      sfx('Man_jiangjun');
+      toast('将 军');
+    }
+    updateHud();
+    checkTurnAuto();
+  }
+
+  function checkTurnAuto() {
+    updateHud();
+    if (over || mode !== 'pve' || turn !== BLACK) return;
+    thinking = true;
+    elTip.textContent = '电脑正在想…';
+    setTimeout(function () {
+      var mv = pickMove();
+      thinking = false;
+      elTip.textContent = '点自己的棋子，再点要去的位置';
+      if (!mv) { finish(true); return; }
+      selected = [mv.fr, mv.fc];
+      legal = [];
+      play(mv.tr, mv.tc);
+    }, 60);
+  }
+
+  function finish(loserInCheck) {
+    over = true;
+    updateHud();
+    var winner = other(turn);
+    var redWins = winner === RED;
+    document.getElementById('overTitle').textContent = redWins ? '红方胜' : '黑方胜';
+    document.getElementById('overSub').textContent = loserInCheck ? '绝杀！' : '困毙，无子可动';
+    elOver.classList.remove('hidden');
+    var humanWon = (mode === 'pve') ? redWins : true;
+    sfx(humanWon ? 'gamewin' : 'gamelose');
+    // 赢 4 颗、输 1 颗。输了也给，是因为输棋之后最容易关掉不玩；
+    // 给一颗「坚持到底」的星，比什么都不给更容易让孩子再来一局。
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        var key = 'ksxiangqi.wins';
+        var wins = parseInt(localStorage.getItem(key) || '0', 10) || 0;
+        if (humanWon) { wins++; localStorage.setItem(key, String(wins)); }
+        window.KidsSafe.award('xiangqi', humanWon ? 4 : 1, wins,
+          (mode === 'pve' ? '人机' : '双人') + ' · ' + (humanWon ? '胜' : '负') + ' ' + wins + ' 局');
+      }
+    } catch (e) {}
+  }
+
+  // ────────── 按钮 ──────────
+  document.getElementById('btnUndo').onclick = function () {
+    if (thinking || !history.length) return;
+    var steps = 1;
+    // 人机模式要退两步，否则退完还是电脑的回合，等于没退
+    if (mode === 'pve' && history.length >= 2) steps = 2;
+    for (var k = 0; k < steps; k++) {
+      var h = history.pop();
+      if (!h) break;
+      undoMove({ fr: h.fr, fc: h.fc, tr: h.tr, tc: h.tc }, h.cap);
+      turn = h.mover.s;
+    }
+    lastMove = history.length ? { fr: history[history.length - 1].fr, fc: history[history.length - 1].fc, tr: history[history.length - 1].tr, tc: history[history.length - 1].tc } : null;
+    over = false;
+    elOver.classList.add('hidden');
+    clearSel();
+    rebuild();
+    updateHud();
+    refreshTaken();
+    if (mode === 'pve' && turn === BLACK) checkTurnAuto();
+  };
+
+  document.getElementById('btnReset').onclick = function () { newGame(); };
+  document.getElementById('btnAgain').onclick = function () { newGame(); };
+
+  document.getElementById('btnMode').onclick = function () {
+    mode = mode === 'pve' ? 'pvp' : 'pve';
+    newGame();
+  };
+
+  document.getElementById('btnLevel').onclick = function () {
+    level = level === 3 ? 1 : level + 1;
+    updateHud();
+    toast(['', '简单', '普通', '困难'][level]);
+  };
+
+  // ────────── 尺寸自适应 ──────────
+  /*
+   * 坑：只靠 window.resize + ResizeObserver 是不够的。
+   * 页面刚加载时 WebView 往往还没被摆到最终大小，layout() 会按一个偏小的盒子算出棋盘尺寸，
+   * 之后尺寸变了却没人再叫它 —— 表现就是「棋盘只占屏幕八成宽，上下各空一大片」。
+   * 所以这里做三层兜底：rAF 连续两次 + load + fonts.ready 主动重排，
+   * 再挂一个「尺寸变了就重排」的轮询，跑满 6 秒后自动停（正式玩的时候不会再变）。
+   */
+  var elStage = document.getElementById('stage');
+  var elArea = document.getElementById('boardArea');
+  var elSide = document.getElementById('side');
+  var elTaken = document.getElementById('taken');
+  var elRules = document.getElementById('rules');
+  var elRulesHead = document.getElementById('rulesHead');
+  var elRulesBody = document.getElementById('rulesBody');
+  var elRulesToggle = document.getElementById('rulesToggle');
+  var landMQ = window.matchMedia ? window.matchMedia('(orientation:landscape)') : null;
+  var rulesFold = false;      // 规则面板是否收起
+  var rulesKey = '';          // 上次定高时依据的条件，条件没变就不重算
+  var lastKey = '';
+  var laying = false;
+
+  /*
+   * 规则面板定高。原则：**棋盘优先**。
+   * 先算出「棋盘按满宽需要多高」，剩下的高度才给规则面板；
+   * 实在挤不出来也至少留 stage 的 18%（否则规则区只剩一条缝，等于没写）。
+   *
+   * 必须做成幂等的：面板高度会改变 boardArea 的高度，而 boardArea 又被 ResizeObserver 盯着，
+   * 每量一次就写一次高度的话，观察者回调会把你推进无休止的两态来回。
+   */
+  function sizeRules() {
+    if (landMQ && landMQ.matches) {
+      elRules.style.height = '';     // 横屏交给 flex，铺满右侧整列
+      rulesKey = '';
+      return;
+    }
+    var stageH = elStage.clientHeight;
+    if (stageH <= 0) return;
+
+    var key = stageH + '|' + elArea.clientWidth + '|' + elTaken.offsetHeight + '|' + (rulesFold ? '1' : '0');
+    if (key === rulesKey && elRules.style.height) return;
+    rulesKey = key;
+
+    var headH = elRulesHead.offsetHeight;
+    if (rulesFold) {
+      elRules.style.height = headH + 'px';
+      return;
+    }
+
+    var pad = 8;
+    var boardFullH = Math.ceil(IMG_H * (elArea.clientWidth - pad) / IMG_W) + pad;   // 满宽时的棋盘高
+    var leftover = stageH - elTaken.offsetHeight - boardFullH;
+    var budget = Math.max(leftover, Math.round(stageH * 0.18));
+
+    elRules.style.height = 'auto';           // 先量「全展开要多高」
+    var full = elRules.offsetHeight;
+    elRules.style.height = Math.max(headH, Math.min(full, budget)) + 'px';
+  }
+
+  function layout() {
+    if (laying) return;                      // sizeRules 改样式会反过来触发观察者，防重入
+    laying = true;
+    try {
+      sizeRules();
+      var pad = 4;
+      var availW = elArea.clientWidth - pad * 2;
+      var availH = elArea.clientHeight - pad * 2;
+      if (availW <= 0 || availH <= 0) return;
+      var key = availW + 'x' + availH;
+      if (key === lastKey) return;           // 盒子没变就别白跑
+      lastKey = key;
+      var scale = Math.min(availW / IMG_W, availH / IMG_H);
+      var w = Math.floor(IMG_W * scale);
+      var h = Math.floor(IMG_H * scale);
+      elBoard.style.width = w + 'px';
+      elBoard.style.height = h + 'px';
+    } finally {
+      laying = false;
+    }
+  }
+
+  function relayout() { lastKey = ''; layout(); }
+
+  elRulesHead.addEventListener('click', function () {
+    rulesFold = !rulesFold;
+    elRules.classList.toggle('fold', rulesFold);
+    elRulesToggle.textContent = rulesFold ? '展开' : '收起';
+    relayout();
+  });
+  elBoard.addEventListener('pointerdown', function (ev) {
+    ev.preventDefault();
+    tapAt(ev);
+  }, { passive: false });
+
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', function () { setTimeout(relayout, 120); });
+  if (landMQ && landMQ.addEventListener) landMQ.addEventListener('change', relayout);
+
+  /*
+   * 顶栏按钮换行会改变 stage 的高度，光靠 resize 事件收不到；
+   * 规则面板高度变化又反过来影响 boardArea。两处都观察，谁变都重排。
+   */
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function () { layout(); });
+    ro.observe(elStage);
+    ro.observe(elArea);
+    ro.observe(elSide);
+  }
+
+  // 启动时多叫几次：WebView 的盒子通常在 load 之后才最终确定
+  layout();
+  requestAnimationFrame(function () {
+    layout();
+    requestAnimationFrame(relayout);
+  });
+  window.addEventListener('load', relayout);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(relayout).catch(function () { });
+  }
+  // 最后一道兜底：6 秒内每隔 400ms 比一次盒子，变了才重排
+  // （只比盒子，不碰规则面板 —— 反复给面板定高会把规则区的滚动位置顶回顶部）
+  var watchLeft = 15;
+  var watchTimer = setInterval(function () {
+    if (--watchLeft <= 0) { clearInterval(watchTimer); return; }
+    var pad = 4;
+    var k = (elArea.clientWidth - pad * 2) + 'x' + (elArea.clientHeight - pad * 2);
+    if (k !== lastKey) { lastKey = ''; layout(); }
+  }, 400);
+
+  // ────────── 测试钩子（无头浏览器跑规则断言用）──────────
+  window.__xq = {
+    board: function () { return board; },
+    setBoard: function (b) {
+      board = b;
+      kpos = { r: null, b: null };
+      for (var r = 0; r < ROWS; r++) {
+        for (var c = 0; c < COLS; c++) {
+          var p = board[r][c];
+          if (p && p.t === 'K') kpos[p.s] = [r, c];
+        }
+      }
+      lastMove = null; selected = null; legal = [];
+    },
+    legalMoves: legalMoves,
+    pseudoMoves: pseudoMoves,
+    isChecked: isChecked,
+    hasAnyMove: hasAnyMove,
+    evaluate: evaluate,
+    pickMove: pickMove,
+    turn: function () { return turn; },
+    reset: newGame
+  };
+
+  seq = 0;
+  newGame();
+  layout();
+  setTimeout(layout, 60);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "儿童安全桌面"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "给小朋友的专属空间"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "儿童安全桌面"
+    },
+    {
+      "name": "reason_internet",
+      "value": "从家长自建服务器拉取已审核的故事内容"
+    }
+  ]
+}

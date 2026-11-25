@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>24 点</title>
+<style>
+  /*
+   * 24 点。四张牌，用 + − × ÷ 和括号凑出 24，每张牌只用一次。
+   *
+   * 全部用「分数」做运算，不用浮点：3 8 3 8 这种题的唯一解是 8/(3-8/3)，
+   * 浮点算出来是 23.999999999999996，判定就会失败 —— 孩子算对了反而不给过。
+   * 分数用 {n,d} 表示并随时约分，比较时比 n === 24*d。
+   */
+  :root{
+    --cream:#FFF7EF; --ink:#4A3B32; --muted:#9B8574; --line:#EFE3D6;
+    --teal:#2AA7A0; --orange:#F0862F; --gold:#FFD79A;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden; background:var(--cream);
+    font-family:-apple-system,"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink); user-select:none;
+  }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column;
+    padding:10px 14px 14px; gap:8px;
+    background:
+      radial-gradient(circle at 12% 8%, #FFE7C9 0%, rgba(255,231,201,0) 42%),
+      radial-gradient(circle at 88% 92%, #E4F5F4 0%, rgba(228,245,244,0) 46%),
+      var(--cream);
+  }
+
+  /* ── 顶栏 ── */
+  .top{ display:flex; align-items:center; gap:8px; flex:none; }
+  .lvls{ display:flex; gap:5px; }
+  .lv{
+    font-size:12px; padding:6px 11px; border-radius:12px; border:none;
+    background:#FFFFFF; color:#8A7A6B; box-shadow:0 2px 0 #EADFD2;
+  }
+  .lv.on{ background:var(--teal); color:#fff; box-shadow:0 2px 0 #1C807A; }
+  .spacer{ flex:1; }
+  .stat{ font-size:12px; color:var(--muted); text-align:right; line-height:1.35; }
+  .stat b{ color:var(--ink); font-size:14px; }
+
+  /* ── 算式轨迹 ── */
+  .trail{
+    flex:none; min-height:30px; display:flex; align-items:center; justify-content:center;
+    font-size:13px; color:#A1907F; padding:2px 8px; text-align:center;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .trail b{ color:var(--teal); font-weight:700; }
+
+  /* ── 牌桌 ── */
+  .table{
+    flex:1; min-height:0; display:grid; gap:10px;
+    grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
+    place-items:stretch;
+  }
+  /*
+   * 注意：这里**不能**写 overflow:hidden。
+   * ArkWeb（鸿蒙 Web 组件）上「border-radius + overflow:hidden」这个圆角裁剪掩码会画错，
+   * 表现是卡片里的数字整块丢掉 —— 四张牌只有被选中（带 translateY，单独成层）的那张画得出来，
+   * 剩下三张是白板，还顺带在屏幕上拉出一条斜线（裁剪掩码退化的边）。
+   * 数字本身靠下面的字号分档保证不溢出，不需要裁剪。
+   */
+  .card{
+    position:relative; display:flex; align-items:center; justify-content:center;
+    border-radius:22px;
+    background:#FFFFFF; box-shadow:0 5px 0 #E6D6C4, 0 10px 22px rgba(150,110,70,.10);
+    border:3px solid transparent; transition:transform .12s, border-color .12s, opacity .2s;
+  }
+  .card::after{
+    /* 牌面右下角的小角标，纯装饰，让孩子一眼看出这是「牌」 */
+    content:''; position:absolute; right:10px; bottom:10px; width:16px; height:16px;
+    border-radius:50%; background:#FBF2E7;
+  }
+  .card.sel{ border-color:var(--teal); transform:translateY(-3px); }
+  .card.hintA{ border-color:var(--orange); box-shadow:0 0 0 4px rgba(240,134,47,.18),0 5px 0 #E6D6C4; }
+  .card.used{ opacity:.25; pointer-events:none; }
+  .card .num{
+    font-size:min(16vw,74px); font-weight:800; color:var(--ink); letter-spacing:1px;
+    line-height:1;
+  }
+  .card .num.frac{ font-size:min(9.5vw,44px); }
+  /* 卡片不再裁剪，三位数以上靠缩字号保证不出框 —— 合并几次很容易冒出 100+ 的数 */
+  .card .num.w3{ font-size:min(11vw,52px); letter-spacing:0; }
+  .card .num.w4{ font-size:min(8.2vw,38px); letter-spacing:0; }
+  .card .num.frac.w3{ font-size:min(6.6vw,30px); }
+  .card .num.frac.w4{ font-size:min(5.2vw,24px); }
+  .card .fracWrap{ display:flex; flex-direction:column; align-items:center; line-height:1; }
+  .card .fracWrap .bar{ width:100%; height:3px; background:var(--ink); border-radius:2px; margin:3px 0; }
+  .card.pop{ animation:pop .26s ease-out; }
+  @keyframes pop{ 0%{ transform:scale(.72); opacity:.3 } 100%{ transform:scale(1); opacity:1 } }
+
+  /* ── 运算符 ── */
+  .ops{ flex:none; display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
+  .op{
+    height:min(13vw,56px); border-radius:18px; border:none; font-size:min(6.4vw,26px);
+    font-weight:800; color:#7A6555; background:#FFFFFF; box-shadow:0 4px 0 #E6D6C4;
+    transition:transform .08s;
+  }
+  .op:active{ transform:translateY(3px); box-shadow:0 1px 0 #E6D6C4; }
+  .op.on{ background:var(--orange); color:#fff; box-shadow:0 4px 0 #C4550F; }
+
+  /* ── 底部 ── */
+  .bottom{ flex:none; display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; }
+  .btn{
+    height:44px; border-radius:16px; border:none; font-size:14px; font-weight:600;
+    background:#FFFFFF; color:#7A6555; box-shadow:0 3px 0 #E6D6C4;
+  }
+  .btn.main{ background:var(--teal); color:#fff; box-shadow:0 3px 0 #1C807A; }
+  .btn:disabled{ opacity:.45; }
+
+  /* ── 胜利浮层 ── */
+  .win{
+    position:absolute; inset:0; display:none; place-items:center; padding:24px;
+    background:rgba(74,59,50,.55); backdrop-filter:blur(2px); z-index:20;
+  }
+  .win.on{ display:grid; }
+  .winBox{
+    width:100%; max-width:340px; background:#FFFDF8; border-radius:26px; padding:24px 20px;
+    text-align:center; box-shadow:0 18px 40px rgba(80,50,20,.28);
+    animation:pop .26s ease-out;
+  }
+  .winBox .big{ font-size:44px; line-height:1.1; }
+  .winBox h2{ margin:8px 0 4px; font-size:22px; }
+  .winBox .eq{
+    font-size:15px; color:var(--teal); font-weight:700; margin:6px 0 14px;
+    word-break:break-all;
+  }
+  .winBox .stars{ font-size:15px; color:var(--orange); font-weight:700; margin-bottom:14px; }
+  .winBox .row{ display:flex; gap:10px; }
+  .winBox .row .btn{ flex:1; }
+
+  /* 横屏：牌摆一行，左右两侧留给运算符和按钮 —— 竖着堆会被压扁 */
+  @media (orientation:landscape){
+    #app{ padding:8px 18px 10px; gap:6px; }
+    .table{ grid-template-columns:repeat(4,1fr); grid-template-rows:1fr; }
+    .card .num{ font-size:min(9vh,64px); }
+    .card .num.frac{ font-size:min(5.4vh,38px); }
+    .ops{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .op{ height:min(9vh,50px); }
+    .bottom{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .bottom .btn{ height:min(8vh,44px); }
+  }
+  @media (max-height:430px){
+    .trail{ min-height:22px; font-size:12px; }
+    .card .num{ font-size:min(13vh,58px); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <div class="lvls" id="lvls">
+      <button class="lv on" data-lv="0">简单</button>
+      <button class="lv" data-lv="1">标准</button>
+      <button class="lv" data-lv="2">挑战</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="stat">
+      <div>已解 <b id="solved">0</b> 题</div>
+      <div id="timer">00:00</div>
+    </div>
+  </div>
+
+  <div class="trail" id="trail">用 4 张牌算出 24，每张牌只能用一次</div>
+
+  <div class="table" id="table"></div>
+
+  <div class="ops" id="ops">
+    <button class="op" data-op="+">+</button>
+    <button class="op" data-op="-">−</button>
+    <button class="op" data-op="*">×</button>
+    <button class="op" data-op="/">÷</button>
+  </div>
+
+  <div class="bottom">
+    <button class="btn" id="btnUndo">↩ 撤销</button>
+    <button class="btn" id="btnHint">💡 提示</button>
+    <button class="btn" id="btnNew">换一题</button>
+  </div>
+</div>
+
+<div class="win" id="win">
+  <div class="winBox">
+    <div class="big">🎉</div>
+    <h2>凑出 24 啦！</h2>
+    <div class="eq" id="winEq"></div>
+    <div class="stars" id="winStars"></div>
+    <div class="row">
+      <button class="btn" id="winStay">看看牌</button>
+      <button class="btn main" id="winNext">下一题</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ══════════════ 分数运算 ══════════════
+  // {n, d}：n 分子，d 分母（恒 > 0）。所有中间结果都约分，
+  // 否则 8/(3-8/3) 会变成 8/(1/3) → 24 之类要靠浮点容差才能判等的情况。
+  function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { var t = a % b; a = b; b = t; }
+    return a || 1;
+  }
+  function F(n, d) {
+    if (d === 0) return null;              // 除以 0 直接判非法，不进牌堆
+    if (d < 0) { n = -n; d = -d; }
+    var g = gcd(n, d);
+    return { n: n / g, d: d / g };
+  }
+  function is24(f) { return f.d === 1 && f.n === 24; }
+  function fNum(f) { return f.d === 1 ? String(f.n) : f.n + '/' + f.d; }
+
+  function apply(a, b, op) {
+    if (op === '+') return F(a.n * b.d + b.n * a.d, a.d * b.d);
+    if (op === '-') return F(a.n * b.d - b.n * a.d, a.d * b.d);
+    if (op === '*') return F(a.n * b.n, a.d * b.d);
+    if (op === '/') return b.n === 0 ? null : F(a.n * b.d, a.d * b.n);
+    return null;
+  }
+  var SIGN = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+  // ══════════════ 出题：保证有解 ══════════════
+  /**
+   * 把一个数集所有可能的合成结果枚举一遍，返回第一个凑出 24 的完整表达式。
+   * 四个数只有 C(4,2)*4*C(3,2)*4*C(2,2)*4 = 7680 种走法，穷举毫秒级。
+   */
+  function solveOnce(list) {
+    if (list.length === 1) {
+      return is24(list[0].v) ? list[0].e : null;
+    }
+    for (var i = 0; i < list.length; i++) {
+      for (var j = 0; j < list.length; j++) {
+        if (i === j) continue;
+        var rest = [];
+        for (var k = 0; k < list.length; k++) {
+          if (k !== i && k !== j) rest.push(list[k]);
+        }
+        var ops = ['+', '-', '*', '/'];
+        for (var o = 0; o < 4; o++) {
+          // 加法和乘法交换律，只算一个方向，省掉一半
+          if ((ops[o] === '+' || ops[o] === '*') && i > j) continue;
+          var v = apply(list[i].v, list[j].v, ops[o]);
+          if (v === null) continue;
+          var expr = '(' + list[i].e + SIGN[ops[o]] + list[j].e + ')';
+          rest.push({ v: v, e: expr });
+          var got = solveOnce(rest);
+          if (got) return got;
+          rest.pop();
+        }
+      }
+    }
+    return null;
+  }
+
+  /** 数一数有多少种解法，用来分难度：解多的当简单题。 */
+  function countSolutions(nums, cap) {
+    var list = [];
+    for (var i = 0; i < 4; i++) list.push({ v: F(nums[i], 1), e: String(nums[i]) });
+    var found = 0;
+    (function walk(arr) {
+      if (found >= cap) return;
+      if (arr.length === 1) {
+        if (is24(arr[0].v)) found++;
+        return;
+      }
+      for (var i = 0; i < arr.length; i++) {
+        for (var j = 0; j < arr.length; j++) {
+          if (i === j) continue;
+          var rest = [];
+          for (var k = 0; k < arr.length; k++) {
+            if (k !== i && k !== j) rest.push(arr[k]);
+          }
+          var ops = ['+', '-', '*', '/'];
+          for (var o = 0; o < 4; o++) {
+            if ((ops[o] === '+' || ops[o] === '*') && i > j) continue;
+            var v = apply(arr[i].v, arr[j].v, ops[o]);
+            if (v === null) continue;
+            rest.push({ v: v, e: 'x' });
+            walk(rest);
+            rest.pop();
+            if (found >= cap) return;
+          }
+        }
+      }
+    })(list);
+    return found;
+  }
+
+  /** 难度：0 简单（1-9，解多）/ 1 标准（1-13）/ 2 挑战（1-13，解少）。 */
+  function makePuzzle(level) {
+    var fallback = null;
+    for (var tries = 0; tries < 400; tries++) {
+      var max = level === 0 ? 9 : 13;
+      var nums = [];
+      for (var i = 0; i < 4; i++) nums.push(1 + Math.floor(Math.random() * max));
+      var list = [];
+      for (var j = 0; j < 4; j++) list.push({ v: F(nums[j], 1), e: String(nums[j]) });
+      var expr = solveOnce(list);
+      if (!expr) continue;
+      var cnt = countSolutions(nums, 6);
+      if (fallback === null) fallback = { nums: nums, expr: expr, count: cnt };
+      if (level === 0 && cnt < 3) continue;
+      if (level === 2 && cnt > 2) continue;
+      return { nums: nums, expr: expr, count: cnt };
+    }
+    // 挑不出符合难度的就退到「有解就行」：宁可这次简单一点，也不能让孩子等。
+    if (fallback) return fallback;
+    return { nums: [3, 8, 3, 8], expr: '(8/(3-(8/3)))', count: 1 };
+  }
+
+  // ══════════════ 状态 ══════════════
+  var level = 0;
+  var cards = [];        // {id, v:{n,d}, e:'表达式', dead:false}
+  var picked = [];       // 选中的牌 id，最多 2 个
+  var op = null;
+  var steps = [];        // 撤销栈：每一步存合并前整个牌堆的快照
+  var puzzle = null;
+  var solved = 0;
+  var secs = 0;
+  var tick = null;
+  var finished = false;
+  var nextId = 0;
+  var hintUsed = false;
+  var pendingWin = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function newPuzzle() {
+    finished = false;
+    pendingWin = false;
+    hintUsed = false;
+    op = null;
+    picked = [];
+    steps = [];
+    $('win').classList.remove('on');
+    puzzle = makePuzzle(level);
+    cards = [];
+    for (var i = 0; i < 4; i++) {
+      cards.push({ id: nextId++, v: F(puzzle.nums[i], 1), e: String(puzzle.nums[i]), dead: false });
+    }
+    // 牌面顺序打散一次：出题器给的是原始顺序，直接摆会让人一眼看出规律
+    shuffle(cards);
+    $('trail').innerHTML = '用这 4 张牌算出 <b>24</b>，每张牌只能用一次';
+    draw();
+    restartTimer();
+  }
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+  }
+
+  function live() {
+    var out = [];
+    for (var i = 0; i < cards.length; i++) {
+      if (!cards[i].dead) out.push(cards[i]);
+    }
+    return out;
+  }
+
+  // 数值位数越多字号越小：卡片没有 overflow 裁剪（ArkWeb 上会丢字），只能靠字号自己收敛
+  function sizeCls(a, b) {
+    var n = Math.max(String(a).replace('-', '').length, String(b).replace('-', '').length);
+    return n >= 4 ? ' w4' : (n >= 3 ? ' w3' : '');
+  }
+
+  function draw() {
+    var box = $('table');
+    var list = live();
+    box.innerHTML = '';
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      var d = document.createElement('div');
+      d.className = 'card';
+      if (picked.indexOf(c.id) >= 0) d.className += ' sel';
+      if (pendingWin) d.className += ' pop';
+      var f = c.v;
+      if (f.d === 1) {
+        d.innerHTML = '<div class="num' + sizeCls(f.n, f.n) + '">' + f.n + '</div>';
+      } else {
+        d.innerHTML = '<div class="num frac' + sizeCls(f.n, f.d) +
+          '"><div class="fracWrap"><div>' + f.n +
+          '</div><div class="bar"></div><div>' + f.d + '</div></div></div>';
+      }
+      (function (id) {
+        d.addEventListener('click', function () { pick(id); });
+      })(c.id);
+      box.appendChild(d);
+    }
+    // 牌少于 4 张时网格留白，用占位让别人一眼看出「还剩几张」
+    for (var p = list.length; p < 4; p++) {
+      var ph = document.createElement('div');
+      ph.className = 'card';
+      ph.style.background = 'transparent';
+      ph.style.boxShadow = 'none';
+      ph.style.border = '3px dashed #EFE3D6';
+      box.appendChild(ph);
+    }
+    refreshBtns();
+  }
+
+  function refreshBtns() {
+    var lv = document.querySelectorAll('.lv');
+    for (var i = 0; i < lv.length; i++) {
+      lv[i].classList.toggle('on', parseInt(lv[i].dataset.lv, 10) === level);
+    }
+    $('solved').textContent = String(solved);
+    $('btnUndo').disabled = steps.length === 0;
+    $('btnHint').disabled = finished;
+  }
+
+  function cardOf(id) {
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].id === id) return cards[i];
+    }
+    return null;
+  }
+
+  function pick(id) {
+    if (finished) return;
+    var c = cardOf(id);
+    if (!c || c.dead) return;
+    // 已经选过这一张 → 取消选中
+    var at = picked.indexOf(id);
+    if (at >= 0) {
+      picked.splice(at, 1);
+      draw();
+      return;
+    }
+    // 先选运算符再选牌：两张都有了下标就立刻算
+    if (picked.length === 1 && op) {
+      combine(picked[0], id);
+      return;
+    }
+    picked.push(id);
+    if (picked.length > 2) picked.shift();
+    draw();
+  }
+
+  function setOp(o) {
+    if (finished) return;
+    op = (op === o) ? null : o;
+    var btns = document.querySelectorAll('.op');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('on', btns[i].dataset.op === op);
+    }
+    if (picked.length === 2 && op) {
+      combine(picked[0], picked[1]);
+    } else if (picked.length === 0) {
+      flash('先点一张牌，再点运算符号');
+    }
+    draw();
+  }
+
+  function combine(idA, idB) {
+    if (idA === idB) return;
+    var a = cardOf(idA), b = cardOf(idB);
+    if (!a || !b || a.dead || b.dead) return;
+    if (!op) { flash('先选一个运算符号'); return; }
+    var v = apply(a.v, b.v, op);
+    if (v === null) {
+      flash('不能除以 0 哦');
+      op = null;
+      picked = [];
+      draw();
+      return;
+    }
+    steps.push({ cards: cloneCards(), picked: picked.slice(), op: op });
+    var e = '(' + a.e + SIGN[op] + b.e + ')';
+    a.dead = true;
+    b.dead = true;
+    cards.push({ id: nextId++, v: v, e: e, dead: false });
+    picked = [];
+    op = null;
+    var btns = document.querySelectorAll('.op');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+
+    var left = live();
+    if (left.length === 1) {
+      if (is24(left[0].v)) {
+        win(left[0].e);
+        return;
+      }
+      // 合到只剩一张但不是 24：不给过，提示撤销。这是 24 点里最常见的卡点
+      flash('结果是 ' + fNum(left[0].v) + '，不是 24，撤销一步再试试');
+      draw();
+      return;
+    }
+    $('trail').innerHTML = '当前 <b>' + fNum(v) + '</b>　' + left.length + ' 张牌';
+    draw();
+  }
+
+  function cloneCards() {
+    var out = [];
+    for (var i = 0; i < cards.length; i++) {
+      var c = cards[i];
+      out.push({ id: c.id, v: { n: c.v.n, d: c.v.d }, e: c.e, dead: c.dead });
+    }
+    return out;
+  }
+
+  function undo() {
+    if (steps.length === 0 || finished) return;
+    var s = steps.pop();
+    cards = s.cards;
+    picked = [];
+    op = null;
+    var btns = document.querySelectorAll('.op');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+    $('trail').innerHTML = '撤销了一步，继续';
+    draw();
+  }
+
+  /**
+   * 「下一步」求解：从**当前牌面**出发，找一对能继续走向 24 的牌和符号。
+   *
+   * 为什么不用「直接展示答案的第一步」：孩子往往已经自己合了一张，
+   * 这时原答案的第一步早就用不上了，提示会指向两张不存在的牌。
+   */
+  function firstStep(list) {
+    if (list.length === 1) return is24(list[0].v) ? [] : null;
+    for (var i = 0; i < list.length; i++) {
+      for (var j = 0; j < list.length; j++) {
+        if (i === j) continue;
+        var rest = [];
+        for (var k = 0; k < list.length; k++) {
+          if (k !== i && k !== j) rest.push(list[k]);
+        }
+        var ops = ['+', '-', '*', '/'];
+        for (var o = 0; o < 4; o++) {
+          if ((ops[o] === '+' || ops[o] === '*') && i > j) continue;
+          var v = apply(list[i].v, list[j].v, ops[o]);
+          if (v === null) continue;
+          rest.push({ v: v, e: 'x' });
+          var sub = firstStep(rest);
+          rest.pop();
+          if (sub !== null) {
+            return [{ a: list[i].v, b: list[j].v, op: ops[o] }].concat(sub);
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function hint() {
+    if (finished) return;
+    hintUsed = true;
+    var left = live();
+    var plan = firstStep(left);
+    if (plan === null) {
+      flash('这组牌现在没解了，撤销一步或者换一题吧');
+      return;
+    }
+    if (plan.length === 0) {
+      flash('已经凑出 24 了');
+      return;
+    }
+    var step = plan[0];
+    var nodes = document.querySelectorAll('#table .card');
+    var hit = 0;
+    for (var i = 0; i < left.length && hit < 2; i++) {
+      var c = left[i].v;
+      if (c.n === step.a.n && c.d === step.a.d) {
+        if (nodes[i]) nodes[i].className += ' hintA';
+        hit++;
+      } else if (c.n === step.b.n && c.d === step.b.d) {
+        if (nodes[i]) nodes[i].className += ' hintA';
+        hit++;
+      }
+    }
+    flash('先算 ' + fNum(step.a) + ' ' + SIGN[step.op] + ' ' + fNum(step.b));
+  }
+
+  var flashTimer = null;
+  function flash(text) {
+    var t = $('trail');
+    t.textContent = text;
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () {
+      if (!finished) t.innerHTML = '每张牌只能用一次';
+    }, 2600);
+  }
+
+  function win(expr) {
+    finished = true;
+    solved++;
+    pendingWin = true;
+    if (tick) { clearInterval(tick); tick = null; }
+    $('winEq').textContent = expr.replace(/^\(|\)$/g, '') + ' = 24';
+    // 星星：第一次就做出来给 2 颗，用了提示给 1 颗，换题不算
+    var stars = hintUsed ? 1 : 2;
+    $('winStars').textContent = '⭐ +' + stars;
+    report(stars, solved, expr.replace(/^\(|\)$/g, ''));
+    $('win').classList.add('on');
+    draw();
+    refreshBtns();
+  }
+
+  /**
+   * 上报给桌面。桥可能不在（电脑上直接用浏览器跑），所以一定要 try。
+   * 第二个参数是「本局解出题数」——排行榜按星星排，这个数字只是成绩说明。
+   */
+  function report(stars, score, expr) {
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        var lvName = ['简单', '标准', '挑战'][level];
+        window.KidsSafe.award('game24', stars, score, lvName + ' · ' + expr);
+      }
+    } catch (e) { /* 桥不存在就算了，别让游戏挂掉 */ }
+  }
+
+  function restartTimer() {
+    if (tick) clearInterval(tick);
+    secs = 0;
+    $('timer').textContent = '00:00';
+    tick = setInterval(function () {
+      if (finished) return;
+      secs++;
+      var m = Math.floor(secs / 60), s = secs % 60;
+      $('timer').textContent = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+    }, 1000);
+  }
+
+  // ══════════════ 事件 ══════════════
+  var ops = document.querySelectorAll('.op');
+  for (var i = 0; i < ops.length; i++) {
+    (function (btn) {
+      btn.addEventListener('click', function () { setOp(btn.dataset.op); });
+    })(ops[i]);
+  }
+
+  var lvs = document.querySelectorAll('.lv');
+  for (var j = 0; j < lvs.length; j++) {
+    (function (btn) {
+      btn.addEventListener('click', function () {
+        var lv = parseInt(btn.dataset.lv, 10);
+        if (lv === level && !finished) return;
+        level = lv;
+        newPuzzle();
+        refreshBtns();
+      });
+    })(lvs[j]);
+  }
+
+  $('btnUndo').addEventListener('click', undo);
+  $('btnHint').addEventListener('click', hint);
+  $('btnNew').addEventListener('click', function () { newPuzzle(); });
+  $('winNext').addEventListener('click', function () { newPuzzle(); });
+  $('winStay').addEventListener('click', function () {
+    $('win').classList.remove('on');
+    finished = true;
+  });
+
+  // 键盘（电脑上调试用）
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === '+' || ev.key === '=') setOp('+');
+    else if (ev.key === '-') setOp('-');
+    else if (ev.key === '*') setOp('*');
+    else if (ev.key === '/') setOp('/');
+    else if (ev.key === 'z' || ev.key === 'Z') undo();
+    else if (ev.key === '1' || ev.key === '2' || ev.key === '3' || ev.key === '4') {
+      var list = live();
+      var n = parseInt(ev.key, 10) - 1;
+      if (list[n]) pick(list[n].id);
+    }
+  });
+
+  window.addEventListener('orientationchange', function () { setTimeout(draw, 120); });
+
+  // ── 测试钩子 ──
+  window.__g24 = {
+    state: function () {
+      return {
+        level: level, solved: solved, finished: finished, hintUsed: hintUsed,
+        nums: puzzle ? puzzle.nums.slice() : [], expr: puzzle ? puzzle.expr : '',
+        cards: live().map(function (c) {
+          return { id: c.id, n: c.v.n, d: c.v.d, e: c.e };
+        }),
+        picked: picked.slice(), op: op, steps: steps.length
+      };
+    },
+    frac: F,
+    apply: apply,
+    is24: is24,
+    solve: function (nums) {
+      var list = [];
+      for (var i = 0; i < nums.length; i++) list.push({ v: F(nums[i], 1), e: String(nums[i]) });
+      return solveOnce(list);
+    },
+    count: function (nums, cap) { return countSolutions(nums, cap || 6); },
+    make: function (lv) { return makePuzzle(lv || 0); },
+    pick: pick,
+    setOp: setOp,
+    combine: combine,
+    undo: undo,
+    hint: hint,
+    next: newPuzzle,
+    setLevel: function (lv) { level = lv; newPuzzle(); refreshBtns(); },
+    // 测试用：直接摆一副指定的牌，免得断言去赌随机出题
+    load: function (nums) {
+      finished = false;
+      pendingWin = false;
+      hintUsed = false;
+      op = null;
+      picked = [];
+      steps = [];
+      $('win').classList.remove('on');
+      var list = [];
+      for (var i = 0; i < nums.length; i++) list.push({ v: F(nums[i], 1), e: String(nums[i]) });
+      puzzle = { nums: nums.slice(), expr: solveOnce(list), count: 0 };
+      cards = [];
+      for (var j = 0; j < nums.length; j++) {
+        cards.push({ id: nextId++, v: F(nums[j], 1), e: String(nums[j]), dead: false });
+      }
+      draw();
+      restartTimer();
+    },
+    win: win
+  };
+
+  newPuzzle();
+  refreshBtns();
+})();
+</script>
+</body>
+</html>

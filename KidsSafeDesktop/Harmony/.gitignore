@@ -1,0 +1,22 @@
+# DevEco Studio / hvigor
+/.hvigor/
+/.idea/
+/build/
+/oh_modules/
+/local.properties
+**/build/
+**/oh_modules/
+*.hap
+*.hsp
+*.har
+*.p12
+*.cer
+*.p7b
+
+# DevEco 预览器与增量编译产物（每次构建都会重写，不入库）
+/.preview/
+**/.preview/
+/.cxx/
+**/.cxx/
+**/.test/
+**/oh_modules/.cache/

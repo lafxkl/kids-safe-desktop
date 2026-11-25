@@ -1,0 +1,30 @@
+/* 儿童端安全层（由 tools/build-kittens-game.js 生成） */
+#devPanel,
+#reset-link,
+#wipe-link,
+#getTheApp-link,
+#newVersion,
+#devModeButton,
+#footerLinks,
+#footer,
+.links-block,
+#topBar a[target="_blank"] {
+  display: none !important;
+}
+
+/* 顶栏里的外站链接（官网 / 备用站 / 汉化组）一律不显示 */
+#topBar a[href^="http"] {
+  display: none !important;
+}
+
+/* 日志里的外链同样不该出现 */
+#gameLog a[href^="http"] {
+  display: none !important;
+}
+
+/* 触屏上长按会弹出「复制/搜索」菜单，游戏里没用还容易误触 */
+#game, #game * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

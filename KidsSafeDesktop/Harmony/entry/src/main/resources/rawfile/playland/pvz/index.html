@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>植物大战僵尸</title>
+<style>
+  * { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #17240F;
+    font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  }
+  /* 整个界面装在一个「横屏画布」里：#app 的尺寸由 JS 按横屏逻辑设置，
+     竖屏时再整体旋转 90°（见 layout）。这样草坪能用满长边，
+     而不是被 746×513 的原图比例压成屏幕中间细细一条。 */
+  #app {
+    position: absolute; left: 0; top: 0;
+    display: flex; flex-direction: column;
+    transform-origin: 0 0; overflow: hidden;
+    background: #17240F;
+  }
+
+  /* ── 顶栏：阳光 + 波次 + 重开 ── */
+  header {
+    flex: none; display: flex; align-items: center; gap: 8px;
+    height: 38px; box-sizing: border-box;
+    padding: 0 10px;
+    padding-left: calc(10px + env(safe-area-inset-left));
+    padding-right: calc(10px + env(safe-area-inset-right));
+    background: #3E2A16;
+  }
+  /* 旋转后「画面顶边」就是手机右侧边框，摄像头挖孔在那条边上 */
+  #app.rot header { padding-right: calc(10px + env(safe-area-inset-top)); }
+  /* 阳光计数：给足高度做成正经胶囊（原来只有图标高度 + 2px padding，
+     radius:999px 一压就成了一颗扁椭圆） */
+  .sunBox {
+    display: flex; align-items: center; gap: 7px;
+    height: 28px; box-sizing: border-box;
+    padding: 0 14px 0 4px;
+    background: #F2DE9B; border-radius: 14px;
+    box-shadow: inset 0 0 0 2px #C9A94E;
+  }
+  .sunBox img { width: 22px; height: 22px; }
+  .sunBox b { font-size: 18px; color: #6B4A18; min-width: 38px; line-height: 1; }
+  .spacer { flex: 1; }
+  .waveInfo { font-size: 12px; color: #E8D6A8; }
+  button {
+    font: inherit; font-weight: 700; color: #4A3212; background: #F2DE9B;
+    border: none; border-radius: 11px; padding: 6px 12px; min-height: 32px;
+    box-shadow: 0 2px 0 #A8834A;
+  }
+  button:active { transform: translateY(1px); box-shadow: 0 1px 0 #A8834A; }
+
+  /* ── 种子栏 ── */
+  #seeds {
+    flex: none; display: flex; gap: 6px; padding: 4px 6px;
+    background: #5A3E20; overflow-x: auto;
+  }
+  .card {
+    position: relative; flex: none; width: 58px;
+    background: #E9D9AE; border-radius: 8px; padding: 3px 3px 0;
+    box-shadow: inset 0 0 0 2px #B79B62;
+    transition: transform .1s;
+  }
+  .card img { width: 100%; height: 40px; object-fit: contain; display: block; }
+  .card .cost {
+    display: block; text-align: center; font-size: 12px; font-weight: 800;
+    color: #4A3212; background: #F7EFD2; border-radius: 0 0 6px 6px; margin-top: 2px;
+  }
+  .card.sel { transform: translateY(-4px); box-shadow: 0 0 0 3px #FFD54F, inset 0 0 0 2px #B79B62; }
+  .card.dis { filter: grayscale(.85) brightness(.8); }
+  .card .cool {
+    position: absolute; left: 3px; right: 3px; top: 3px; height: 40px;
+    background: rgba(20,20,20,.55); border-radius: 5px; pointer-events: none;
+  }
+
+  /* ── 草坪 ── */
+  #stage { flex: 1; position: relative; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 3px; }
+  #board {
+    position: relative; background: url('img/lawn.jpg') no-repeat; background-size: 100% 100%;
+    border-radius: 6px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.5);
+  }
+  /* 左边这一条是「房子外墙」，僵尸走到这里就是进屋了。
+     草地单独一层从墙右边开始，格子坐标就只算草地，墙不会占掉第一列。 */
+  #board .wall {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 8%;
+    background: repeating-linear-gradient(180deg, #9C4A34 0 16px, #8A3F2C 16px 18px);
+    box-shadow: inset -6px 0 8px rgba(0,0,0,.35);
+  }
+  #lawn { position: absolute; left: 8%; right: 0; top: 0; bottom: 0; }
+
+  .cellMark {
+    position: absolute; border: 2px dashed rgba(255,255,255,.55); border-radius: 6px;
+    pointer-events: none; display: none;
+  }
+  .cellMark.on { display: block; }
+
+  .ent { position: absolute; transform: translate(-50%, -50%); pointer-events: none; }
+  .ent img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .plant { height: 16%; width: auto; }
+  .plant img { width: auto; height: 100%; }
+  .zombie { height: 28%; width: auto; }
+  .zombie img { width: auto; height: 100%; filter: drop-shadow(0 3px 3px rgba(0,0,0,.45)); }
+  .zombie.slow img { filter: drop-shadow(0 0 5px #7FD4FF) brightness(1.15) hue-rotate(-12deg); }
+  .pea { height: 4%; width: auto; }
+  .pea img { width: auto; height: 100%; }
+  .boom { height: 26%; width: auto; }
+  .boom img { width: auto; height: 100%; }
+
+  /* 阳光是圆的，不能同时用宽高百分比：草坪现在是「铺满」而不是固定 1.45 比例，
+     宽 13% / 高 13% 会被拉成一张扁饼。尺寸由 layout() 按草坪高度算成同一个 px 值。 */
+  .sun {
+    position: absolute; width: var(--sun, 40px); height: var(--sun, 40px);
+    transform: translate(-50%, -50%);
+    cursor: pointer; z-index: 6;
+  }
+  .sun img { width: 100%; height: 100%; display: block; }
+
+  .mower { position: absolute; height: 8%; width: auto; transform: translate(-50%,-50%); z-index: 4; }
+
+  /* ── 覆盖层 ── */
+  #banner {
+    position: absolute; left: 50%; top: 12%; transform: translate(-50%, 0) scale(.9);
+    padding: 8px 20px; border-radius: 14px; background: rgba(180,40,30,.92);
+    color: #fff; font-size: 17px; font-weight: 800; letter-spacing: 2px;
+    opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 8;
+  }
+  #banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  #over {
+    position: absolute; inset: 0; background: rgba(10,18,6,.72); z-index: 9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #over.hidden { display: none; }
+  .panel {
+    background: #F2E2B8; border-radius: 20px; padding: 22px 26px; text-align: center;
+    box-shadow: inset 0 0 0 3px #C0A265, 0 12px 30px rgba(0,0,0,.5);
+  }
+  .panel h2 { margin: 0 0 4px; font-size: 24px; color: #5A3E20; }
+  .panel p { margin: 0 0 16px; font-size: 13px; color: #8A6C42; }
+  .panel button { padding: 12px 26px; font-size: 16px; background: #7CB342; color: #fff; box-shadow: 0 3px 0 #558B2F; }
+
+  /* 提示条改成浮在草坪下沿的小胶囊：占一行的高度在横屏里太贵了 */
+  #tip {
+    position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%);
+    padding: 4px 14px; border-radius: 999px;
+    background: rgba(14,10,4,.62); color: #E8D6A8;
+    font-size: 12px; white-space: nowrap; pointer-events: none;
+    transition: opacity .6s; z-index: 3;
+  }
+  #tip.hide { opacity: 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="sunBox"><img src="img/sun.gif" alt=""><b id="sunNum">50</b></div>
+    <div class="spacer"></div>
+    <div class="waveInfo" id="waveInfo">准备中…</div>
+    <button id="btnReset">重开</button>
+  </header>
+
+  <div id="seeds"></div>
+
+  <div id="stage">
+    <div id="board">
+      <div class="wall"></div>
+      <div id="lawn"></div>
+    </div>
+    <div id="banner"></div>
+    <div id="over" class="hidden">
+      <div class="panel">
+        <h2 id="overTitle">守住了！</h2>
+        <p id="overSub">草坪安全了</p>
+        <button id="btnAgain">再玩一局</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tip">先点下面的种子卡，再点草地格子种下去</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── 棋盘：9 列 5 行，坐标为「占棋盘宽/高的比例」，跟着屏幕缩放 ──
+  var COLS = 9, ROWS = 5;
+  var COLW = 1 / COLS;
+  // 割草机停在草地左边界外面（负数），视觉上在墙脚，不占第一列
+  var MOWER_X = -0.038;
+
+  var PLANTS = {
+    sunflower: { key: 'sunflower', name: '向日葵', cost: 50, hp: 300, cd: 5, img: 'img/sunflower.gif', sunEvery: 11 },
+    peashooter: { key: 'peashooter', name: '豌豆射手', cost: 100, hp: 300, cd: 5, img: 'img/peashooter.gif', fire: 1.4, dmg: 20 },
+    wallnut: { key: 'wallnut', name: '坚果墙', cost: 50, hp: 900, cd: 14, img: 'img/wallnut.gif' },
+    snowpea: { key: 'snowpea', name: '寒冰射手', cost: 175, hp: 300, cd: 7, img: 'img/snowpea.gif', fire: 1.5, dmg: 20, ice: true },
+    cherry: { key: 'cherry', name: '樱桃炸弹', cost: 150, hp: 400, cd: 18, img: 'img/cherry.gif', boom: true }
+  };
+  var ORDER = ['sunflower', 'peashooter', 'wallnut', 'snowpea', 'cherry'];
+
+  var ZOMBIES = {
+    normal: { hp: 200, speed: 0.034, img: 'img/zombie.gif', dps: 26 },
+    cone: { hp: 420, speed: 0.034, img: 'img/cone.gif', dps: 26 },
+    bucket: { hp: 700, speed: 0.031, img: 'img/bucket.gif', dps: 28 },
+    flag: { hp: 220, speed: 0.043, img: 'img/flag.gif', dps: 26 }
+  };
+
+  var elBoard = document.getElementById('board');
+  var elLawn = document.getElementById('lawn');
+  var elSeeds = document.getElementById('seeds');
+  var elSun = document.getElementById('sunNum');
+  var elWave = document.getElementById('waveInfo');
+  var elBanner = document.getElementById('banner');
+  var elOver = document.getElementById('over');
+
+  var state = null;
+  var gen = 0;
+  var selected = null;
+  var lastT = 0;
+  var uid = 0;
+
+  // ── 极简音效：WebAudio 合成，不额外占素材体积 ──
+  var actx = null;
+  function beep(freq, dur, type, vol) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || 'square';
+      o.frequency.value = freq;
+      g.gain.value = vol || 0.05;
+      o.connect(g); g.connect(actx.destination);
+      var t = actx.currentTime;
+      g.gain.setValueAtTime(g.gain.value, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) { /* 没有音频权限就算了 */ }
+  }
+
+  // ── 初始化 ──
+  function reset() {
+    // 换一局就换一个局号：上一局还没执行的波次定时器会因此失效
+    gen++;
+    state = {
+      sun: 50,
+      plants: [],
+      zombies: [],
+      bullets: [],
+      suns: [],
+      mowers: [0, 0, 0, 0, 0],      // 0 未用 / 1 触发中
+      schedule: buildSchedule(),
+      t: 0,
+      skySunT: 4,
+      over: false,
+      killed: 0,
+      spawned: 0,
+      total: 0
+    };
+    selected = null;
+    elOver.classList.add('hidden');
+    elBanner.classList.remove('show');
+    // 操作提示浮在草坪下沿，8 秒后自动淡出，别一直挡着草地
+    var elTip = document.getElementById('tip');
+    elTip.classList.remove('hide');
+    clearTimeout(reset._tipT);
+    reset._tipT = setTimeout(function () { elTip.classList.add('hide'); }, 8000);
+    state.schedule.forEach(function (s) { state.total += s.count; });
+    clearBoard();
+    buildCards();
+    renderMowers();
+    updateHud();
+    layout();
+    lastT = 0;
+  }
+
+  function buildSchedule() {
+    // 波次：越往后越多，第 5 波是旗帜波，最后一波收尾
+    var plan = [1, 1, 2, 2, 2, 3, 3, 4, 4, 5];
+    var out = [];
+    var t = 9;
+    for (var i = 0; i < plan.length; i++) {
+      if (i > 0) t += 12;
+      out.push({ t: t, count: plan[i], wave: i + 1, flag: i === 4 || i === plan.length - 1 });
+    }
+    return out;
+  }
+
+  function clearBoard() {
+    Array.prototype.slice.call(elLawn.querySelectorAll('.ent, .sun, .mower, .cellMark')).forEach(function (e) {
+      e.parentNode.removeChild(e);
+    });
+  }
+
+  function buildCards() {
+    elSeeds.innerHTML = '';
+    ORDER.forEach(function (k) {
+      var p = PLANTS[k];
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.key = k;
+      card.innerHTML = '<img src="' + p.img + '" alt=""><span class="cost">' + p.cost + '</span>';
+      card.addEventListener('pointerdown', function (ev) {
+        ev.preventDefault();
+        if (state.over) return;
+        if (state.sun < p.cost) { beep(180, .12, 'sawtooth', .04); flashTip('阳光不够啦'); return; }
+        selected = (selected === k) ? null : k;
+        refreshCards();
+        beep(660, .06, 'square', .04);
+      });
+      elSeeds.appendChild(card);
+    });
+  }
+
+  function refreshCards() {
+    var cards = elSeeds.querySelectorAll('.card');
+    for (var i = 0; i < cards.length; i++) {
+      var k = cards[i].dataset.key, p = PLANTS[k];
+      cards[i].classList.toggle('sel', selected === k);
+      cards[i].classList.toggle('dis', state.sun < p.cost);
+    }
+  }
+
+  function updateHud() {
+    elSun.textContent = Math.floor(state.sun);
+    var done = state.schedule.filter(function (s) { return s.t <= state.t; }).length;
+    elWave.textContent = state.over ? '结束'
+      : (done >= state.schedule.length ? '最后一波' : '第 ' + Math.min(done + 1, state.schedule.length) + ' / ' + state.schedule.length + ' 波');
+    refreshCards();
+  }
+
+  function flashTip(msg) {
+    elBanner.textContent = msg;
+    elBanner.classList.add('show');
+    clearTimeout(flashTip._t);
+    flashTip._t = setTimeout(function () { elBanner.classList.remove('show'); }, 1200);
+  }
+
+  // ── 坐标 ──
+  function colX(c) { return (c + 0.5) / COLS; }
+  function rowY(r) { return (r + 0.5) / ROWS; }
+
+  /*
+   * 屏幕坐标 → 草坪内的归一化坐标（0..1）。
+   *
+   * 竖屏时整个 #app 被 rotate(90deg) 转过，「画面的横轴」其实是屏幕的纵轴，
+   * getBoundingClientRect 返回的宽高也跟着对调（width = 元素原来的高）。
+   * 所以旋转状态下 x/y 要互换并且反向，否则点第 1 格会种到第 9 格去。
+   */
+  function boardPoint(sx, sy) {
+    var rc = elLawn.getBoundingClientRect();
+    if (ROT) {
+      return { x: (sy - rc.top) / rc.height, y: (rc.right - sx) / rc.width };
+    }
+    return { x: (sx - rc.left) / rc.width, y: (sy - rc.top) / rc.height };
+  }
+
+  function place(el, x, y) {
+    el.style.left = (x * 100) + '%';
+    el.style.top = (y * 100) + '%';
+  }
+
+  function makeEnt(cls, imgSrc) {
+    var d = document.createElement('div');
+    d.className = 'ent ' + cls;
+    var im = document.createElement('img');
+    im.src = imgSrc;
+    d.appendChild(im);
+    elLawn.appendChild(d);
+    return d;
+  }
+
+  function renderMowers() {
+    Array.prototype.slice.call(elLawn.querySelectorAll('.mower')).forEach(function (e) { e.parentNode.removeChild(e); });
+    for (var r = 0; r < ROWS; r++) {
+      var m = document.createElement('div');
+      m.className = 'mower';
+      m.dataset.row = r;
+      m.innerHTML = '<img src="img/mower.svg" alt="">';
+      // 没有专门的割草机素材，用 SVG 画一个简单的
+      place(m, MOWER_X, rowY(r));
+      elLawn.appendChild(m);
+    }
+  }
+
+  // ── 种植 ──
+  function boardTap(u, v) {
+    if (!state || state.over) return;
+    var c = Math.floor(u * COLS), r = Math.floor(v * ROWS);
+    if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+
+    if (!selected) {
+      flashTip('先选一张种子卡');
+      return;
+    }
+    var p = PLANTS[selected];
+    if (state.sun < p.cost) { flashTip('阳光不够啦'); return; }
+    if (state.plants.some(function (q) { return q.r === r && q.c === c; })) {
+      flashTip('这里已经种了');
+      return;
+    }
+    plant(selected, r, c);
+  }
+
+  function plant(k, r, c) {
+    var def = PLANTS[k];
+    state.sun -= def.cost;
+    var el = makeEnt('plant', def.img);
+    place(el, colX(c), rowY(r));
+    var p = {
+      id: ++uid, kind: k, r: r, c: c, hp: def.hp, maxHp: def.hp,
+      el: el, t: 0, sunT: def.sunEvery ? def.sunEvery * 0.6 : 0, boomT: def.boom ? 0.9 : 0
+    };
+    state.plants.push(p);
+    selected = null;
+    beep(420, .09, 'triangle', .05);
+    updateHud();
+  }
+
+  // ── 僵尸 ──
+  function spawnZombie(kind, row) {
+    var def = ZOMBIES[kind];
+    var el = makeEnt('zombie', def.img);
+    var z = {
+      id: ++uid, kind: kind, r: row, x: 1.04, hp: def.hp, maxHp: def.hp,
+      el: el, slow: 0, eating: null
+    };
+    place(el, z.x, rowY(row));
+    state.zombies.push(z);
+    state.spawned++;
+  }
+
+  function pickKind(wave) {
+    if (wave >= 9) return Math.random() < .5 ? 'bucket' : 'cone';
+    if (wave >= 7) return Math.random() < .45 ? 'cone' : (Math.random() < .3 ? 'bucket' : 'normal');
+    if (wave >= 4) return Math.random() < .35 ? 'cone' : 'normal';
+    return 'normal';
+  }
+
+  function runSchedule() {
+    /*
+     * 这里的 setTimeout 是异步的：回调真正执行时，state 可能已经被「重开」换掉了。
+     * 所以要把「这一局的身份证」——局号 gen 和 state 本身——闭包进去再校验。
+     *
+     * 之前这里写的是 `myGen === gen`，而 myGen 是 reset() 里的局部变量，
+     * 在 runSchedule 作用域里根本不存在。'use strict' 下读它会抛 ReferenceError，
+     * 回调整段不执行 → 波次照常推进、僵尸一只都不出现。
+     */
+    var st = state, g = gen;
+    st.schedule.forEach(function (s) {
+      if (s.done || st.t < s.t) return;
+      s.done = true;
+      for (var i = 0; i < s.count; i++) {
+        var row = Math.floor(Math.random() * ROWS);
+        var kind = (s.flag && i === 0) ? 'flag' : pickKind(s.wave);
+        (function (k, r, idx) {
+          setTimeout(function () {
+            if (g !== gen || state !== st || st.over) return;
+            spawnZombie(k, r);
+          }, idx * 700);
+        })(kind, row, i);
+      }
+      if (s.flag) flashTip(s.wave >= 10 ? '最后一波！' : '一大波僵尸来了！');
+      else flashTip('第 ' + s.wave + ' 波');
+    });
+  }
+
+  // ── 阳光 ──
+  function spawnSun(x, y, fromSky) {
+    var el = document.createElement('div');
+    el.className = 'sun';
+    el.innerHTML = '<img src="img/sun.gif" alt="">';
+    var s = { x: x, y: y, ty: fromSky ? (0.25 + Math.random() * 0.7) : y, life: 9, el: el };
+    place(el, s.x, s.y);
+    elLawn.appendChild(el);
+    el.addEventListener('pointerdown', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      collectSun(s);
+    });
+    state.suns.push(s);
+  }
+
+  function collectSun(s) {
+    if (s.dead) return;
+    s.dead = true;
+    state.sun += 25;
+    beep(880, .1, 'sine', .06);
+    if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
+    var i = state.suns.indexOf(s);
+    if (i >= 0) state.suns.splice(i, 1);
+    updateHud();
+  }
+
+  // ── 主循环 ──
+  function tick(now) {
+    if (!state) return;
+    if (!lastT) lastT = now;
+    var dt = Math.min((now - lastT) / 1000, 0.05);
+    lastT = now;
+    if (!state.over) step(dt);
+    requestAnimationFrame(tick);
+  }
+
+  function step(dt) {
+    state.t += dt;
+    runSchedule();
+
+    // 天上掉阳光
+    state.skySunT -= dt;
+    if (state.skySunT <= 0) {
+      state.skySunT = 6.5;
+      spawnSun(0.08 + Math.random() * 0.84, 0, true);
+    }
+
+    // 阳光下落与消失
+    for (var i = state.suns.length - 1; i >= 0; i--) {
+      var s = state.suns[i];
+      if (s.y < s.ty) {
+        s.y = Math.min(s.ty, s.y + dt * 0.16);
+        place(s.el, s.x, s.y);
+      } else {
+        s.life -= dt;
+        if (s.life <= 0) {
+          s.dead = true;
+          if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
+          state.suns.splice(i, 1);
+        }
+      }
+    }
+
+    // 植物
+    state.plants.forEach(function (p) {
+      p.t += dt;
+      var def = PLANTS[p.kind];
+
+      if (def.sunEvery) {
+        p.sunT -= dt;
+        if (p.sunT <= 0) {
+          p.sunT = def.sunEvery;
+          spawnSun(colX(p.c), rowY(p.r) - 0.02, false);
+        }
+      }
+
+      if (def.boom) {
+        p.boomT -= dt;
+        if (p.boomT <= 0) {
+          explode(p);
+        }
+        return;
+      }
+
+      if (def.fire) {
+        p.fireT = (p.fireT || 0) - dt;
+        if (p.fireT <= 0) {
+          var target = null;
+          for (var k = 0; k < state.zombies.length; k++) {
+            var z = state.zombies[k];
+            if (z.r === p.r && z.x > colX(p.c) - 0.02) {
+              if (!target || z.x < target.x) target = z;
+            }
+          }
+          if (target) {
+            p.fireT = def.fire;
+            var b = { r: p.r, x: colX(p.c) + 0.03, dmg: def.dmg, ice: !!def.ice, el: makeEnt('pea', def.ice ? 'img/icepea.png' : 'img/pea.png') };
+            place(b.el, b.x, rowY(p.r) - 0.01);
+            state.bullets.push(b);
+            beep(def.ice ? 520 : 620, .05, 'square', .03);
+          }
+        }
+      }
+    });
+
+    // 子弹
+    for (var bi = state.bullets.length - 1; bi >= 0; bi--) {
+      var b2 = state.bullets[bi];
+      b2.x += dt * 0.62;
+      place(b2.el, b2.x, rowY(b2.r) - 0.01);
+      var hit = null;
+      for (var zi = 0; zi < state.zombies.length; zi++) {
+        var zz = state.zombies[zi];
+        if (zz.r === b2.r && Math.abs(zz.x - b2.x) < 0.045) { hit = zz; break; }
+      }
+      if (hit) {
+        damageZombie(hit, b2.dmg);
+        if (b2.ice) hit.slow = 3;
+        if (b2.el.parentNode) b2.el.parentNode.removeChild(b2.el);
+        state.bullets.splice(bi, 1);
+      } else if (b2.x > 1.05) {
+        if (b2.el.parentNode) b2.el.parentNode.removeChild(b2.el);
+        state.bullets.splice(bi, 1);
+      }
+    }
+
+    // 僵尸
+    for (var zj = state.zombies.length - 1; zj >= 0; zj--) {
+      var z2 = state.zombies[zj];
+      var def2 = ZOMBIES[z2.kind];
+      if (z2.slow > 0) z2.slow -= dt;
+      var speed = def2.speed * (z2.slow > 0 ? 0.5 : 1);
+
+      // 前面有植物就啃
+      var target2 = null;
+      for (var pi = 0; pi < state.plants.length; pi++) {
+        var pl = state.plants[pi];
+        if (pl.r !== z2.r) continue;
+        var px = colX(pl.c);
+        if (z2.x - px < 0.052 && z2.x - px > -0.03) { target2 = pl; break; }
+      }
+
+      if (target2) {
+        target2.hp -= def2.dps * dt;
+        z2.eating = true;
+        if (target2.kind === 'wallnut') {
+          var frac = target2.hp / target2.maxHp;
+          var src = frac > 0.66 ? 'img/wallnut.gif' : (frac > 0.33 ? 'img/wallnut1.gif' : 'img/wallnut2.gif');
+          if (target2.el.dataset.src !== src) {
+            target2.el.dataset.src = src;
+            target2.el.querySelector('img').src = src;
+          }
+        }
+        if (target2.hp <= 0) killPlant(target2);
+      } else {
+        z2.eating = false;
+        z2.x -= speed * dt;
+        place(z2.el, z2.x, rowY(z2.r));
+      }
+
+      // 到家门口：触发割草机或判负
+      if (z2.x < 0.012) {
+        var row = z2.r;
+        if (state.mowers[row] === 0) {
+          state.mowers[row] = 1;
+          runMower(row);
+        } else if (state.mowers[row] === 2) {
+          // 割草机已经开走了，只能认输
+          gameOver(false);
+          return;
+        }
+      }
+    }
+
+    // 割草机
+    for (var mi = 0; mi < ROWS; mi++) {
+      if (state.mowers[mi] === 1) {
+        var mEl = elLawn.querySelector('.mower[data-row="' + mi + '"]');
+        if (!mEl) { state.mowers[mi] = 2; continue; }
+        var mx = parseFloat(mEl.dataset.x || String(MOWER_X));
+        mx += dt * 1.1;
+        mEl.dataset.x = mx;
+        place(mEl, mx, rowY(mi));
+        for (var zk = state.zombies.length - 1; zk >= 0; zk--) {
+          var z3 = state.zombies[zk];
+          if (z3.r === mi && Math.abs(z3.x - mx) < 0.1) damageZombie(z3, 9999);
+        }
+        if (mx > 1.1) {
+          if (mEl.parentNode) mEl.parentNode.removeChild(mEl);
+          state.mowers[mi] = 2;
+        }
+      }
+    }
+
+    // 胜利判定：必须「该出的僵尸全都出过了」且场上清空。
+    // 只看 schedule.done 不够——最后一波标记完成后的 0.7s×N 里僵尸还没生成出来，
+    // 那一瞬间场上也是空的，会直接判通关。
+    if (state.t > 8 && state.spawned >= state.total && !state.zombies.length) {
+      gameOver(true);
+    }
+
+    updateHud();
+  }
+
+  function damageZombie(z, dmg) {
+    z.hp -= dmg;
+    if (z.hp <= 0) {
+      state.killed++;
+      if (z.el.parentNode) z.el.parentNode.removeChild(z.el);
+      var i = state.zombies.indexOf(z);
+      if (i >= 0) state.zombies.splice(i, 1);
+      beep(220, .12, 'sawtooth', .04);
+    }
+  }
+
+  function killPlant(p) {
+    if (p.el.parentNode) p.el.parentNode.removeChild(p.el);
+    var i = state.plants.indexOf(p);
+    if (i >= 0) state.plants.splice(i, 1);
+    // 被啃掉的樱桃也会炸，别让孩子白等
+    if (PLANTS[p.kind].boom) explode(p);
+  }
+
+  function explode(p) {
+    if (p.dead) return;
+    p.dead = true;
+    var bx = colX(p.c), by = rowY(p.r);
+    var bEl = makeEnt('boom', 'img/boom.gif');
+    place(bEl, bx, by);
+    setTimeout(function () {
+      if (bEl.parentNode) bEl.parentNode.removeChild(bEl);
+    }, 700);
+    beep(120, .35, 'sawtooth', .07);
+    for (var i = state.zombies.length - 1; i >= 0; i--) {
+      var z = state.zombies[i];
+      if (Math.abs(z.r - p.r) <= 1 && Math.abs(z.x - bx) <= COLW * 1.3) damageZombie(z, 1800);
+    }
+    if (p.el.parentNode) p.el.parentNode.removeChild(p.el);
+    var pi = state.plants.indexOf(p);
+    if (pi >= 0) state.plants.splice(pi, 1);
+  }
+
+  function runMower(row) {
+    var mEl = elLawn.querySelector('.mower[data-row="' + row + '"]');
+    if (mEl) mEl.dataset.x = String(MOWER_X);
+    beep(300, .3, 'sawtooth', .06);
+  }
+
+  function gameOver(win) {
+    if (state.over) return;
+    state.over = true;
+    document.getElementById('overTitle').textContent = win ? '守住了！' : '僵尸进屋了…';
+    document.getElementById('overSub').textContent = win
+      ? '消灭了 ' + state.killed + ' 只僵尸'
+      : '再试一次，多种几个豌豆射手';
+    elOver.classList.remove('hidden');
+    beep(win ? 880 : 160, .4, 'triangle', .07);
+    // 守住给 6 颗，被进屋给 1 颗。成绩记「打过的波次」，输赢都在榜上看得见。
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        var wave = state.wave || 0;
+        window.KidsSafe.award('pvz', win ? 6 : 1, wave,
+          (win ? '守住' : '失守') + ' · 第 ' + wave + ' 波 · 消灭 ' + state.killed);
+      }
+    } catch (e) {}
+  }
+
+  // ── 布局 ──
+  var ROT = false;
+
+  function layout() {
+    var app = document.getElementById('app');
+    var W0 = window.innerWidth, H0 = window.innerHeight;
+
+    // 竖屏 → 把整个界面转 90° 当横屏用。用 H0>W0 判断而不是 matchMedia，
+    // 因为 ArkWeb 里 matchMedia 的 orientation 在旋转瞬间偶尔还是旧值。
+    ROT = H0 > W0 * 1.02;
+    if (ROT) {
+      app.style.width = H0 + 'px';
+      app.style.height = W0 + 'px';
+      app.style.transform = 'translate(' + W0 + 'px, 0) rotate(90deg)';
+      app.classList.add('rot');
+    } else {
+      app.style.width = W0 + 'px';
+      app.style.height = H0 + 'px';
+      app.style.transform = 'none';
+      app.classList.remove('rot');
+    }
+
+    var stage = document.getElementById('stage');
+    var availW = stage.clientWidth - 6;
+    var availH = stage.clientHeight - 6;
+    if (availW <= 0 || availH <= 0) return;
+
+    /*
+     * 草坪不再按 lawn.jpg 的 746×513 定比例——那个比例在横屏里只填得满中间一条。
+     * 现在优先铺满可用区域，只约束「单格宽高比」q：
+     * 太扁（宽屏）或太瘦（竖屏）时收一收，免得植物被拉成一张饼。
+     */
+    var q = availW * ROWS / (COLS * availH);
+    q = Math.max(0.85, Math.min(1.7, q));
+    var bh = Math.min(availH, availW * ROWS / (COLS * q));
+    var bw = bh * COLS * q / ROWS;
+    elBoard.style.width = Math.floor(bw) + 'px';
+    elBoard.style.height = Math.floor(bh) + 'px';
+    // 阳光做成正方形：按草坪高度给一个 px 值，宽高一致
+    elBoard.style.setProperty('--sun', Math.max(28, Math.round(bh * 0.15)) + 'px');
+  }
+
+  elBoard.addEventListener('pointerdown', function (ev) {
+    ev.preventDefault();
+    var pt = boardPoint(ev.clientX, ev.clientY);
+    boardTap(pt.x, pt.y);
+  }, { passive: false });
+
+  document.getElementById('btnReset').onclick = reset;
+  document.getElementById('btnAgain').onclick = reset;
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 120); });
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () { layout(); }).observe(document.getElementById('stage'));
+  }
+
+  // ── 测试钩子 ──
+  window.__pvz = {
+    state: function () { return state; },
+    plant: function (k, r, c) { plant(k, r, c); },
+    spawn: function (k, r) { spawnZombie(k, r); },
+    addSun: function (n) { state.sun += n; updateHud(); },
+    step: function (dt) { step(dt); },
+    select: function (k) { selected = k; refreshCards(); },
+    layout: layout,
+    tapAt: function (x, y) { boardTap(x, y); },
+    rot: function () { return ROT; },
+    boardPoint: boardPoint
+  };
+
+  reset();
+  requestAnimationFrame(tick);
+  setTimeout(layout, 50);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+/**
+ * 系统级 Kiosk 锁定 —— 企业版接入模板
+ *
+ * 这个文件叫 .sample 而不是 .ets，是故意的：DevEco 不会编译它。
+ * 原因是 kioskManager 从 API 26（HarmonyOS 7）才有，本工程按 API 12 编译，
+ * 直接 import 会导致整个工程编译不过。
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 用之前必须先满足四个硬条件，缺一个都只会拿到「权限拒绝」：
+ *
+ * 1. 华为开发者联盟【企业】实名认证（个人账号申请不到受控权限）
+ * 2. AGC 创建应用 → 申请发布 Profile 时勾选 ohos.permission.ENTERPRISE_SET_KIOSK
+ *    并提交商用场景说明（自助终端 / 门店一体机 / 政务终端）
+ * 3. 用该 Profile 签名的正式证书打包，自动调试签名不带受控权限
+ * 4. 目标设备是鸿蒙商用终端。普通消费级手机/平板即使装上也不会生效
+ *
+ * 另外，一台设备同一时间只允许一个应用处于 Kiosk 模式（错误码 160001），
+ * 如果设备上已经有别的锁机应用，必须先让它退出。
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 启用步骤：
+ *   1. build-profile.json5 里把 compileSdkVersion / compatibleSdkVersion 改成 "7.0.0(26)"
+ *   2. module.json5 的 requestPermissions 增加：
+ *        { "name": "ohos.permission.ENTERPRISE_SET_KIOSK",
+ *          "reason": "$string:reason_kiosk",
+ *          "usedScene": { "abilities": ["EntryAbility"], "when": "always" } }
+ *   3. 把本文件改名为 KioskEnterprise.ets，并在 Kiosk.ets 里改为调用它
+ */
+
+import { common, kioskManager } from '@kit.AbilityKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG: string = 'KioskEnterprise';
+
+export async function enterSystemKiosk(context: common.UIAbilityContext): Promise<boolean> {
+  try {
+    const status = kioskManager.getKioskStatus();
+    if (status.isKioskMode && status.kioskBundleName === context.bundleName) {
+      return true;
+    }
+    await kioskManager.enterKioskMode(context);
+    hilog.info(0x0102, TAG, '已进入系统级 Kiosk 模式');
+    return true;
+  } catch (err) {
+    const e = err as BusinessError;
+    if (e.code === 160001) {
+      hilog.error(0x0102, TAG, '设备上已有其它 Kiosk 应用在锁机');
+    } else {
+      hilog.error(0x0102, TAG, '进入 Kiosk 失败 code=%{public}d', e.code);
+    }
+    return false;
+  }
+}
+
+export async function exitSystemKiosk(context: common.UIAbilityContext): Promise<boolean> {
+  try {
+    await kioskManager.exitKioskMode(context);
+    return true;
+  } catch (err) {
+    const e = err as BusinessError;
+    hilog.error(0x0102, TAG, '退出 Kiosk 失败 code=%{public}d', e.code);
+    return false;
+  }
+}

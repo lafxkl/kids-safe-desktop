@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44" width="64" height="44">
+  <!-- 素材包里没有割草机，这里画一个：红色车身 + 两个轮子 + 前推杆 -->
+  <g stroke="#2B2B2B" stroke-width="2" stroke-linejoin="round">
+    <rect x="10" y="14" width="38" height="17" rx="4" fill="#D84339"/>
+    <rect x="10" y="14" width="38" height="7" rx="3" fill="#F26B5E" stroke="none"/>
+    <path d="M48 16 L60 8" fill="none" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="18" cy="32" r="7" fill="#333"/>
+    <circle cx="18" cy="32" r="3" fill="#9E9E9E" stroke="none"/>
+    <circle cx="42" cy="32" r="6" fill="#333"/>
+    <circle cx="42" cy="32" r="2.5" fill="#9E9E9E" stroke="none"/>
+    <rect x="14" y="9" width="10" height="5" rx="2" fill="#F2C14E"/>
+  </g>
+</svg>

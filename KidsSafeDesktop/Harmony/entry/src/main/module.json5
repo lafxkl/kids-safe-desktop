@@ -1,0 +1,64 @@
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "description": "$string:module_desc",
+    "mainElement": "EntryAbility",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "$string:EntryAbility_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:EntryAbility_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true,
+        "launchType": "singleton",
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "ohos.want.action.home"
+            ]
+          }
+        ]
+      }
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.INTERNET",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      }
+    ],
+    /*
+     * 放行明文 HTTP。
+     * 《宝贝三十六计》的「家长陪我玩」要连家长自己电脑上跑的服务（Baby36Server），
+     * 地址是 http://192.168.x.x:8099 —— 局域网 IP 每家都不同，没法用 domain-config
+     * 预先枚举，只能开 base-config。这个桌面本身是离线儿童端，除了这一个局域网
+     * 服务之外不访问外网，风险可控。
+     */
+    "metadata": [
+      {
+        "name": "ohos.networkSecurityConfig",
+        "resource": "$profile:network_config"
+      }
+    ]
+  }
+}

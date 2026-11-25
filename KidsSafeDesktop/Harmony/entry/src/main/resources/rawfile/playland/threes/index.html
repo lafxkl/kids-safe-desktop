@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>三三合成</title>
+<style>
+  /*
+   * 三三合成 —— 移植自 mr3（Threes! 玩法）。
+   *
+   * 原工程是「自定义 GL 引擎 + 宿主注入模块」的结构：
+   * game.js 里 require('opengl')、scene.js、layout.js、touchnode.js 这些
+   * 全都不在仓库里，跑起来必须先有一个能提供 OpenGL 上下文和那套 component/* 的
+   * 容器（当年是某个 Native JS 运行时）。换句话说：源码在手，但离线跑不起来。
+   *
+   * 这一版把整条依赖链换成 Canvas 样式 + DOM 砖块：
+   *   - 去掉 opengl / component / event / tools 四层宿主依赖，纯 HTML+CSS+JS；
+   *   - 保留 mr3 的规则数值（见 canMerge / MAX_VALUE / 新块生成），
+   *     这些是它从 Threes! 抄过来的、真正决定手感的东西；
+   *   - 计分改成「合并后的值」，和 Threes! 一致。原版 getBonus 用的是 3 的幂
+   *     （合出 12 给 27 分），孩子算不清自己怎么加的，这里不跟。
+   *
+   * 规则速记：1+2=3；3+3=6；6+6=12……1+1 和 2+2 不能合。
+   */
+  :root{
+    --bg:#FAF7F2; --ink:#4A3B32; --muted:#9B8574; --line:#E8E0D5;
+    --deep:#3E3A55; --accent:#7C5CE0;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden; background:var(--bg);
+    font-family:-apple-system,"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink); user-select:none; -webkit-user-select:none;
+  }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column; align-items:center;
+    padding:10px 12px 12px; gap:8px;
+    background:
+      radial-gradient(circle at 88% 8%, #EFE8FF 0%, rgba(239,232,255,0) 42%),
+      radial-gradient(circle at 6% 92%, #FFEEDD 0%, rgba(255,238,221,0) 44%),
+      var(--bg);
+  }
+
+  /* ── 顶栏 ── */
+  .top{ width:100%; display:flex; align-items:center; gap:8px; flex:none; max-width:520px; }
+  .box{
+    flex:1; background:#FFFFFF; border-radius:13px; padding:6px 10px; text-align:center;
+    box-shadow:0 2px 0 #EDE6DA;
+  }
+  .box span{ display:block; font-size:10px; color:var(--muted); letter-spacing:.5px; }
+  .box b{ display:block; font-size:19px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .box.next{ flex:none; width:62px; }
+  .box.next b{ font-size:16px; }
+
+  /* ── 棋盘 ── */
+  #stage{ flex:1; min-height:0; width:100%; display:flex; align-items:center; justify-content:center;
+          padding-bottom:44px; /* 给绝对定位的底栏让出位置，别压住棋盘 */ }
+  #board{
+    position:relative; border-radius:18px; background:#EDE6DC;
+    box-shadow:0 6px 18px rgba(90,70,50,.12), inset 0 0 0 2px #E2D8CA;
+    touch-action:none;
+    /* 不写 overflow:hidden：24 点那页在 ArkWeb 上踩过「圆角 + 裁剪 = 内容整块不绘制」，
+       这里砖块本来就在棋盘内，不需要裁。 */
+  }
+  .ghost{ position:absolute; z-index:0; border-radius:11px; background:#E4DACC; }
+
+  .tile{
+    position:absolute; z-index:1; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    font-weight:800; letter-spacing:-1px; color:#fff;
+    transition:left .1s ease, top .1s ease, width .1s ease, height .1s ease;
+    will-change:left,top;
+  }
+  .tile .v{ line-height:1; }
+  .tile.pop{ animation:pop .16s ease; }
+  @keyframes pop{ 0%{ transform:scale(1); } 45%{ transform:scale(1.16); } 100%{ transform:scale(1); } }
+  .tile.new{ animation:appear .16s ease; }
+  @keyframes appear{ 0%{ transform:scale(.3); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+
+  /* 1 和 2 是「原料」，用浅色，一眼能和合成出来的牌区分 */
+  .t1{ background:#FBF6EE; color:#8C7A66; box-shadow:inset 0 0 0 2px #E6DBC9, 0 2px 0 #DCCFBB; }
+  .t2{ background:#FFFFFF; color:#7A6A58; box-shadow:inset 0 0 0 2px #E9DFCF, 0 2px 0 #DCCFBB; }
+  .t3{ background:linear-gradient(180deg,#8FD3FF,#4FA8E8); box-shadow:0 3px 0 #2F86C4; }
+  .t6{ background:linear-gradient(180deg,#FFB55C,#F0871F); box-shadow:0 3px 0 #C56A12; }
+  .t12{ background:linear-gradient(180deg,#FF8E8E,#E85454); box-shadow:0 3px 0 #BE3A3A; }
+  .t24{ background:linear-gradient(180deg,#C79BFF,#8E5CD9); box-shadow:0 3px 0 #6C42AC; }
+  .t48{ background:linear-gradient(180deg,#7ED9C3,#2AA79A); box-shadow:0 3px 0 #1C8077; }
+  .t96{ background:linear-gradient(180deg,#9AA7FF,#5566E0); box-shadow:0 3px 0 #3B49B8; }
+  .t192{ background:linear-gradient(180deg,#FFC46B,#E0951F); box-shadow:0 3px 0 #B3730F; }
+  .t384{ background:linear-gradient(180deg,#FF9EC4,#E85C96); box-shadow:0 3px 0 #BE3A72; }
+  .t768{ background:linear-gradient(180deg,#7BC96F,#3E9E45); box-shadow:0 3px 0 #2C7A32; }
+  .t1536{ background:linear-gradient(180deg,#5A5478,#2E2A45); box-shadow:0 3px 0 #1D1A2E; }
+  .tbig{ background:linear-gradient(180deg,#2E2A45,#141220); box-shadow:0 3px 0 #000; }
+
+  /* ── 底栏 ── */
+  /* 底栏改成绝对定位。
+   * flex 并排、flex 竖排、grid 两列三种写法都试过，在这套 WebView 里量到的框
+   * 全是「按钮压在提示文字上」（横向分配与高度计算都不按 CSS 来）。
+   * 绝对定位不参与容器分配，文字右边留 84px 给按钮，物理上不可能重叠。 */
+  .bottom{
+    position:absolute; left:12px; right:12px;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    height:36px;
+  }
+  .hint{
+    position:absolute; left:2px; right:84px; bottom:9px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-size:11.5px; color:var(--muted); line-height:1.4;
+  }
+  #btnNew{ position:absolute; right:0; bottom:0; }
+  button{
+    font:inherit; font-weight:700; font-size:13px; color:#fff; border:none;
+    border-radius:11px; padding:9px 14px; background:var(--accent);
+    box-shadow:0 3px 0 #5C3FBF; min-height:36px; white-space:nowrap;
+  }
+  button:active{ transform:translateY(2px); box-shadow:0 1px 0 #5C3FBF; }
+  button.ghost{ background:#FFFFFF; color:#7A6555; box-shadow:0 3px 0 #E6D9C9; }
+
+  /* ── 结算 ── */
+  .veil{
+    position:absolute; inset:0; z-index:9; display:flex; align-items:center; justify-content:center;
+    padding:18px; background:rgba(52,44,34,.44);
+  }
+  .veil.hide{ display:none; }
+  .sheet{
+    width:min(360px,100%); background:#FFFCF6; border-radius:20px; padding:20px 18px 16px;
+    text-align:center; box-shadow:0 16px 34px rgba(60,40,20,.3), inset 0 0 0 2px #F0E4D4;
+  }
+  .sheet .big{ font-size:32px; }
+  .sheet h2{ margin:6px 0 4px; font-size:20px; }
+  .sheet p{ margin:0 0 6px; font-size:13px; color:#8A7767; line-height:1.55; }
+  .sheet .num{ font-size:30px; font-weight:800; color:var(--accent); }
+  .sheet .row{ display:flex; gap:9px; justify-content:center; margin-top:14px; }
+  .stars{ margin:2px 0 8px; font-size:22px; letter-spacing:2px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <div class="box"><span>分数</span><b id="score">0</b></div>
+    <div class="box"><span>最高</span><b id="best">0</b></div>
+    <div class="box next"><span>下一块</span><b id="next">1</b></div>
+  </div>
+
+  <div id="stage">
+    <div id="board">
+      <div class="veil hide" id="veil">
+        <div class="sheet" id="sheet"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="hint">滑动或按方向键 · 相同数字合在一起</div>
+    <button class="ghost" id="btnNew">重开</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+   * 一、规则（数值照搬 mr3 scenes/utility.js）
+   * ========================================================= */
+  var N = 4;
+  var MAX_VALUE = 6144;     // 原版 MAX_COUNT：到顶就不再合
+  var KEY_BEST = 'ks3.best';
+
+  /**
+   * 能不能合。原版 canMerge(previous, current)：
+   *   1 + 2 = 3；相同且 ≥ 6 才能合；1+1、2+2 不行；到 6144 封顶。
+   */
+  function canMerge(a, b) {
+    if (a + b === 3) return true;
+    if (a >= MAX_VALUE || b >= MAX_VALUE) return false;
+    if (a === b && a + b >= 6) return true;
+    return false;
+  }
+
+  /* 新块生成。原版的 CellRandom 做了两件事，这里保留：
+   *   1. 基本只出 1/2/3，且连续出同一个数不超过 4 次（避免玩家被三个 1 卡死）；
+   *   2. 盘面总额超过 48 之后，小概率直接给一块稍大的牌（原版的「补偿」分支）。
+   * 权重数组 10:10:10 是原版初值，每出一块就把权重按 ±2 挪，慢慢自我平衡。 */
+  var adjust = [10, 10, 10];
+  var lastNew = 0, repeat = 0;
+
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+  function boardMax() {
+    var m = 0;
+    for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) {
+      if (grid[r][c] && grid[r][c].v > m) m = grid[r][c].v;
+    }
+    return m;
+  }
+
+  function newValue() {
+    var mx = boardMax();
+    // 盘面出现 48 之后，8% 概率来一块「台阶牌」：mx/8 那一档（48→6，96→12，192→24）
+    if (mx >= 48 && Math.random() < 0.08) {
+      var target = mx / 8;
+      var v = 6;
+      while (v * 2 <= target) v *= 2;
+      return v;
+    }
+    var total = adjust[0] + adjust[1] + adjust[2];
+    var r = Math.random() * total;
+    var pick = 0;
+    for (var i = 0; i < 3; i++) {
+      if (r < adjust[i]) { pick = i; break; }
+      r -= adjust[i];
+    }
+    for (var j = 0; j < 3; j++) {
+      adjust[j] = (j === pick) ? clamp(adjust[j] - 4, 2, 10) : clamp(adjust[j] + 2, 0, 10);
+    }
+    var count = pick + 1;
+    if (lastNew === count) {
+      if (++repeat > 4) {
+        adjust[count - 1] = clamp(adjust[count - 1] - 1, 2, 10);
+        count = (count + 3) % 3 + 1;
+        repeat = 1;
+      }
+    } else {
+      repeat = 1;
+    }
+    lastNew = count;
+    return count;
+  }
+
+  /* =========================================================
+   * 二、状态
+   * ========================================================= */
+  var grid = [];        // grid[r][c] = tile | null
+  var tiles = [];       // 所有还活着的 tile
+  var score = 0;
+  var best = 0;
+  var over = false;
+  var busy = false;
+  var nextValue = 1;
+  var startedAt = 0;
+
+  var $board = document.getElementById('board');
+  var $score = document.getElementById('score');
+  var $best = document.getElementById('best');
+  var $next = document.getElementById('next');
+  var $veil = document.getElementById('veil');
+  var $sheet = document.getElementById('sheet');
+
+  var cellPx = 60, gapPx = 8, boardPx = 300;
+
+  function loadBest() {
+    try { best = parseInt(localStorage.getItem(KEY_BEST), 10) || 0; } catch (e) { best = 0; }
+  }
+  function saveBest(v) {
+    try { localStorage.setItem(KEY_BEST, String(v)); } catch (e) {}
+  }
+
+  /* =========================================================
+   * 三、布局与绘制
+   * ========================================================= */
+  function measure() {
+    var stage = document.getElementById('stage');
+    var w = stage.clientWidth, h = stage.clientHeight - 44;   // 44 是底栏占的高度
+    boardPx = Math.max(220, Math.min(w, h - 4, 520));
+    $board.style.width = boardPx + 'px';
+    $board.style.height = boardPx + 'px';
+    gapPx = Math.max(6, Math.round(boardPx * 0.028));
+    cellPx = (boardPx - gapPx * (N + 1)) / N;
+    paintGhosts();
+    tiles.forEach(function (t) { place(t); });
+    paintFont();
+  }
+
+  /** 棋盘底格。用一次性生成的 ghost 方块，比 CSS 背景渐变好控制圆角与间距。 */
+  function paintGhosts() {
+    var olds = $board.querySelectorAll('.ghost');
+    for (var i = 0; i < olds.length; i++) olds[i].parentNode.removeChild(olds[i]);
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) {
+        var g = document.createElement('div');
+        g.className = 'ghost';
+        g.style.width = cellPx + 'px';
+        g.style.height = cellPx + 'px';
+        g.style.left = (gapPx + c * (cellPx + gapPx)) + 'px';
+        g.style.top = (gapPx + r * (cellPx + gapPx)) + 'px';
+        $board.appendChild(g);
+      }
+    }
+  }
+
+  function place(t) {
+    t.el.style.width = cellPx + 'px';
+    t.el.style.height = cellPx + 'px';
+    t.el.style.left = (gapPx + t.c * (cellPx + gapPx)) + 'px';
+    t.el.style.top = (gapPx + t.r * (cellPx + gapPx)) + 'px';
+  }
+
+  function paintFont() {
+    for (var i = 0; i < tiles.length; i++) {
+      var t = tiles[i];
+      var len = String(t.v).length;
+      var f = cellPx * (len <= 2 ? 0.42 : (len === 3 ? 0.33 : (len === 4 ? 0.26 : 0.21)));
+      t.el.style.fontSize = Math.max(11, Math.round(f)) + 'px';
+    }
+  }
+
+  function tileClass(v) {
+    if (v === 1) return 'tile t1';
+    if (v === 2) return 'tile t2';
+    if (v === 3) return 'tile t3';
+    if (v === 6) return 'tile t6';
+    if (v === 12) return 'tile t12';
+    if (v === 24) return 'tile t24';
+    if (v === 48) return 'tile t48';
+    if (v === 96) return 'tile t96';
+    if (v === 192) return 'tile t192';
+    if (v === 384) return 'tile t384';
+    if (v === 768) return 'tile t768';
+    if (v === 1536) return 'tile t1536';
+    return 'tile tbig';
+  }
+
+  function makeTile(r, c, v, isNew) {
+    var el = document.createElement('div');
+    el.className = tileClass(v) + (isNew ? ' new' : '');
+    var span = document.createElement('div');
+    span.className = 'v';
+    span.textContent = String(v);
+    el.appendChild(span);
+    var t = { r: r, c: c, v: v, el: el, dead: false, merged: false };
+    place(t);
+    $board.appendChild(el);
+    tiles.push(t);
+    grid[r][c] = t;
+    paintFont();
+    return t;
+  }
+
+  function refreshTile(t) {
+    t.el.className = tileClass(t.v);
+    t.el.firstChild.textContent = String(t.v);
+    paintFont();
+  }
+
+  function emptyCells() {
+    var out = [];
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) if (!grid[r][c]) out.push([r, c]);
+    }
+    return out;
+  }
+
+  function addRandom(isNew) {
+    var cells = emptyCells();
+    if (!cells.length) return null;
+    var pick = cells[Math.floor(Math.random() * cells.length)];
+    var t = makeTile(pick[0], pick[1], nextValue, isNew !== false);
+    // 用掉预览的那一块，立刻摇下一块 —— 忘了这一步，整局都只会出同一个数
+    nextValue = newValue();
+    $next.textContent = String(nextValue);
+    return t;
+  }
+
+  /* =========================================================
+   * 四、移动
+   * ========================================================= */
+  var DIRS = {
+    left: { dr: 0, dc: -1 },
+    right: { dr: 0, dc: 1 },
+    up: { dr: -1, dc: 0 },
+    down: { dr: 1, dc: 0 }
+  };
+
+  /**
+   * 一次滑动。
+   *
+   * 关键点：Threes 里「一块牌一回合只能合一次」。
+   * 所以合并后要把 prev 标记 merged，后面再来的牌只能贴到它后面，不能连锁吞并。
+   * 少了这个标记，6 6 6 会变成 12 而不是 6 6（合成 12 后又被 6 合一次），分数直接翻倍。
+   */
+  function slide(dirName) {
+    if (over || busy) return false;
+    var d = DIRS[dirName];
+    if (!d) return false;
+
+    var moved = false;
+    var mergedTiles = [];
+    var gained = 0;
+
+    // 遍历顺序必须「从目标边往里」：往左滑就先处理左边的列，否则后面的牌会插队
+    var rows = [], cols = [];
+    for (var i = 0; i < N; i++) { rows.push(i); cols.push(i); }
+    if (d.dc > 0) cols.reverse();
+    if (d.dr > 0) rows.reverse();
+    var outer = d.dc !== 0 ? rows : cols;
+    var inner = d.dc !== 0 ? cols : rows;
+
+    for (var oi = 0; oi < outer.length; oi++) {
+      var line = [];
+      for (var ii = 0; ii < inner.length; ii++) {
+        var r = d.dc !== 0 ? outer[oi] : inner[ii];
+        var c = d.dc !== 0 ? inner[ii] : outer[oi];
+        if (grid[r][c]) line.push(grid[r][c]);
+      }
+      if (!line.length) continue;
+
+      var target = 0;
+      var prev = null;
+      for (var k = 0; k < line.length; k++) {
+        var t = line[k];
+        var nr = d.dc !== 0 ? outer[oi] : target;
+        var nc = d.dc !== 0 ? target : outer[oi];
+
+        if (prev && !prev.merged && canMerge(prev.v, t.v)) {
+          prev.v = prev.v + t.v;
+          prev.merged = true;
+          gained += prev.v;
+          t.dead = true;
+          grid[t.r][t.c] = null;
+          // 合并的牌从盘面拿走，但要等动画结束再删 DOM
+          t.r = prev.r; t.c = prev.c;
+          mergedTiles.push(prev);
+          moved = true;
+          // 合成后位置不变，prev 继续占着这一格
+          continue;
+        }
+
+        if (t.r !== nr || t.c !== nc) {
+          grid[t.r][t.c] = null;
+          t.r = nr; t.c = nc;
+          grid[nr][nc] = t;
+          place(t);
+          moved = true;
+        }
+        prev = t;
+        target++;
+      }
+    }
+
+    if (!moved) return false;
+
+    busy = true;
+    if (gained > 0) {
+      score += gained;
+      $score.textContent = formatNum(score);
+      if (score > best) { best = score; saveBest(best); $best.textContent = formatNum(best); }
+    }
+
+    setTimeout(function () {
+      // 收掉被吃掉的牌
+      for (var i = 0; i < tiles.length; i++) {
+        if (tiles[i].dead) {
+          var el = tiles[i].el;
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        }
+      }
+      tiles = tiles.filter(function (t) { return !t.dead; });
+
+      // 合并后的牌重绘（值变了、颜色要变）
+      for (var m = 0; m < mergedTiles.length; m++) {
+        refreshTile(mergedTiles[m]);
+        (function (el) {
+          el.classList.add('pop');
+          setTimeout(function () { el.classList.remove('pop'); }, 180);
+        })(mergedTiles[m].el);
+      }
+      for (var n = 0; n < tiles.length; n++) tiles[n].merged = false;
+
+      addRandom(true);
+      busy = false;
+      checkOver();
+    }, 110);
+
+    return true;
+  }
+
+  function formatNum(n) {
+    n = n + '';
+    var out = '', p = 0;
+    for (var i = n.length - 1; i >= 0; i--) {
+      if (p === 3) { out = ',' + out; p = 0; }
+      out = n.charAt(i) + out;
+      p++;
+    }
+    return out;
+  }
+
+  function hasMove() {
+    if (emptyCells().length) return true;
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) {
+        var t = grid[r][c];
+        if (!t) return true;
+        if (c + 1 < N && canMerge(t.v, grid[r][c + 1].v)) return true;
+        if (r + 1 < N && canMerge(t.v, grid[r + 1][c].v)) return true;
+      }
+    }
+    return false;
+  }
+
+  function checkOver() {
+    if (hasMove()) return;
+    over = true;
+    // 结算星星：按分数分档。1500 分大概是「合出 96」的水平，给孩子一个可达到的台阶
+    var st = score >= 1500 ? 5 : (score >= 600 ? 4 : (score >= 200 ? 3 : (score >= 60 ? 2 : 1)));
+    award(st, score, '合到 ' + formatNum(boardMax()) + ' · ' + score + ' 分');
+    var mins = startedAt ? Math.max(1, Math.round((Date.now() - startedAt) / 60000)) : 0;
+    $sheet.innerHTML =
+      '<div class="big">🧩</div>' +
+      '<h2>走不动啦</h2>' +
+      '<div class="num">' + formatNum(score) + '</div>' +
+      '<p>最高 ' + formatNum(best) + ' 分' + (mins ? ' · 玩了 ' + mins + ' 分钟' : '') + '</p>' +
+      '<div class="stars">' + repeatStar(st) + '</div>' +
+      '<div class="row"><button id="btnAgain">再来一局</button></div>';
+    $veil.classList.remove('hide');
+    document.getElementById('btnAgain').onclick = function () { start(); };
+  }
+
+  function repeatStar(n) {
+    var s = '';
+    for (var i = 0; i < 5; i++) s += (i < n ? '⭐' : '·');
+    return s;
+  }
+
+  function award(stars, sc, sub) {
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) window.KidsSafe.award('threes', stars, sc, sub);
+    } catch (e) { /* 浏览器里直接打开没有桥 */ }
+  }
+
+  /* =========================================================
+   * 五、开新局
+   * ========================================================= */
+  function start() {
+    $veil.classList.add('hide');
+    $sheet.innerHTML = '';
+    for (var i = 0; i < tiles.length; i++) {
+      if (tiles[i].el.parentNode) tiles[i].el.parentNode.removeChild(tiles[i].el);
+    }
+    tiles = [];
+    grid = [];
+    for (var r = 0; r < N; r++) {
+      grid.push([]);
+      for (var c = 0; c < N; c++) grid[r].push(null);
+    }
+    score = 0;
+    over = false;
+    busy = false;
+    adjust = [10, 10, 10];
+    lastNew = 0;
+    repeat = 0;
+    startedAt = Date.now();
+    $score.textContent = '0';
+    $best.textContent = formatNum(best);
+
+    // 首局两块：一块 1、一块 2 —— 和 Threes! 一致，第一手就能教孩子「1+2=3」
+    nextValue = Math.random() < 0.5 ? 1 : 2;
+    var cells = [];
+    for (var rr = 0; rr < N; rr++) for (var cc = 0; cc < N; cc++) cells.push([rr, cc]);
+    var p1 = cells.splice(Math.floor(Math.random() * cells.length), 1)[0];
+    makeTile(p1[0], p1[1], 1, true);
+    var p2 = cells.splice(Math.floor(Math.random() * cells.length), 1)[0];
+    makeTile(p2[0], p2[1], 2, true);
+    $next.textContent = String(nextValue);
+    measure();
+  }
+
+  /* =========================================================
+   * 六、输入
+   * ========================================================= */
+  var touchStart = null;
+
+  $board.addEventListener('touchstart', function (e) {
+    if (!e.touches || !e.touches.length) return;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+  }, { passive: true });
+
+  $board.addEventListener('touchend', function (e) {
+    if (!touchStart) return;
+    var t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if (!t) { touchStart = null; return; }
+    var dx = t.clientX - touchStart.x;
+    var dy = t.clientY - touchStart.y;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    // 触点太短当成误触，宁可不动也别乱滑
+    if (Math.max(adx, ady) < 18) { touchStart = null; return; }
+    slide(adx > ady ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+    touchStart = null;
+  }, { passive: true });
+
+  // 鼠标拖动也给上：桌面端调试、以及家长用电脑试玩
+  var mouseStart = null;
+  $board.addEventListener('mousedown', function (e) {
+    mouseStart = { x: e.clientX, y: e.clientY };
+  });
+  window.addEventListener('mouseup', function (e) {
+    if (!mouseStart) return;
+    var dx = e.clientX - mouseStart.x, dy = e.clientY - mouseStart.y;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    mouseStart = null;
+    if (Math.max(adx, ady) < 18) return;
+    slide(adx > ady ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+  });
+
+  window.addEventListener('keydown', function (e) {
+    var map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down' };
+    var dir = map[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    slide(dir);
+  });
+
+  document.getElementById('btnNew').onclick = function () { start(); };
+
+  window.addEventListener('resize', function () { measure(); });
+
+  /* =========================================================
+   * 七、测试钩子
+   * ========================================================= */
+  window.__t3 = {
+    N: N,
+    MAX_VALUE: MAX_VALUE,
+    canMerge: canMerge,
+    newValue: newValue,
+    /** 摆一副固定盘面，方便断言：[[1,2,3,0],...]，0 表示空 */
+    load: function (rows) {
+      start();
+      for (var i = 0; i < tiles.length; i++) {
+        if (tiles[i].el.parentNode) tiles[i].el.parentNode.removeChild(tiles[i].el);
+      }
+      tiles = [];
+      for (var r = 0; r < N; r++) { grid[r] = []; for (var c = 0; c < N; c++) grid[r].push(null); }
+      for (var rr = 0; rr < N; rr++) {
+        for (var cc = 0; cc < N; cc++) {
+          var v = rows[rr] && rows[rr][cc];
+          if (v) makeTile(rr, cc, v, false);
+        }
+      }
+      measure();
+    },
+    slide: slide,
+    score: function () { return score; },
+    best: function () { return best; },
+    over: function () { return over; },
+    busy: function () { return busy; },
+    board: function () {
+      var out = [];
+      for (var r = 0; r < N; r++) {
+        out.push(grid[r].map(function (t) { return t ? t.v : 0; }));
+      }
+      return out;
+    },
+    start: start,
+    setScore: function (v) { score = v; $score.textContent = formatNum(v); },
+    checkOver: checkOver,
+    hasMove: hasMove
+  };
+
+  loadBest();
+  $best.textContent = formatNum(best);
+  start();
+  measure();
+})();
+</script>
+</body>
+</html>

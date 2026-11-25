@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>词语组合</title>
+<style>
+  /*
+   * 词语组合 —— 连连看玩法：把打乱的字块按顺序连成一个词。
+   *
+   * 判定规则（和英语版完全一致，只是单位从「字」换成「字母」）：
+   *   1. 每次点一块，接在当前串后面；
+   *   2. 当前串必须是某个未完成词的前缀，否则这一下不算，串保持不变；
+   *   3. 串等于某个词 → 这个词消掉，得分；
+   *   4. 所有词消完 → 过关。
+   *
+   * 为什么不做拖拽连线：孩子手指容易中途抬起，拖断就得重来。
+   * 点选 + 画线，视觉上还是「连连看」，但每步都能反悔（再点一次取消）。
+   *
+   * 配色按要求走绿色系：墨绿草地底 + 米白字牌，字用深绿。
+   */
+  :root{
+    --ink:#14432C; --card:#FFFDF3;
+    --deep:#123A26; --mid:#2C7A4B; --grass:#3E9C5C; --lime:#D6FF9E;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden; color:#F2FDEB;
+    font-family:-apple-system,"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    user-select:none; -webkit-user-select:none;
+  }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column; gap:6px;
+    padding:8px 12px 10px;
+    background:
+      radial-gradient(circle at 16% 6%, rgba(184,233,134,.32) 0%, rgba(184,233,134,0) 46%),
+      radial-gradient(circle at 84% 92%, rgba(18,58,38,.55) 0%, rgba(18,58,38,0) 52%),
+      linear-gradient(165deg,#1E5C3B 0%,#2C7A4B 48%,#3E9C5C 100%);
+  }
+  /* 草地颗粒：两层小圆点，比纯渐变耐看，也不用图片 */
+  #app::before{
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.14;
+    background-image:
+      radial-gradient(circle, #FFFFFF 1px, transparent 1.6px),
+      radial-gradient(circle, #B8E986 1px, transparent 1.6px);
+    background-size:26px 26px, 33px 33px;
+    background-position:0 0, 12px 18px;
+  }
+
+  .hud{ position:relative; z-index:2; display:flex; align-items:center; gap:7px; flex:none; }
+  .chip{
+    font-size:11.5px; padding:5px 9px; border-radius:10px;
+    background:rgba(255,255,255,.16); color:#EAFBE0; white-space:nowrap;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  .chip b{ color:#D6FF9E; font-weight:800; }
+  .spacer{ flex:1; }
+  .score{ font-size:12px; color:#EAFBE0; }
+  .score b{ font-size:16px; color:#FFF; font-weight:800; }
+
+  #stage{ position:relative; z-index:1; flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+  #grid{
+    position:relative; display:grid; gap:8px; width:100%; align-content:center; justify-content:center;
+  }
+  /* 连线层必须是 grid 的绝对定位子元素：跟着 grid 走，坐标才对得上 */
+  #lines{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:3; overflow:visible; }
+
+  .tile{
+    position:relative; z-index:2; aspect-ratio:1/1; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#FFFDF3,#F3EAD6);
+    color:var(--ink); font-weight:800;
+    box-shadow:0 3px 0 #B9AA8A, inset 0 0 0 2px rgba(255,255,255,.7);
+    transition:transform .12s ease, box-shadow .12s ease;
+    font-size:26px; line-height:1;
+  }
+  .tile:active{ transform:translateY(2px); box-shadow:0 1px 0 #B9AA8A; }
+  .tile.picked{
+    background:linear-gradient(180deg,#D8F5B4,#9BDC63);
+    box-shadow:0 3px 0 #5E9B33, inset 0 0 0 2px rgba(255,255,255,.65);
+    transform:translateY(-3px);
+  }
+  .tile.wrong{ animation:shake .3s; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px) rotate(-2deg); }
+    60%{ transform:translateX(6px) rotate(2deg); } 85%{ transform:translateX(-3px); }
+  }
+  .tile.gone{ animation:vanish .26s forwards; pointer-events:none; }
+  @keyframes vanish{
+    0%{ transform:scale(1); opacity:1; }
+    55%{ transform:scale(1.14); opacity:1; }
+    100%{ transform:scale(.2); opacity:0; }
+  }
+
+  .tray{
+    position:relative; z-index:4; flex:none; display:flex; align-items:center; gap:8px;
+    min-height:50px; padding:6px 10px; border-radius:14px;
+    background:rgba(12,46,29,.55); box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+  }
+  #picked{ flex:1; min-width:0; display:flex; gap:5px; align-items:center; overflow:hidden; }
+  #picked .p{
+    font-size:17px; font-weight:800; color:#123A26; background:#D6FF9E;
+    border-radius:8px; padding:3px 7px; line-height:1.2;
+  }
+  #picked .hint{ font-size:11.5px; color:rgba(234,251,224,.72); }
+  button{
+    font:inherit; font-weight:700; font-size:12.5px; color:#123A26; border:none;
+    border-radius:10px; padding:8px 12px; background:#D6FF9E;
+    box-shadow:0 2px 0 #6E9E36; min-height:36px; white-space:nowrap;
+  }
+  button:active{ transform:translateY(2px); box-shadow:0 0 0 #6E9E36; }
+  button.ghost{ background:rgba(255,255,255,.18); color:#EAFBE0; box-shadow:0 2px 0 rgba(0,0,0,.18); }
+  /* 结算弹窗是米白底，页面上的浅色 ghost 按钮放进去等于隐形，这里单给一套深字色 */
+  .sheet button.ghost{ background:#EEF3E8; color:#3C5B47; box-shadow:0 2px 0 #D5E2D3; }
+
+  .veil{
+    position:absolute; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    padding:18px; background:rgba(9,34,21,.55);
+  }
+  .veil.hide{ display:none; }
+  .sheet{
+    width:min(380px,100%); max-height:100%; overflow:auto;
+    background:#FFFDF5; color:#14432C; border-radius:20px; padding:18px 18px 16px;
+    text-align:center; box-shadow:0 16px 34px rgba(0,20,10,.4), inset 0 0 0 2px #E6DCC4;
+  }
+  .sheet h2{ margin:0 0 6px; font-size:19px; }
+  .sheet p{ margin:0 0 10px; font-size:13px; color:#5C7566; line-height:1.6; }
+  .sheet .big{ font-size:34px; line-height:1.1; margin-bottom:4px; }
+  .sheet .words{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:6px 0 12px; }
+  .sheet .words u{
+    text-decoration:none; font-size:13px; font-weight:700; color:#1E5C3B;
+    background:#E8F7D6; border-radius:9px; padding:5px 9px;
+  }
+  .sheet .row{ display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+  .stars{ font-size:24px; letter-spacing:2px; margin:2px 0 8px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hud">
+    <div class="chip">第 <b id="lv">1</b> 关</div>
+    <div class="chip"><b id="done">0</b> / <span id="total">4</span> 词</div>
+    <div class="spacer"></div>
+    <div class="score">得分 <b id="score">0</b></div>
+  </div>
+
+  <div id="stage">
+    <div id="grid">
+      <svg id="lines" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </div>
+
+  <div class="tray">
+    <div id="picked"><span class="hint">点第一个字开始连词</span></div>
+    <button class="ghost" id="btnClear">重选</button>
+  </div>
+
+  <div class="veil hide" id="veil">
+    <div class="sheet" id="sheet"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+   * 一、词库
+   * ========================================================= */
+  var WORDS2 = [
+    '春天', '夏天', '秋天', '冬天', '太阳', '月亮', '星星', '白云', '彩虹', '下雨',
+    '爸爸', '妈妈', '爷爷', '奶奶', '哥哥', '姐姐', '弟弟', '妹妹', '朋友', '老师',
+    '学校', '教室', '书包', '铅笔', '橡皮', '作业', '上课', '写字', '读书', '图画',
+    '苹果', '香蕉', '西瓜', '葡萄', '草莓', '橘子', '米饭', '面条', '鸡蛋', '牛奶',
+    '小狗', '小猫', '小鸟', '蝴蝶', '蜜蜂', '青蛙', '金鱼', '兔子', '老虎', '大象',
+    '红色', '黄色', '蓝色', '绿色', '白色', '黑色', '高兴', '快乐', '勇敢', '认真',
+    '跑步', '踢球', '游泳', '画画', '唱歌', '跳舞', '举手', '帮忙', '谢谢', '再见'
+  ];
+
+  var WORDS4 = [
+    '一心一意', '三心二意', '井井有条', '马马虎虎', '认认真真', '高高兴兴',
+    '开开心心', '干干净净', '明明白白', '清清楚楚', '快快乐乐', '平平安安',
+    '健健康康', '团团圆圆', '十全十美', '五颜六色', '四面八方', '七上八下',
+    '百发百中', '千军万马', '万紫千红', '春暖花开', '鸟语花香', '风和日丽',
+    '阳光明媚', '山清水秀', '湖光山色', '绿树成荫', '瓜熟蒂落', '水落石出',
+    '守株待兔', '画蛇添足', '亡羊补牢', '刻舟求剑', '掩耳盗铃', '自相矛盾',
+    '狐假虎威', '井底之蛙', '拔苗助长', '叶公好龙', '塞翁失马', '熟能生巧',
+    '勤能补拙', '笨鸟先飞', '持之以恒', '专心致志', '全神贯注', '聚精会神'
+  ];
+
+  var KEY_BEST = 'ksword.zh.best';
+
+  function rand(n) { return Math.floor(Math.random() * n); }
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = rand(i + 1);
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function sample(arr, n) { return shuffle(arr.slice()).slice(0, n); }
+
+  /**
+   * 选列数：先保证最后一行别只剩一两个（看着像漏排），再看块大小。
+   * 8 张 4 列正好；10 张 5 列比 4 列（4/4/2）齐；12 张 4 列最齐。
+   */
+  function pickCols(n) {
+    var best = 4, bestRem = -1;
+    for (var c = 4; c <= 5; c++) {
+      var rem = n % c;
+      if (rem === 0) return c;
+      if (rem > bestRem) { bestRem = rem; best = c; }
+    }
+    return best;
+  }
+
+  /**
+   * 组一关的词：第 1~3 关四个两字词（8 张牌），第 4 关开始混一个成语，
+   * 第 6 关起两个成语。总牌数不超过 12 张，一屏放得下。
+   */
+  function makeWords(level) {
+    var n4 = level < 4 ? 0 : (level < 6 ? 1 : 2);
+    var n2 = 4 - n4;
+    return shuffle(sample(WORDS2, n2).concat(n4 > 0 ? sample(WORDS4, n4) : []));
+  }
+
+  /* =========================================================
+   * 二、状态
+   * ========================================================= */
+  var $grid = document.getElementById('grid');
+  var $lines = document.getElementById('lines');
+  var $picked = document.getElementById('picked');
+  var $veil = document.getElementById('veil');
+  var $sheet = document.getElementById('sheet');
+  var $lv = document.getElementById('lv');
+  var $done = document.getElementById('done');
+  var $total = document.getElementById('total');
+  var $score = document.getElementById('score');
+
+  var G = {
+    level: 1, words: [], remain: [], cells: [], picked: [],
+    score: 0, wrong: 0, startedAt: 0, busy: false, cols: 4
+  };
+
+  function loadBest() {
+    try { return parseInt(localStorage.getItem(KEY_BEST), 10) || 1; } catch (e) { return 1; }
+  }
+  function saveBest(v) {
+    try { localStorage.setItem(KEY_BEST, String(v)); } catch (e) {}
+  }
+
+  function cur() {
+    var s = '';
+    for (var i = 0; i < G.picked.length; i++) s += G.cells[G.picked[i]].ch;
+    return s;
+  }
+
+  function isPrefix(s) {
+    for (var i = 0; i < G.remain.length; i++) if (G.remain[i].indexOf(s) === 0) return true;
+    return false;
+  }
+
+  function exactWord(s) {
+    for (var i = 0; i < G.remain.length; i++) if (G.remain[i] === s) return G.remain[i];
+    return null;
+  }
+
+  /* =========================================================
+   * 三、渲染
+   * ========================================================= */
+  function startLevel() {
+    $veil.classList.add('hide');
+    $sheet.innerHTML = '';
+    G.words = makeWords(G.level);
+    G.remain = G.words.slice();
+    G.picked = [];
+    G.score = 0;
+    G.wrong = 0;
+    G.busy = false;
+    G.startedAt = Date.now();
+
+    // 每个字拆成一块再整体打乱。同一个字可能来自不同的词，
+    // 但判定只认字符、且「每种字的块数 = 各词对该字的需求总数」，
+    // 所以先连哪个词都不会把后面的词卡死。
+    var chars = [];
+    for (var i = 0; i < G.words.length; i++) {
+      for (var k = 0; k < G.words[i].length; k++) chars.push(G.words[i].charAt(k));
+    }
+    shuffle(chars);
+
+    G.cols = pickCols(chars.length);
+    $grid.innerHTML = '';
+    $grid.appendChild($lines);
+    $lines.innerHTML = '';
+    $grid.style.gridTemplateColumns = 'repeat(' + G.cols + ',minmax(0,1fr))';
+
+    $score.textContent = '0';
+    $lv.textContent = String(G.level);
+    $done.textContent = '0';
+    $total.textContent = String(G.words.length);
+    renderPicked();
+
+    G.cells = [];
+    for (var c = 0; c < chars.length; c++) {
+      (function (idx) {
+        var el = document.createElement('div');
+        el.className = 'tile';
+        el.textContent = chars[idx];
+        el.addEventListener('click', function () { tap(idx); });
+        $grid.appendChild(el);
+        G.cells.push({ ch: chars[idx], el: el, used: false });
+      })(c);
+    }
+    // 等一帧再量尺寸，避免拿到 0 宽
+    requestAnimationFrame(function () { sizeTiles(); drawLines(); });
+  }
+
+  /** 字号跟块宽走：4 列时块宽约 76vp，一个汉字取 0.5 倍宽刚好。 */
+  function sizeTiles() {
+    if (!G.cells.length) return;
+    var bw = G.cells[0].el.getBoundingClientRect().width;
+    if (!bw) return;
+    var fs = Math.max(15, Math.min(38, Math.round(bw * 0.5)));
+    for (var i = 0; i < G.cells.length; i++) G.cells[i].el.style.fontSize = fs + 'px';
+  }
+
+  function renderPicked() {
+    if (G.picked.length === 0) {
+      $picked.innerHTML = '<span class="hint">点第一个字开始连词</span>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < G.picked.length; i++) html += '<span class="p">' + G.cells[G.picked[i]].ch + '</span>';
+    $picked.innerHTML = html;
+  }
+
+  /* =========================================================
+   * 四、连线（SVG）
+   * ========================================================= */
+  function centerOf(el) {
+    var g = $grid.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    return { x: r.left - g.left + r.width / 2, y: r.top - g.top + r.height / 2 };
+  }
+
+  function drawLines(solid) {
+    var g = $grid.getBoundingClientRect();
+    if (!g.width || !g.height) return;
+    $lines.setAttribute('viewBox', '0 0 ' + g.width + ' ' + g.height);
+    var pts = [];
+    for (var i = 0; i < G.picked.length; i++) pts.push(centerOf(G.cells[G.picked[i]].el));
+
+    var html = '';
+    if (pts.length >= 2) {
+      var d = '';
+      for (var k = 0; k < pts.length; k++) {
+        d += (k === 0 ? 'M' : 'L') + pts[k].x.toFixed(1) + ' ' + pts[k].y.toFixed(1);
+      }
+      html += '<path d="' + d + '" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="6" ' +
+        'stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 14"/>';
+      html += '<path d="' + d + '" fill="none" stroke="rgba(214,255,158,.6)" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    // 星形节点放在每段连线的中点上：概念图里星星是「线上的节点」，
+    // 挂在字块中心会正好压住字，看着像脏点。
+    for (var p = 0; p + 1 < pts.length; p++) {
+      var mx = (pts[p].x + pts[p + 1].x) / 2;
+      var my = (pts[p].y + pts[p + 1].y) / 2;
+      html += '<text x="' + mx.toFixed(1) + '" y="' + (my + 6).toFixed(1) +
+        '" font-size="' + (solid ? 18 : 15) + '" fill="#FFFFFF" opacity=".95" ' +
+        'text-anchor="middle">✦</text>';
+    }
+    $lines.innerHTML = html;
+  }
+
+  /* =========================================================
+   * 五、点击
+   * ========================================================= */
+  function tap(idx) {
+    if (G.busy) return;
+    var cell = G.cells[idx];
+    if (!cell || cell.used) return;
+
+    // 再点一次已选中的块 = 取消它（以及它后面的）
+    var at = G.picked.indexOf(idx);
+    if (at >= 0) {
+      var removed = G.picked.splice(at);
+      for (var i = 0; i < removed.length; i++) G.cells[removed[i]].el.classList.remove('picked');
+      renderPicked();
+      drawLines();
+      return;
+    }
+
+    var next = cur() + cell.ch;
+    if (!isPrefix(next)) {
+      G.wrong++;
+      cell.el.classList.add('wrong');
+      (function (el) { setTimeout(function () { el.classList.remove('wrong'); }, 320); })(cell.el);
+      return;
+    }
+
+    G.picked.push(idx);
+    cell.el.classList.add('picked');
+    renderPicked();
+    drawLines();
+
+    var word = exactWord(next);
+    if (word) {
+      G.busy = true;
+      drawLines(true);
+      var got = G.picked.slice();
+      setTimeout(function () {
+        for (var i = 0; i < got.length; i++) {
+          var c = G.cells[got[i]];
+          c.used = true;
+          c.el.classList.add('gone');
+          (function (el) {
+            setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+          })(c.el);
+        }
+        G.picked = [];
+        $lines.innerHTML = '';
+        renderPicked();
+        G.remain = G.remain.filter(function (w) { return w !== word; });
+        G.score += word.length * 10;
+        $score.textContent = String(G.score);
+        $done.textContent = String(G.words.length - G.remain.length);
+        G.busy = false;
+        if (G.remain.length === 0) finish(true);
+      }, 230);
+    }
+  }
+
+  function clearPick() {
+    if (G.busy) return;
+    for (var i = 0; i < G.picked.length; i++) G.cells[G.picked[i]].el.classList.remove('picked');
+    G.picked = [];
+    renderPicked();
+    $lines.innerHTML = '';
+  }
+
+  /* =========================================================
+   * 六、结算
+   * ========================================================= */
+  function award(stars, level, sub) {
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        window.KidsSafe.award('wordzh', stars, level, sub);
+      }
+    } catch (e) { /* 浏览器里直接打开没有桥 */ }
+  }
+
+  function finish(ok) {
+    var secs = Math.round((Date.now() - G.startedAt) / 1000);
+    if (!ok) {
+      $sheet.innerHTML = '<div class="big">🌱</div><h2>再来一次</h2>' +
+        '<div class="row"><button id="btnAgain">重开本关</button></div>';
+      document.getElementById('btnAgain').onclick = function () { startLevel(); };
+      $veil.classList.remove('hide');
+      return;
+    }
+    var stars = G.wrong === 0 ? 3 : (G.wrong <= 2 ? 2 : 1);
+    award(stars, G.level, G.words.length + ' 个词 · ' + secs + ' 秒');
+    if (G.level + 1 > loadBest()) saveBest(G.level + 1);
+
+    var starHtml = '';
+    for (var i = 0; i < 3; i++) starHtml += (i < stars ? '⭐' : '☆');
+    $sheet.innerHTML =
+      '<div class="big">🌿</div>' +
+      '<h2>全部连对啦</h2>' +
+      '<div class="stars">' + starHtml + '</div>' +
+      '<p>' + G.score + ' 分 · ' + secs + ' 秒' + (G.wrong ? ' · 点错 ' + G.wrong + ' 次' : '') + '</p>' +
+      '<div class="words">' + G.words.map(function (w) { return '<u>' + w + '</u>'; }).join('') + '</div>' +
+      '<div class="row"><button id="btnNext">下一关</button>' +
+      '<button class="ghost" id="btnHome">歇一会</button></div>';
+    document.getElementById('btnNext').onclick = function () { G.level++; startLevel(); };
+    document.getElementById('btnHome').onclick = function () { showHome(); };
+    $veil.classList.remove('hide');
+  }
+
+  function showHome() {
+    $veil.classList.remove('hide');
+    $grid.innerHTML = '';
+    $grid.appendChild($lines);
+    $lines.innerHTML = '';
+    // 首页摆一排示例字块，别让背景空着
+    G.cols = 4;
+    $grid.style.gridTemplateColumns = 'repeat(4,minmax(0,1fr))';
+    G.cells = [];
+    var demo = ['春', '天', '花', '开', '快', '乐', '朋', '友'];
+    for (var i = 0; i < demo.length; i++) {
+      var el = document.createElement('div');
+      el.className = 'tile';
+      el.textContent = demo[i];
+      $grid.appendChild(el);
+      G.cells.push({ ch: demo[i], el: el, used: true });
+    }
+    requestAnimationFrame(sizeTiles);
+    $picked.innerHTML = '<span class="hint">点第一个字开始连词</span>';
+    $sheet.innerHTML =
+      '<div class="big">🌿</div>' +
+      '<h2>词语组合</h2>' +
+      '<p>把打乱的字按顺序连成词语<br>两个字的词、四个字的成语都有</p>' +
+      '<p style="font-size:12px;color:#7B917F">点一下字块就接上，接不上会抖一下<br>再点已选的字可以取消</p>' +
+      '<div class="row"><button id="btnStart">开始第 ' + loadBest() + ' 关</button></div>';
+    document.getElementById('btnStart').onclick = function () {
+      G.level = loadBest();
+      startLevel();
+    };
+  }
+
+  document.getElementById('btnClear').addEventListener('click', clearPick);
+  window.addEventListener('resize', function () {
+    sizeTiles();
+    if (G.picked.length) drawLines();
+  });
+
+  /* =========================================================
+   * 七、测试钩子
+   * ========================================================= */
+  window.__wz = {
+    words2: WORDS2,
+    words4: WORDS4,
+    makeWords: makeWords,
+    start: function (lv) { G.level = lv || 1; startLevel(); },
+    state: function () { return G; },
+    cells: function () { return G.cells.map(function (c) { return c.ch; }); },
+    remain: function () { return G.remain.slice(); },
+    picked: function () { return cur(); },
+    tap: tap,
+    // 按字点：找第一个没用过、也没被选中的同字块，测试里拼词方便
+    tapLetter: function (ch) {
+      for (var i = 0; i < G.cells.length; i++) {
+        if (!G.cells[i].used && G.picked.indexOf(i) < 0 && G.cells[i].ch === ch) { tap(i); return i; }
+      }
+      return -1;
+    },
+    spell: function (w) {
+      for (var i = 0; i < w.length; i++) {
+        if (this.tapLetter(w.charAt(i)) < 0) return false;
+        if (cur().length !== i + 1) return false;  // 有字被拒
+      }
+      return true;
+    },
+    isPrefix: isPrefix,
+    exactWord: exactWord,
+    clear: clearPick,
+    finish: finish,
+    isSheetOpen: function () { return !$veil.classList.contains('hide'); },
+    score: function () { return G.score; },
+    wrong: function () { return G.wrong; },
+    lineNodes: function () { return $lines.childNodes.length; },
+    cols: function () { return G.cols; }
+  };
+
+  showHome();
+})();
+</script>
+</body>
+</html>

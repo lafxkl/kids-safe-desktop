@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>蛇蛇方块</title>
+<style>
+  * { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; background: #0E0E12;
+    font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  }
+  #app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+  header {
+    display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+    padding-top: calc(8px + env(safe-area-inset-top));
+    background: #15151C;
+  }
+  /* 标签和数字用 flex 分开，别靠 margin 挤——数字变两位时会压到「长度」上 */
+  .stat { display: inline-flex; align-items: baseline; gap: 5px; color: #FFD400; font-size: 13px; font-weight: 800; }
+  .stat span { color: #FFF; font-size: 19px; min-width: 18px; display: inline-block; }
+  .stat span.bump { animation: bump .32s ease-out; }
+  @keyframes bump {
+    0% { transform: scale(1); color: #FFF; }
+    40% { transform: scale(1.45); color: #9CFF6B; }
+    100% { transform: scale(1); color: #FFF; }
+  }
+  .spacer { flex: 1; }
+  button {
+    font: inherit; font-weight: 800; color: #2A2000; background: #FFD400;
+    border: none; border-radius: 10px; padding: 8px 14px; min-height: 36px;
+    box-shadow: 0 2px 0 #B29200;
+  }
+  button:active { transform: translateY(1px); box-shadow: 0 1px 0 #B29200; }
+
+  #stage { flex: 1; position: relative; min-height: 0; }
+  canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  #hint {
+    position: absolute; left: 0; right: 0; bottom: calc(10px + env(safe-area-inset-bottom));
+    text-align: center; color: #8B8BA0; font-size: 12.5px; pointer-events: none;
+  }
+
+  #start, #over {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+    background: rgba(8,8,12,.82); z-index: 5;
+  }
+  #start.hidden, #over.hidden { display: none; }
+  .title { font-size: 34px; font-weight: 900; letter-spacing: 3px; color: #FFD400; }
+  .title em { display: block; font-style: normal; font-size: 14px; letter-spacing: 6px; color: #A9A9BE; margin-top: 6px; }
+  .desc { font-size: 13.5px; color: #C9C9DA; line-height: 1.9; text-align: center; }
+  .desc b { color: #FFD400; }
+  .big { font-size: 58px; font-weight: 900; color: #FFF; line-height: 1; }
+  .sub { font-size: 13px; color: #A9A9BE; }
+
+  /* 分数飘字 */
+  .pop {
+    position: absolute; transform: translate(-50%,-50%); font-weight: 900;
+    font-size: 20px; color: #FFD400; pointer-events: none;
+    animation: popUp .7s ease-out forwards;
+  }
+  @keyframes popUp {
+    0% { opacity: 1; transform: translate(-50%,-50%) scale(.7); }
+    100% { opacity: 0; transform: translate(-50%,-160%) scale(1.25); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="stat">长度<span id="len">10</span></div>
+    <div class="stat">分数<span id="score">0</span></div>
+    <div class="spacer"></div>
+    <button id="btnReset">重来</button>
+  </header>
+
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="hint">按住屏幕左右拖动，带着小蛇去吃方块</div>
+
+    <div id="start">
+      <div class="title">蛇蛇方块<em>SNAKE BLOCK</em></div>
+      <div class="desc">
+        左右拖动控制小蛇<br>
+        撞上数字方块会<b>缩短同样多的长度</b><br>
+        吃小白球可以变长
+      </div>
+      <button id="btnStart">开始游戏</button>
+    </div>
+
+    <div id="over" class="hidden">
+      <div class="sub">这一局得分</div>
+      <div class="big" id="finalScore">0</div>
+      <div class="sub" id="finalLen">最长长度 10</div>
+      <button id="btnAgain">再来一次</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /*
+   * 玩法参照《Snake VS Block》：小蛇是一串球，自动向上冲，
+   * 玩家只需要左右拖。撞上数字方块就掉同样多的长度，吃小球补长度。
+   * 素材包里的图是 UI 图（金色方块、紫色球），这里按那套配色用 Canvas 重画，
+   * 好处是方块数字和蛇身长度都能随屏幕大小自动缩放，不会糊。
+   */
+
+  var W = 480, H = 800;          // 逻辑分辨率
+  var LANES = 8;
+  var LANE_W = W / LANES;
+  var SNAKE_Y = 0.74;            // 蛇头在屏幕高度的位置
+  var BALL_R = 13;               // 蛇身球半径
+  var SNAKE_W = 34;              // 碰撞宽度
+
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var elLen = document.getElementById('len');
+  var elScore = document.getElementById('score');
+  var elStart = document.getElementById('start');
+  var elOver = document.getElementById('over');
+  var stage = document.getElementById('stage');
+
+  var dpr = 1, scale = 1, offX = 0, offY = 0;
+
+  var G = null;                  // 游戏状态
+  var raf = 0;
+
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var aw = stage.clientWidth, ah = stage.clientHeight;
+    if (aw <= 0 || ah <= 0) return;
+    // 画布铺满舞台，逻辑世界 (480x800) 等比缩进画布里居中，
+    // 这样两侧留白是背景色而不是黑边，也不会把世界裁掉
+    scale = Math.min(aw / W, ah / H);
+    cv.width = Math.floor(aw * dpr);
+    cv.height = Math.floor(ah * dpr);
+    offX = (aw - W * scale) / 2;
+    offY = (ah - H * scale) / 2;
+    draw();
+  }
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function randInt(a, b) { return Math.floor(rand(a, b + 1)); }
+
+  // ────────── 状态 ──────────
+  function newGame() {
+    G = {
+      x: W / 2,
+      targetX: W / 2,
+      len: 10,
+      maxLen: 10,
+      score: 0,
+      speed: 150,               // 像素/秒
+      scroll: 0,
+      blocks: [],
+      pellets: [],
+      parts: [],
+      nextRowAt: 120,
+      over: false,
+      started: false,
+      popups: []
+    };
+    elLen.textContent = 10;
+    elScore.textContent = 0;
+    elOver.classList.add('hidden');
+    draw();
+  }
+
+  function start() {
+    newGame();
+    G.started = true;
+    elStart.classList.add('hidden');
+    cancelAnimationFrame(raf);
+    last = 0;
+    raf = requestAnimationFrame(loop);
+  }
+
+  // ────────── 生成 ──────────
+  function spawnRow() {
+    // 先决定哪几段留空：两条 2 格宽的通道，保证一定有路可走
+    var open = [];
+    for (var i = 0; i < LANES; i++) open.push(false);
+
+    var gaps = [];
+    var tries = 0;
+    while (gaps.length < 2 && tries < 30) {
+      var g = randInt(0, LANES - 2);
+      var tooClose = gaps.some(function (x) { return Math.abs(x - g) < 2; });
+      if (!tooClose) gaps.push(g);
+      tries++;
+    }
+    gaps.forEach(function (g) {
+      open[g] = true;
+      open[g + 1] = true;
+    });
+
+    // 其余格子从左往右铺方块
+    var lane = 0;
+    while (lane < LANES) {
+      if (open[lane]) { lane++; continue; }
+
+      var run = Math.min(randInt(1, 2), LANES - lane);
+      // 不能让方块跨过后面的通道
+      for (var k = 1; k < run; k++) {
+        if (open[lane + k]) { run = k; break; }
+      }
+      if (run <= 0) { lane++; continue; }
+
+      // 数字不超过蛇长的一半，否则一撞就死，没法救
+      var maxN = Math.max(2, Math.min(6, Math.round(G.len / 3)));
+      G.blocks.push({
+        x: lane * LANE_W,
+        w: run * LANE_W - 6,
+        y: -80,
+        h: 46,
+        n: randInt(1, maxN),
+        hue: randInt(0, 360)
+      });
+      lane += run;
+    }
+
+    // 通道里偶尔放一颗小白球
+    gaps.forEach(function (g) {
+      if (Math.random() < 0.5) {
+        G.pellets.push({ x: (g + 1) * LANE_W, y: -80 - rand(6, 40), r: 7 });
+      }
+    });
+  }
+
+  // ────────── 更新 ──────────
+  var last = 0;
+  function loop(now) {
+    if (!G || G.over) return;
+    if (!last) last = now;
+    var dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    update(dt);
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function update(dt) {
+    G.speed = Math.min(150 + G.score * 1.2, 380);
+    var dy = G.speed * dt;
+    G.scroll += dy;
+
+    // 横向跟随（阻尼，手感更顺）
+    G.x += (G.targetX - G.x) * Math.min(1, dt * 12);
+    G.x = Math.max(SNAKE_W / 2, Math.min(W - SNAKE_W / 2, G.x));
+
+    // 滚动方块
+    for (var i = G.blocks.length - 1; i >= 0; i--) {
+      var b = G.blocks[i];
+      b.y += dy;
+      if (b.y > H + 80) { G.blocks.splice(i, 1); continue; }
+
+      // 与蛇头碰撞
+      var sy = H * SNAKE_Y;
+      if (b.y + b.h > sy - BALL_R && b.y < sy + BALL_R) {
+        if (Math.abs((b.x + b.w / 2) - G.x) < (b.w / 2 + SNAKE_W / 2 - 6)) {
+          hitBlock(b, i);
+          continue;
+        }
+      }
+    }
+
+    // 小白球
+    for (var j = G.pellets.length - 1; j >= 0; j--) {
+      var p = G.pellets[j];
+      p.y += dy;
+      if (p.y > H + 40) { G.pellets.splice(j, 1); continue; }
+      var sy2 = H * SNAKE_Y;
+      if (Math.abs(p.x - G.x) < SNAKE_W / 2 + p.r && Math.abs(p.y - sy2) < BALL_R + p.r + 8) {
+        G.len += 2;
+        G.maxLen = Math.max(G.maxLen, G.len);
+        G.score += 5;
+        burst(p.x, p.y, 6, '#FFFFFF');
+        popup(p.x, p.y - 14, '+2', '#FFFFFF');
+        flashLen();
+        G.pellets.splice(j, 1);
+        updateHud();
+      }
+    }
+
+    // 粒子
+    for (var k = G.parts.length - 1; k >= 0; k--) {
+      var q = G.parts[k];
+      q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 900 * dt; q.life -= dt;
+      if (q.life <= 0) G.parts.splice(k, 1);
+    }
+
+    // 到时间生成新的一行
+    if (G.scroll > G.nextRowAt) {
+      spawnRow();
+      G.nextRowAt = G.scroll + rand(150, 210);
+    }
+  }
+
+  function hitBlock(b, idx) {
+    var lost = b.n;
+    G.blocks.splice(idx, 1);
+    burst(b.x + b.w / 2, b.y + b.h / 2, 16, 'hsl(' + b.hue + ',85%,58%)');
+    G.len -= lost;
+    G.score += 1;
+    popup(b.x + b.w / 2, b.y, '-' + lost, '#FF6B6B');
+    updateHud();
+    if (G.len <= 0) {
+      G.len = 0;
+      gameOver();
+    }
+  }
+
+  function burst(x, y, n, color) {
+    for (var i = 0; i < n; i++) {
+      var a = rand(0, Math.PI * 2), s = rand(60, 260);
+      G.parts.push({ x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 80, life: rand(.3, .7), color: color });
+    }
+  }
+
+  function popup(x, y, txt, color) {
+    var el = document.createElement('div');
+    el.className = 'pop';
+    el.textContent = txt;
+    el.style.color = color;
+    el.style.left = (offX + x * scale) + 'px';
+    el.style.top = (offY + y * scale) + 'px';
+    stage.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 720);
+  }
+
+  function updateHud() {
+    elLen.textContent = Math.max(0, G.len);
+    elScore.textContent = G.score;
+  }
+
+  /** 吃到球时让长度数字跳一下，光看蛇身变长不明显。 */
+  function flashLen() {
+    elLen.classList.remove('bump');
+    // 强制重排，否则同一个 class 连续加两次不会重放动画
+    void elLen.offsetWidth;
+    elLen.classList.add('bump');
+  }
+
+  function gameOver() {
+    G.over = true;
+    cancelAnimationFrame(raf);
+    document.getElementById('finalScore').textContent = G.score;
+    document.getElementById('finalLen').textContent = '最长长度 ' + G.maxLen;
+    elOver.classList.remove('hidden');
+    // 星星按分数分档，封顶 6 颗：蛇是「停不下来」的游戏，给太多会盖过学习类
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        var st = 1 + Math.floor(G.score / 20);
+        if (st > 6) st = 6;
+        window.KidsSafe.award('snake', st, G.score, '最长 ' + G.maxLen + ' 节');
+      }
+    } catch (e) {}
+  }
+
+  // ────────── 绘制 ──────────
+  function draw() {
+    if (!G) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var fullW = cv.width / dpr, fullH = cv.height / dpr;
+    var bgFull = ctx.createLinearGradient(0, 0, 0, fullH);
+    bgFull.addColorStop(0, '#141420');
+    bgFull.addColorStop(1, '#0B0B12');
+    ctx.fillStyle = bgFull;
+    ctx.fillRect(0, 0, fullW, fullH);
+
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * offX, dpr * offY);
+
+    // 车道参考线
+    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    ctx.lineWidth = 1;
+    for (var l = 1; l < LANES; l++) {
+      ctx.beginPath();
+      ctx.moveTo(l * LANE_W, 0);
+      ctx.lineTo(l * LANE_W, H);
+      ctx.stroke();
+    }
+
+    // 方块
+    G.blocks.forEach(function (b) {
+      roundRect(b.x + 3, b.y, b.w, b.h, 10);
+      var g1 = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
+      g1.addColorStop(0, 'hsl(' + b.hue + ',88%,64%)');
+      g1.addColorStop(1, 'hsl(' + b.hue + ',82%,44%)');
+      ctx.fillStyle = g1;
+      ctx.fill();
+
+      // 高光
+      ctx.save();
+      roundRect(b.x + 8, b.y + 5, b.w - 16, b.h * 0.34, 6);
+      ctx.fillStyle = 'rgba(255,255,255,.32)';
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 ' + Math.round(b.h * 0.52) + 'px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(b.n, b.x + b.w / 2, b.y + b.h / 2 + 1);
+    });
+
+    // 小白球
+    G.pellets.forEach(function (p) {
+      var rg = ctx.createRadialGradient(p.x - 2, p.y - 2, 1, p.x, p.y, p.r);
+      rg.addColorStop(0, '#FFFFFF');
+      rg.addColorStop(1, '#C9C9DA');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = rg;
+      ctx.fill();
+    });
+
+    drawSnake();
+
+    // 粒子
+    G.parts.forEach(function (q) {
+      ctx.globalAlpha = Math.max(0, q.life * 1.6);
+      ctx.fillStyle = q.color;
+      ctx.fillRect(q.x - 2, q.y - 2, 4, 4);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // 蛇身每颗球的间距：长度越长压得越紧，让整条蛇尽量留在画面里。
+  // 不压缩的话，长度一过 11 尾巴就出了屏幕，吃球看不出任何变化。
+  function bodySpacing(count) {
+    var avail = H + BALL_R - H * SNAKE_Y;      // 蛇头到屏幕下沿的可用高度
+    if (count <= 1) return BALL_R * 2 - 2;
+    var s = avail / (count - 1);
+    return Math.max(13, Math.min(BALL_R * 2 - 2, s));
+  }
+
+  function drawSnake() {
+    var sy = H * SNAKE_Y;
+    var count = Math.max(1, G.len);
+    var gap = bodySpacing(count);
+    // 从蛇尾往蛇头画（蛇头压在最上层不会被尾巴盖住）。
+    // 这里必须是 continue 不能是 break：越界的是尾巴，
+    // 一旦 break 连蛇头都不画了——长度刚超过 11 时整条蛇凭空消失就是这个问题。
+    for (var i = count - 1; i >= 0; i--) {
+      var y = sy + i * gap;
+      if (y > H + BALL_R) continue;
+      var t = i / Math.max(1, count - 1);
+      var r = BALL_R * (1 - t * 0.22);
+      var rg = ctx.createRadialGradient(G.x - r * 0.35, y - r * 0.35, 1, G.x, y, r);
+      rg.addColorStop(0, i === 0 ? '#FFE97A' : '#FFD400');
+      rg.addColorStop(1, i === 0 ? '#F0B400' : '#B29200');
+
+      ctx.beginPath();
+      ctx.arc(G.x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = rg;
+      ctx.fill();
+      if (i === 0) drawFace(G.x, y, r);
+    }
+  }
+
+  function drawFace(x, y, r) {
+    ctx.fillStyle = '#2A2000';
+    ctx.beginPath();
+    ctx.arc(x - r * 0.34, y - r * 0.1, r * 0.19, 0, Math.PI * 2);
+    ctx.arc(x + r * 0.34, y - r * 0.1, r * 0.19, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#2A2000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y + r * 0.18, r * 0.34, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // ────────── 输入 ──────────
+  function pointerX(ev) {
+    var rc = cv.getBoundingClientRect();
+    return (ev.clientX - rc.left - offX) / scale;
+  }
+
+  var dragging = false;
+  cv.addEventListener('pointerdown', function (ev) {
+    if (!G || !G.started || G.over) return;
+    ev.preventDefault();
+    dragging = true;
+    G.targetX = pointerX(ev);
+    cv.setPointerCapture && cv.setPointerCapture(ev.pointerId);
+  }, { passive: false });
+
+  cv.addEventListener('pointermove', function (ev) {
+    if (!dragging || !G || G.over) return;
+    ev.preventDefault();
+    G.targetX = pointerX(ev);
+  }, { passive: false });
+
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+    cv.addEventListener(t, function () { dragging = false; });
+  });
+
+  window.addEventListener('keydown', function (ev) {
+    if (!G || !G.started || G.over) return;
+    if (ev.key === 'ArrowLeft' || ev.key === 'a') G.targetX = Math.max(SNAKE_W / 2, G.targetX - LANE_W);
+    if (ev.key === 'ArrowRight' || ev.key === 'd') G.targetX = Math.min(W - SNAKE_W / 2, G.targetX + LANE_W);
+  });
+
+  document.getElementById('btnStart').onclick = start;
+  document.getElementById('btnAgain').onclick = start;
+  document.getElementById('btnReset').onclick = function () {
+    cancelAnimationFrame(raf);
+    elStart.classList.remove('hidden');
+    elOver.classList.add('hidden');
+    newGame();
+  };
+
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 120); });
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () { layout(); }).observe(stage);
+  }
+
+  // ────────── 测试钩子 ──────────
+  window.__snake = {
+    start: start,
+    state: function () { return G; },
+    update: function (dt) { update(dt); draw(); },
+    spawnRow: spawnRow,
+    setX: function (x) { G.x = x; G.targetX = x; },
+    layout: layout
+  };
+
+  newGame();
+  layout();
+})();
+</script>
+</body>
+</html>

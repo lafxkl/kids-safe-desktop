@@ -1,0 +1,88 @@
+@media (max-width: 900px) {
+  /* 1. 根节点先能被屏幕缩住，否则后面做什么都白费 */
+  html, body {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 2. 游戏容器写死 1300px，是右侧被裁的直接原因 */
+  #gamePageContainer {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 3. 顶栏：允许换行 */
+  #topBar {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    flex-wrap: wrap !important;
+    padding: 4px 8px !important;
+    box-sizing: border-box !important;
+  }
+  #headerLinks { display: none !important; }
+
+  /* 4. 三列容器 → 单列竖排 */
+  #game, #loadingContainer {
+    position: static !important;
+    top: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 0 10px 20px !important;
+    box-sizing: border-box !important;
+    /* 桌面版靠 nowrap 防止日志列折行，手机上必须解开，否则整页横向溢出 */
+    white-space: normal !important;
+  }
+
+  .column {
+    display: block !important;
+    position: static !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 0 12px 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  #leftColumn, #midColumn, #rightColumn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 0 12px 0 !important;
+  }
+  #midColumn { margin-top: 0 !important; }
+
+  .tabsContainer { position: static !important; padding-bottom: 6px !important; }
+
+  /* 5. 固定宽度元素放开 */
+  .btn {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .btn.modern { width: auto !important; }
+  .btnContent { white-space: normal !important; }
+  #game table, #game .tabInner, #game .tabInner table {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  td, th { white-space: normal !important; }
+
+  /* 6. 日志限高，不然把下面的内容顶到很远 */
+  #gameLog { max-height: 160px !important; }
+}

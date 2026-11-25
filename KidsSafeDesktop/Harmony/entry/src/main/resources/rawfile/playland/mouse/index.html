@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>老鼠吃奶酪</title>
+<style>
+  /*
+   * 老鼠吃奶酪 —— 移植自 D:/Downloads/mice_eat_cheese_android-master（Qt + C++，3090 行）
+   *
+   * 原版怎么跑起来的：LFEngine（Qt Quick 封装）把每个格子画成 31px 的 QGraphicsPixmapItem，
+   * 玩家点右侧四个方向按钮调 movePlayer()。算法全在 map.h / game.h 里，那部分是可以直译的。
+   *
+   * 原样照搬会踩到的六个问题（这一版逐条修了）：
+   *   1. 素材是梗图 —— mouse.jpg 是婴儿照片、cat.jpg 是表情包脸，给儿童用不合适。改成 canvas 手绘。
+   *   2. 致死物密度 50% —— genOther() 里「非路径格有一半变成猫或陷阱」，31×31 就是 430 只，
+   *      开局脚下四周全是猫，动一下就掉命。这里改成「按关卡给固定只数」，13×13 大约 8 只。
+   *   3. 猫会堵路 —— 撞猫会掉命回起点，等于猫格不可通行；但原版随机撒猫不做检查，
+   *      经常把奶酪围死在角落，一关永远过不去。这里每撒一只都跑一次 BFS，堵路就撤回。
+   *   4. 起点可能被围 —— 原版起始格随机，四周可能就是猫，掉命回起点后又撞，连掉到死。
+   *      这里起点 3×3 全挖开，且 2 格内绝不放猫。
+   *   5. 31×31 手机上每格 13vp，看不清 —— 改成 13~17 格自适应，整图可见（儿童游戏全局可见比滚动跟随好）。
+   *   6. 结束只有一行红字 —— 补结算弹窗、星星上报、关卡进度存档。
+   *
+   * 保留的原版规则（这些是手感，不能动）：
+   *   · 5 条随机游走路径，每条终点一个奶酪（genCheese=5）
+   *   · 生命 10 → 这里按关卡给 4~6
+   *   · 撞猫/陷阱：掉 1 命 + 回起点；撞墙：只是不动（不罚）
+   *   · 吃满奶酪数过关
+   *
+   * 新增的两条：
+   *   · 掉命后 1.2 秒无敌。原版没有，回起点手一抖又撞上会连掉命。
+   *     无敌期间猫和陷阱照样进不去，只是不扣命，等于给个缓冲窗口。
+   *   · 去掉原版的 extraCheeseProb（空地 1/5 概率额外长奶酪）。原因见 buildMap 里的注释。
+   */
+  :root{
+    --forest:#1B4332; --moss:#2D6A4F; --leaf:#52B788; --lime:#D8F3A3;
+    --cream:#FFF8E7; --gold:#FFC93C; --ink:#123425;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden; color:#EFFAE4;
+    font-family:-apple-system,"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    user-select:none; -webkit-user-select:none;
+  }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column; gap:8px;
+    padding:8px 10px 6px;
+    background:
+      radial-gradient(circle at 18% 4%, rgba(120,200,140,.30) 0%, rgba(120,200,140,0) 44%),
+      radial-gradient(circle at 82% 96%, rgba(8,28,18,.50) 0%, rgba(8,28,18,0) 52%),
+      linear-gradient(168deg,#1B4332 0%,#24603F 52%,#2D6A4F 100%);
+  }
+  #app::before{
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.13;
+    background-image:
+      radial-gradient(circle, #FFFFFF 1px, transparent 1.6px),
+      radial-gradient(circle, #B8E986 1px, transparent 1.6px);
+    background-size:24px 24px, 31px 31px;
+  }
+
+  /* ---------- 顶部状态 ---------- */
+  .hud{ position:relative; z-index:2; display:flex; align-items:center; gap:6px; flex:none; }
+  .chip{
+    font-size:11.5px; padding:5px 9px; border-radius:10px; white-space:nowrap;
+    background:rgba(255,255,255,.15); color:#EAFBE0;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  .chip b{ color:var(--lime); font-weight:800; font-size:13px; }
+  .spacer{ flex:1; }
+  .hearts{ display:flex; gap:3px; align-items:center; }
+  .hearts i{
+    width:11px; height:11px; display:block; border-radius:3px 3px 5px 5px;
+    background:#FF5D6C; box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);
+    transition:transform .18s ease, opacity .18s ease, background .18s ease;
+  }
+  .hearts i.off{ background:rgba(255,255,255,.22); box-shadow:none; transform:scale(.78); opacity:.55; }
+
+  /* ---------- 地图 ---------- */
+  #stage{
+    position:relative; z-index:1; flex:1; min-height:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #cv{
+    display:block; border-radius:14px;
+    box-shadow:0 6px 0 rgba(6,24,15,.42), inset 0 0 0 2px rgba(255,255,255,.10);
+    transition:transform .08s ease;
+  }
+  #cv.bump{ transform:translateY(2px) scale(.994); }
+  #cv.shake{ animation:tshake .24s; }
+  @keyframes tshake{
+    0%,100%{ transform:translateX(0); } 30%{ transform:translateX(-4px) rotate(-.6deg); }
+    70%{ transform:translateX(4px) rotate(.6deg); }
+  }
+
+  /* ---------- 方向键 ---------- */
+  #pad{
+    flex:none; height:172px; position:relative; z-index:2;
+    display:grid; gap:6px; justify-content:center; align-content:center;
+    grid-template-columns:52px 52px 52px;
+    grid-template-rows:52px 52px 52px;
+  }
+  #pad button{
+    width:52px; height:52px; padding:0; border:0; border-radius:15px;
+    font-size:19px; line-height:1; cursor:pointer; color:#173D29; font-weight:800;
+    background:linear-gradient(180deg,#FFF8E7,#E9DDBB);
+    box-shadow:0 4px 0 #A98C58, inset 0 0 0 2px rgba(255,255,255,.75);
+    transition:transform .07s ease, box-shadow .07s ease;
+  }
+  #pad button:active, #pad button.down{
+    transform:translateY(3px); box-shadow:0 1px 0 #A98C58, inset 0 0 0 2px rgba(255,255,255,.6);
+  }
+  #pad .u{ grid-column:2; grid-row:1; }
+  #pad .l{ grid-column:1; grid-row:2; }
+  #pad .d{ grid-column:2; grid-row:3; }
+  #pad .r{ grid-column:3; grid-row:2; }
+  #pad .mid{
+    grid-column:2; grid-row:2; width:52px; height:52px; border-radius:15px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; opacity:.5;
+  }
+
+  /* ---------- 结算 ---------- */
+  .veil{
+    position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    padding:20px; background:rgba(8,26,17,.62); backdrop-filter:blur(3px);
+  }
+  .veil.hide{ display:none; }
+  .sheet{
+    width:100%; max-width:330px; padding:22px 20px 18px; border-radius:22px; text-align:center;
+    background:linear-gradient(180deg,#FFFDF4,#F5EEDA); color:#274536;
+    box-shadow:0 12px 30px rgba(0,0,0,.34);
+    animation:pop .22s ease-out;
+  }
+  @keyframes pop{ from{ transform:scale(.9); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .sheet .big{ font-size:44px; line-height:1; margin-bottom:6px; }
+  .sheet h2{ margin:0 0 8px; font-size:20px; color:#1B4332; letter-spacing:.5px; }
+  .sheet p{ margin:0 0 12px; font-size:13px; line-height:1.62; color:#5B7261; }
+  .sheet .stars{ font-size:26px; letter-spacing:5px; margin:2px 0 10px; }
+  .sheet .row{ display:flex; gap:10px; justify-content:center; margin-top:14px; }
+  .sheet button{
+    flex:1; max-width:140px; padding:12px 10px; border:0; border-radius:13px;
+    font-size:14.5px; font-weight:700; color:#123425; cursor:pointer;
+    background:linear-gradient(180deg,#A8E063,#7BC24B);
+    box-shadow:0 4px 0 #4E8A2C;
+  }
+  .sheet button:active{ transform:translateY(2px); box-shadow:0 2px 0 #4E8A2C; }
+  /* 幽灵按钮在米白卡片里必须用深字色，否则白字白底看不见 */
+  .sheet button.ghost{
+    background:linear-gradient(180deg,#FFFFFF,#EDE4CE); color:#5B7261;
+    box-shadow:0 4px 0 #C8B994;
+  }
+  .sheet .tips{ font-size:12px; color:#7B917F; margin-top:10px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hud">
+    <span class="chip">第 <b id="lv">1</b> 关</span>
+    <span class="chip">奶酪 <b id="cheese">0</b>/<span id="total">5</span></span>
+    <span class="spacer"></span>
+    <div class="hearts" id="hearts"></div>
+  </div>
+
+  <div id="stage"><canvas id="cv"></canvas></div>
+
+  <div id="pad">
+    <button class="u" data-dir="up" aria-label="上">▲</button>
+    <button class="l" data-dir="left" aria-label="左">◀</button>
+    <div class="mid">🐭</div>
+    <button class="r" data-dir="right" aria-label="右">▶</button>
+    <button class="d" data-dir="down" aria-label="下">▼</button>
+  </div>
+</div>
+
+<div class="veil hide" id="veil"><div class="sheet" id="sheet"></div></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+   * 一、常量
+   * ========================================================= */
+  var WALL = 0, OPEN = 1, CHEESE = 2, CAT = 3, TRAP = 4;
+
+  // 明牌 13 格、15 格、17 格三档：格子够大才看得清，地图够大才找得到奶酪。
+  // 危险物的只数是按「可走面积」配的，不是按关卡无脑加。
+  // 地图生成完之后大约四到五成是草地：13×13 七十来格、15×15 一百一、17×17 一百四。
+  // 第一版把 17×17 配到 25 猫 + 12 陷阱，等于每三格就有一只，孩子根本迈不开腿，所以压到 15+7。
+  var LEVELS = [
+    null,
+    { size: 13, life: 6, cheese: 4, cats: 7,  traps: 3 },
+    { size: 13, life: 6, cheese: 4, cats: 9,  traps: 4 },
+    { size: 15, life: 5, cheese: 5, cats: 11, traps: 5 },
+    { size: 15, life: 5, cheese: 5, cats: 13, traps: 6 },
+    { size: 17, life: 4, cheese: 5, cats: 15, traps: 7 }
+  ];
+  function cfgOf(lv) {
+    if (!(lv >= 1)) lv = 1;
+    if (lv < LEVELS.length) return LEVELS[lv];
+    // 5 关之后只加危险物，地图尺寸封顶，不然格子小到点不准
+    return { size: 17, life: 4, cheese: 5, cats: 18, traps: 8 };
+  }
+
+  var INVULN_MS = 1200;   // 掉命后的无敌时间
+  var MOVE_MS = 150;      // 移动补间时长
+
+  /* =========================================================
+   * 二、地图生成（原版 map.h 的直译 + 可玩性修正）
+   * ========================================================= */
+  function randInt(n) { return Math.floor(Math.random() * n); }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = randInt(i + 1), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function inb(x, y, N) { return x >= 0 && y >= 0 && x < N && y < N; }
+
+  function emptyGrid(N) {
+    var g = [];
+    for (var y = 0; y < N; y++) {
+      var row = [];
+      for (var x = 0; x < N; x++) row.push(WALL);
+      g.push(row);
+    }
+    return g;
+  }
+
+  var DIRS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+  /**
+   * 原版 genPath()：从起点随机游走，走一步挖一格，终点放奶酪。
+   * 原版用 do{}while(rand()%20 != 0) —— 几何分布，平均 20 步但可能只有 1 步。
+   * 这里换成「6 ~ size+5 的均匀步长」，地图小时不至于走出屏幕。
+   */
+  function carvePaths(g, N, sx, sy, count) {
+    var made = [];
+    for (var k = 0; k < count; k++) {
+      var x = sx, y = sy;
+      var walked = [];
+      walked.push(x + ',' + y);
+      // 原版是 do{}while(rand()%20)：几何分布，平均 20 步。那是配 31×31 的比例。
+      // 步数跟着边长走（原版 20 步 / 31 格 ≈ 0.65 倍边长）。
+      // 不用再拉长了：自避游走走到后面四面都是自己的脚印，步数给再多也会提前 break。
+      // 真正撑起可走面积的是下面的 widenTo。
+      var steps = Math.round(N * 0.75) + randInt(N);
+      for (var s = 0; s < steps; s++) {
+        var order = shuffle(DIRS.slice()), moved = false;
+        for (var d = 0; d < 4; d++) {
+          var nx = x + order[d][0], ny = y + order[d][1];
+          if (!inb(nx, ny, N)) continue;
+          // 原版 isRepeat：同一条路径不走回头路（不同路径之间可以交叉）
+          if (walked.indexOf(nx + ',' + ny) >= 0) continue;
+          if (g[ny][nx] === CHEESE) continue;
+          x = nx; y = ny;
+          walked.push(x + ',' + y);
+          g[y][x] = OPEN;
+          moved = true;
+          break;
+        }
+        if (!moved) break;
+      }
+      if (g[y][x] === CHEESE) { k--; continue; }   // 两条路径终点撞上了，这次不算
+      g[y][x] = CHEESE;
+      made.push([x, y]);
+    }
+    return made;
+  }
+
+  /**
+   * 原版 genOther() 前半段：把一部分墙挖成空地。
+   *
+   * 这里只挖「紧挨着已有空地」的墙，所以挖出来的新格一定和已有区域连通，不会挖出孤岛。
+   * 但只扩一圈不够：自避游走（同一条路径不走回头路）在二维格子上很容易把自己困死，
+   * 实测 17×17 上有三成的地图主路径只铺了 5%~10%，剩下全是砖。
+   * 原版靠 genOther 的 25% 空地兜底，所以这里改成「一圈一圈往外晕染，直到可走比例达标」。
+   */
+  function openCount(g, N) {
+    var n = 0;
+    for (var y = 0; y < N; y++) {
+      for (var x = 0; x < N; x++) if (g[y][x] !== WALL) n++;
+    }
+    return n;
+  }
+
+  function widenTo(g, N, target) {
+    var want = Math.floor(N * N * target);
+    var guard = 0;
+    while (openCount(g, N) < want && guard < 60) {
+      var cand = [];
+      for (var y = 1; y < N - 1; y++) {
+        for (var x = 1; x < N - 1; x++) {
+          if (g[y][x] !== WALL) continue;
+          if (g[y][x - 1] !== WALL || g[y][x + 1] !== WALL ||
+              g[y - 1][x] !== WALL || g[y + 1][x] !== WALL) {
+            cand.push([x, y]);
+          }
+        }
+      }
+      if (!cand.length) break;
+      shuffle(cand);
+      // 每轮只吃一半，留着随机性 —— 全吃会变成规整的方块，一眼看出是程序画的
+      var take = Math.max(1, Math.floor(cand.length * 0.38));
+      for (var i = 0; i < take; i++) g[cand[i][1]][cand[i][0]] = OPEN;
+      guard++;
+    }
+  }
+
+  /**
+   * BFS：从起点出发，只能走「非墙、非猫、非陷阱」的格子。
+   * 猫和陷阱也算障碍 —— 撞上去会掉命回起点，等于过不去。
+   * 返回一个二维布尔表。
+   */
+  function reachable(g, N, sx, sy) {
+    var seen = [], y, x;
+    for (y = 0; y < N; y++) {
+      var row = [];
+      for (x = 0; x < N; x++) row.push(false);
+      seen.push(row);
+    }
+    if (!inb(sx, sy, N)) return seen;
+    var q = [[sx, sy]];
+    seen[sy][sx] = true;
+    while (q.length) {
+      var cur = q.shift();
+      for (var d = 0; d < 4; d++) {
+        var nx = cur[0] + DIRS[d][0], ny = cur[1] + DIRS[d][1];
+        if (!inb(nx, ny, N) || seen[ny][nx]) continue;
+        var v = g[ny][nx];
+        if (v === WALL || v === CAT || v === TRAP) continue;
+        seen[ny][nx] = true;
+        q.push([nx, ny]);
+      }
+    }
+    return seen;
+  }
+
+  function allCheeseOk(g, N, sx, sy) {
+    var seen = reachable(g, N, sx, sy);
+    for (var y = 0; y < N; y++) {
+      for (var x = 0; x < N; x++) {
+        if (g[y][x] === CHEESE && !seen[y][x]) return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 撒猫和陷阱。原版是「非路径格一半致死物」，密度 50% 根本没法走；
+   * 这里按关卡给固定只数，并且每撒一只验一次连通性 —— 堵住奶酪就撤回这一只。
+   * 这是原版最大的坑：随机撒不管连通性，经常出现一关永远过不去。
+   */
+  function sprinkle(g, N, sx, sy, cats, traps) {
+    var cand = [];
+    for (var y = 0; y < N; y++) {
+      for (var x = 0; x < N; x++) {
+        if (g[y][x] !== OPEN) continue;
+        // 起点 2 格内不放（Chebyshev 距离），否则出门就撞
+        if (Math.max(Math.abs(x - sx), Math.abs(y - sy)) <= 2) continue;
+        cand.push([x, y]);
+      }
+    }
+    shuffle(cand);
+    var placedCat = 0, placedTrap = 0, guard = 0;
+    for (var i = 0; i < cand.length && guard < cand.length; i++, guard++) {
+      if (placedCat >= cats && placedTrap >= traps) break;
+      var px = cand[i][0], py = cand[i][1];
+      var kind = placedCat < cats ? CAT : TRAP;
+      g[py][px] = kind;
+      if (!allCheeseOk(g, N, sx, sy)) {
+        g[py][px] = OPEN;      // 堵路了，撤回
+        continue;
+      }
+      if (kind === CAT) placedCat++; else placedTrap++;
+    }
+    return { cats: placedCat, traps: placedTrap };
+  }
+
+  function buildMap(cfg) {
+    var N = cfg.size;
+    var g = emptyGrid(N);
+
+    // 原版是整张图随机撒起点。但主路径是从起点往外游走、widenTo 又从主路径往外晕染，
+    // 起点落在角落时，可走区就只朝一侧长，另一半整片是砖，看着像地图没画完。
+    // 放到中段随机偏移一两格，四周晕开才均匀。
+    var sx = Math.floor(N / 2) + randInt(3) - 1;
+    var sy = Math.floor(N / 2) + randInt(3) - 1;
+    sx = Math.max(1, Math.min(N - 2, sx));
+    sy = Math.max(1, Math.min(N - 2, sy));
+    g[sy][sx] = OPEN;
+
+    // 起点 3×3 挖开：原版起点四周可能是猫，掉命回起点又撞，能连掉到死
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        if (inb(sx + dx, sy + dy, N)) g[sy + dy][sx + dx] = OPEN;
+      }
+    }
+
+    carvePaths(g, N, sx, sy, cfg.cheese);
+    // 目标可走比例 42%：低于三成就只剩几条细走廊，孩子满屏找路很难受；
+    // 高过五成又没什么障碍感，猫和陷阱会显得多余。
+    widenTo(g, N, 0.42);
+
+    // 原版还有一条 extraCheeseProb：空地 1/5 概率额外长奶酪。
+    // 那是给 31×31 准备的 —— 215 个空地能多长 43 块，反正过关只要求 5 块，多出来的是送分。
+    // 缩到 13~17 格后空地只有 50~110 个，1/5 仍会多出十几块，HUD 上的「0/5」就成了假进度。
+    // 所以这里关掉，让「图上几块奶酪 = 要吃的几块」。
+    g[sy][sx] = OPEN;
+
+    if (!allCheeseOk(g, N, sx, sy)) return null;
+
+    var got = sprinkle(g, N, sx, sy, cfg.cats, cfg.traps);
+    if (!allCheeseOk(g, N, sx, sy)) return null;
+
+    return { grid: g, N: N, sx: sx, sy: sy, cats: got.cats, traps: got.traps };
+  }
+
+  function genMap(cfg) {
+    for (var i = 0; i < 60; i++) {
+      var r = buildMap(cfg);
+      if (r) return r;
+    }
+    return null;
+  }
+
+  /* =========================================================
+   * 三、状态
+   * ========================================================= */
+  var G = {
+    level: 1, N: 13, cell: 26, W: 0, H: 0,
+    map: null, sx: 0, sy: 0, x: 0, y: 0,
+    life: 6, maxLife: 6, total: 5, got: 0,
+    hurt: 0, score: 0, over: false, win: false,
+    invUntil: 0, anim: null, startedAt: 0
+  };
+
+  var $lv = document.getElementById('lv');
+  var $cheese = document.getElementById('cheese');
+  var $total = document.getElementById('total');
+  var $hearts = document.getElementById('hearts');
+  var $veil = document.getElementById('veil');
+  var $sheet = document.getElementById('sheet');
+  var $cv = document.getElementById('cv');
+  var cv = $cv;
+  var ctx = cv.getContext('2d');
+  var dpr = Math.min(3, window.devicePixelRatio || 1);
+
+  /* =========================================================
+   * 四、绘制
+   * ========================================================= */
+  function roundRect(x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function drawWall(px, py, s) {
+    var m = Math.max(1, s * 0.07);
+    ctx.fillStyle = '#57401F';
+    roundRect(px + m, py + m, s - m * 2, s - m * 2, s * 0.2);
+    ctx.fill();
+    ctx.fillStyle = '#7A5C32';
+    roundRect(px + m + s * 0.07, py + m + s * 0.07,
+      s - m * 2 - s * 0.14, (s - m * 2) * 0.42, s * 0.14);
+    ctx.fill();
+  }
+
+  function drawGround(px, py, s, x, y) {
+    ctx.fillStyle = ((x + y) & 1) ? '#A6D287' : '#9DCB7E';
+    ctx.fillRect(px, py, s, s);
+    ctx.strokeStyle = 'rgba(255,255,255,.16)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(px + 0.5, py + 0.5, s - 1, s - 1);
+  }
+
+  function drawCheese(px, py, s) {
+    var cx = px + s / 2, cy = py + s / 2, r = s * 0.33;
+    ctx.fillStyle = '#E7A115';
+    ctx.beginPath();
+    ctx.moveTo(cx - r, cy + r * 0.72);
+    ctx.lineTo(cx + r, cy + r * 0.72);
+    ctx.lineTo(cx + r, cy - r * 0.1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFC93C';
+    ctx.beginPath();
+    ctx.moveTo(cx - r, cy + r * 0.58);
+    ctx.lineTo(cx + r * 0.94, cy + r * 0.58);
+    ctx.lineTo(cx + r * 0.94, cy - r * 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#DE9A10';
+    ctx.beginPath(); ctx.arc(cx - r * 0.2, cy + r * 0.28, r * 0.16, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.42, cy + r * 0.06, r * 0.12, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.05, cy - r * 0.02, r * 0.09, 0, 7); ctx.fill();
+  }
+
+  function drawCat(px, py, s) {
+    var cx = px + s / 2, cy = py + s / 2, r = s * 0.28;
+    ctx.fillStyle = '#E8743B';
+    // 耳朵
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.95, cy - r * 0.55);
+    ctx.lineTo(cx - r * 0.62, cy - r * 1.5);
+    ctx.lineTo(cx - r * 0.15, cy - r * 0.85);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.95, cy - r * 0.55);
+    ctx.lineTo(cx + r * 0.62, cy - r * 1.5);
+    ctx.lineTo(cx + r * 0.15, cy - r * 0.85);
+    ctx.closePath(); ctx.fill();
+    // 脸
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+    // 眼睛
+    ctx.fillStyle = '#2B1A12';
+    ctx.beginPath(); ctx.arc(cx - r * 0.36, cy - r * 0.12, r * 0.16, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.36, cy - r * 0.12, r * 0.16, 0, 7); ctx.fill();
+    // 鼻子
+    ctx.fillStyle = '#B24A22';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.12);
+    ctx.lineTo(cx - r * 0.14, cy + r * 0.3);
+    ctx.lineTo(cx + r * 0.14, cy + r * 0.3);
+    ctx.closePath(); ctx.fill();
+  }
+
+  function drawTrap(px, py, s) {
+    var cx = px + s / 2, cy = py + s / 2, r = s * 0.31;
+    ctx.fillStyle = '#4A4356';
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#2A2533';
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.68, 0, 7); ctx.fill();
+    ctx.fillStyle = '#15111C';
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.38, 0, 7); ctx.fill();
+    // 四根尖刺
+    ctx.fillStyle = '#6E647F';
+    for (var i = 0; i < 4; i++) {
+      var a = i * Math.PI / 2 + Math.PI / 4;
+      var bx = cx + Math.cos(a) * r * 0.9, by = cy + Math.sin(a) * r * 0.9;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(a) * r * 0.34, by + Math.sin(a) * r * 0.34);
+      ctx.lineTo(bx + Math.cos(a + 0.9) * r * 0.2, by + Math.sin(a + 0.9) * r * 0.2);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function drawMouse(cx, cy, s) {
+    var r = s * 0.34;
+    // 尾巴
+    ctx.strokeStyle = '#B7A6B8';
+    ctx.lineWidth = Math.max(1.4, s * 0.055);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.8, cy + r * 0.5);
+    ctx.quadraticCurveTo(cx + r * 1.7, cy + r * 0.2, cx + r * 1.5, cy - r * 0.7);
+    ctx.stroke();
+    // 耳朵
+    ctx.fillStyle = '#C3B2C4';
+    ctx.beginPath(); ctx.arc(cx - r * 0.62, cy - r * 0.72, r * 0.44, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.5, cy - r * 0.78, r * 0.44, 0, 7); ctx.fill();
+    ctx.fillStyle = '#F0AFC6';
+    ctx.beginPath(); ctx.arc(cx - r * 0.62, cy - r * 0.72, r * 0.24, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.5, cy - r * 0.78, r * 0.24, 0, 7); ctx.fill();
+    // 身体
+    ctx.fillStyle = '#9AA6B2';
+    ctx.beginPath(); ctx.arc(cx, cy + r * 0.12, r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#B4BFC9';
+    ctx.beginPath(); ctx.arc(cx - r * 0.1, cy + r * 0.02, r * 0.62, 0, 7); ctx.fill();
+    // 眼睛与鼻子
+    ctx.fillStyle = '#1D242C';
+    ctx.beginPath(); ctx.arc(cx - r * 0.3, cy - r * 0.1, r * 0.13, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r * 0.3, cy - r * 0.1, r * 0.13, 0, 7); ctx.fill();
+    ctx.fillStyle = '#F0779B';
+    ctx.beginPath(); ctx.arc(cx, cy + r * 0.28, r * 0.1, 0, 7); ctx.fill();
+  }
+
+  function render(now) {
+    if (!G.map) return;
+    var s = G.cell, N = G.N;
+    var t = now || performance.now();
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, G.W, G.H);
+
+    for (var y = 0; y < N; y++) {
+      for (var x = 0; x < N; x++) {
+        var v = G.map[y][x];
+        var px = x * s, py = y * s;
+        if (v === WALL) { drawGround(px, py, s, x, y); drawWall(px, py, s); }
+        else drawGround(px, py, s, x, y);
+      }
+    }
+
+    // 起点标记：孩子掉命后知道该回到哪。
+    // 老鼠正站在上面的时候不画 —— 一圈白环套着老鼠，看着像「选中态」，很别扭。
+    if (G.x !== G.sx || G.y !== G.sy) {
+      var hx = G.sx * s + s / 2, hy = G.sy * s + s / 2;
+      ctx.fillStyle = 'rgba(255,255,255,.16)';
+      ctx.beginPath(); ctx.arc(hx, hy, s * 0.44, 0, 7); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.62)';
+      ctx.lineWidth = Math.max(1.6, s * 0.055);
+      ctx.setLineDash([s * 0.15, s * 0.15]);
+      ctx.beginPath(); ctx.arc(hx, hy, s * 0.40, 0, 7); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    for (var j = 0; j < N; j++) {
+      for (var i = 0; i < N; i++) {
+        var w = G.map[j][i];
+        if (w === CHEESE) drawCheese(i * s, j * s, s);
+        else if (w === CAT) drawCat(i * s, j * s, s);
+        else if (w === TRAP) drawTrap(i * s, j * s, s);
+      }
+    }
+
+    // 老鼠：无敌期间闪烁
+    var blink = G.invUntil > t && Math.floor(t / 110) % 2 === 0;
+    if (!blink) {
+      var ax = G.x, ay = G.y;
+      if (G.anim) {
+        var k = Math.min(1, (t - G.anim.t0) / MOVE_MS);
+        var e = k * k * (3 - 2 * k);          // smoothstep
+        ax = G.anim.fx + (G.x - G.anim.fx) * e;
+        ay = G.anim.fy + (G.y - G.anim.fy) * e;
+        if (k >= 1) G.anim = null;
+      }
+      drawMouse(ax * s + s / 2, ay * s + s / 2, s);
+    }
+  }
+
+  function loop(now) {
+    render(now);
+    requestAnimationFrame(loop);
+  }
+
+  function layout() {
+    var stage = document.getElementById('stage');
+    var w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    var N = G.N;
+    var size = Math.floor(Math.min(w, h));
+    // 取整数格，避免最后一行差半像素出现细缝
+    var cell = Math.max(8, Math.floor(size / N));
+    var px = cell * N;
+    G.cell = cell;
+    G.W = px; G.H = px;
+    cv.style.width = px + 'px';
+    cv.style.height = px + 'px';
+    cv.width = Math.round(px * dpr);
+    cv.height = Math.round(px * dpr);
+    render(performance.now());
+  }
+
+  /* =========================================================
+   * 五、HUD
+   * ========================================================= */
+  function paintHud() {
+    $lv.textContent = String(G.level);
+    $cheese.textContent = String(G.got);
+    $total.textContent = String(G.total);
+    var html = '';
+    for (var i = 0; i < G.maxLife; i++) html += '<i class="' + (i < G.life ? '' : 'off') + '"></i>';
+    $hearts.innerHTML = html;
+  }
+
+  /* =========================================================
+   * 六、游戏流程
+   * ========================================================= */
+  function loadBest() {
+    var v = parseInt(localStorage.getItem('ksmouse.best') || '1', 10);
+    return v >= 1 ? v : 1;
+  }
+  function saveBest(v) {
+    try { localStorage.setItem('ksmouse.best', String(v)); } catch (e) {}
+  }
+
+  function startLevel() {
+    var cfg = cfgOf(G.level);
+    var built = genMap(cfg);
+    if (!built) {
+      // 极端情况下 60 次都没生成成功，退一张 9×9 的保底图，不让玩家卡在空白屏
+      built = genMap({ size: 9, life: 6, cheese: 3, cats: 3, traps: 2 });
+    }
+    G.map = built.grid;
+    G.N = built.N;
+    G.sx = built.sx; G.sy = built.sy;
+    G.x = G.sx; G.y = G.sy;
+    G.maxLife = cfg.life; G.life = cfg.life;
+    G.total = 0;
+    for (var y = 0; y < G.N; y++) {
+      for (var x = 0; x < G.N; x++) if (G.map[y][x] === CHEESE) G.total++;
+    }
+    G.got = 0;
+    G.hurt = 0;
+    G.score = 0;
+    G.over = false;
+    G.win = false;
+    G.invUntil = 0;
+    G.anim = null;
+    G.startedAt = Date.now();
+
+    $veil.classList.add('hide');
+    layout();
+    paintHud();
+  }
+
+  var MOVE = {
+    up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0]
+  };
+
+  function bump() {
+    cv.classList.add('bump');
+    setTimeout(function () { cv.classList.remove('bump'); }, 90);
+  }
+  function shake() {
+    cv.classList.add('shake');
+    setTimeout(function () { cv.classList.remove('shake'); }, 260);
+  }
+
+  function move(dir) {
+    if (G.over || !G.map) return null;
+    var d = MOVE[dir];
+    if (!d) return null;
+    var dx = d[0], dy = d[1];
+    var nx = G.x + dx, ny = G.y + dy;
+
+    if (!inb(nx, ny, G.N) || G.map[ny][nx] === WALL) {
+      bump();          // 撞墙不罚，只是走不动（原版 FailMove 什么都不做，这里给一点触感）
+      return 'wall';
+    }
+
+    var v = G.map[ny][nx];
+
+    if (v === CAT || v === TRAP) {
+      // 无敌窗口内撞危险格：进不去，但也不扣命 —— 就是给刚被弹回起点的孩子
+      // 一点缓冲，不至于手一抖又掉一条命。危险格本身永远不可通行。
+      if (performance.now() < G.invUntil) {
+        shake();
+        return 'guarded';
+      }
+      // 原版：掉一条命 + 回起点
+      G.life--;
+      G.hurt++;
+      G.x = G.sx; G.y = G.sy;
+      G.anim = { fx: nx, fy: ny, t0: performance.now() };
+      G.invUntil = performance.now() + INVULN_MS;
+      paintHud();
+      shake();
+      if (G.life <= 0) { G.life = 0; paintHud(); finish(false); }
+      return v === CAT ? 'cat' : 'trap';
+    }
+
+    G.anim = { fx: G.x, fy: G.y, t0: performance.now() };
+    G.x = nx; G.y = ny;
+
+    if (v === CHEESE) {
+      G.map[ny][nx] = OPEN;
+      G.got++;
+      G.score += 10;
+      paintHud();
+      if (G.got >= G.total) { finish(true); return 'cheese-win'; }
+      return 'cheese';
+    }
+    return 'move';
+  }
+
+  function award(stars, level, sub) {
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) {
+        window.KidsSafe.award('mouse', stars, level, sub);
+      }
+    } catch (e) { /* 浏览器里直接打开没有桥 */ }
+  }
+
+  function finish(ok) {
+    if (G.over) return;
+    G.over = true;
+    G.win = !!ok;
+    var secs = Math.round((Date.now() - G.startedAt) / 1000);
+
+    if (!ok) {
+      $sheet.innerHTML =
+        '<div class="big">🐭</div><h2>被抓住啦</h2>' +
+        '<p>吃到了 ' + G.got + ' / ' + G.total + ' 块奶酪<br>再来一次吧</p>' +
+        '<div class="row"><button id="btnAgain">重开本关</button></div>';
+      document.getElementById('btnAgain').onclick = function () { startLevel(); };
+      $veil.classList.remove('hide');
+      return;
+    }
+
+    // 星星看受伤次数：一次没被撞 3 星，撞一两次 2 星
+    var stars = G.hurt === 0 ? 3 : (G.hurt <= 2 ? 2 : 1);
+    award(stars, G.level, G.total + ' 块奶酪 · ' + secs + ' 秒');
+    if (G.level + 1 > loadBest()) saveBest(G.level + 1);
+
+    var starHtml = '';
+    for (var i = 0; i < 3; i++) starHtml += (i < stars ? '⭐' : '☆');
+    $sheet.innerHTML =
+      '<div class="big">🧀</div>' +
+      '<h2>奶酪全吃到啦</h2>' +
+      '<div class="stars">' + starHtml + '</div>' +
+      '<p>' + G.score + ' 分 · ' + secs + ' 秒' +
+      (G.hurt ? ' · 被抓 ' + G.hurt + ' 次' : ' · 一次没被抓') + '</p>' +
+      '<div class="row"><button id="btnNext">下一关</button>' +
+      '<button class="ghost" id="btnHome">歇一会</button></div>';
+    document.getElementById('btnNext').onclick = function () { G.level++; startLevel(); };
+    document.getElementById('btnHome').onclick = function () { showHome(); };
+    $veil.classList.remove('hide');
+  }
+
+  function showHome() {
+    // 首页也放一张真地图当背景，别让画面空着
+    G.level = loadBest();
+    var cfg = cfgOf(G.level);
+    var built = genMap(cfg);
+    if (built) {
+      G.map = built.grid; G.N = built.N; G.sx = built.sx; G.sy = built.sy;
+      G.x = G.sx; G.y = G.sy;
+      G.maxLife = cfg.life; G.life = cfg.life;
+      G.total = 0;
+      for (var y = 0; y < G.N; y++) {
+        for (var x = 0; x < G.N; x++) if (G.map[y][x] === CHEESE) G.total++;
+      }
+      G.got = 0; G.hurt = 0; G.score = 0; G.over = true; G.win = false;
+      G.invUntil = 0; G.anim = null;
+    }
+    layout();
+    paintHud();
+    $veil.classList.remove('hide');
+    $sheet.innerHTML =
+      '<div class="big">🐭</div>' +
+      '<h2>老鼠吃奶酪</h2>' +
+      '<p>用下面的方向键带小老鼠找奶酪<br>小心猫和陷阱，撞到要回起点</p>' +
+      '<p class="tips">吃满所有奶酪就过关<br>墙上走不过去，猫和陷阱更碰不得</p>' +
+      '<div class="row"><button id="btnStart">开始第 ' + G.level + ' 关</button></div>';
+    document.getElementById('btnStart').onclick = function () { startLevel(); };
+  }
+
+  /* =========================================================
+   * 七、输入
+   * ========================================================= */
+  function bindPad() {
+    var btns = document.querySelectorAll('#pad button');
+    for (var i = 0; i < btns.length; i++) {
+      (function (b) {
+        var dir = b.getAttribute('data-dir');
+        b.addEventListener('click', function () { move(dir); });
+      })(btns[i]);
+    }
+  }
+
+  function bindKeys() {
+    var map = {
+      ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+      w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right'
+    };
+    window.addEventListener('keydown', function (e) {
+      var dir = map[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      move(dir);
+    });
+  }
+
+  function bindSwipe() {
+    var sx0 = 0, sy0 = 0, moved = false;
+    cv.addEventListener('touchstart', function (e) {
+      var t = e.touches[0];
+      sx0 = t.clientX; sy0 = t.clientY; moved = false;
+    }, { passive: true });
+    cv.addEventListener('touchmove', function (e) {
+      if (moved) return;
+      var t = e.touches[0];
+      var dx = t.clientX - sx0, dy = t.clientY - sy0;
+      var TH = 26;
+      if (Math.abs(dx) < TH && Math.abs(dy) < TH) return;
+      moved = true;
+      if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
+      else move(dy > 0 ? 'down' : 'up');
+    }, { passive: true });
+  }
+
+  /* =========================================================
+   * 八、测试钩子
+   * ========================================================= */
+  window.__mc = {
+    CFG: LEVELS,
+    cfgOf: cfgOf,
+    // 单独生成一张地图，不进入游戏（断言生成算法用）
+    gen: function (cfg) {
+      var r = genMap(cfg);
+      return r ? {
+        grid: r.grid, N: r.N, sx: r.sx, sy: r.sy,
+        cats: r.cats, traps: r.traps
+      } : null;
+    },
+    start: function (lv) { G.level = lv || 1; startLevel(); },
+    state: function () {
+      return {
+        level: G.level, N: G.N, life: G.life, maxLife: G.maxLife,
+        total: G.total, got: G.got, hurt: G.hurt, score: G.score,
+        over: G.over, win: G.win, x: G.x, y: G.y, sx: G.sx, sy: G.sy
+      };
+    },
+    map: function () { return G.map ? G.map.map(function (r) { return r.slice(); }) : null; },
+    move: move,
+    pos: function () { return [G.x, G.y]; },
+    startPos: function () { return [G.sx, G.sy]; },
+    cell: function () { return G.cell; },
+    canvasSize: function () { return [G.W, G.H]; },
+    reach: function () { return reachable(G.map, G.N, G.sx, G.sy); },
+    cheesesReachable: function () {
+      var seen = reachable(G.map, G.N, G.sx, G.sy), n = 0, total = 0;
+      for (var y = 0; y < G.N; y++) {
+        for (var x = 0; x < G.N; x++) {
+          if (G.map[y][x] !== CHEESE) continue;
+          total++;
+          if (seen[y][x]) n++;
+        }
+      }
+      return { reachable: n, total: total };
+    },
+    count: function (kind) {
+      var map = { wall: WALL, open: OPEN, cheese: CHEESE, cat: CAT, trap: TRAP };
+      var k = map[kind], n = 0;
+      for (var y = 0; y < G.N; y++) {
+        for (var x = 0; x < G.N; x++) if (G.map[y][x] === k) n++;
+      }
+      return n;
+    },
+    // 把某格强制改成某种值，断言用（比如在老鼠旁边摆一只猫）
+    set: function (x, y, kind) {
+      var map = { wall: WALL, open: OPEN, cheese: CHEESE, cat: CAT, trap: TRAP };
+      G.map[y][x] = map[kind];
+    },
+    teleport: function (x, y) { G.x = x; G.y = y; G.anim = null; },
+    finish: finish,
+    isSheetOpen: function () { return !$veil.classList.contains('hide'); },
+    invuln: function () { return G.invUntil > performance.now(); },
+    clearInvuln: function () { G.invUntil = 0; },
+    best: loadBest,
+    resetBest: function () { try { localStorage.removeItem('ksmouse.best'); } catch (e) {} }
+  };
+
+  /* =========================================================
+   * 九、启动
+   * ========================================================= */
+  bindPad();
+  bindKeys();
+  bindSwipe();
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(loop);
+  showHome();
+})();
+</script>
+</body>
+</html>

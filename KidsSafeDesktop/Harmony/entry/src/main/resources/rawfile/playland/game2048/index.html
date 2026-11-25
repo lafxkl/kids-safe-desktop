@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>2048</title>
+<style>
+  * { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #FBFAF5;
+    font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  }
+  /* 配色取自参考图：米白底 + 金褐色标题 + 同色系实心按钮 */
+  :root {
+    --gold: #E2C08C;
+    --gold-deep: #D9B47C;
+    --btn: #E4C68F;
+    --btn-down: #D6B478;
+    --ink: #7A6446;
+    --sub: #B9A182;
+  }
+  #app { position: absolute; inset: 0; overflow: hidden; }
+
+  .screen {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    padding: calc(18px + env(safe-area-inset-top)) 26px calc(18px + env(safe-area-inset-bottom)) 26px;
+    box-sizing: border-box;
+  }
+  .screen.hidden { display: none; }
+
+  /* ── 首页 ── */
+  .logo {
+    font-size: 74px; font-weight: 800; letter-spacing: 2px;
+    color: var(--gold); text-align: center; margin-top: 6vh; line-height: 1.05;
+    text-shadow: 0 2px 0 rgba(226,192,140,.35);
+  }
+  .sub { text-align: center; color: var(--sub); font-size: 15px; letter-spacing: 3px; margin: 10px 0 26px; }
+  .big {
+    font: inherit; font-size: 26px; font-weight: 800; color: #fff;
+    background: var(--btn); border: none; border-radius: 8px;
+    padding: 18px 10px; margin-bottom: 16px; width: 100%;
+    box-shadow: 0 3px 0 var(--btn-down);
+  }
+  .big:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--btn-down); }
+  .big.small { font-size: 20px; padding: 15px 10px; }
+  .menu-foot { flex: 1; display: flex; align-items: flex-end; justify-content: center; }
+  .menu-foot span { color: #D8C9B0; font-size: 11.5px; }
+
+  /* ── 游戏 ── */
+  #game { padding: calc(8px + env(safe-area-inset-top)) 12px 8px 12px; }
+  #game header { display: flex; align-items: center; gap: 10px; flex: none; }
+  #game header button {
+    font: inherit; font-weight: 700; font-size: 13px; color: #fff;
+    background: var(--btn); border: none; border-radius: 9px;
+    padding: 9px 10px; min-height: 34px; min-width: 42px;
+    white-space: nowrap;      /* 不加就会变成「‹ 返」换行「回」 */
+    box-shadow: 0 2px 0 var(--btn-down);
+  }
+  #game header button:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--btn-down); }
+  #game header button:disabled { opacity: .45; }
+  .scores { flex: 1; display: flex; gap: 10px; justify-content: center; }
+  .sc {
+    background: #F4EBD9; border-radius: 9px; padding: 4px 14px; text-align: center;
+    min-width: 66px;
+  }
+  .sc span { display: block; font-size: 10.5px; color: var(--sub); letter-spacing: 1px; }
+  .sc b { display: block; font-size: 17px; color: var(--ink); line-height: 1.25; }
+
+  #boardArea { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  #boardWrap {
+    position: relative; flex: none;
+    background: #F0E6D2; border-radius: 12px;
+    box-shadow: inset 0 0 0 2px #E4D6BC, 0 8px 20px rgba(180,150,100,.18);
+  }
+  #cells, #tiles { position: absolute; inset: 0; }
+  .cell { position: absolute; border-radius: 8px; background: rgba(226,205,170,.34); }
+  .tile {
+    position: absolute; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; transition: left .09s ease-out, top .09s ease-out, background .12s;
+    will-change: left, top;
+  }
+  .tile .v { line-height: 1; }
+  .tile.new { animation: pop .16s ease-out; }
+  .tile.merged { animation: bump .18s ease-out; }
+  @keyframes pop { 0% { transform: scale(.2); } 100% { transform: scale(1); } }
+  @keyframes bump { 0% { transform: scale(1); } 55% { transform: scale(1.16); } 100% { transform: scale(1); } }
+
+  #hint { flex: none; text-align: center; padding: 6px 0 2px; }
+  #hint span { color: #C9B695; font-size: 12px; letter-spacing: 1px; }
+
+  /* ── 弹层 ── */
+  #mask {
+    position: absolute; inset: 0; border-radius: 12px;
+    background: rgba(250,246,238,.9);
+    display: flex; align-items: center; justify-content: center; z-index: 9;
+  }
+  #mask.hidden { display: none; }
+  .panel { text-align: center; padding: 10px; }
+  .panel h2 { margin: 0 0 6px; font-size: 26px; color: var(--gold-deep); font-weight: 800; }
+  .panel p { margin: 0 0 16px; font-size: 13px; color: var(--sub); }
+  .panel .row { display: flex; gap: 10px; justify-content: center; }
+  .panel button {
+    font: inherit; font-size: 15px; font-weight: 800; color: #fff;
+    background: var(--btn); border: none; border-radius: 8px; padding: 12px 20px;
+    box-shadow: 0 3px 0 var(--btn-down);
+  }
+  .panel button.ghost { background: #EFE3CB; color: var(--ink); box-shadow: 0 3px 0 #DCCBA8; }
+  .panel button:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--btn-down); }
+
+  /* ── 排行榜 / 帮助 ── */
+  .page-title { font-size: 22px; font-weight: 800; color: var(--gold-deep); text-align: center; margin: 4px 0 16px; }
+  .back {
+    font: inherit; font-size: 13px; font-weight: 700; color: #fff; background: var(--btn);
+    border: none; border-radius: 9px; padding: 8px 14px; align-self: flex-start;
+    box-shadow: 0 2px 0 var(--btn-down);
+  }
+  .rankTable { flex: 1; overflow-y: auto; }
+  .rankRow {
+    display: flex; align-items: center; gap: 12px;
+    background: #F6EEDC; border-radius: 10px; padding: 11px 14px; margin-bottom: 9px;
+  }
+  .rankRow i {
+    font-style: normal; font-weight: 900; font-size: 15px; color: #fff;
+    width: 26px; height: 26px; border-radius: 50%; background: var(--btn);
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .rankRow.top i { background: var(--gold-deep); }
+  .rankRow b { font-size: 18px; color: var(--ink); flex: 1; }
+  .rankRow span { font-size: 11px; color: var(--sub); }
+  .empty { text-align: center; color: #C9B695; font-size: 13px; padding: 30px 0; }
+  .helpBody { flex: 1; overflow-y: auto; color: #7E6C53; font-size: 13.5px; line-height: 2; }
+  .helpBody b { color: var(--ink); }
+  .helpBody .k { display: inline-block; background: #F4EBD9; border-radius: 6px; padding: 0 7px; margin: 0 2px; color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 首页 -->
+  <section id="menu" class="screen">
+    <div class="logo">2048</div>
+    <div class="sub">一起来玩 2048</div>
+    <button class="big" data-size="4">4x4</button>
+    <button class="big" data-size="5">5x5</button>
+    <button class="big small" id="btnRank">排行榜</button>
+    <button class="big small" id="btnHelp">帮助</button>
+    <div class="menu-foot"><span>滑动或按方向键，合并相同数字</span></div>
+  </section>
+
+  <!-- 游戏 -->
+  <section id="game" class="screen hidden">
+    <header>
+      <button id="btnBack">菜单</button>
+      <div class="scores">
+        <div class="sc"><span>得分</span><b id="score">0</b></div>
+        <div class="sc"><span>最高</span><b id="best">0</b></div>
+      </div>
+      <button id="btnUndo">撤销</button>
+    </header>
+
+    <div id="boardArea">
+      <div id="boardWrap">
+        <div id="cells"></div>
+        <div id="tiles"></div>
+        <div id="mask" class="hidden">
+          <div class="panel">
+            <h2 id="maskTitle">达成 2048</h2>
+            <p id="maskSub">继续挑战更大的数字</p>
+            <div class="row">
+              <button id="maskGo" class="ghost">继续玩</button>
+              <button id="maskNew">再来一局</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="hint"><span id="hintTxt">滑动屏幕合并相同数字</span></div>
+  </section>
+
+  <!-- 排行榜 -->
+  <section id="rank" class="screen hidden">
+    <button class="back" id="rankBack">‹ 返回</button>
+    <div class="page-title">排行榜</div>
+    <div class="rankTable" id="rankTable"></div>
+  </section>
+
+  <!-- 帮助 -->
+  <section id="help" class="screen hidden">
+    <button class="back" id="helpBack">‹ 返回</button>
+    <div class="page-title">帮助</div>
+    <div class="helpBody">
+      <b>怎么玩</b><br>
+      手指在屏幕上滑动，所有数字往那个方向挤，<b>相同的两个数字撞在一起会合并成它们的和</b>。<br><br>
+      <b>目标</b><br>
+      4x4 拼出 <span class="k">2048</span>，5x5 拼出 <span class="k">4096</span>。<br><br>
+      <b>小技巧</b><br>
+      1. 只往两三个方向滑，留一条边专门放大数；<br>
+      2. 大数字塞在角落，别让它被挤到中间；<br>
+      3. 一排保持<b>递减</b>，合并起来最顺；<br>
+      4. 走错了可以点<span class="k">撤销</span>退回上一步（每局 3 次）。<br><br>
+      <b>电脑上</b><br>
+      方向键 ↑↓←→ 都可以用。
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── 配色：按数字指数取底色/字色，整体是参考图那套金褐色 ──
+  var TILE = {
+    2: ['#F7F0DE', '#8C7A5C'],
+    4: ['#F1E6C9', '#8C7A5C'],
+    8: ['#EBD8AF', '#7A6446'],
+    16: ['#E4C68F', '#6B5334'],
+    32: ['#DDB775', '#5E4526'],
+    64: ['#D3A75C', '#4E3818'],
+    128: ['#C8944A', '#FFF8EA'],
+    256: ['#BC8038', '#FFF8EA'],
+    512: ['#AE6E2C', '#FFF8EA'],
+    1024: ['#9C5E20', '#FFF8EA'],
+    2048: ['#8B4F16', '#FFF8EA'],
+    4096: ['#7A4212', '#FFF8EA'],
+    8192: ['#66350C', '#FFF8EA']
+  };
+
+  var app = document.getElementById('app');
+  var elMenu = document.getElementById('menu');
+  var elGame = document.getElementById('game');
+  var elRank = document.getElementById('rank');
+  var elHelp = document.getElementById('help');
+  var elCells = document.getElementById('cells');
+  var elTiles = document.getElementById('tiles');
+  var elWrap = document.getElementById('boardWrap');
+  var elScore = document.getElementById('score');
+  var elBest = document.getElementById('best');
+  var elMask = document.getElementById('mask');
+  var elUndo = document.getElementById('btnUndo');
+
+  var N = 4;                  // 边长
+  var TARGET = 2048;          // 目标数字
+  var grid = [];              // grid[r][c] = tile 对象或 null
+  var tiles = [];             // 全部 tile，用于重排
+  var uid = 0;
+  var score = 0;
+  var over = false;
+  var won = false;
+  var undoLeft = 3;
+  var snapshots = [];
+  var busy = false;
+
+  var cell = 0, gap = 0, boardPx = 0, fs = 0;
+
+  // ── 存储 ──
+  var KEY_BEST = 'ks2048.best';
+  var KEY_RANK = 'ks2048.rank';
+
+  function loadNum(k) {
+    try { var v = parseInt(localStorage.getItem(k) || '0', 10); return isNaN(v) ? 0 : v; } catch (e) { return 0; }
+  }
+  function saveNum(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+  function bestKey() { return KEY_BEST + '.' + N; }
+
+  function loadRank() {
+    try { return JSON.parse(localStorage.getItem(KEY_RANK) || '{}') || {}; } catch (e) { return {}; }
+  }
+  function pushRank(size, sc) {
+    var all = loadRank();
+    var list = all[size] || [];
+    list.push({ s: sc, t: Date.now() });
+    list.sort(function (a, b) { return b.s - a.s; });
+    all[size] = list.slice(0, 5);
+    try { localStorage.setItem(KEY_RANK, JSON.stringify(all)); } catch (e) {}
+  }
+
+  // ── 尺寸 ──
+  function layout() {
+    var area = document.getElementById('boardArea');
+    var w = (area && area.clientWidth) || window.innerWidth;
+    var h = (area && area.clientHeight) || window.innerHeight;
+    // 棋盘是正方形，取可用区域的短边；margin 留给圆角和阴影
+    boardPx = Math.floor(Math.max(160, Math.min(w, h) - 14));
+    gap = Math.max(5, Math.round(boardPx * 0.021));
+    cell = (boardPx - gap * (N + 1)) / N;
+    fs = Math.floor(cell * 0.44);
+    elWrap.style.width = boardPx + 'px';
+    elWrap.style.height = boardPx + 'px';
+    buildCells();
+    tiles.forEach(function (t) { placeTile(t, true); });
+  }
+
+  function buildCells() {
+    elCells.innerHTML = '';
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) {
+        var d = document.createElement('div');
+        d.className = 'cell';
+        d.style.width = cell + 'px';
+        d.style.height = cell + 'px';
+        d.style.left = (gap + c * (cell + gap)) + 'px';
+        d.style.top = (gap + r * (cell + gap)) + 'px';
+        elCells.appendChild(d);
+      }
+    }
+  }
+
+  function placeTile(t, instant) {
+    var el = t.el;
+    if (!el) return;
+    el.style.width = cell + 'px';
+    el.style.height = cell + 'px';
+    el.style.left = (gap + t.c * (cell + gap)) + 'px';
+    el.style.top = (gap + t.r * (cell + gap)) + 'px';
+    if (instant) el.style.transition = 'none';
+    else el.style.transition = '';
+    var pal = TILE[t.v] || ['#8B4F16', '#FFF8EA'];
+    el.style.background = pal[0];
+    el.style.color = pal[1];
+    var digits = String(t.v).length;
+    el.style.fontSize = Math.floor(fs * (digits >= 4 ? 0.78 : digits === 3 ? 0.9 : 1)) + 'px';
+    el.firstChild.textContent = t.v;
+  }
+
+  // ── 新局 ──
+  function newGame(size, keepScore) {
+    if (size) N = size;
+    TARGET = N === 4 ? 2048 : 4096;
+    elTiles.innerHTML = '';
+    grid = [];
+    tiles = [];
+    for (var r = 0; r < N; r++) {
+      grid[r] = [];
+      for (var c = 0; c < N; c++) grid[r][c] = null;
+    }
+    score = keepScore ? score : 0;
+    over = false;
+    won = false;
+    busy = false;
+    undoLeft = 3;
+    snapshots = [];
+    elMask.classList.add('hidden');
+    elScore.textContent = score;
+    elBest.textContent = loadNum(bestKey());
+    layout();
+    addTile(true);
+    addTile(true);
+    updateUndo();
+  }
+
+  function freeCells() {
+    var out = [];
+    for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) if (!grid[r][c]) out.push([r, c]);
+    return out;
+  }
+
+  function addTile(instant) {
+    var free = freeCells();
+    if (!free.length) return null;
+    var p = free[Math.floor(Math.random() * free.length)];
+    var v = Math.random() < 0.9 ? 2 : 4;
+    var t = { id: ++uid, r: p[0], c: p[1], v: v, el: document.createElement('div') };
+    t.el.className = 'tile';
+    var span = document.createElement('div');
+    span.className = 'v';
+    t.el.appendChild(span);
+    elTiles.appendChild(t.el);
+    grid[t.r][t.c] = t;
+    tiles.push(t);
+    placeTile(t, true);
+    if (!instant) {
+      // 下一帧再去掉 transition，让 new 动画播出来
+      t.el.classList.add('new');
+      setTimeout(function () { t.el.classList.remove('new'); }, 220);
+    }
+    return t;
+  }
+
+  // ── 移动 ──
+  var VEC = {
+    left: [0, -1], right: [0, 1], up: [-1, 0], down: [1, 0]
+  };
+
+  function lineOf(dir) {
+    /*
+     * 每条线的坐标序列，顺序是「从移动方向的那条边往里数」。
+     * 也就是 out[0] 永远落在最靠边的格子上——往左移就按 c 从小到大排，
+     * 往右移要反过来。早期版本把条件写反了，往左滑会把整排推到右边。
+     */
+    var lines = [], r, c, seq, d = VEC[dir];
+    for (var i = 0; i < N; i++) {
+      seq = [];
+      for (var j = 0; j < N; j++) {
+        if (d[1] !== 0) { r = i; c = j; } else { r = j; c = i; }
+        seq.push([r, c]);
+      }
+      if (d[0] > 0 || d[1] > 0) seq.reverse();
+      lines.push(seq);
+    }
+    return lines;
+  }
+
+  function move(dir) {
+    if (over || busy) return false;
+    var lines = lineOf(dir);
+    var moved = false;
+    var mergedAt = [];
+
+    // 移动前的棋盘（撤销要用，也在后面判断「到底动没动」）
+    var before = [];
+    for (var r = 0; r < N; r++) {
+      before[r] = [];
+      for (var c = 0; c < N; c++) before[r][c] = grid[r][c] ? grid[r][c].v : 0;
+    }
+    var scoreBefore = score;
+
+    lines.forEach(function (seq) {
+      var list = [];
+      seq.forEach(function (p) {
+        var t = grid[p[0]][p[1]];
+        if (t) list.push(t);
+      });
+      var out = [];
+      for (var k = 0; k < list.length; k++) {
+        var t = list[k];
+        var prev = out[out.length - 1];
+        if (prev && !prev.mergedNow && prev.v === t.v) {
+          // 合到更靠边的那个上（每格一次，所以 mergedNow 只置一次）
+          // 注意两个标记别混：absorb 挂在「活下来的块」上指向被吃掉的块，
+          // eaten 挂在「被吃掉的块」上——重建索引时过滤的是 eaten。
+          prev.mergedNow = true;
+          prev.tile.absorb = t;
+          t.eaten = true;
+          prev.tile.mergedNow = true;
+          prev.tile.v *= 2;
+          score += prev.tile.v;
+          mergedAt.push(prev.tile);
+        } else {
+          out.push({ tile: t, v: t.v, mergedNow: false });
+        }
+      }
+      // 依次落到序列前几格
+      for (var idx = 0; idx < out.length; idx++) {
+        out[idx].tile.r = seq[idx][0];
+        out[idx].tile.c = seq[idx][1];
+      }
+    });
+
+    // 被吃掉的块跟到合并后的格子上，动画结束后再删
+    mergedAt.forEach(function (m) {
+      if (m.absorb) { m.absorb.deadR = m.r; m.absorb.deadC = m.c; }
+    });
+
+    // 重建索引：被吃掉的块(eaten)和已经消失的块(dead)都不进棋盘
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) grid[r][c] = null;
+    tiles.forEach(function (t) {
+      if (!t.eaten && !t.dead) grid[t.r][t.c] = t;
+    });
+
+    var after = [];
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) after.push(grid[r][c] ? grid[r][c].v : 0);
+    var flat = [];
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) flat.push(before[r][c]);
+    moved = after.join(',') !== flat.join(',') || mergedAt.length > 0;
+
+    if (!moved) {
+      // 每个方向都动不了：把（可能被改过的）位置重新摆回去
+      tiles.forEach(function (t) { placeTile(t, true); });
+      score = scoreBefore;
+      return false;
+    }
+
+    // 撤销快照要存移动前的状态，必须在改动之前取
+    snapshots.push({ g: before, score: scoreBefore });
+    if (snapshots.length > 12) snapshots.shift();
+
+    tiles.forEach(function (t) { placeTile(t); });
+    mergedAt.forEach(function (m) {
+      if (m.absorb) {
+        var dead = m.absorb;
+        dead.dead = true;
+        dead.el.style.left = (gap + dead.deadC * (cell + gap)) + 'px';
+        dead.el.style.top = (gap + dead.deadR * (cell + gap)) + 'px';
+        setTimeout(function () {
+          if (dead.el.parentNode) dead.el.parentNode.removeChild(dead.el);
+        }, 95);
+      }
+    });
+
+    busy = true;
+    setTimeout(function () {
+      mergedAt.forEach(function (t) {
+        t.el.classList.add('merged');
+        setTimeout(function () { t.el.classList.remove('merged'); }, 240);
+        placeTile(t, true);
+      });
+      tiles = tiles.filter(function (t) { return !t.dead; });
+      elScore.textContent = score;
+      if (score > loadNum(bestKey())) {
+        saveNum(bestKey(), score);
+        elBest.textContent = score;
+      }
+      addTile(false);
+      busy = false;
+      updateUndo();
+      checkEnd();
+    }, 95);
+
+    return true;
+  }
+
+  function hasMove() {
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) {
+        var t = grid[r][c];
+        if (!t) return true;
+        if (c + 1 < N && grid[r][c + 1] && grid[r][c + 1].v === t.v) return true;
+        if (r + 1 < N && grid[r + 1][c] && grid[r + 1][c].v === t.v) return true;
+      }
+    }
+    return false;
+  }
+
+  /** 星星上报。桥是桌面注入的，浏览器里直接打开时静默跳过。 */
+  function awardStars(stars, sc, sub) {
+    try {
+      if (window.KidsSafe && window.KidsSafe.award) window.KidsSafe.award('game2048', stars, sc, sub);
+    } catch (e) {}
+  }
+
+  function checkEnd() {
+    // 达成目标
+    if (!won) {
+      for (var r = 0; r < N; r++) {
+        for (var c = 0; c < N; c++) {
+          if (grid[r][c] && grid[r][c].v >= TARGET) {
+            won = true;
+            document.getElementById('maskTitle').textContent = '达成 ' + TARGET + '！';
+            document.getElementById('maskSub').textContent = '当前 ' + score + ' 分';
+            elMask.classList.remove('hidden');
+            // 达成目标给得最多：这是 2048 唯一的「通关」时刻
+            awardStars(8, score, '达成 ' + TARGET + ' · ' + score + ' 分');
+            return;
+          }
+        }
+      }
+    }
+    if (!hasMove()) {
+      over = true;
+      pushRank(N, score);
+      document.getElementById('maskTitle').textContent = '走不动啦';
+      document.getElementById('maskSub').textContent = '本局 ' + score + ' 分，再来一局？';
+      elMask.classList.remove('hidden');
+      // 走不动了也给星：按分数分档，几百分局也值得表扬一下
+      var st = score >= 1024 ? 5 : (score >= 512 ? 3 : (score >= 128 ? 2 : 1));
+      awardStars(st, score, N + '×' + N + ' · ' + score + ' 分');
+    }
+  }
+
+  function updateUndo() {
+    elUndo.textContent = '撤销' + (undoLeft > 0 ? ' ' + undoLeft : '');
+    elUndo.disabled = undoLeft <= 0 || !snapshots.length || busy;
+  }
+
+  function undo() {
+    if (busy || !snapshots.length || undoLeft <= 0) return;
+    var s = snapshots.pop();
+    undoLeft--;
+    // 整盘重建，比逐块回滚稳，还省掉一堆动画状态的清理
+    elTiles.innerHTML = '';
+    tiles = [];
+    grid = [];
+    for (var r = 0; r < N; r++) {
+      grid[r] = [];
+      for (var c = 0; c < N; c++) grid[r][c] = null;
+    }
+    for (r = 0; r < N; r++) {
+      for (c = 0; c < N; c++) {
+        var v = s.g[r][c];
+        if (!v) continue;
+        var t = { id: ++uid, r: r, c: c, v: v, el: document.createElement('div') };
+        t.el.className = 'tile';
+        var sp = document.createElement('div');
+        sp.className = 'v';
+        t.el.appendChild(sp);
+        elTiles.appendChild(t.el);
+        grid[r][c] = t;
+        tiles.push(t);
+        placeTile(t, true);
+      }
+    }
+    score = s.score;
+    over = false;
+    elScore.textContent = score;
+    elMask.classList.add('hidden');
+    updateUndo();
+  }
+
+  // ── 屏幕切换 ──
+  function show(which) {
+    [elMenu, elGame, elRank, elHelp].forEach(function (s) { s.classList.add('hidden'); });
+    which.classList.remove('hidden');
+  }
+
+  function startGame(size) {
+    N = size;
+    show(elGame);
+    newGame(size);
+    requestAnimationFrame(layout);
+  }
+
+  function renderRank() {
+    var all = loadRank();
+    var box = document.getElementById('rankTable');
+    box.innerHTML = '';
+    var any = false;
+    [4, 5].forEach(function (sz) {
+      var list = all[sz] || [];
+      var head = document.createElement('div');
+      head.style.cssText = 'font-size:12px;color:#B9A182;margin:6px 2px 8px;letter-spacing:1px';
+      head.textContent = sz + 'x' + sz + ' 最高分';
+      box.appendChild(head);
+      if (!list.length) {
+        var e = document.createElement('div');
+        e.className = 'empty';
+        e.textContent = '还没有记录，去玩一局吧';
+        box.appendChild(e);
+      } else {
+        any = true;
+        list.forEach(function (it, i) {
+          var row = document.createElement('div');
+          row.className = 'rankRow' + (i === 0 ? ' top' : '');
+          var d = new Date(it.t);
+          row.innerHTML = '<i>' + (i + 1) + '</i><b>' + it.s + '</b><span>' +
+            (d.getMonth() + 1) + '月' + d.getDate() + '日</span>';
+          box.appendChild(row);
+        });
+      }
+    });
+  }
+
+  // ── 输入：滑动 ──
+  var sx = 0, sy = 0, tracking = false;
+  elGame.addEventListener('pointerdown', function (ev) {
+    if (ev.target.closest && ev.target.closest('button')) return;
+    tracking = true;
+    sx = ev.clientX; sy = ev.clientY;
+  });
+  elGame.addEventListener('pointerup', function (ev) {
+    if (!tracking) return;
+    tracking = false;
+    var dx = ev.clientX - sx, dy = ev.clientY - sy;
+    var ax = Math.abs(dx), ay = Math.abs(dy);
+    if (Math.max(ax, ay) < 22) return;
+    if (ax > ay) move(dx > 0 ? 'right' : 'left');
+    else move(dy > 0 ? 'down' : 'up');
+  });
+  elGame.addEventListener('pointercancel', function () { tracking = false; });
+
+  window.addEventListener('keydown', function (ev) {
+    if (elGame.classList.contains('hidden')) return;
+    var map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down' };
+    var dir = map[ev.key];
+    if (dir) { ev.preventDefault(); move(dir); }
+  });
+
+  document.querySelectorAll('#menu .big[data-size]').forEach(function (b) {
+    b.onclick = function () { startGame(parseInt(b.dataset.size, 10)); };
+  });
+  document.getElementById('btnRank').onclick = function () { renderRank(); show(elRank); };
+  document.getElementById('btnHelp').onclick = function () { show(elHelp); };
+  document.getElementById('rankBack').onclick = function () { show(elMenu); };
+  document.getElementById('helpBack').onclick = function () { show(elMenu); };
+  document.getElementById('btnBack').onclick = function () { show(elMenu); };
+  elUndo.onclick = undo;
+  document.getElementById('maskNew').onclick = function () { startGame(N); };
+  document.getElementById('maskGo').onclick = function () { elMask.classList.add('hidden'); };
+
+  window.addEventListener('resize', function () { layout(); });
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 120); });
+
+  // ── 测试钩子 ──
+  window.__g2048 = {
+    state: function () {
+      var g = [];
+      for (var r = 0; r < N; r++) {
+        g[r] = [];
+        for (var c = 0; c < N; c++) g[r][c] = grid[r][c] ? grid[r][c].v : 0;
+      }
+      return { n: N, grid: g, score: score, over: over, won: won, undo: undoLeft, target: TARGET };
+    },
+    move: move,
+    start: startGame,
+    add: function (r, c, v) {
+      var t = { id: ++uid, r: r, c: c, v: v, el: document.createElement('div') };
+      t.el.className = 'tile';
+      var s = document.createElement('div'); s.className = 'v'; t.el.appendChild(s);
+      elTiles.appendChild(t.el);
+      grid[r][c] = t; tiles.push(t); placeTile(t, true);
+    },
+    setGrid: function (arr) {
+      // 直接铺一个局面，方便断言（arr 是 N*N 的二维数字数组）
+      elTiles.innerHTML = '';
+      tiles = [];
+      N = arr.length;
+      grid = [];
+      for (var r = 0; r < N; r++) {
+        grid[r] = [];
+        for (var c = 0; c < N; c++) grid[r][c] = null;
+      }
+      TARGET = N === 4 ? 2048 : 4096;
+      layout();
+      for (r = 0; r < N; r++) {
+        for (c = 0; c < N; c++) {
+          if (!arr[r][c]) continue;
+          var t = { id: ++uid, r: r, c: c, v: arr[r][c], el: document.createElement('div') };
+          t.el.className = 'tile';
+          var s = document.createElement('div'); s.className = 'v'; t.el.appendChild(s);
+          elTiles.appendChild(t.el);
+          grid[r][c] = t; tiles.push(t); placeTile(t, true);
+        }
+      }
+      score = 0;
+      over = false; won = false; busy = false;
+      elScore.textContent = 0;
+      snapshots = []; undoLeft = 3;
+    },
+    undo: undo,
+    layout: layout,
+    rank: function () { return loadRank(); }
+  };
+
+  // 首页先摆一个 4x4 的空棋盘，切到游戏时不会闪
+  newGame(4);
+  show(elMenu);
+})();
+</script>
+</body>
+</html>
