@@ -119,9 +119,12 @@ public static class ComplianceContent
             "本版本不申请：定位、通讯录、短信、相机、麦克风、存储读写、通知（Android 13+ 的 POST_NOTIFICATIONS 也未申请，因此不会有通知弹窗）。"),
 
         new("09", "🧩", "第三方 SDK",
-            "应用内只集成了一个第三方 SDK：荣耀推送（Push Kit），用于在家长修改配置后唤醒设备同步。它只在安卓端存在，且可以在家长面板关闭。\n\n" +
-            "除此之外没有任何广告、统计、社交、支付、地图、崩溃上报类 SDK。\n\n" +
-            "完整的 SDK 名称、提供方、版本、收集字段与关闭方式，见应用内「第三方 SDK 清单」页，或随包文档 Docs/第三方SDK清单.md。"),
+            "国内版与海外版是**两个分开打包的安装包**，集成的第三方 SDK 也不一样，原因是分发渠道和当地规则不同：\n\n" +
+            "• 国内版（国内应用商店分发）：只集成荣耀推送（Push Kit），用于家长修改配置后唤醒设备同步，可在家长面板关闭。**不含任何统计 SDK**，安装包里没有 Singular 的任何代码。\n" +
+            "• 海外版（Google Play 等中国大陆以外的渠道）：在荣耀推送之外，另集成 Singular Kids SDK 12.17.0，用于安装来源归因与基础使用统计（安装、启动、会话）。这是官方专门为儿童应用出的裁剪版本：不读取广告标识符（GAID / IDFA）、不读 IMEI / MAC、不读通讯录与位置，也不用于广告投放或用户画像。\n\n" +
+            "海外版即使在境外，启动时还会再判一次地区：系统地区、移动网络国家码、时区、语言四项里只要有一项指向中国大陆，就**不初始化**该 SDK，也不会向境外服务器发送任何请求。这个判断不需要任何权限，也不读取设备标识。\n\n" +
+            "海外版的家长可以在「家长面板 → 隐私与合规 → 海外版使用统计」随时关闭，关闭后立即停止上报。\n\n" +
+            "除此之外没有任何广告、社交、支付、地图、崩溃上报类 SDK。完整的 SDK 名称、提供方、版本、收集字段与关闭方式，见应用内「第三方 SDK 清单」页，或随包文档 Docs/第三方SDK清单.md。"),
 
         new("10", "⚙️", "你如何管理自己的信息",
             "• 查看与更正：家长面板里可以直接改昵称、头像、时长、名单\n" +
@@ -140,7 +143,7 @@ public static class ComplianceContent
             "除此之外不会向任何第三方提供。"),
 
         new("12", "📝", "本政策的更新",
-            "当前版本：1.0，生效日期 " + PrivacyVersionText + "。\n\n" +
+            "当前版本：1.2，生效日期 " + PrivacyVersionText + "。\n\n" +
             "当功能变化导致处理的信息范围、目的或方式发生实质改变时，我们会更新版本号并在应用内重新征得你的同意——不同意新版本时，旧版本约定的功能仍然可用，只是新增的涉信息功能不会启用。\n\n" +
             "历史版本可在 Docs/ 目录中查阅（随安装包一同提供）。"),
 
@@ -151,7 +154,7 @@ public static class ComplianceContent
             "我们会在收到请求后 15 个工作日内答复。若你对答复不满意，可向当地网信、工信或市场监管部门投诉。")
     };
 
-    private const string PrivacyVersionText = "2026 年 11 月 4 日";
+    private const string PrivacyVersionText = "2026 年 11 月 25 日";
 
     // ── 第三方 SDK 清单 ───────────────────────────────────────────────────
 
@@ -164,6 +167,14 @@ public static class ComplianceContent
             "推送 token（由荣耀服务端生成）、应用包名、应用签名证书 SHA-256 指纹、设备型号与系统版本、网络连接状态。不读取通讯录、位置、相册等任何内容。",
             "可在「家长面板 → 推送」关闭；未开通推送权限时 SDK 不会取得 token，也不产生业务通信。",
             "https://developer.hihonor.com/cn/doc/guides/100226"),
+
+        new("Singular Kids SDK",
+            "Singular Labs, Inc.",
+            "12.17.0（安卓）",
+            "安装来源归因与基础使用统计（安装、启动、会话）。只在海外版安装包里；国内版与 Windows 端都不含。海外版在中国大陆运行时也不会初始化。",
+            "应用包名与版本、设备型号与系统版本、系统语言与时区、会话与事件记录、SDK 生成的设备标识（SDID）、网络 IP（用于地理统计）。不采集广告标识符（GAID）、IMEI、MAC、通讯录与位置。",
+            "家长面板 → 隐私与合规 → 海外版使用统计；关闭后立即停止上报。国内版没有这个开关（也没有这个 SDK）。",
+            "https://www.singular.net/privacy-policy/"),
 
         new("系统语音合成（TTS）",
             "设备操作系统提供（Android TextToSpeech / Windows SAPI）",
@@ -194,7 +205,7 @@ public static class ComplianceContent
     public static readonly string[] NotIncluded =
     {
         "广告类 SDK（穿山甲、优量汇、AdMob、Mintegral 等）",
-        "统计分析类 SDK（友盟、 TalkingData、神策、Google Analytics 等）",
+        "统计分析类 SDK（友盟、TalkingData、神策、Google Analytics 等；海外版的 Singular 是官方儿童裁剪版，见上表）",
         "崩溃上报类 SDK（Bugly、Sentry、Firebase Crashlytics 等）",
         "社交登录与分享类 SDK（微信、QQ、微博）",
         "支付类 SDK",

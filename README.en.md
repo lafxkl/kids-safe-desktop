@@ -7,7 +7,7 @@
 <p align="center">
   <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet">
   <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows-512BD4">
-  <img alt="Platforms" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B-informational">
+  <img alt="Platforms" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20iOS%2015%2B%20%7C%20Linux%20%7C%20HarmonyOS-informational">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
@@ -17,7 +17,9 @@
 
 A **supervised desktop environment** for children aged 3–12. When a kid picks up the tablet or the family PC, they get a playful home screen with cartoons, songs, picture books, mini-games and study material — and nothing else: no browser, no short videos, no app store. Parents decide what is available and for how long, from a web console or a separate parent app.
 
-Native client, **.NET 10 + .NET MAUI from a single codebase**, shipping Android and Windows from one set of sources; plus two independent front ends that do not reuse the XAML layer — **Linux** (Qt 6 + Kirigami, full-screen KDE Plasma session) and **HarmonyOS** (ArkTS + ArkUI). Everything works offline and depends on no cloud service; if you want remote management, you run a small ASP.NET Core server yourself.
+Native client, **.NET 10 + .NET MAUI from a single codebase**, shipping Android, Windows and iOS (iPhone/iPad, content edition) from one set of sources; plus two independent front ends that do not reuse the XAML layer — **Linux** (Qt 6 + Kirigami, full-screen KDE Plasma session) and **HarmonyOS** (ArkTS + ArkUI). Everything works offline and depends on no cloud service; if you want remote management, you run a small ASP.NET Core server yourself.
+
+> The iOS build is a **content edition**: picture books, songs, mini-games, mental arithmetic, the care centre and the parent PIN are all there; launcher replacement, app whitelisting and cross-app screen-time tracking rely on system capabilities iOS does not expose, so those are stubbed out. See [Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md) (Chinese) for the boundary table, build and App Store checklist.
 
 > Current versions: client **v1.20** (versionCode 21), server **1.4.1**. See the [changelog](KidsSafeDesktop/Docs/更新记录.md) (Chinese).
 
@@ -186,6 +188,21 @@ dotnet build KidsSafeDesktop/KidsSafeDesktop.csproj -f net10.0-android
 
 Signing is covered in [Configuration and secrets](#configuration-and-secrets). For a quick phone install, the debug signature is enough.
 
+### Build for iOS
+
+Full signing and App Store steps: [Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md) (Chinese).
+
+```bash
+# Windows: compile check only (no .app bundle, Xcode is required for that)
+dotnet build KidsSafeDesktop/KidsSafeDesktop.csproj -f net10.0-ios -p:EnableIosTarget=true
+
+# macOS (Xcode 16+, dotnet workload install ios maui)
+bash KidsSafeDesktop/Scripts/build-ios.sh sim    # simulator
+bash KidsSafeDesktop/Scripts/build-ios.sh ipa    # release ipa, see Signing.iOS.props.sample
+```
+
+> The iOS target is only part of `TargetFrameworks` on macOS (`IsOSPlatform('osx')`), or when `-p:EnableIosTarget=true` is passed. Regular Windows builds are unaffected.
+
 ### Run the server (optional)
 
 ```bash
@@ -267,7 +284,7 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 
 These are real boundaries, not roadmap prose:
 
-- **Android and Windows are the primary targets** (one MAUI codebase). iOS and macOS are untested; `KidsSafeShared` still has `#if IOS` branches, but nothing has been verified.
+- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account. Windows can only do a compile check: `dotnet build -f net10.0-ios -p:EnableIosTarget=true`.
 - **Linux and HarmonyOS are separate front ends** (`KidsSafeDesktop/Linux/`, Qt 6 + Kirigami; `KidsSafeDesktop/Harmony/`, ArkTS + ArkUI). Neither reuses the XAML layer, their feature sets are not identical to the desktop app, and neither was regression-tested for this release — each folder's README lists the differences.
 - **The server has no TLS and no rate limiting of its own.** It binds to `127.0.0.1:5180`; public access must sit behind a TLS reverse proxy (the official site does exactly that, proxying `/api/*` and passing `X-Forwarded-For` through). **Do not port-forward 5180 to the internet.**
 - **The parent app has no icon or release script of its own yet**, and its `ApplicationId` is a placeholder (`com.companyname.kidssafeparent`) that must be changed before packaging.
@@ -283,7 +300,7 @@ These are real boundaries, not roadmap prose:
 - [ ] Merge settings across both apps (server and client live sync exist; a full conflict-merge strategy does not)
 - [ ] Multiple child profiles per account, each with its own time limits and content
 - [ ] Replace textbook PDFs with openly licensed material to remove the copyright dependency
-- [ ] iOS support (mostly background audio and an alternative to the screen-time APIs)
+- [ ] iOS device/simulator regression, signing and App Store submission (the project itself is done); screen-time APIs (FamilyControls) and Singular attribution on iOS come later
 - [ ] Server: password recovery, audit log, optional self-signed HTTPS mode
 
 ## Contributing

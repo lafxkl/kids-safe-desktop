@@ -221,7 +221,7 @@ public partial class DiagnosticsPage : ContentPage
                 return;
             }
 
-#if ANDROID
+#if ANDROID || IOS || MACCATALYST
             // 走系统分享：微信、邮箱、企业微信都能直接发出去，不需要任何存储权限
             await Share.Default.RequestAsync(new ShareFileRequest
             {

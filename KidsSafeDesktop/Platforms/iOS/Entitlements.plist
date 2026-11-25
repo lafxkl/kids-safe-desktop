@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    iOS 权限声明（entitlements）模板 —— 当前**未启用**（csproj 里那行注释掉了）。
+
+    为什么留一个近乎空的文件：
+      · 没有推送 / 内购 / App Groups / Sign in with Apple 时，应用不需要任何额外能力；
+      · 签名时注入空字典反而可能覆盖 csproj / 描述文件自动带入的默认项，
+        所以宁可先不挂，等真要加能力时再打开并填内容。
+
+    将来要加的能力在这里写，例如：
+      · 远程推送（荣耀推送在 iOS 上不适用，需改用 APNs 或第三方）：
+            <key>aps-environment</key><string>development</string>
+      · App Groups（家长端与孩子端共享配置）：
+            <key>com.apple.security.application-groups</key>
+            <array><string>group.cc.siguangblog.kidsafe</string></array>
+      · 屏幕使用时间（FamilyControls，需要 Apple 单独审批）：
+            <key>com.apple.developer.family-controls</key><true/>
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+</dict>
+</plist>

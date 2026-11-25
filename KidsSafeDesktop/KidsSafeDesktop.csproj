@@ -1,9 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<!-- 仅面向儿童模式所需的两个平台：Android + Windows -->
+		<!-- 平台：Android + Windows（主力）+ iOS（内容版）
+		     iOS 单独说明：
+		       · macOS 上默认参与构建（有 Xcode 才能产出 .app/.ipa）；
+		       · Windows 上默认**不**参与，避免影响现有的 Android/Windows 打包；
+		         需要交叉编译/仅做编译检查时显式传 -p:EnableIosTarget=true。
+		     iOS 是「内容版」：绘本、儿歌、小游戏、口算、关爱中心、家长 PIN 全保留；
+		     应用白名单、桌面替换、使用统计、锁机这些依赖系统级权限的能力在 iOS 上
+		     系统不开放（也不允许），由 Stub 服务静默降级，界面自动隐藏入口。 -->
 		<TargetFrameworks>net10.0-android</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx')) or '$(EnableIosTarget)' == 'true'">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
 
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
@@ -30,8 +38,38 @@
 	<!-- Display name（安装后桌面图标显示的名称） -->
 	<ApplicationTitle>儿童安全桌面</ApplicationTitle>
 
-		<!-- App Identifier -->
-		<ApplicationId>com.companyname.kidssafedesktop</ApplicationId>
+		<!-- ══ 发行渠道 ══════════════════════════════════════════════════════
+		     国内版与海外版打两个独立的包，差异不止「哪个商店上架」：
+		       cn     国内版：**不含** Singular Kids SDK（AAR 与代码都不编译进来）
+		       global 海外版：含 Singular Kids SDK，包名换成自己的域名
+		     命令：dotnet build -c Release -f net10.0-android -p:AppChannel=global
+		     不传默认 cn（与历史包名一致，老用户可平滑升级）。 -->
+		<AppChannel Condition="'$(AppChannel)' == ''">cn</AppChannel>
+
+		<!-- 海外渠道把中间产物挪到了 obj\global\（见 Directory.Build.props），
+		     而 SDK 默认的 DefaultItemExcludes 只排除当前 BaseIntermediateOutputPath，
+		     旧的 obj\ 就不在被排除范围里了，`**/*.cs` 会把上一轮的生成文件也扫进来
+		     （表现为 CS0111：__TypeRegistrations 重复定义）。这里把两个目录都排掉。 -->
+		<DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**;obj\global\**;bin\global\**</DefaultItemExcludes>
+
+		<!-- App Identifier
+		     国内版沿用 com.companyname.kidssafedesktop：v1.x 已经用这个包名发了 20 多个版本，
+		     换掉等于变成另一个应用，老用户升级会丢数据。
+		     海外版是全新上架，用域名反写的正式包名。 -->
+		<ApplicationId Condition="'$(AppChannel)' != 'global'">com.companyname.kidssafedesktop</ApplicationId>
+		<ApplicationId Condition="'$(AppChannel)' == 'global'">cc.siguangblog.kidsafe</ApplicationId>
+
+		<!-- iOS 的 Bundle ID 全渠道统一用 cc.siguangblog.kidsafe：
+		     Bundle ID 一经上架就不能改，草稿期也不该再折腾。
+		     Android 那个 com.companyname.* 是历史包名（老用户升级不能换），iOS 没这个包袱。
+		     下面这一行写在最后，用于覆盖上面两行的渠道取值。 -->
+		<ApplicationId Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">cc.siguangblog.kidsafe</ApplicationId>
+
+		<!-- iOS 签名：从 Signing.iOS.props 读（不入库，格式见 Signing.iOS.props.sample）。
+		     没有这个文件时走 Xcode 自动签名（本地模拟器调试不需要签名）。
+		     团队 ID 不用单独给 —— 已经包含在 CodesignKey 的括号里。 -->
+		<CodesignKey Condition="'$(CodesignKey)' == ''">$(IosCodesignKey)</CodesignKey>
+		<CodesignProvision Condition="'$(CodesignProvision)' == ''">$(IosCodesignProvision)</CodesignProvision>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.20</ApplicationDisplayVersion>
@@ -80,8 +118,13 @@
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 		<!-- 荣耀推送 SDK（Push Kit）。AAR 直接放在 Platforms/Android/libs 并随仓库提交：
 		     荣耀的 Maven 库（https://developer.honor.com/repo）不在 Maven Central 上，
-		     .NET 的 AndroidMavenLibrary 取不到，离线构建也不该依赖它。 -->
-		<AndroidLibrary Include="Platforms\Android\libs\*.aar" />
+		     .NET 的 AndroidMavenLibrary 取不到，离线构建也不该依赖它。
+		     Singular 两个 AAR 单独挑出来：只有海外版才带（见下面的条件引入），
+		     国内包里连类都不存在，dex 里一个字节都没有。 -->
+		<AndroidLibrary Include="Platforms\Android\libs\*.aar"
+		                Exclude="Platforms\Android\libs\singular_kids_sdk*.aar;Platforms\Android\libs\installreferrer*.aar" />
+		<AndroidLibrary Include="Platforms\Android\libs\singular_kids_sdk*.aar;Platforms\Android\libs\installreferrer*.aar"
+		                Condition="'$(AppChannel)' == 'global'" />
 
 		<!-- 调用荣耀 SDK 的 Java 桥：SDK 没有 C# 绑定，用 .java 编译进 APK，
 		     C# 侧通过 JNI 调（见 Platforms/Android/HonorPush.cs）。 -->
@@ -89,6 +132,13 @@
 
 		<!-- 开发者控制台下载的配置文件，按荣耀文档放进 assets 根目录 -->
 		<AndroidAsset Include="Platforms\Android\Assets\mcs-services.json" Link="mcs-services.json" />
+
+		<!-- AAR 的绑定转换：修 Singular Kids SDK 的命名冲突（详见该文件里的注释）。
+		     @(TransformFile) 由 Bindings.Core.targets 统一消费，放在 App 工程里同样有效。
+		     只在国内版之外引入——国内版没有 Singular 的绑定，转换文件里的类型不存在，
+		     留着会让绑定生成器报「找不到 com.singular.sdk.internal.Utils」。 -->
+		<TransformFile Include="Platforms\Android\Transforms\Metadata.xml"
+		               Condition="'$(AppChannel)' == 'global'" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -105,9 +155,106 @@
 		<ProjectReference Include="..\KidsSafeShared\KidsSafeShared.csproj" />
 	</ItemGroup>
 
+	<!-- ══ 海外版归因：Singular Kids SDK（只有海外包带）═══════════════════════
+	     两个包：-p:AppChannel=cn（默认）不带这个 SDK；-p:AppChannel=global 带。
+	     海外包内部还有一次运行时地区判定：中国大陆设备连 init 都不调用
+	     （判断代码见 Platforms/Android/SingularAnalytics.cs），属于「编译期不带 +
+	     运行期不加载」双保险。
+	     密钥两种给法，优先前者（不入库）：
+	       1) 复制 Singular.props.sample 为 Singular.props 填 Key / Secret；
+	       2) 或构建时传 -p:SingularApiKey=... -p:SingularSecret=...
+	     没配密钥时整个功能自动降级为空操作，不崩、不联网。 -->
+	<Import Project="Singular.props" Condition="Exists('Singular.props')" />
+
+	<PropertyGroup>
+		<!-- 环境变量兜底：CI 上直接 export SINGULAR_API_KEY 即可 -->
+		<SingularApiKey Condition="'$(SingularApiKey)' == ''">$(SINGULAR_API_KEY)</SingularApiKey>
+		<SingularSecret Condition="'$(SingularSecret)' == ''">$(SINGULAR_SECRET)</SingularSecret>
+		<!-- 国内版固定 cn（且代码根本不编译，这行只是兜底）；
+		     海外版默认 auto，仍保留运行时地区判定：装了海外包的中国大陆设备也不上报。 -->
+		<SingularChannel Condition="'$(SingularChannel)' == '' and '$(AppChannel)' == 'global'">auto</SingularChannel>
+		<SingularChannel Condition="'$(SingularChannel)' == ''">cn</SingularChannel>
+	</PropertyGroup>
+
+	<!-- 海外版才编译 Singular 相关代码（SingularAnalytics.cs / MainActivity 里的接线）。
+	     国内版没有 AAR → 没有 Com.Singular.Sdk 命名空间，不定义宏就是「代码都不存在」。 -->
+	<PropertyGroup Condition="'$(AppChannel)' == 'global'">
+		<DefineConstants>$(DefineConstants);SINGULAR</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 渠道与密钥编进程序集元数据，运行时用 AssemblyMetadataAttribute 读。
+		     密钥为空就不生成条目，代码读到空串按「未配置」处理。 -->
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>AppChannel</_Parameter1>
+			<_Parameter2>$(AppChannel)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SingularApiKey)' != ''">
+			<_Parameter1>SingularApiKey</_Parameter1>
+			<_Parameter2>$(SingularApiKey)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SingularSecret)' != ''">
+			<_Parameter1>SingularSecret</_Parameter1>
+			<_Parameter2>$(SingularSecret)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>SingularChannel</_Parameter1>
+			<_Parameter2>$(SingularChannel)</_Parameter2>
+		</AssemblyAttribute>
+	</ItemGroup>
+
 	<!-- 安卓签名（keystore 口令）：单独文件，Debug/Release 统一使用同一签名证书，
 	     否则荣耀推送会因签名指纹不一致报 10202。 -->
 	<Import Project="Signing.props" Condition="Exists('Signing.props')" />
+
+	<!-- ══ iOS 工程项 ═════════════════════════════════════════════════════════
+	     ① 隐私清单：App Store 从 2024-05 起强制要求，缺了直接拒审。
+	        内容与 Info.plist 的说明文案必须一致（谁在读、为什么读、读了什么）。
+	     ② 权限声明文件：没有推送/内购/App Groups 时是空字典，但保留文件，
+	        将来加推送只改这里，不用再动工程。
+	     ③ 启动方向：iPad 允许四向，iPhone 只竖屏 —— 桌面向来是竖屏交互，
+	        横屏会让所有 Nine-Patch 背景与网格列数错位。 -->
+	<Import Project="Signing.iOS.props" Condition="Exists('Signing.iOS.props')" />
+
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<BundleResource Include="Platforms\iOS\Resources\PrivacyInfo.xcprivacy"
+		                Condition="Exists('Platforms\iOS\Resources\PrivacyInfo.xcprivacy')" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<!-- 当前没有推送 / 内购 / App Groups，无需 entitlements。
+		     Platforms\iOS\Entitlements.plist 只是留档模板，等真要加能力时
+		     把下面这行的注释去掉即可（空字典直接签名反而会覆盖签名流程注入的默认项）。 -->
+		<!-- <CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements> -->
+	</PropertyGroup>
+
+	<!-- ══ 去掉上一轮残留的 AAR 产物（只在国内版）═════════════════════════════
+	     国内版不引用 Singular 与 installreferrer 两个 AAR，但 obj 里可能还留着
+	     上一轮解包/编译的产物。这些残留不会报错，会**静默**把类打进 dex——
+	     包里带着统计 SDK 的类，清单里却没有对应权限，最难发现。
+	     要清的四处：
+	       generated/src/Com.Singular.*.cs、Com.Android.InstallReferrer.*.cs  → 绑定源码
+	       android/src/com/{singular,android/installreferrer}/**              → 解包的 Java
+	       android/src/mono/com/android/installreferrer/**                    → 绑定的 Java 实现类
+	       android/bin/classes/com/{singular,android/installreferrer}         → 已编译的 class
+	       library_project_jars/{singular_kids_sdk,installreferrer}*.aar      → 待 dex 的 jar
+	     分渠道目录（见 Directory.Build.props）已经能避免以后互污染，
+	     这里属于兜底：老 obj 目录、或者手动混用参数时也不会漏进去。 -->
+	<Target Name="KsDropStaleSingularBindings" BeforeTargets="CoreCompile"
+	        Condition="'$(TargetFramework.Contains(&quot;-android&quot;))' == 'true' and '$(AppChannel)' != 'global'">
+		<ItemGroup>
+			<_StaleBinding Include="$(IntermediateOutputPath)generated\src\Com.Singular.*.cs" />
+			<_StaleBinding Include="$(IntermediateOutputPath)generated\src\Com.Android.InstallReferrer.*.cs" />
+			<_StaleJava Include="$(IntermediateOutputPath)android\src\com\singular\**\*.java" />
+			<_StaleJava Include="$(IntermediateOutputPath)android\src\com\android\installreferrer\**\*.java" />
+			<_StaleJava Include="$(IntermediateOutputPath)android\src\mono\com\android\installreferrer\**\*.java" />
+			<_StaleJar Include="$(IntermediateOutputPath)library_project_jars\singular_kids_sdk*.aar" />
+			<_StaleJar Include="$(IntermediateOutputPath)library_project_jars\installreferrer*.aar" />
+			<Compile Remove="@(_StaleBinding)" />
+		</ItemGroup>
+		<Delete Files="@(_StaleBinding);@(_StaleJava);@(_StaleJar)" />
+		<RemoveDir Directories="$(IntermediateOutputPath)android\bin\classes\com\singular;$(IntermediateOutputPath)android\bin\classes\com\android\installreferrer" />
+	</Target>
 
 	<!-- ══ Windows 发布包瘦身 ══════════════════════════════════════════════════
 	     自包含发布会把整套 .NET 运行时和 Windows App SDK 原样复制出去，

@@ -46,9 +46,16 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITextbookService, TextbookService>();
 		builder.Services.AddSingleton<IAccountService, AccountService>();
 		builder.Services.AddSingleton<IEyeCareService, EyeCareService>();
-		// 增量更新：只下变化的 dll，Windows 关机时落盘、Android 下次启动预加载
+		// 增量更新：只下变化的 dll，Windows 关机时落盘、Android 下次启动预加载。
+		// iOS 只发 App Store：审核指南 2.5.2 不允许运行期下发可执行代码，
+		// 所以这里换成空实现 —— 界面照旧，只是「检查更新」永远是最新。
+#if IOS
+		builder.Services.AddSingleton<KidsSafeDesktop.Updates.IUpdateService,
+									  KidsSafeDesktop.Services.NoopUpdateService>();
+#else
 		builder.Services.AddSingleton<KidsSafeDesktop.Updates.IUpdateService,
 									  KidsSafeDesktop.Updates.UpdateService>();
+#endif
 		// 用户反馈：意见反馈 / 满意度 / 问卷，统一上报官网（断网先存本机，联网自动补传）
 		builder.Services.AddSingleton<IFeedbackService, FeedbackService>();
 
@@ -67,7 +74,18 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ISoundService, Platforms.Windows.WindowsSoundService>();
 		builder.Services.AddSingleton<IAudioPlayerService, Platforms.Windows.WindowsAudioPlayerService>();
 		builder.Services.AddSingleton<IXimalayaService, Platforms.Windows.XimalayaService>();
-#elif IOS || MACCATALYST
+#elif IOS
+		// iOS 是「内容版」：应用白名单、桌面替换、锁机、第三方音频站这些依赖
+		// 系统级权限/私有能力的部分，iOS 不开放（也不允许），保持桩实现，
+		// 对应的入口由界面按 IAppCatalogService 返回空列表自动隐藏。
+		// 音频播放与音效是内容版的核心体验，必须用真实实现（不再是静音占位）。
+		builder.Services.AddSingleton<IAppCatalogService, StubAppCatalogService>();
+		builder.Services.AddSingleton<IAppLauncherService, StubAppLauncherService>();
+		builder.Services.AddSingleton<IKioskService, StubKioskService>();
+		builder.Services.AddSingleton<ISoundService, Platforms.iOS.IosSoundService>();
+		builder.Services.AddSingleton<IAudioPlayerService, Platforms.iOS.IosAudioPlayerService>();
+		builder.Services.AddSingleton<IXimalayaService, StubXimalayaService>();
+#elif MACCATALYST
 		builder.Services.AddSingleton<IAppCatalogService, StubAppCatalogService>();
 		builder.Services.AddSingleton<IAppLauncherService, StubAppLauncherService>();
 		builder.Services.AddSingleton<IKioskService, StubKioskService>();

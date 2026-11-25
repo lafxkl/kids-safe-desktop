@@ -6,6 +6,9 @@
 	<PropertyGroup>
 		<TargetFrameworks>net10.0-android</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+		<!-- iOS：与 App 工程保持一致（macOS 默认参与；Windows 需要 -p:EnableIosTarget=true）。
+		     共享库本身不做平台判断，平台差异仍由各平台目录下的实现 + 条件编译承担。 -->
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx')) or '$(EnableIosTarget)' == 'true'">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
 
 		<RootNamespace>KidsSafeDesktop</RootNamespace>
 		<UseMaui>true</UseMaui>

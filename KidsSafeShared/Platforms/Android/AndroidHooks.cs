@@ -56,5 +56,22 @@ public static class AndroidHooks
 
     /// <summary>解除设备管理员（家长要卸载前必须先做）。</summary>
     public static Action? DisableDeviceAdmin { get; set; }
+
+    // ── 海外版统计（Singular Kids SDK）────────────────────────────────────
+    // AAR 的 C# 绑定生成在 App 工程里，共享库引用不到，所以仍然走钩子。
+    // 国内地区、Windows 端、没配密钥时注册进来的实现本身就是空操作，
+    // 因此这里不额外判断平台，调用方也不用 #if。
+
+    /// <summary>初始化海外版统计（幂等，可重复调用）。启动页在隐私同意之后调用。</summary>
+    public static Action? StartUsageAnalytics { get; set; }
+
+    /// <summary>本机是否按海外处理。家长面板据此决定要不要显示统计开关。</summary>
+    public static Func<bool>? IsOverseasRegion { get; set; }
+
+    /// <summary>家长是否允许统计（默认允许）。</summary>
+    public static Func<bool>? IsUsageAnalyticsAllowed { get; set; }
+
+    /// <summary>家长开/关统计。关闭会立刻停止 SDK 跟踪，不只是本地打标记。</summary>
+    public static Action<bool>? SetUsageAnalyticsAllowed { get; set; }
 }
 #endif

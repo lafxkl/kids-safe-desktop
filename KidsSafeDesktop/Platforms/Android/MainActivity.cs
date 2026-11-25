@@ -105,6 +105,18 @@ public class MainActivity : MauiAppCompatActivity
         Platforms.Android.AndroidHooks.DisableDeviceAdmin =
             () => Droid.Guard.KioskDeviceAdmin.Disable(this);
 
+        // ── 海外版统计（Singular Kids SDK）──────────────────────────────
+        // 只有 -p:AppChannel=global 的包才有这段：国内版没引用 AAR，
+        // SingularAnalytics 整个文件不参与编译，钩子保持为 null，
+        // 家长面板里的「海外版使用统计」一行也就不会出现。
+        // 海外包里仍会按地区再判一次：中国大陆设备连 init 都不调用。
+#if SINGULAR
+        Platforms.Android.AndroidHooks.StartUsageAnalytics = Platforms.Android.SingularAnalytics.TryStart;
+        Platforms.Android.AndroidHooks.IsOverseasRegion = () => Platforms.Android.SingularAnalytics.IsOverseas;
+        Platforms.Android.AndroidHooks.IsUsageAnalyticsAllowed = () => Platforms.Android.SingularAnalytics.IsAllowedByParent;
+        Platforms.Android.AndroidHooks.SetUsageAnalyticsAllowed = Platforms.Android.SingularAnalytics.SetAllowedByParent;
+#endif
+
         // 冷启动就把前台服务拉起来：一次启动失败（比如通知权限没给）不影响后续，
         // KioskGuard.Start 内部已经 try/catch。
         Droid.Guard.KioskGuard.Start(this);

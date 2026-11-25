@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    发行渠道：国内版 / 海外版（见 KidsSafeDesktop.csproj 里的注释）。
+
+    AppChannel 必须在**求值最开始**就确定下来，因为下面要用它改中间产物目录；
+    所以这里也放一份默认值（csproj 里那份是给 IDE 直接打开工程时兜底的）。
+    命令行传 -p:AppChannel=global 优先于这里的默认值。
+
+    为什么要按渠道分目录：
+    两个包的 AAR 集合不同（海外版多两个），共用 obj 会出现
+      · 海外包生成过 Com.Singular.* 绑定后，国内包编译时引用到已经不存在的源文件；
+      · javac 用上一轮残留的 classpath 编译 Java 桥，偶发 XAJVC0000。
+    分目录之后两个渠道各自独立，来回切不用 clean，也不会互相污染。
+  -->
+  <PropertyGroup>
+    <AppChannel Condition="'$(AppChannel)' == ''">cn</AppChannel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AppChannel)' == 'global'">
+    <BaseIntermediateOutputPath>obj\global\</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin\global\</BaseOutputPath>
+  </PropertyGroup>
+
+</Project>

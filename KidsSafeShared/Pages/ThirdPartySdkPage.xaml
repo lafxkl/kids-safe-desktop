@@ -94,6 +94,16 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <Border BackgroundColor="#E8F5E9" StrokeThickness="0" Padding="16,14"
+                        StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="🌏 关于「Singular Kids SDK」的补充说明" FontSize="15" FontAttributes="Bold"
+                               TextColor="#1B5E20" />
+                        <Label Text="这个 SDK 只打进海外版安装包（Google Play 等中国大陆以外的渠道），国内版安装包里没有它的代码，也不会有对应权限。海外版启动时还会再判一次地区：系统地区、移动网络国家码、时区、语言四项里只要有一项指向中国大陆，连初始化都不会执行，也就不会发出任何请求。它用的是官方儿童裁剪版：不读 GAID / IDFA、IMEI、MAC、通讯录与位置。家长可在「家长面板 → 隐私与合规 → 海外版使用统计」关闭。"
+                               FontSize="12.5" TextColor="#33691E" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Border>
+
                 <Button Text="📄 返回隐私政策" FontSize="14" BackgroundColor="#ECEFF1"
                         TextColor="#455A64" CornerRadius="12" HeightRequest="46" Clicked="OnOpenPolicy" />
 

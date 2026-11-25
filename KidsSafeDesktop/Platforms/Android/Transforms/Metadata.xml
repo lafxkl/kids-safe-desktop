@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  AAR 绑定转换（.NET for Android 的 Metadata.xml）。
+
+  这个文件只影响「C# 侧生成的类型名」，不改变 APK 里的 Java 类，也不影响 SDK 自身行为。
+
+  目前只有一条：Singular Kids SDK 里
+    · com.singular.sdk.internal.Utils      —— 工具类
+    · com.singular.sdk.internal.utils.*    —— 同名的包（SLJsonUtils、UriUtils）
+  两者在 C# 里都会落到 Com.Singular.Sdk.Internal.Utils 这个名字上，
+  一个当命名空间、一个当类，编译器直接报 CS0101「命名空间已经包含 Utils 的定义」。
+  把类改名（而不是改包名）影响面最小：这个类只在 SDK 内部使用，我们没有直接调用它。
+-->
+<metadata>
+  <attr path="/api/package[@name='com.singular.sdk.internal']/class[@name='Utils']" name="managedName">SingularUtils</attr>
+</metadata>

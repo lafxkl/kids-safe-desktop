@@ -442,6 +442,19 @@
                         <Button Text="撤回隐私授权" FontSize="13" BackgroundColor="Transparent"
                                 TextColor="#90A4AE" BorderWidth="0" HeightRequest="36"
                                 Clicked="OnRevokePrivacy" />
+
+                        <!-- 海外版统计开关：只在「本机按海外处理」时才出现。
+                             国内地区根本不会初始化该 SDK，摆一个关不掉的开关只会让家长困惑；
+                             判断由 App 工程的 SingularAnalytics 完成，这里只看钩子。 -->
+                        <Grid x:Name="AnalyticsRow" IsVisible="False" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="海外版使用统计" FontSize="14" TextColor="#37474F" />
+                                <Label Text="仅海外地区生效：安装来源与启动情况，不含广告标识、位置和任何内容。"
+                                       FontSize="11" TextColor="#90A4AE" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                            <Switch x:Name="AnalyticsSwitch" Grid.Column="1" VerticalOptions="Center"
+                                    OnColor="#4DB6AC" Toggled="OnAnalyticsToggled" />
+                        </Grid>
                     </VerticalStackLayout>
                 </Frame>
 

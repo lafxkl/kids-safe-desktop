@@ -128,6 +128,7 @@ public partial class ParentDashboardPage : ContentPage
         // 每次进面板都要重新读一次，否则开关显示的还是上次的旧值。
         _vm.RefreshGuardState();
         RefreshPrivacyState();
+        RefreshAnalyticsRow();
         CatalogLoading.IsVisible = true;
         CatalogLoading.IsRunning = true;
         await _vm.LoadCatalogAsync();
@@ -283,6 +284,46 @@ public partial class ParentDashboardPage : ContentPage
         await DisplayAlert("已撤回", "隐私授权已撤回，下次启动会重新征得同意。", "好的");
     }
 
+
+    // ── 海外版统计（Singular Kids SDK）────────────────────────────────────
+    // 只在「本机按海外处理」时显示这个开关。中国大陆地区根本不会初始化该 SDK，
+    // 让家长去关一个本来就不存在的东西，只会让人怀疑「是不是还在偷偷传」。
+
+    /// <summary>程序赋值时置 false，避免触发 Toggled 又写回一遍。</summary>
+    private bool _analyticsUiReady;
+
+    private void RefreshAnalyticsRow()
+    {
+        try
+        {
+#if ANDROID
+            var overseas = KidsSafeDesktop.Platforms.Android.AndroidHooks.IsOverseasRegion?.Invoke() ?? false;
+            AnalyticsRow.IsVisible = overseas;
+            if (!overseas) return;
+
+            _analyticsUiReady = false;
+            AnalyticsSwitch.IsToggled =
+                KidsSafeDesktop.Platforms.Android.AndroidHooks.IsUsageAnalyticsAllowed?.Invoke() ?? true;
+            _analyticsUiReady = true;
+#else
+            AnalyticsRow.IsVisible = false;   // Windows 端没有这个 SDK
+#endif
+        }
+        catch
+        {
+            AnalyticsRow.IsVisible = false;
+        }
+    }
+
+    private void OnAnalyticsToggled(object sender, ToggledEventArgs e)
+    {
+        if (!_analyticsUiReady) return;
+
+#if ANDROID
+        KidsSafeDesktop.Platforms.Android.AndroidHooks.SetUsageAnalyticsAllowed?.Invoke(e.Value);
+        KidsSafeDesktop.Helpers.AppLog.I("统计", e.Value ? "家长开启海外版统计" : "家长关闭海外版统计");
+#endif
+    }
 
     private async void OnServerLogin(object sender, EventArgs e)
     {

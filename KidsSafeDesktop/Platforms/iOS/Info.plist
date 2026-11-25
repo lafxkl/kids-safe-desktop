@@ -2,6 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 桌面显示名。中文名直接写在这里，不依赖 .lproj 本地化：
+	     这个应用只有中文名，英文名反而是噪音。 -->
+	<key>CFBundleDisplayName</key>
+	<string>儿童安全桌面</string>
+	<key>CFBundleName</key>
+	<string>KidsSafeDesktop</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh-Hans</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>zh-Hans</string>
+		<string>zh-Hant</string>
+		<string>en</string>
+	</array>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIDeviceFamily</key>
@@ -13,6 +28,10 @@
 	<array>
 		<string>arm64</string>
 	</array>
+
+	<!-- 方向与安卓保持一致：手机竖屏为主，允许左右横屏（绘本/部分小游戏需要）。
+	     iPad 四向全开 —— 限制了就必须声明 UIRequiresFullScreen，那样会失去分屏，
+	     对一个「家长偶尔并排看一眼」的应用不划算。 -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -26,6 +45,22 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- 听一听：锁屏/切后台后儿歌与睡前故事继续播（由 AVAudioSession 的 Playback 类别配合）。
+	     不加这一项，App 一进后台音频就被系统掐断，哄睡场景直接废掉。 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+
+	<!-- 出口合规：只用系统 HTTPS/TLS 与账号无关的标准加密，属于豁免范围。
+	     勾了这项，每次上传 TestFlight 都不用再回答「是否使用加密」。 -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
 </dict>

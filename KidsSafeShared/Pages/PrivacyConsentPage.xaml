@@ -62,7 +62,7 @@
                             <VerticalStackLayout Grid.Column="1" Spacing="3">
                                 <Label Text="不收集身份信息，不做广告" FontSize="15" FontAttributes="Bold"
                                        TextColor="#1B5E20" />
-                                <Label Text="不要手机号，不读通讯录、短信、相册、位置，也不申请摄像头和麦克风。应用内没有广告 SDK、统计 SDK、崩溃上报 SDK。"
+                                <Label Text="不要手机号，不读通讯录、短信、相册、位置，也不申请摄像头和麦克风。应用内没有广告 SDK、崩溃上报 SDK；只有海外版安装包带一项儿童版安装统计（不读广告标识、不读位置），国内版没有，中国大陆地区也不会加载。"
                                        FontSize="12.5" TextColor="#455A64" LineBreakMode="WordWrap" />
                             </VerticalStackLayout>
                         </Grid>

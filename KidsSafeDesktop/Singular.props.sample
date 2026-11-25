@@ -1,0 +1,26 @@
+<Project>
+
+  <!--
+    Singular（海外版归因）配置模板
+
+    用法：复制成 Singular.props 后填入后台的 SDK Key / Secret。
+        cp Singular.props.sample Singular.props
+
+    这是**客户端凭据**，会编进 APK：拿到它的人能往你的统计里灌假数据，
+    但读不到任何用户数据。因此它不属于「绝对不能泄露的密钥」，
+    只是不该顺手传到公开仓库里——.gitignore 已把 Singular.props 排除。
+
+    不填也能构建：代码读到空密钥会直接跳过初始化，不发任何请求、不崩。
+
+    渠道（SingularChannel）：
+      auto   默认。运行时按设备地区判断，中国大陆不初始化（推荐）
+      global 强制按海外处理（例如专门发 Google Play 的包）
+      cn     强制按国内处理，完全不带统计 SDK 的行为
+  -->
+  <PropertyGroup>
+    <SingularApiKey>在这里填 SDK Key</SingularApiKey>
+    <SingularSecret>在这里填 SDK Secret</SingularSecret>
+    <SingularChannel>auto</SingularChannel>
+  </PropertyGroup>
+
+</Project>

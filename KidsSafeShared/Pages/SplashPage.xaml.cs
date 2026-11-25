@@ -58,6 +58,16 @@ public partial class SplashPage : ContentPage
             ("检查账号状态", () => ServiceProvider.Get<IAccountService>().EnsureAccountAsync()),
             ("启动时长守护", () => { ServiceProvider.Get<IScreenTimeService>().Start(); return Task.CompletedTask; }),
             ("连接家长服务器", () => { ServiceProvider.Get<ILiveSyncService>().Start(); return Task.CompletedTask; }),
+#if ANDROID
+            // 海外版归因统计。放在这里而不是 App.OnStart：此时家长已经点过隐私同意，
+            // 满足「同意之前不初始化任何第三方 SDK」的要求。
+            // 中国大陆地区、未配置密钥、家长关闭三种情况都会在内部直接跳过。
+            ("初始化统计", () =>
+            {
+                KidsSafeDesktop.Platforms.Android.AndroidHooks.StartUsageAnalytics?.Invoke();
+                return Task.CompletedTask;
+            }),
+#endif
             // 增量更新：只读上次的落盘结果、发现等着装的补丁，不做网络请求（不拖慢启动）
             ("检查更新状态", () => { ServiceProvider.Get<KidsSafeDesktop.Updates.IUpdateService>().Initialize(); return Task.CompletedTask; }),
             ("进入儿童模式", () => ServiceProvider.Get<IKioskService>().EnterKioskAsync())

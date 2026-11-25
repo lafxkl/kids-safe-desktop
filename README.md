@@ -7,7 +7,7 @@
 <p align="center">
   <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet">
   <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows-512BD4">
-  <img alt="平台" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20Linux%20%7C%20HarmonyOS-informational">
+  <img alt="平台" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20iOS%2015%2B%20%7C%20Linux%20%7C%20HarmonyOS-informational">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
@@ -17,7 +17,9 @@
 
 一个给 3–12 岁孩子用的 **受控桌面环境**：孩子打开平板或电脑，看到的是一个只有动画、儿歌、绘本、小游戏和学习内容的童趣桌面，没有浏览器、没有短视频、没有应用商店；家长用另一台设备（网页或家长端 App）决定「能看什么、能玩多久」。
 
-原生客户端，**.NET 10 + .NET MAUI 单代码库**，一套代码出 Android 与 Windows；另有两个不复用 XAML 层的独立前端——**Linux**（Qt 6 + Kirigami，KDE Plasma 全屏会话）与**鸿蒙**（ArkTS + ArkUI）。全部界面离线可用，不依赖任何云服务；需要远程管理时再自己起一个几十 MB 的 ASP.NET Core 服务端。
+原生客户端，**.NET 10 + .NET MAUI 单代码库**，一套代码出 Android、Windows 与 iOS（iPhone / iPad，内容版）；另有两个不复用 XAML 层的独立前端——**Linux**（Qt 6 + Kirigami，KDE Plasma 全屏会话）与**鸿蒙**（ArkTS + ArkUI）。全部界面离线可用，不依赖任何云服务；需要远程管理时再自己起一个几十 MB 的 ASP.NET Core 服务端。
+
+> iOS 版是**内容版**：绘本、儿歌、小游戏、口算、关爱中心、家长 PIN 全保留；替换桌面、应用白名单、使用时长统计这些依赖系统级权限的能力 iOS 不开放，由桩实现静默降级。差异见 **[Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md)**。
 
 > 当前版本：客户端 **v1.20**（versionCode 21），服务端 **1.4.1**。变更见 [更新记录](KidsSafeDesktop/Docs/更新记录.md)。
 
@@ -160,6 +162,7 @@
 | .NET SDK | 10.0.100+ | 本项目在 `10.0.401` 上开发 |
 | MAUI workload | `maui-windows` / `maui-android` | `dotnet workload install maui-windows maui-android` |
 | Android SDK | API 36 平台 + API 21 最低版本 | 只编译 Windows 时不需要 |
+| Xcode | 16+（仅 iOS） | 只能在 macOS 上出包；Windows 可做编译检查 |
 | Windows | 10 1809（`10.0.17763`）以上 | Windows App SDK 要求 |
 
 ### 编译客户端（Windows）
@@ -193,6 +196,25 @@ dotnet build KidsSafeDesktop/KidsSafeDesktop.csproj -f net10.0-android
 ```
 
 签名配置见 [配置与密钥](#配置与密钥)。不做发布打包的话，可以直接用 Debug 签名装到手机上试。
+
+### 编译 iOS
+
+iOS 的完整构建、签名与上架流程见 **[Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md)**，这里只给最短路径。
+
+**Windows 上做编译检查**（产不出 .app，但能确认代码没写错）：
+
+```bash
+dotnet build KidsSafeDesktop/KidsSafeDesktop.csproj -f net10.0-ios -p:EnableIosTarget=true
+```
+
+**macOS 上出包**（需要 Xcode 16+ 与 `dotnet workload install ios maui`）：
+
+```bash
+bash KidsSafeDesktop/Scripts/build-ios.sh sim    # 模拟器
+bash KidsSafeDesktop/Scripts/build-ios.sh ipa    # Release + ipa（签名见 Signing.iOS.props.sample）
+```
+
+> iOS 目标默认**只在 macOS 上参与构建**：`TargetFrameworks` 用 `IsOSPlatform('osx')` 判断，Windows 上的日常构建完全不受影响，不需要额外参数。
 
 ### 运行服务端（可选）
 
@@ -263,6 +285,7 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 | [Docs/设计文档.md](KidsSafeDesktop/Docs/设计文档.md) | 产品定位、用户场景、25 项能力的设计取舍 |
 | [Docs/技术文档.md](KidsSafeDesktop/Docs/技术文档.md) | 技术栈、关键实现（天气定位、护眼滤镜、TTS、时长守护） |
 | [Docs/工程结构-家长端拆分.md](KidsSafeDesktop/Docs/工程结构-家长端拆分.md) | 三工程拆分的约定与踩坑记录 |
+| [Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md) | iOS 内容版的形态边界、构建签名、App Store 审核要点与自检清单 |
 | [Docs/账号体系.md](KidsSafeDesktop/Docs/账号体系.md) | 账号 / 配对码 / 令牌设计与迁移路径 |
 | [Docs/实时下发通道.md](KidsSafeDesktop/Docs/实时下发通道.md) | 长轮询版本号机制与重连策略 |
 | [Docs/更新记录.md](KidsSafeDesktop/Docs/更新记录.md) | 逐版本变更（含服务端） |
@@ -276,7 +299,8 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 
 这些是真实存在的边界，不是待办清单的修辞：
 
-- **主力是 Android 与 Windows**（同一份 MAUI 代码库）。iOS / macOS 没有验证过，`KidsSafeShared` 里虽然留了 `#if IOS` 分支，但没跑通。
+- **主力是 Android 与 Windows**（同一份 MAUI 代码库）。**iOS 版已完成工程接入与编译验证**（`net10.0-ios` 目标在本机 0 错误编译，含音频播放、音效、护眼遮罩、隐私清单），但**尚未在真机 / 模拟器上实跑**——签名、上架与手感回归需要在 Mac + Apple 开发者账号下完成，步骤见 [Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md)。
+- **iOS 是内容版，不是受控桌面**：替换桌面、应用白名单、读取其他 App 使用时长、强制锁机都依赖 iOS 不开放的系统权限，iOS 上这些入口会隐藏或提示「仅安卓支持」。
 - **Linux 与鸿蒙是另外两个独立前端**：`KidsSafeDesktop/Linux/`（Qt 6 + Kirigami，KDE Plasma 全屏儿童桌面）与 `KidsSafeDesktop/Harmony/`（ArkTS + ArkUI）。都不复用 XAML 层，功能与桌面端不完全对等，本次开源未做完整回归，差异写在各自目录的 README 里。
 - **服务端本身不做 HTTPS，也不自带限流**。它默认只监听 `127.0.0.1:5180`，公网访问必须挂一层带 HTTPS 的反向代理（官网就是这么做的：nginx 把 `/api/*` 转到 5180，并按 `X-Forwarded-For` 让服务端拿到真实 IP）。**不要直接把 5180 端口映射到公网**。
 - **家长端还没有自己的图标与发布脚本**，`ApplicationId` 是占位的 `com.companyname.kidssafeparent`，打包需手动改。
@@ -292,7 +316,8 @@ cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
 - [ ] 两端配置合并（服务端已就绪，客户端 LiveSync 已实现，缺完整的冲突合并策略）
 - [ ] 多孩子档案（一个账号下多个孩子，各自时长与内容）
 - [ ] 教材书架改用开放许可教材，去掉版权依赖
-- [ ] iOS 支持（主要是后台音频、屏幕使用时间 API 的替代方案）
+- [ ] iOS 真机与模拟器回归（工程与平台实现已完成，待 Mac + 开发者账号：签名、TestFlight、上架）；后续再说屏幕使用时间（FamilyControls）与 Singular iOS 归因
+- [ ] 家长端 iOS（共享库已支持，加个 `net10.0-ios` 目标即可）
 - [ ] 服务端：找回密码、审计日志、可选的 HTTPS 自签证书模式
 
 ## 参与贡献

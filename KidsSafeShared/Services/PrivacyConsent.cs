@@ -15,10 +15,10 @@ namespace KidsSafeDesktop.Services;
 public static class PrivacyConsent
 {
     /// <summary>当前隐私政策版本。内容有实质修改时递增，用户会被要求重新同意。</summary>
-    public const string CurrentVersion = "1.1";
+    public const string CurrentVersion = "1.2";   // 1.2：新增海外版 Singular Kids SDK 说明（2026-11-25）
 
     /// <summary>隐私政策生效日期（展示用）。</summary>
-    public const string EffectiveDate = "2026-11-04";
+    public const string EffectiveDate = "2026-11-25";
 
     private const string KeyAgreed = "privacy_agreed";
     private const string KeyVersion = "privacy_agreed_version";

@@ -1,17 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This is the minimum required version of the Apple Privacy Manifest for .NET MAUI apps.
-The contents below are needed because of APIs that are used in the .NET framework and .NET MAUI SDK.
+    iOS 隐私清单（App Store 从 2024-05 起强制要求，缺失直接拒审）。
 
-You are responsible for adding extra entries as needed for your application.
+    维护原则：这里的每一条都要和 Info.plist 的说明文案、以及设置页里
+    「第三方 SDK 与隐私」的表述对得上。宁可多写一句，也不要出现
+    「清单说没收集、实际却上传了」这种不一致 —— 那是拒审和投诉的高发点。
 
-More information: https://aka.ms/maui-privacy-manifest
+    本项目的数据边界（见官网 privacy.html 与 Docs/第三方SDK清单.md）：
+      · 成绩、日记、心情、使用时长：只存设备本地，不上传，因此**不申报**；
+      · 反馈正文与可选邮箱：用户主动提交，会发到自有服务器，必须申报；
+      · 天气：只把城市名发给天气服务，不含任何个人标识，不申报；
+      · 广告 / 跨应用追踪：完全没有，NSPrivacyTracking = false。
 -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <!-- 不做跨 App 追踪，也不集成任何广告/归因 SDK（iOS 版不带 Singular）。
+         将来若要接，必须同时改这里、Info.plist 与隐私政策，三处一致。 -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array>
+        <!-- 意见反馈 / 满意度问卷：用户主动填写并提交，用于改进产品 -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+        <!-- 反馈里用户自愿留下的邮箱：仅用于回复这一条反馈 -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeEmailAddress</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <true/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+    </array>
+
+    <!-- 必需理由 API：不写这些，上传时会被自动扫描拦下 -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
+        <!-- Preferences / NSUserDefaults：保存本机设置（音量、护眼强度、家长 PIN 等） -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+        <!-- 文件时间戳：绘本/音频缓存按修改时间判断是否过期 -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
@@ -20,6 +71,7 @@ More information: https://aka.ms/maui-privacy-manifest
                 <string>C617.1</string>
             </array>
         </dict>
+        <!-- 系统启动时间：.NET 运行时与 MAUI 内部使用 -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
@@ -28,6 +80,7 @@ More information: https://aka.ms/maui-privacy-manifest
                 <string>35F9.1</string>
             </array>
         </dict>
+        <!-- 磁盘空间：下载绘本/音频前检查剩余空间，避免写坏缓存 -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
@@ -36,16 +89,6 @@ More information: https://aka.ms/maui-privacy-manifest
                 <string>E174.1</string>
             </array>
         </dict>
-        <!--
-            The entry below is only needed when you're using the Preferences API in your app.
-        <dict>
-            <key>NSPrivacyAccessedAPIType</key>
-            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
-            <key>NSPrivacyAccessedAPITypeReasons</key>
-            <array>
-                <string>CA92.1</string>
-            </array>
-        </dict> -->
     </array>
 </dict>
 </plist>

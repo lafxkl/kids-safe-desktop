@@ -34,12 +34,16 @@ KidsSafeServer/data/
 KidsSafeDesktop/Platforms/Android/Assets/mcs-services.json
 KidsSafeDesktop/Platforms/Android/libs/*.aar
 
+# Singular（海外版归因）的 SDK Key / Secret：客户端凭据，会编进 APK，但不该进公开仓库
+KidsSafeDesktop/Singular.props
+
 # 部署目标（服务器地址、域名）
 KidsSafeDesktop/Scripts/deploy.config.json
 
 # 保留模板文件
 !KidsSafeServer/appsettings.sample.json
 !KidsSafeDesktop/Signing.props.sample
+!KidsSafeDesktop/Singular.props.sample
 !KidsSafeDesktop/Scripts/deploy.config.sample.json
 
 # ── 3. 大文件与版权内容 ───────────────────────────────────────────────────
@@ -55,6 +59,9 @@ KidsSafeDesktop/Website/downloads/*
 
 # 历史版本归档
 KidsSafeDesktop/_release/
+
+# 分渠道打包输出（build-android-channels.ps1 的产物，含两个 APK）
+KidsSafeDesktop/dist/
 
 # 软著申请材料（含个人信息，按需自行保留）
 KidsSafeDesktop/Docs/软著申请材料/

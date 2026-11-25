@@ -35,6 +35,15 @@ public static class WebViewBridge
                 awv.EvaluateJavascript(script, new JsCallback(v => tcs.TrySetResult(Unwrap(v))));
                 return await tcs.Task;
             }
+#elif IOS
+            // WKWebView 直接返回对象（不是 Android/WebView2 那样的 JSON 文本），
+            // 所以不解包；字符串就是字符串，null 用 NSNull 表示。
+            if (view.Handler?.PlatformView is WebKit.WKWebView wk)
+            {
+                var result = await wk.EvaluateJavaScriptAsync(script);
+                if (result is null || result is Foundation.NSNull) return null;
+                return result.ToString();
+            }
 #endif
             await Task.CompletedTask;
             return null;

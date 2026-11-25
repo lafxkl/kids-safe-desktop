@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    iOS 签名配置（不入库）。由 KidsSafeDesktop.csproj 在构建时自动导入。
+
+    使用步骤：
+      1. 复制本文件为 Signing.iOS.props（同目录，即 KidsSafeDesktop/ 下）
+      2. 打开 Xcode → Settings → Accounts 确认证书已装；
+         `security find-identity -v -p codesigning` 能看到证书名
+      3. 把下面的值换成自己的：
+           IosCodesignKey      —— 证书名全称，含团队名与团队 ID，例如
+                                 "Apple Distribution: Siguang Blog (ABCDE12345)"
+                                 本地真机调试也可以填 "Apple Development: ..."
+           IosCodesignProvision—— 描述文件名称（Xcode 里 Profiles 列表的名字），
+                                 不是 UUID。App Store 分发用 "AppStore" 类型的描述文件。
+      4. 不想写文件也可以命令行传：
+           dotnet publish -f net10.0-ios -c Release -p:RuntimeIdentifier=ios-arm64 \
+             -p:CodesignKey="Apple Distribution: ..." -p:CodesignProvision="..."
+  -->
+  <PropertyGroup>
+    <IosCodesignKey></IosCodesignKey>
+    <IosCodesignProvision></IosCodesignProvision>
+  </PropertyGroup>
+
+</Project>

@@ -8,7 +8,9 @@ public static class UpdatePaths
 {
     /// <summary>清单里的平台标识。</summary>
     public static string PlatformKey =>
-        OperatingSystem.IsAndroid() ? "android" : "windows";
+        OperatingSystem.IsAndroid() ? "android"
+        : OperatingSystem.IsIOS() ? "ios"
+        : "windows";
 
     /// <summary>本机宿主版本（csproj 的 ApplicationDisplayVersion）。</summary>
     public static string HostVersion => Helpers.AppVersion.Version;
