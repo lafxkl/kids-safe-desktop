@@ -1,7 +1,7 @@
 # Kids Safe Desktop
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/header.png" alt="Kids Safe Desktop" width="100%">
+  <img src="KidsSafeDesktop/Website/assets/header.png" alt="Kids Safe Desktop">
 </p>
 
 <p align="center">
@@ -58,16 +58,16 @@ Handing a device to a child is rarely a question of "is there a kids mode". The 
 All five are real Android screenshots of v1.19 / v1.20 — no mockups. Tap to open the full image on mobile:
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" alt="Home" width="31%">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" alt="Games" width="31%">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" alt="Study" width="31%">
+  <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" alt="Home">
+  <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" alt="Games">
+  <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" alt="Study">
 </p>
 
 <p align="center"><strong>Home · Games · Study</strong></p>
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" alt="Listen · Media" width="31%">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_care.png" alt="Care Center" width="31%">
+  <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" alt="Listen · Media">
+  <img src="KidsSafeDesktop/Website/assets/screenshot_care.png" alt="Care Center">
 </p>
 
 <p align="center"><strong>Listen · Media · Care Center</strong> (more on the <a href="https://kids.siguangblog.cc/">website</a>)</p>
