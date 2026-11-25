@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>反馈管理 · 儿童安全桌面</title>
+<style>
+  :root{--purple:#E2603D;--purple-d:#B4552F;--ink:#3A2B22;--soft:#7C6353;--bg:#FDF6EC;--grad:linear-gradient(135deg,#F2A03D 0%,#E2603D 100%)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--purple);text-decoration:none}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+  header{background:#fff;border-bottom:1px solid #F0DEC9;padding:14px 0}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  h1{font-size:19px}
+  .muted{color:#9C8371;font-size:12.5px}
+  .card{background:#fff;border:1px solid #F4E5D3;border-radius:18px;padding:18px;margin:18px 0;box-shadow:0 10px 26px rgba(176,96,54,.07)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input,select{font-family:inherit;font-size:14px;padding:9px 12px;border:1.5px solid #EADFD3;border-radius:12px;background:#FFFDF9;outline:none}
+  input:focus,select:focus{border-color:var(--purple);background:#fff}
+  button{font-family:inherit;font-size:14px;font-weight:700;border:0;border-radius:12px;padding:10px 18px;cursor:pointer;background:#FCEBD7;color:#B4552F}
+  button.primary{background:var(--grad);color:#fff}
+  button:disabled{opacity:.55;cursor:default}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .stat{flex:1;min-width:120px;background:#FDF6EC;border-radius:14px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:22px;color:var(--purple-d)}
+  .stat span{font-size:12px;color:#9C8371}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid #F4E9DC;vertical-align:top}
+  th{color:#9C8371;font-weight:700;font-size:12.5px;white-space:nowrap}
+  td.content{max-width:520px;white-space:pre-wrap;word-break:break-word}
+  tr.detail td{background:#FFFDF9;font-size:12.5px;color:#6B5648}
+  .pill{display:inline-block;border-radius:8px;padding:2px 8px;font-size:12px;font-weight:700;background:#FCEBD7;color:#B4552F;white-space:nowrap}
+  .pill.sat{background:#E8F5E9;color:#2E7D32}
+  .pill.fb{background:#E3F2FD;color:#1565C0}
+  .del{background:#FDECEA;color:#C62828;padding:5px 10px;font-size:12.5px}
+  .empty{color:#A1887F;padding:16px 0;font-size:13.5px}
+  .note{font-size:12.5px;color:#8D6E63;line-height:1.85;margin-top:10px}
+  .hidden{display:none}
+  @media(max-width:760px){td.content{max-width:none}th:nth-child(3),td:nth-child(3){display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <h1>📮 反馈管理</h1>
+      <div class="muted">意见反馈 / 满意度 / 问卷的明细与导出。这个页面本身是公开的，但没有管理密钥看不到任何数据。</div>
+    </div>
+    <div class="row">
+      <a href="feedback.html">← 返回反馈页</a>
+      <a href="index.html">官网首页</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="card" id="loginCard">
+    <div class="row">
+      <input type="password" id="key" placeholder="管理密钥（服务端 Feedback:AdminKey）" style="min-width:320px" />
+      <button class="primary" id="loginBtn">进入</button>
+      <button id="forgetBtn" title="清除本机记住的密钥">忘记密钥</button>
+    </div>
+    <p class="note">
+      密钥只存在本浏览器的 sessionStorage 里，关闭标签页即失效；它不会写进页面源码，也不会上传到任何第三方。
+      服务端在 <code>appsettings.json</code> 的 <code>Feedback:AdminKey</code> 配置；没配这个键时，只能用已登录的 owner 账号令牌访问接口。
+    </p>
+  </section>
+
+  <section id="main" class="hidden">
+    <section class="card">
+      <div class="row">
+        <select id="kind">
+          <option value="">全部类型</option>
+          <option value="satisfaction">满意度调查</option>
+          <option value="survey">使用问卷</option>
+          <option value="feedback">意见反馈</option>
+        </select>
+        <select id="days">
+          <option value="0">全部时间</option>
+          <option value="7">最近 7 天</option>
+          <option value="30" selected>最近 30 天</option>
+          <option value="90">最近 90 天</option>
+        </select>
+        <button class="primary" id="refresh">刷新</button>
+        <button id="exportBtn">导出 CSV</button>
+        <span class="muted" id="totalText"></span>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="card">
+      <table>
+        <thead>
+          <tr><th>时间</th><th>类型</th><th>平台</th><th>评分</th><th>内容</th><th>联系方式</th><th></th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="empty hidden" id="empty">还没有数据</p>
+      <div class="row" style="margin-top:14px">
+        <button id="prev">上一页</button>
+        <button id="next">下一页</button>
+        <span class="muted" id="pageText"></span>
+      </div>
+    </section>
+
+    <p class="note">
+      删除是不可恢复的：它会重写当月的 JSONL 文件（用户要求删除自己的反馈时用）。
+      导出 CSV 带 BOM，Excel 双击打开中文不会乱码；联系方式一列只在这里出现，公开统计接口永远不带它。
+    </p>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API = location.protocol === 'file:' ? 'https://kids.siguangblog.cc' : '';
+  var LIMIT = 100;
+  var offset = 0;
+
+  var loginCard = document.getElementById('loginCard');
+  var main = document.getElementById('main');
+  var keyInput = document.getElementById('key');
+
+  function key() { return sessionStorage.getItem('ks_admin_key') || ''; }
+
+  function fmtTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    // 统一按北京时间显示：数据本身存 UTC，运维不该在脑子里做时区换算
+    return d.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+  }
+
+  function kindName(k) {
+    return { satisfaction: '满意度', survey: '问卷', feedback: '反馈' }[k] || k;
+  }
+
+  async function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ 'X-Admin-Key': key() }, opts.headers || {});
+    var r = await fetch(API + path, opts);
+    if (r.status === 401) throw new Error('管理密钥不对，或已失效');
+    if (!r.ok) throw new Error('请求失败（HTTP ' + r.status + '）');
+    return r;
+  }
+
+  function renderStats(d) {
+    var box = document.getElementById('stats');
+    var s = d.satisfaction || {};
+    box.innerHTML =
+      '<div class="stat"><b>' + d.total + '</b><span>总条数</span></div>' +
+      '<div class="stat"><b>' + (d.byKind ? d.byKind.satisfaction : 0) + '</b><span>满意度</span></div>' +
+      '<div class="stat"><b>' + (d.byKind ? d.byKind.survey : 0) + '</b><span>问卷</span></div>' +
+      '<div class="stat"><b>' + (d.byKind ? d.byKind.feedback : 0) + '</b><span>意见反馈</span></div>' +
+      '<div class="stat"><b>' + (s.avgRating == null ? '—' : Number(s.avgRating).toFixed(1)) + '</b><span>平均满意度</span></div>' +
+      '<div class="stat"><b>' + (s.nps == null ? '—' : (s.nps > 0 ? '+' : '') + s.nps) + '</b><span>NPS</span></div>' +
+      '<div class="stat"><b>' + d.withContact + '</b><span>留了联系方式</span></div>';
+  }
+
+  function details(it) {
+    var parts = [];
+    if (it.dims) parts.push('分项：' + Object.keys(it.dims).map(function (k) { return k + '=' + it.dims[k]; }).join(' / '));
+    if (it.tags && it.tags.length) parts.push('标签：' + it.tags.join('、'));
+    if (it.answers) parts.push('问卷：' + Object.keys(it.answers).map(function (k) { return k + '=' + it.answers[k]; }).join('；'));
+    parts.push('版本：' + (it.appVersion || '—') + ' · 渠道：' + (it.channel || '—') + ' · 同意公开：' + (it.public ? '是' : '否'));
+    parts.push('ID：' + it.id);
+    return parts.join(' ｜ ');
+  }
+
+  async function load() {
+    var kindVal = document.getElementById('kind').value;
+    var daysVal = document.getElementById('days').value;
+    var q = '?days=' + encodeURIComponent(daysVal) +
+            '&limit=' + LIMIT + '&offset=' + offset +
+            (kindVal ? '&kind=' + encodeURIComponent(kindVal) : '');
+
+    var [statResp, listResp] = await Promise.all([
+      api('/api/feedback/stats?days=' + encodeURIComponent(daysVal)),
+      api('/api/feedback/list' + q)
+    ]);
+    var stats = await statResp.json();
+    var list = await listResp.json();
+
+    renderStats(stats);
+    document.getElementById('totalText').textContent = '符合条件的共 ' + list.total + ' 条';
+    document.getElementById('pageText').textContent =
+      '第 ' + (offset / LIMIT + 1) + ' 页 / 共 ' + Math.max(1, Math.ceil(list.total / LIMIT)) + ' 页';
+
+    var tbody = document.getElementById('rows');
+    tbody.innerHTML = '';
+    document.getElementById('empty').classList.toggle('hidden', list.items.length > 0);
+
+    list.items.forEach(function (it) {
+      var tr = document.createElement('tr');
+      var cls = it.kind === 'satisfaction' ? 'sat' : (it.kind === 'feedback' ? 'fb' : '');
+      tr.innerHTML =
+        '<td style="white-space:nowrap">' + fmtTime(it.createdAt) + '</td>' +
+        '<td><span class="pill ' + cls + '">' + kindName(it.kind) + '</span></td>' +
+        '<td>' + (it.platform || '—') + '</td>' +
+        '<td>' + (it.rating ? '★'.repeat(it.rating) : (it.nps != null ? 'NPS ' + it.nps : '—')) + '</td>' +
+        '<td class="content"></td>' +
+        '<td></td>' +
+        '<td><button class="del" data-id="' + it.id + '">删除</button></td>';
+      // 内容走 textContent：反馈是用户输入，绝不能当 HTML 拼进去（XSS）
+      tr.querySelector('td.content').textContent = it.content || '(无正文)';
+      tr.querySelector('td:nth-child(6)').textContent = it.contact || '—';
+
+      var detail = document.createElement('tr');
+      detail.className = 'detail hidden';
+      var cell = document.createElement('td');
+      cell.colSpan = 7;
+      cell.textContent = details(it);
+      detail.appendChild(cell);
+
+      tr.addEventListener('click', function (e) {
+        if (e.target.classList.contains('del')) return;
+        detail.classList.toggle('hidden');
+      });
+      tbody.appendChild(tr);
+      tbody.appendChild(detail);
+    });
+
+    tbody.querySelectorAll('.del').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!confirm('确定删除这条？删除后无法恢复。')) return;
+        try {
+          await api('/api/feedback/' + encodeURIComponent(btn.dataset.id), { method: 'DELETE' });
+          load();
+        } catch (e) { alert(e.message); }
+      };
+    });
+  }
+
+  async function enter() {
+    if (!key()) return;
+    try {
+      await load();
+      loginCard.classList.add('hidden');
+      main.classList.remove('hidden');
+    } catch (e) {
+      alert(e.message);
+      sessionStorage.removeItem('ks_admin_key');
+    }
+  }
+
+  document.getElementById('loginBtn').onclick = function () {
+    var v = keyInput.value.trim();
+    if (!v) return;
+    sessionStorage.setItem('ks_admin_key', v);
+    offset = 0;
+    enter();
+  };
+  keyInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+
+  document.getElementById('forgetBtn').onclick = function () {
+    sessionStorage.removeItem('ks_admin_key');
+    location.reload();
+  };
+
+  document.getElementById('refresh').onclick = function () { offset = 0; load().catch(function (e) { alert(e.message); }); };
+  document.getElementById('kind').onchange = function () { offset = 0; load().catch(function (e) { alert(e.message); }); };
+  document.getElementById('days').onchange = function () { offset = 0; load().catch(function (e) { alert(e.message); }); };
+
+  document.getElementById('prev').onclick = function () {
+    offset = Math.max(0, offset - LIMIT);
+    load().catch(function (e) { alert(e.message); });
+  };
+  document.getElementById('next').onclick = function () {
+    offset += LIMIT;
+    load().catch(function (e) { alert(e.message); });
+  };
+
+  // 导出走 fetch + blob：密钥放在请求头里，不出现在 URL / 浏览器历史 / 服务器访问日志里
+  document.getElementById('exportBtn').onclick = async function () {
+    try {
+      var daysVal = document.getElementById('days').value;
+      var kindVal = document.getElementById('kind').value;
+      var r = await api('/api/feedback/export.csv?days=' + encodeURIComponent(daysVal) +
+                        (kindVal ? '&kind=' + encodeURIComponent(kindVal) : ''));
+      var blob = await r.blob();
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'kidssafe-feedback-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    } catch (e) { alert(e.message); }
+  };
+
+  if (key()) enter();
+})();
+</script>
+</body>
+</html>

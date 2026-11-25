@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    增量更新的落盘器（Windows）。
+
+    为什么必须是一个独立的小程序：
+      · 主程序自己就是 KidsSafeShared.dll 的使用者，在进程内替换正在使用的 dll，
+        Windows 会直接拒绝（共享冲突）；
+      · 就算能改名，也解决不了「已经加载的旧代码还在跑」这件事。
+
+    它的职责只有四件：等主程序退出 → 备份 → 覆盖 → 重启。
+    任何一步失败都回滚，保证「更新失败 = 还是旧版本」，不会变成打不开的砖。
+
+    发布方式：自包含单文件（目标机器不一定装了 .NET 运行时）。
+    体积约 10 MB，只在更新那几百毫秒里出现，不进内存常驻。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>KidsSafeUpdater</AssemblyName>
+    <RootNamespace>KidsSafeUpdater</RootNamespace>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!--
+      裁剪 + 源生成 JSON：不裁的话自包含单文件有 37 MB，裁完约 10 MB。
+      这个程序只做「等退出 → 复制文件 → 重启」，没有反射、没有动态加载，
+      裁剪是安全的；JSON 走源生成（UpdaterJson），不依赖运行时反射。
+    -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+  </PropertyGroup>
+
+</Project>

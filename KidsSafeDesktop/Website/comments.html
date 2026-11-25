@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>家长怎么说 · 儿童安全桌面评论区</title>
+<meta name="description" content="家长和孩子使用儿童安全桌面的真实评价：护眼与时长限制、故事屋、古诗、识字、小游戏工坊、特需关爱板块，以及各平台的改进建议。可以按平台和星级筛选，也可以直接留下你的看法。" />
+<link rel="canonical" href="https://kids.siguangblog.cc/comments.html" />
+<style>
+  :root{
+    --purple:#E2603D; --purple-d:#B4552F; --teal:#2FB8CE; --green:#26A69A;
+    --ink:#3A2B22; --soft:#7C6353; --bg:#FDF6EC; --card:#FFFFFF; --radius:22px;
+    --grad:linear-gradient(135deg,#F2A03D 0%,#E2603D 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;color:var(--ink);
+       background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--purple);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+
+  /* ── 顶部导航（与站点其它页一致）── */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);
+             backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple);white-space:nowrap;flex:0 0 auto}
+  .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
+  .nav nav{display:flex;gap:20px;font-size:15px}
+  .nav nav a{color:var(--ink);font-weight:600;white-space:nowrap;flex:0 0 auto}
+  .nav nav a:hover,.nav nav a.on{color:var(--purple)}
+  .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;
+            font-weight:700;white-space:nowrap;box-shadow:0 6px 16px rgba(214,110,74,.3)}
+
+  /* ── 头图 ── */
+  .hero{padding:48px 0 6px;text-align:center}
+  .hero h1{font-size:clamp(26px,4vw,40px);font-weight:900;line-height:1.25}
+  .hero h1 .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{margin:14px auto 0;max-width:680px;color:var(--soft);font-size:16px}
+  .hero .src{margin-top:12px;font-size:12.5px;color:#A1887F}
+
+  /* ── 统计条 ── */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:840px;margin:26px auto 0}
+  .stat{background:#fff;border:1px solid #F4E5D3;border-radius:18px;padding:16px 10px;
+        box-shadow:0 8px 22px rgba(176,96,54,.07)}
+  .stat b{display:block;font-size:26px;line-height:1.2;color:var(--purple-d)}
+  .stat span{font-size:12.5px;color:#9C8371}
+
+  /* ── 筛选栏 ── */
+  .board{padding:30px 0 0}
+  .toolbar{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid #EADFD3;background:#fff;border-radius:999px;padding:7px 14px;
+        font-size:13px;font-weight:700;color:#7C6353;cursor:pointer;font-family:inherit;
+        transition:background .18s,color .18s,border-color .18s}
+  .chip:hover{border-color:#F0C4A6}
+  .chip.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(214,110,74,.28)}
+  .toolbar .right{display:flex;gap:8px;align-items:center}
+  select{font-family:inherit;font-size:13.5px;color:var(--ink);background:#fff;
+         border:1.5px solid #EADFD3;border-radius:14px;padding:8px 12px;outline:none;cursor:pointer}
+  .result{margin:14px 0 0;font-size:12.5px;color:#A1887F}
+
+  /* ── 卡片墙 ── */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-top:14px}
+  .cmt{background:#fff;border:1px solid #F4E5D3;border-radius:20px;padding:20px;
+       box-shadow:0 10px 26px rgba(176,96,54,.08);display:flex;flex-direction:column;gap:10px;
+       transition:transform .22s ease,box-shadow .22s ease}
+  .cmt:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(176,96,54,.13)}
+  .cmt.pending{border-style:dashed;background:#FFFDF9}
+  .head{display:flex;gap:10px;align-items:center}
+  .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+      font-weight:800;font-size:16px;color:#fff;background:var(--grad);box-shadow:0 4px 10px rgba(214,110,74,.25)}
+  .who{flex:1;min-width:0}
+  .who b{display:block;font-size:14.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .who .meta{font-size:11.5px;color:#A1887F;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .badge{font-size:10.5px;font-weight:800;border-radius:7px;padding:1px 7px;letter-spacing:.02em}
+  .p-windows{background:#E8F1FD;color:#1B5FAA}
+  .p-android{background:#E7F7EE;color:#1B7A45}
+  .p-linux{background:#F1EEF6;color:#5B4A78}
+  .p-harmony{background:#FDECEC;color:#B03A3A}
+  .p-web{background:#FCEBD7;color:#B4552F}
+  .stars{color:#F5A623;font-size:13.5px;letter-spacing:1.5px;white-space:nowrap}
+  .body{font-size:14px;color:#5D4A3D;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
+  .body.clamp{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+  .expand{border:0;background:none;color:var(--purple);font-size:12.5px;font-weight:700;
+          cursor:pointer;font-family:inherit;padding:0;align-self:flex-start}
+  .tags{display:flex;gap:6px;flex-wrap:wrap}
+  .tags span{background:#FCEBD7;color:#B4552F;font-size:11.5px;font-weight:700;border-radius:8px;padding:3px 9px}
+  .reply{background:#FFF7F0;border-left:3px solid #F0C4A6;border-radius:0 12px 12px 0;
+         padding:10px 12px;font-size:13px;color:#6B5648;line-height:1.8}
+  .reply b{display:block;color:#B4552F;font-size:12px;margin-bottom:3px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;
+        border-top:1px dashed #F2E4D6;padding-top:10px;margin-top:auto}
+  .like{border:1px solid #EADFD3;background:#fff;border-radius:999px;padding:5px 13px;
+        font-size:12.5px;color:#8A7261;cursor:pointer;font-family:inherit;transition:all .18s}
+  .like:hover{border-color:#F0C4A6;color:var(--purple)}
+  .like.on{background:#FDEADD;border-color:#F3C7AC;color:#B4552F;font-weight:800}
+  .when{font-size:11.5px;color:#B5A092}
+
+  .empty{text-align:center;color:#A1887F;font-size:14px;padding:40px 0}
+  .empty button{margin-top:12px;border:1px solid #EADFD3;background:#fff;border-radius:999px;
+                padding:8px 18px;font-size:13px;font-weight:700;color:var(--purple);cursor:pointer;font-family:inherit}
+  .pager{text-align:center;margin:26px 0 4px}
+  .pager button{border:1px solid #EADFD3;background:#fff;border-radius:999px;padding:11px 28px;
+                font-size:14px;font-weight:800;color:var(--purple);cursor:pointer;font-family:inherit;
+                box-shadow:0 8px 20px rgba(176,96,54,.08)}
+  .pager button:hover{background:#FDF6EC}
+  .pager button[hidden]{display:none}
+
+  /* ── 写评论 ── */
+  .write{margin:34px 0 56px;background:#fff;border:1px solid #F4E5D3;border-radius:24px;
+         padding:26px 28px;box-shadow:0 12px 34px rgba(176,96,54,.09)}
+  .write h2{font-size:20px}
+  .write .sub{margin:6px 0 18px;font-size:13px;color:var(--soft)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:#5D4A3D}
+  .field label .hint{font-weight:400;color:#A1887F;margin-left:6px;font-size:12px}
+  input[type=text],textarea{width:100%;font-family:inherit;font-size:14.5px;color:var(--ink);
+    background:#FFFDF9;border:1.5px solid #EADFD3;border-radius:14px;padding:11px 13px;outline:none;resize:vertical}
+  input[type=text]:focus,textarea:focus{border-color:#F0B48E;background:#fff}
+  .stars-pick{display:flex;gap:6px;align-items:center}
+  .stars-pick button{border:0;background:none;font-size:25px;line-height:1;cursor:pointer;
+                     color:#E4D5C6;padding:0 2px;font-family:inherit;transition:color .15s,transform .15s}
+  .stars-pick button.on{color:#F5A623;transform:scale(1.06)}
+  .stars-pick span{font-size:12.5px;color:#A1887F;margin-left:6px}
+  .check{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:#6B5648;
+         background:#FFFDF9;border:1px solid #F1E4D6;border-radius:14px;padding:11px 13px}
+  .check input{margin-top:3px}
+  .check b{color:#B4552F}
+  .submit-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .submit{background:var(--grad);color:#fff;border:0;border-radius:24px;padding:12px 32px;
+          font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;
+          box-shadow:0 10px 22px rgba(214,110,74,.3)}
+  .submit:disabled{opacity:.55;cursor:default;box-shadow:none}
+  .status{font-size:13px;color:#26A69A}
+  .status.bad{color:#C0392B}
+  .note{margin-top:12px;font-size:12px;color:#A1887F;line-height:1.8}
+
+  footer{border-top:1px solid #F0DEC9;background:#fff;padding:26px 0;font-size:12.5px;color:#9C8371}
+  footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  footer a{color:#B4552F;margin-right:14px}
+
+  @media(max-width:760px){
+    .stats{grid-template-columns:1fr 1fr}
+    .grid{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr}
+        /* 手机端头部：品牌 + 下载按钮一行，导航胶囊横滑（与关于页一致） */
+    .nav .wrap{display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand btn" "nav nav";
+               height:auto;align-items:center;gap:0}
+    .brand{grid-area:brand;font-size:16.5px;padding:11px 0 6px}
+    .brand img{width:30px;height:30px;border-radius:9px}
+    .nav .wrap > .btn{grid-area:btn;padding:6px 13px;font-size:12.5px;align-self:center}
+    .nav nav{grid-area:nav;display:flex;flex-wrap:nowrap;gap:8px;font-size:13.5px;overflow-x:auto;
+             padding:0 0 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .nav nav::-webkit-scrollbar{display:none}
+    .nav nav a{flex:0 0 auto;display:inline-block;background:#fff;border:1px solid #F2E2CE;
+               border-radius:999px;padding:5px 12px;line-height:1.5;font-weight:600}
+    .nav nav a.on{background:var(--grad);color:#fff;border-color:transparent}
+    .write{padding:22px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="assets/icon.png" alt="儿童安全桌面图标"/>儿童安全桌面</a>
+    <nav>
+      <a href="index.html">首页</a>
+      <a href="comments.html" class="on">家长评价</a>
+      <a href="feedback.html">反馈与问卷</a>
+      <a href="changelog.html">更新日志</a>
+      <a href="privacy.html">隐私政策</a>
+    </nav>
+    <a class="btn" href="download.html">下载体验</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>家长和孩子们<span class="hl">怎么说</span></h1>
+    <p>下面每一条都来自真实使用：有的在 App 里提交，有的在官网写下。好评不加工，差评也不删——能改的我们回到更新日志里。</p>
+    <div class="src">数据来源：官网与各端提交的公开留言（<code>data/comments.json</code> 精选 + 服务端实时留言）</div>
+    <div class="stats">
+      <div class="stat"><b id="sCount">—</b><span>条评价</span></div>
+      <div class="stat"><b id="sAvg">—</b><span>平均评分</span></div>
+      <div class="stat"><b id="sFive">—</b><span>给了 5 星</span></div>
+      <div class="stat"><b id="sReply">—</b><span>开发者回复</span></div>
+    </div>
+  </section>
+
+  <section class="board">
+    <div class="toolbar">
+      <div class="filters" id="pChips">
+        <button class="chip on" data-p="all" type="button">全部平台</button>
+        <button class="chip" data-p="windows" type="button">Windows</button>
+        <button class="chip" data-p="android" type="button">Android</button>
+        <button class="chip" data-p="linux" type="button">Linux</button>
+        <button class="chip" data-p="harmony" type="button">鸿蒙</button>
+        <button class="chip" data-p="web" type="button">官网</button>
+      </div>
+      <div class="right">
+        <div class="filters" id="rChips">
+          <button class="chip on" data-r="all" type="button">全部星级</button>
+          <button class="chip" data-r="5" type="button">5 星</button>
+          <button class="chip" data-r="4" type="button">4 星</button>
+          <button class="chip" data-r="low" type="button">3 星及以下</button>
+        </div>
+        <select id="sortSel" aria-label="排序方式">
+          <option value="new">最新优先</option>
+          <option value="top">最多人觉得有用</option>
+          <option value="good">评分从高到低</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="result" id="resultLine"></p>
+    <div class="grid" id="wall"></div>
+    <div class="empty" id="empty" hidden>
+      <p id="emptyText">还没有这个组合的评价。</p>
+      <button type="button" id="resetBtn">看全部评价</button>
+    </div>
+    <div class="pager"><button type="button" id="moreBtn" hidden>加载更多</button></div>
+  </section>
+
+  <noscript>
+    <p style="text-align:center;color:#A1887F;padding:20px">
+      评论区需要 JavaScript 才能加载。你也可以直接到
+      <a href="feedback.html">反馈与问卷</a>页留下看法。
+    </p>
+  </noscript>
+
+  <section class="write" id="write">
+    <h2>也想说两句？</h2>
+    <p class="sub">不用注册。昵称随便填，不填就叫「匿名家长」。写得越具体，越容易在下一版被改掉。</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="nick">昵称<span class="hint">选填，最多 20 字</span></label>
+        <input type="text" id="nick" maxlength="20" placeholder="例如：浩浩妈妈" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="contact">联系方式<span class="hint">选填，不会公开</span></label>
+        <input type="text" id="contact" maxlength="120" placeholder="邮箱 / 微信 / QQ，方便回你一句「已修复」" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>打分<span class="hint">选填，点了才会显示星星</span></label>
+      <div class="stars-pick" id="starPick">
+        <button type="button" data-v="1">★</button>
+        <button type="button" data-v="2">★</button>
+        <button type="button" data-v="3">★</button>
+        <button type="button" data-v="4">★</button>
+        <button type="button" data-v="5">★</button>
+        <span id="starText">还没打分</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="content">想说的话<span class="hint">5–800 字</span></label>
+      <textarea id="content" rows="4" maxlength="800"
+        placeholder="例如：孩子二年级，护眼提醒到点会自己弹，我不用在旁边一直念。希望能加个错题本。"></textarea>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" id="publicOk" />
+      <span>可以把这条<b>公开</b>展示在这个页面（只显示昵称、评分和内容，联系方式永远不会公开）。不勾选的话只有开发者能看到。</span>
+    </label>
+
+    <div class="submit-row">
+      <button class="submit" type="button" id="sendBtn">发表</button>
+      <span class="status" id="status" role="status"></span>
+    </div>
+
+    <p class="note">
+      提交后不会立刻出现在这里（公开留言按时间排队加载，刷新可见）。不收集 IP、设备标识和账号，
+      想删掉自己那条，发邮件到 <a href="mailto:2279125469@qq.com">2279125469@qq.com</a> 说明大概时间和内容即可。
+      只想填满意度或问卷，去 <a href="feedback.html">反馈与问卷</a>。
+    </p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© 儿童安全桌面 · 家长评价</div>
+    <div>
+      <a href="index.html">首页</a>
+      <a href="feedback.html">反馈与问卷</a>
+      <a href="privacy.html">隐私政策</a>
+      <a href="mailto:2279125469@qq.com">2279125469@qq.com</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // file:// 直接双击打开时没有同源后端，退回线上地址（本地预览也能看到真实数据）
+  var API = location.protocol === 'file:' ? 'https://kids.siguangblog.cc' : '';
+  var DATA_URL = 'data/comments.json';
+  var PER_PAGE = 9;
+
+  var NAME = { windows: 'Windows', android: 'Android', linux: 'Linux', harmony: '鸿蒙', web: '官网' };
+  var ORDER = ['windows', 'android', 'linux', 'harmony', 'web'];
+
+  var state = {
+    items: [],          // 合并后的全部评价
+    platform: 'all',
+    rating: 'all',
+    sort: 'new',
+    shown: PER_PAGE,
+    formRating: 0,
+    liked: {},
+    loading: false
+  };
+
+  // ── 小工具 ──────────────────────────────────────────────────
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+
+  function starsOf(n) {
+    n = Math.max(0, Math.min(5, parseInt(n, 10) || 0));
+    return '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+  }
+
+  function clampText(s, len) {
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    return s.length > len ? s.slice(0, len) + '…' : s;
+  }
+
+  function readJson(key, fallback) {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      var v = JSON.parse(raw);
+      return v === null || v === undefined ? fallback : v;
+    } catch (e) { return fallback; }
+  }
+
+  function writeJson(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 隐私模式忽略 */ }
+  }
+
+  function uid() {
+    return 'web-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ── 数据加载 ────────────────────────────────────────────────
+  // 优先读静态 JSON（运营可手工维护、可放测试数据），再叠服务端实时公开留言。
+  // 两边都失败时给出可重试的空态，而不是让页面一片空白。
+  function loadStatic() {
+    // 加 ?v= 时间戳：comments.json 改名不改内容的情况很少，但 nginx 默认会缓存它，
+    // 运营改完文件刷新看不到新内容是最容易踩的坑。
+    return fetch(DATA_URL + '?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (d) {
+        var list = (d && d.items) || [];
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+          var it = list[i];
+          if (!it || !it.content) continue;
+          out.push({
+            id: it.id || ('static-' + i),
+            name: it.name || '匿名家长',
+            avatar: it.avatar || String(it.name || '匿').slice(0, 1),
+            platform: String(it.platform || 'web').toLowerCase(),
+            rating: parseInt(it.rating, 10) || 0,
+            date: it.date || '',
+            // 排序键：静态数据有精确日期，实时留言只有月份，见 loadRemote 里的说明
+            sortKey: it.date || '',
+            tags: Array.isArray(it.tags) ? it.tags.slice(0, 4) : [],
+            content: String(it.content),
+            likes: parseInt(it.likes, 10) || 0,
+            featured: !!it.featured,
+            reply: it.reply && it.reply.content ? it.reply : null,
+            source: 'static',
+            pending: false
+          });
+        }
+        return out;
+      });
+  }
+
+  function loadRemote() {
+    return fetch(API + '/api/feedback/quotes?limit=100', { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (d) {
+        var list = (d && d.items) || [];
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+          var q = list[i];
+          if (!q || !q.content) continue;
+          out.push({
+            id: 'api-' + i + '-' + (q.month || ''),
+            name: q.nickname || '匿名家长',
+            avatar: String(q.nickname || '匿').slice(0, 1),
+            platform: String(q.platform || 'web').toLowerCase(),
+            rating: parseInt(q.rating, 10) || 0,
+            // 服务端只给到月份：展示成「2026-11」，不精确到日。
+            // 但排序不能按月份比 —— 「2026-11」在字符串上小于「2026-11-24」，
+            // 会让刚提交的留言沉到月中所有评价后面。接口本身按时间倒序返回，
+            // 所以这里给一个「今天」当排序键，实时留言自然排在静态精选之上。
+            date: q.month || '',
+            sortKey: new Date().toISOString().slice(0, 10),
+            tags: [],
+            content: String(q.content),
+            likes: 0,
+            featured: false,
+            reply: null,
+            source: 'api',
+            pending: false
+          });
+        }
+        return out;
+      });
+  }
+
+  function merge(staticList, remoteList) {
+    var seen = {};
+    var out = [];
+    var all = remoteList.concat(staticList);   // 实时留言排前面，比精选更新
+    for (var i = 0; i < all.length; i++) {
+      var it = all[i];
+      // 同一条内容可能既被运营抄进 JSON、又在服务端存在，按正文去重
+      var key = it.content.replace(/\s+/g, '').slice(0, 60);
+      if (seen[key]) continue;
+      seen[key] = 1;
+      out.push(it);
+    }
+    return out;
+  }
+
+  function sortItems(list) {
+    var copy = list.slice();
+    if (state.sort === 'top') {
+      copy.sort(function (a, b) { return (b.likes || 0) - (a.likes || 0); });
+    } else if (state.sort === 'good') {
+      copy.sort(function (a, b) {
+        return (b.rating || 0) - (a.rating || 0)
+            || String(b.sortKey || b.date).localeCompare(String(a.sortKey || a.date));
+      });
+    } else {
+      copy.sort(function (a, b) {
+        return String(b.sortKey || b.date).localeCompare(String(a.sortKey || a.date));
+      });
+    }
+    return copy;
+  }
+
+  function filtered() {
+    return sortItems(state.items.filter(function (it) {
+      if (state.platform !== 'all' && it.platform !== state.platform) return false;
+      if (state.rating === '5' && it.rating !== 5) return false;
+      if (state.rating === '4' && it.rating !== 4) return false;
+      if (state.rating === 'low' && !(it.rating > 0 && it.rating <= 3)) return false;
+      return true;
+    }));
+  }
+
+  // ── 渲染 ────────────────────────────────────────────────────
+  function renderStats() {
+    var list = state.items;
+    var rated = list.filter(function (i) { return i.rating > 0; });
+    var sum = 0;
+    for (var i = 0; i < rated.length; i++) sum += rated[i].rating;
+    var five = list.filter(function (x) { return x.rating === 5; }).length;
+    var replied = list.filter(function (x) { return !!x.reply; }).length;
+
+    document.getElementById('sCount').textContent = list.length;
+    document.getElementById('sAvg').textContent = rated.length ? (sum / rated.length).toFixed(1) : '—';
+    document.getElementById('sFive').textContent = rated.length ? Math.round(five / rated.length * 100) + '%' : '—';
+    document.getElementById('sReply').textContent = replied;
+  }
+
+  function card(it) {
+    var box = el('article', 'cmt' + (it.pending ? ' pending' : ''));
+
+    var head = el('div', 'head');
+    var av = el('div', 'av', it.avatar || '匿');
+    var who = el('div', 'who');
+    var nameLine = el('b', '', it.name + (it.pending ? ' · 刚刚提交' : ''));
+    var meta = el('div', 'meta');
+    var p = it.platform;
+    if (NAME[p]) {
+      var badge = el('span', 'badge p-' + p, NAME[p]);
+      meta.appendChild(badge);
+    }
+    if (it.date) meta.appendChild(el('span', '', it.date));
+    if (it.rating > 0) meta.appendChild(el('span', 'stars', starsOf(it.rating)));
+    who.appendChild(nameLine);
+    who.appendChild(meta);
+    head.appendChild(av);
+    head.appendChild(who);
+
+    var body = el('p', 'body', it.content);
+    box.appendChild(head);
+    box.appendChild(body);
+
+    // 超过 5 行才给「展开」，否则一屏全是长文
+    if (it.content.length > 130) {
+      body.classList.add('clamp');
+      var more = el('button', 'expand', '展开全文');
+      more.type = 'button';
+      more.addEventListener('click', function () {
+        var folded = body.classList.toggle('clamp');
+        more.textContent = folded ? '展开全文' : '收起';
+      });
+      box.appendChild(more);
+    }
+
+    if (it.tags && it.tags.length) {
+      var tags = el('div', 'tags');
+      for (var i = 0; i < it.tags.length; i++) tags.appendChild(el('span', '', it.tags[i]));
+      box.appendChild(tags);
+    }
+
+    if (it.reply) {
+      var r = el('div', 'reply');
+      r.appendChild(el('b', '', '开发者回复' + (it.reply.date ? ' · ' + it.reply.date : '')));
+      r.appendChild(document.createTextNode(it.reply.content));
+      box.appendChild(r);
+    }
+
+    var foot = el('div', 'foot');
+    var liked = !!state.liked[it.id];
+    var like = el('button', 'like' + (liked ? ' on' : ''), (liked ? '♥ 有用 ' : '♡ 有用 ') + (it.likes + (liked ? 1 : 0)));
+    like.type = 'button';
+    like.addEventListener('click', function () {
+      var now = !state.liked[it.id];
+      if (now) state.liked[it.id] = 1; else delete state.liked[it.id];
+      writeJson('ks_comment_likes_v1', state.liked);
+      like.textContent = (now ? '♥ 有用 ' : '♡ 有用 ') + (it.likes + (now ? 1 : 0));
+      like.classList.toggle('on', now);
+    });
+    foot.appendChild(like);
+    foot.appendChild(el('span', 'when', it.source === 'static' ? '精选' : '来自 App / 官网提交'));
+    box.appendChild(foot);
+
+    return box;
+  }
+
+  function render() {
+    var list = filtered();
+    var wall = document.getElementById('wall');
+    var empty = document.getElementById('empty');
+    var moreBtn = document.getElementById('moreBtn');
+    var line = document.getElementById('resultLine');
+
+    wall.innerHTML = '';
+    var slice = list.slice(0, state.shown);
+    for (var i = 0; i < slice.length; i++) wall.appendChild(card(slice[i]));
+
+    if (list.length === 0) {
+      empty.hidden = false;
+      document.getElementById('emptyText').textContent = state.loading
+        ? '正在加载评价…'
+        : '还没有这个组合的评价，换个筛选试试。';
+    } else {
+      empty.hidden = true;
+    }
+
+    moreBtn.hidden = list.length <= state.shown;
+    if (!moreBtn.hidden) moreBtn.textContent = '加载更多（还有 ' + (list.length - state.shown) + ' 条）';
+
+    line.textContent = list.length
+      ? '共 ' + list.length + ' 条' + (list.length > state.shown ? '，已显示 ' + state.shown + ' 条' : '')
+      : '';
+  }
+
+  // ── 筛选交互 ────────────────────────────────────────────────
+  function bindChips(id, attr, key, after) {
+    var box = document.getElementById(id);
+    box.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-' + attr + ']');
+      if (!btn) return;
+      var kids = box.querySelectorAll('button');
+      for (var i = 0; i < kids.length; i++) kids[i].classList.remove('on');
+      btn.classList.add('on');
+      state[key] = btn.getAttribute('data-' + attr);
+      state.shown = PER_PAGE;
+      if (after) after();
+      render();
+    });
+  }
+
+  bindChips('pChips', 'p', 'platform');
+  bindChips('rChips', 'r', 'rating');
+
+  document.getElementById('sortSel').addEventListener('change', function () {
+    state.sort = this.value;
+    state.shown = PER_PAGE;
+    render();
+  });
+
+  document.getElementById('moreBtn').addEventListener('click', function () {
+    state.shown += PER_PAGE;
+    render();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    state.platform = 'all';
+    state.rating = 'all';
+    state.sort = 'new';
+    state.shown = PER_PAGE;
+    var btns = document.querySelectorAll('#pChips button, #rChips button');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+    document.querySelector('#pChips button[data-p="all"]').classList.add('on');
+    document.querySelector('#rChips button[data-r="all"]').classList.add('on');
+    document.getElementById('sortSel').value = 'new';
+    render();
+  });
+
+  // ── 打分控件 ────────────────────────────────────────────────
+  var pick = document.getElementById('starPick');
+  var starText = document.getElementById('starText');
+  pick.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-v]');
+    if (!b) return;
+    state.formRating = parseInt(b.getAttribute('data-v'), 10);
+    var kids = pick.querySelectorAll('button');
+    for (var i = 0; i < kids.length; i++) {
+      kids[i].classList.toggle('on', i < state.formRating);
+    }
+    starText.textContent = state.formRating + ' 星';
+  });
+
+  // ── 提交 ────────────────────────────────────────────────────
+  var Q_KEY = 'ks_comment_queue_v1';
+
+  function post(body) {
+    return fetch(API + '/api/feedback/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; },
+                            function () { return { ok: r.ok, status: r.status, data: {} }; });
+    });
+  }
+
+  function setStatus(text, bad) {
+    var s = document.getElementById('status');
+    s.textContent = text;
+    s.className = 'status' + (bad ? ' bad' : '');
+  }
+
+  // 断网时先把内容存在本机，下次打开这个页面自动补传。
+  // 只存提交体，不含任何设备信息；用户清掉浏览器数据就一起没了。
+  function enqueue(body) {
+    var q = readJson(Q_KEY, []);
+    q.push(body);
+    writeJson(Q_KEY, q);
+  }
+
+  function flushQueue() {
+    var q = readJson(Q_KEY, []);
+    if (!q.length) return;
+    var left = [];
+    var i = 0;
+    function next() {
+      if (i >= q.length) {
+        writeJson(Q_KEY, left);
+        if (left.length === 0) setStatus('之前没发出去的评价已补传成功');
+        return;
+      }
+      var body = q[i++];
+      post(body).then(function (res) {
+        // 4xx 是内容不合格，重试一万次也不会成功，直接丢
+        if (!res.ok && res.status >= 400 && res.status < 500) { next(); return; }
+        if (!res.ok) left.push(body);
+        next();
+      }).catch(function () { left.push(body); next(); });
+    }
+    next();
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', function () {
+    var btn = this;
+    var nick = document.getElementById('nick').value.trim();
+    var contact = document.getElementById('contact').value.trim();
+    var content = document.getElementById('content').value.trim();
+    var isPublic = document.getElementById('publicOk').checked;
+
+    if (content.length < 5) {
+      setStatus('再多写几个字吧（至少 5 个字）', true);
+      document.getElementById('content').focus();
+      return;
+    }
+
+    var body = {
+      id: uid(),
+      kind: 'feedback',
+      platform: 'web',
+      appVersion: 'web',
+      channel: 'website-comments',
+      nickname: nick || null,
+      contact: contact || null,
+      rating: state.formRating || null,
+      content: content,
+      public: !!isPublic
+    };
+
+    btn.disabled = true;
+    setStatus('正在发送…');
+
+    post(body).then(function (res) {
+      if (res.ok) {
+        setStatus(isPublic ? '已提交，刷新一下就能在下面看到' : '已提交，只有开发者能看到');
+        // 乐观插入一条：让用户立刻看到自己刚写的，不用刷新
+        state.items.unshift({
+          id: body.id,
+          name: nick || '匿名家长',
+          avatar: String(nick || '匿').slice(0, 1),
+          platform: 'web',
+          rating: state.formRating || 0,
+          date: new Date().toISOString().slice(0, 10),
+          sortKey: new Date().toISOString().slice(0, 10),
+          tags: [],
+          content: content,
+          likes: 0,
+          reply: null,
+          source: 'api',
+          pending: true
+        });
+        document.getElementById('content').value = '';
+        document.getElementById('nick').value = '';
+        document.getElementById('contact').value = '';
+        document.getElementById('publicOk').checked = false;
+        state.formRating = 0;
+        var kids = pick.querySelectorAll('button');
+        for (var i = 0; i < kids.length; i++) kids[i].classList.remove('on');
+        starText.textContent = '还没打分';
+        state.platform = 'all';
+        state.rating = 'all';
+        state.shown = PER_PAGE;
+        renderStats();
+        render();
+      } else if (res.status >= 400 && res.status < 500) {
+        setStatus((res.data && res.data.error) || '提交没通过，检查一下内容', true);
+      } else {
+        enqueue(body);
+        setStatus('网络不太顺，已存在这台设备上，下次打开会自动重发', true);
+      }
+    }).catch(function () {
+      enqueue(body);
+      setStatus('网络不太顺，已存在这台设备上，下次打开会自动重发', true);
+    }).then(function () {
+      btn.disabled = false;
+    });
+  });
+
+  // ── 启动 ────────────────────────────────────────────────────
+  state.liked = readJson('ks_comment_likes_v1', {});
+  state.loading = true;
+  render();
+
+  Promise.all([
+    loadStatic().catch(function () { return []; }),
+    loadRemote().catch(function () { return []; })
+  ]).then(function (r) {
+    state.loading = false;
+    state.items = merge(r[0], r[1]);
+    // 按平台把「全部」顺序排一下：同一天里 Windows/Android 交错，视觉上更均衡
+    state.items.sort(function (a, b) {
+      var d = String(b.sortKey || b.date).localeCompare(String(a.sortKey || a.date));
+      if (d !== 0) return d;
+      return ORDER.indexOf(a.platform) - ORDER.indexOf(b.platform);
+    });
+    renderStats();
+    render();
+    flushQueue();
+  });
+})();
+</script>
+</body>
+</html>

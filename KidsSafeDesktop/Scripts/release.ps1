@@ -226,6 +226,24 @@ if (-not $SkipBuild) {
     if (-not (Test-Path (Join-Path $WindowsPublishDir 'KidsSafeDesktop.exe'))) {
         Fail "Windows 发布目录里没有 KidsSafeDesktop.exe（$WindowsPublishDir）"
     }
+
+    # 落盘器：增量更新靠它在主程序退出后替换 dll。
+    # 单独发布、直接放进安装目录（不放进安装包的「额外文件」列表，因为它就在发布目录里）。
+    # 加了裁剪，约 11 MB；不裁的话自包含单文件 37 MB。
+    Step '发布落盘器（KidsSafeUpdater）'
+    $updaterProj = Join-Path $PSScriptRoot 'Updater\KidsSafeUpdater.csproj'
+    if (Test-Path $updaterProj) {
+        & dotnet publish $updaterProj -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -o $WindowsPublishDir -v m
+        if ($LASTEXITCODE -ne 0) { Fail '落盘器发布失败' }
+        if (-not (Test-Path (Join-Path $WindowsPublishDir 'KidsSafeUpdater.exe'))) {
+            Fail "落盘器没有出现在发布目录里（$WindowsPublishDir）"
+        }
+        Ok '落盘器已就位'
+    } else {
+        Warn '没找到 Scripts\Updater，跳过落盘器（这次发的包不支持增量更新）'
+    }
+
     Ok ("Windows 自包含发布完成，用时 " + [int]$sw.Elapsed.TotalSeconds + " 秒")
 }
 

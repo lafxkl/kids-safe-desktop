@@ -44,11 +44,13 @@
 
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
              backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
-  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--purple)}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:14px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--purple);
+         white-space:nowrap;flex:0 0 auto}
   .brand img{width:36px;height:36px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
   .nav nav{display:flex;gap:20px;font-size:15px}
-  .nav nav a{color:var(--ink);font-weight:600}
+  /* 每项都不许折行：宁可横向滚动，也不能把「首页」拆成两行 */
+  .nav nav a{color:var(--ink);font-weight:600;white-space:nowrap;flex:0 0 auto}
   .nav nav a:hover{color:var(--purple)}
 
   /* Hero */
@@ -132,11 +134,19 @@
   .qcard b{display:block;font-size:12.5px;color:#B4552F;line-height:1.5}
   .qcard span{display:block;font-size:10.5px;color:#9C8371;margin-top:2px;line-height:1.5}
   @media(max-width:680px){ .qgrid{grid-template-columns:repeat(2,1fr);max-width:340px} }
-  @media(max-width:560px){ .qgrid{grid-template-columns:1fr;max-width:230px} .qcard img{max-width:120px} }
+  /* 手机上仍然两列：二维码本身 100px 就够扫，一列排下来要滑很久 */
+  @media(max-width:560px){ .qgrid{grid-template-columns:repeat(2,1fr);max-width:330px;gap:10px}
+                           .qcard{padding:11px 8px 10px}.qcard img{max-width:104px} }
+  @media(max-width:368px){ .qgrid{grid-template-columns:1fr;max-width:215px} .qcard img{max-width:110px} }
   .contact .tiny{font-size:11.5px;opacity:.8;margin-top:14px}
 
   footer{padding:38px 0 48px;text-align:center;color:#9C8371;font-size:13px}
-  footer a{color:var(--purple-d);margin:0 8px}
+  /* 链接整体换行，别把「应用权限说明」拆成「应用 / 权限说明」 */
+  footer a{color:var(--purple-d);margin:0 8px;display:inline-block;white-space:nowrap}
+  @media (max-width:520px){
+    footer{padding:30px 0 38px}
+    footer a{margin:3px 7px}
+  }
 
   /* 滚动出现（只在 JS 可用时生效，禁用 JS 时内容照常可见） */
   html.js .reveal{opacity:0;transform:translateY(20px);
@@ -150,6 +160,34 @@
     .stats{grid-template-columns:repeat(2,1fr)}
     .floaties{display:none}
     section{padding:26px 0}
+
+    /* 手机端头部：品牌独占一行，导航变成一行可横滑的小胶囊。
+       原来 6 个链接挤在 64px 里，每个只剩一两个字宽，会被逐字折行、溢出到正文上。 */
+    .nav .wrap{height:auto;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0}
+    .brand{font-size:16.5px;padding:11px 0 6px}
+    .brand img{width:30px;height:30px;border-radius:9px}
+    .nav nav{display:flex;gap:8px;font-size:13.5px;overflow-x:auto;padding:0 0 9px;
+             -webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .nav nav::-webkit-scrollbar{display:none}
+    .nav nav a{background:#fff;border:1px solid #F2E2CE;border-radius:999px;
+               padding:5px 12px;line-height:1.5;font-weight:600}
+    .nav nav a:hover{border-color:#E9C6A6}
+  }
+
+  @media (max-width:520px){
+    .wrap{padding:0 16px}
+    .hero{padding:40px 0 34px}
+    .hero h1{font-size:25px}
+    .hero p.lead{font-size:15.5px;margin-top:14px}
+    .hero .kicker{font-size:12px;padding:4px 13px;margin-bottom:16px}
+    .sec-title{font-size:23px}
+    .sec-sub{font-size:15px;margin-bottom:20px}
+    .card{padding:20px 18px;border-radius:18px}
+    .prose p{font-size:15.5px}
+    .stat .n{font-size:29px}
+    .contact{padding:28px 20px;border-radius:24px}
+    .contact h2{font-size:22px}
+    .timeline{padding-left:24px}
   }
   /* 系统设置了「减少动态效果」就全部停掉，这不是客套话——
      前庭敏感的孩子会因为一点晃动就不舒服 */
@@ -190,6 +228,7 @@
       <a href="/">首页</a>
       <a href="download.html">下载部署</a>
       <a href="changelog.html">更新日志</a>
+      <a href="feedback.html">反馈与问卷</a>
       <a href="permissions.html">权限说明</a>
       <a href="privacy.html">隐私政策</a>
     </nav>
@@ -359,6 +398,7 @@
     <a href="/">首页</a>
     <a href="download.html">下载部署</a>
     <a href="changelog.html">更新日志</a>
+    <a href="feedback.html">意见反馈</a>
     <a href="https://pd.qq.com/s/doahjnw75" target="_blank" rel="noopener">QQ 频道</a>
     <a href="permissions.html">应用权限说明</a>
     <a href="privacy.html">隐私政策</a>

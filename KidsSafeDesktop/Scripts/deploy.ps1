@@ -35,7 +35,8 @@ param(
     [switch]$WithDownloads,
     [switch]$DryRun,
     [switch]$SkipVerify,
-    [switch]$SkipIndexNow
+    [switch]$SkipIndexNow,
+    [switch]$ForceData
 )
 
 $ErrorActionPreference = 'Stop'
@@ -85,7 +86,8 @@ if (-not (Test-Path $WebDir)) { Fail "找不到 Website 目录：$WebDir" }
 # 站点根目录必备的文件。少一个就是线上 404，宁可在这里拦住
 $CoreFiles = @(
     'index.html', 'download.html', 'changelog.html', 'permissions.html', 'privacy.html',
-    'about.html', 'care-sources.html', '404.html', 'robots.txt', 'sitemap.xml', 'favicon.ico'
+    'about.html', 'care-sources.html', 'feedback.html', 'feedback-admin.html', 'comments.html',
+    '404.html', 'robots.txt', 'sitemap.xml', 'favicon.ico'
 )
 foreach ($f in $CoreFiles) {
     if (-not (Test-Path (Join-Path $WebDir $f))) { Fail "缺少 $f（站点根目录必备）" }
@@ -120,6 +122,15 @@ if (Test-Path $assetsDir) {
     Info ("{0,-42} {1,8:N0} B" -f 'assets/', $assetsBytes)
 }
 
+# data/ 只有评论区用的 comments.json：它是「线上也能改」的数据文件，
+# 和 HTML 不是一回事，覆盖策略单独处理（见第 3 节之后的 mtime 比较）。
+$dataDir    = Join-Path $WebDir 'data'
+$dataFile   = Join-Path $dataDir 'comments.json'
+$uploadData = Test-Path $dataFile
+if ($uploadData) {
+    Info ("{0,-42} {1,8:N0} B" -f 'data/comments.json', (Get-Item $dataFile).Length)
+}
+
 $dlDir = Join-Path $WebDir 'downloads'
 $dlBytes = 0
 if (Test-Path $dlDir) {
@@ -147,17 +158,41 @@ if ($Key) {
     Info '未指定 -Key：将走密码登录（上传时会提示输入服务器密码）'
 }
 
+# ── 3.5 data/ 覆盖保护 ───────────────────────────────────────
+# comments.json 可以在服务器上直接改（运营加一条评价不需要重新发版）。
+# 那样一来，下次部署无脑覆盖就会把人家的改动冲掉，而且没有任何提示。
+# 这里先比远端与本地 mtime：远端更新就跳过并说明，确认要以本地为准加 -ForceData。
+if ($uploadData -and -not $DryRun -and -not $ForceData) {
+    $remoteTs = 0
+    try {
+        $raw = (& ssh @sshArgs $Server "stat -c %Y '$RemotePath/data/comments.json' 2>/dev/null || echo 0") -join ''
+        $raw = $raw.Trim()
+        if ($raw -and -not [int64]::TryParse($raw, [ref]$remoteTs)) { $remoteTs = 0 }
+    } catch { $remoteTs = 0 }
+
+    $localTs = [DateTimeOffset]::new((Get-Item $dataFile).LastWriteTimeUtc).ToUnixTimeSeconds()
+    if ($remoteTs -gt ($localTs + 120)) {
+        $uploadData = $false
+        Warn '线上 data/comments.json 比本地新（可能有人在服务器上直接改过），本次跳过它'
+        Warn '确认要以本地为准、覆盖线上的改动：.\deploy.bat -ForceData'
+    } elseif ($remoteTs -gt 0) {
+        Ok 'data/comments.json 本地不比线上旧，正常上传'
+    }
+}
+
 if ($DryRun) {
     Step 'DryRun：以下命令没有执行'
     Info ("ssh {0} {1} mkdir -p {2}" -f ($sshArgs -join ' '), $Server, $RemotePath)
     if ($Key) {
         Info ("scp {0} <{1} 个文件> {2}:{3}/" -f ($scpArgs -join ' '), $corePaths.Count, $Server, $RemotePath)
         if (Test-Path $assetsDir) { Info ("scp -r {0} {1} {2}:{3}/" -f ($scpArgs -join ' '), $assetsDir, $Server, $RemotePath) }
+        if ($uploadData)         { Info ("scp -r {0} {1} {2}:{3}/" -f ($scpArgs -join ' '), $dataDir,  $Server, $RemotePath) }
         if ($WithDownloads) { Info ("scp -r {0} {1} {2}:{3}/" -f ($scpArgs -join ' '), $dlDir, $Server, $RemotePath) }
         Info '共 3 次密码提示（有私钥，实际为免密）'
     } else {
         $preview = @("$($corePaths.Count) 个核心文件")
         if (Test-Path $assetsDir) { $preview += 'assets/' }
+        if ($uploadData) { $preview += 'data/' }
         if ($WithDownloads) { $preview += 'downloads/' }
         Info ("scp -r {0} <{1}> {2}:{3}/" -f ($scpArgs -join ' '), ($preview -join ' + '), $Server, $RemotePath)
         Info '共 2 次密码提示：建目录 1 次，上传 1 次'
@@ -183,6 +218,7 @@ Step '上传'
 # 指定了私钥的路由则分开传——反正不用输密码，分开传在大文件失败时更好重试。
 $uploadPaths = @($corePaths)
 if (Test-Path $assetsDir) { $uploadPaths += $assetsDir }
+if ($uploadData) { $uploadPaths += $dataDir }
 if ($WithDownloads) { $uploadPaths += $dlDir }
 
 if ($Key) {
@@ -194,6 +230,14 @@ if ($Key) {
         & scp @scpArgs -r $assetsDir "$Server`:$RemotePath/"
         if ($LASTEXITCODE -ne 0) { Fail "assets 上传失败（退出码 $LASTEXITCODE）" }
         Ok 'assets/'
+    }
+
+    if ($uploadData) {
+        # scp -r 到不存在的子目录会变成「把目录改名」，所以先建好 data/
+        & ssh @sshArgs $Server "mkdir -p '$RemotePath/data'"
+        & scp @scpArgs -r $dataDir "$Server`:$RemotePath/"
+        if ($LASTEXITCODE -ne 0) { Fail "data 上传失败（退出码 $LASTEXITCODE）" }
+        Ok 'data/（评论区数据）'
     }
 
     if ($WithDownloads) {
@@ -219,6 +263,9 @@ if (-not $SkipVerify) {
     $checks = @(
         @{ Path = '/';             Must = '儿童安全桌面' },
         @{ Path = '/about.html';   Must = '三条不做' },
+        @{ Path = '/feedback.html'; Must = '意见反馈与满意度调查' },
+        @{ Path = '/comments.html'; Must = '家长怎么说' },
+        @{ Path = '/data/comments.json'; Must = '"items"' },
         @{ Path = '/changelog.html'; Must = '更新日志' },
         @{ Path = '/robots.txt';   Must = 'Sitemap:' },
         @{ Path = '/sitemap.xml';  Must = '<urlset' },

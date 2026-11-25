@@ -55,10 +55,10 @@
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
              backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
   .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--purple)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--purple);white-space:nowrap;flex:0 0 auto}
   .brand img{width:36px;height:36px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
   .nav nav{display:flex;align-items:center;gap:20px;font-size:15px}
-  .nav nav a{color:var(--ink);font-weight:600}
+  .nav nav a{color:var(--ink);font-weight:600;white-space:nowrap;flex:0 0 auto}
   .nav nav a:hover{color:var(--purple)}
   .nav nav a.on{color:var(--purple)}
   .nav nav a.ext{color:var(--purple-d);border:1px solid #E4DAFB;border-radius:14px;padding:3px 12px;font-size:13.5px}
@@ -211,7 +211,16 @@
     section{padding:24px 0}
   }
   @media (max-width:560px){
-    .nav nav a:not(.on){display:none}
+        /* 手机端头部：品牌一行 + 导航胶囊横滑（与关于页一致） */
+    .nav .wrap{height:auto;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0}
+    .brand{font-size:16.5px;padding:11px 0 6px}
+    .brand img{width:30px;height:30px;border-radius:9px}
+    .nav nav{display:flex;flex-wrap:nowrap;gap:8px;font-size:13.5px;overflow-x:auto;
+             padding:0 0 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .nav nav::-webkit-scrollbar{display:none}
+    .nav nav a{flex:0 0 auto;display:inline-block;background:#fff;border:1px solid #F2E2CE;
+               border-radius:999px;padding:5px 12px;line-height:1.5;font-weight:600}
+    .nav nav a.on{background:var(--grad);color:#fff;border-color:transparent}
     .alt-dl{flex-direction:column;text-align:center;padding:22px 18px}
     .alt-qr img{width:140px;height:140px}
   }

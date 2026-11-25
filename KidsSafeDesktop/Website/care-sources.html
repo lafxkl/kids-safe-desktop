@@ -45,10 +45,10 @@
 
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
   .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1120px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple);white-space:nowrap;flex:0 0 auto}
   .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
   .nav nav{display:flex;gap:24px;font-size:15px}
-  .nav nav a{color:var(--ink);font-weight:600}
+  .nav nav a{color:var(--ink);font-weight:600;white-space:nowrap;flex:0 0 auto}
   .nav nav a:hover,.nav nav a.on{color:var(--purple)}
   .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(214,110,74,.35)}
 
@@ -81,6 +81,14 @@
   .src.plain .use b{color:#8A5A00}
 
   .note{margin-top:20px;background:#FFF8E1;border-left:3px solid #FB8C00;border-radius:0 12px 12px 0;padding:13px 16px;font-size:14.5px;color:#6B4E00}
+  /* 绘本专区 */
+  .books{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:14px}
+  .book{background:var(--card);border:1px solid #F6E0C9;border-radius:16px;padding:14px 16px;
+        box-shadow:0 6px 18px rgba(176,96,54,.05)}
+  .book b{display:block;font-size:15.5px;color:var(--ink)}
+  .book .o{font-size:12px;color:#9C8371;margin-top:3px}
+  .book .w{margin-top:8px;font-size:13px;color:var(--soft);line-height:1.7}
+  .book a{display:inline-block;margin-top:9px;font-size:12.5px;font-weight:800;color:var(--purple)}
   .ok{margin-top:20px;background:#EAF7EE;border-left:3px solid #43A047;border-radius:0 12px 12px 0;padding:13px 16px;font-size:14.5px;color:#2B5E3A}
 
   .tels{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:14px}
@@ -104,7 +112,18 @@
 
   @media(max-width:720px){
     .hero h1{font-size:29px}
-    .nav nav{display:none}
+        /* 手机端头部：品牌 + 下载按钮一行，导航胶囊横滑（与关于页一致） */
+    .nav .wrap{display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand btn" "nav nav";
+               height:auto;align-items:center;gap:0}
+    .brand{grid-area:brand;font-size:16.5px;padding:11px 0 6px}
+    .brand img{width:30px;height:30px;border-radius:9px}
+    .nav .wrap > .btn{grid-area:btn;padding:6px 13px;font-size:12.5px;align-self:center}
+    .nav nav{grid-area:nav;display:flex;flex-wrap:nowrap;gap:8px;font-size:13.5px;overflow-x:auto;
+             padding:0 0 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .nav nav::-webkit-scrollbar{display:none}
+    .nav nav a{flex:0 0 auto;display:inline-block;background:#fff;border:1px solid #F2E2CE;
+               border-radius:999px;padding:5px 12px;line-height:1.5;font-weight:600}
+    .nav nav a.on{background:var(--grad);color:#fff;border-color:transparent}
     .sec > h2{font-size:18.5px;flex-wrap:wrap}
     .src{padding:13px 14px}
     .src a.t{font-size:15.5px}
@@ -136,8 +155,8 @@
       <b>不是拍脑袋写的</b>。凡是引用了别人的文章、国家指南、官方数据，这里一条一条列出来，都能点开原文核对。
     </p>
     <div class="meta-row">
-      <span class="pill">更新 2026-11-12</span>
-      <span class="pill">19 条出处</span>
+      <span class="pill">更新 2026-11-24</span>
+      <span class="pill">22 条出处</span>
       <span class="pill">外链一律 ↗ 新窗口</span>
       <span class="pill">引用不等于转载</span>
     </div>
@@ -149,6 +168,7 @@
       <a href="#depression">抑郁症专区</a>
       <a href="#edu36">教育 36 计</a>
       <a href="#help">求助热线</a>
+      <a href="#reading">绘本资源</a>
       <a href="#policy">引用原则</a>
     </div>
   </div>
@@ -381,8 +401,77 @@
     </div>
 
     <!-- ── 八 ── -->
+    <div class="sec" id="reading">
+      <h2>八、绘本资源 <em>免费 · 合法 · 只外链</em></h2>
+      <p class="intro">
+        家长最常问的是「有没有绘本 PDF」。这一节只列<b>明确允许免费公开访问</b>的三家来源，并说清楚各自是什么形式——
+        有的是扫描版电子书，有的是演员朗读视频，有的是线上借阅。应用内的入口在
+        <b>关爱中心 → 绘本怎么找</b>，内容与本页一致。
+      </p>
+
+      <div class="src">
+        <a class="t" href="https://en.childrenslibrary.org/" target="_blank" rel="noopener noreferrer">国际儿童数字图书馆（ICDL） ↗</a>
+        <div class="m">ICDL Foundation · 公益数字图书馆 · 多语种（含少量中文） · 3–13 岁</div>
+        <div class="use">
+          各国童书扫描后在网页上直接翻开看，可按年龄、主题、语言筛选，不用注册。
+          <b>只能在线阅读，不提供下载</b>；不少书出版年代较早，画风偏旧但内容干净。
+        </div>
+      </div>
+
+      <div class="src">
+        <a class="t" href="https://storylineonline.net/" target="_blank" rel="noopener noreferrer">Storyline Online ↗</a>
+        <div class="m">SAG-AFTRA Foundation（美国演员工会基金会）· 公益朗读视频 · 英文 · 4–10 岁</div>
+        <div class="use">
+          演员给孩子读绘本，画面就是书的插图，配字幕，免费无广告；每本还附活动指南。
+          <b>是「听别人读」，不是电子书</b>，适合亲子共听和练听力，不适合当识字材料。
+        </div>
+      </div>
+
+      <div class="src">
+        <a class="t" href="https://openlibrary.org/" target="_blank" rel="noopener noreferrer">Open Library ↗</a>
+        <div class="m">Internet Archive · 开放图书目录 · 英文为主，含部分中文 · 全年龄</div>
+        <div class="use">
+          上千万条书目：公版书可直接读全文，受版权保护的书可线上借阅（免费注册，借期 1 小时可续）。
+          <b>不是每本都有电子版</b>，页面标着「Borrow」的才能借。
+        </div>
+      </div>
+
+      <h2 style="font-size:17px;margin-top:26px">常被问到的几本，去哪儿找</h2>
+      <p class="intro">
+        下面这几本都还在版权保护期内。本站与应用<b>不提供 PDF，也不建议去网盘找</b>——
+        先查有没有电子版或馆藏，没有就借或买。
+      </p>
+
+      <div class="books">
+        <div class="book">
+          <b>猜猜我有多爱你</b>
+          <div class="o">Guess How Much I Love You · Sam McBratney</div>
+          <div class="w">睡前读最合适。读完可以和孩子比一比「谁的爱更多」。</div>
+          <a href="https://openlibrary.org/search?q=Guess+How+Much+I+Love+You" target="_blank" rel="noopener noreferrer">查电子版 / 馆藏 ↗</a>
+        </div>
+        <div class="book">
+          <b>好饿的毛毛虫</b>
+          <div class="o">The Very Hungry Caterpillar · Eric Carle</div>
+          <div class="w">数数、星期、认识食物，一本书能玩好几样。</div>
+          <a href="https://openlibrary.org/search?q=The+Very+Hungry+Caterpillar" target="_blank" rel="noopener noreferrer">查电子版 / 馆藏 ↗</a>
+        </div>
+        <div class="book">
+          <b>棕熊，棕熊，你在看什么？</b>
+          <div class="o">Brown Bear, Brown Bear, What Do You See? · Bill Martin Jr. / Eric Carle</div>
+          <div class="w">句式重复，孩子听两遍就能跟着念，很省力的英语启蒙入口。</div>
+          <a href="https://openlibrary.org/search?q=Brown+Bear+Brown+Bear+What+Do+You+See" target="_blank" rel="noopener noreferrer">查电子版 / 馆藏 ↗</a>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>关于网盘里的「620 本」「520 本经典绘本」：</b>这类合集的版权来源通常不明确，多数是未授权扫描。
+        下载和转发都可能侵权，文件里还常夹带广告或可执行程序。真要长期读，去少儿图书馆借、或者买一本平装版（大多二三十元）更踏实。
+      </div>
+    </div>
+
+    <!-- ── 九 ── -->
     <div class="sec" id="policy">
-      <h2>八、引用原则</h2>
+      <h2>九、引用原则</h2>
       <div class="src plain" style="margin-top:14px">
         <div class="use" style="background:#FDF6EC;color:#4A3F66">
           <b>引用不等于转载。</b>应用内只做摘要与改写，不整段复制原文；原文链接指向原作者页面，著作权归原作者与发布方所有。<br/><br/>

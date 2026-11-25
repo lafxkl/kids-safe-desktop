@@ -19,10 +19,10 @@
   /* Nav */
   header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid #F0DEC9}
   .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--purple);white-space:nowrap;flex:0 0 auto}
   .brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 4px 12px rgba(214,110,74,.3)}
   .nav nav{display:flex;gap:22px;font-size:15px}
-  .nav nav a{color:var(--ink);font-weight:600}
+  .nav nav a{color:var(--ink);font-weight:600;white-space:nowrap;flex:0 0 auto}
   .nav nav a:hover{color:var(--purple)}
   .nav .btn{padding:9px 18px;border-radius:20px;background:var(--grad);color:#fff;font-weight:700;box-shadow:0 6px 16px rgba(214,110,74,.35)}
   /* Hero */
@@ -116,6 +116,28 @@
                 padding:6px 9px;margin-top:11px;line-height:1.6;text-align:left}
   .chan-note{max-width:790px;margin:16px auto 0;text-align:center;font-size:11.5px;color:#A79BC0;line-height:1.8}
 
+  /* 家长评价（数据来自 data/comments.json，与评论区同源） */
+  .voice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .voice{background:#fff;border:1px solid #F4E5D3;border-radius:20px;padding:20px;
+         box-shadow:0 10px 26px rgba(176,96,54,.08);display:flex;flex-direction:column;gap:10px;
+         transition:transform .22s ease,box-shadow .22s ease}
+  .voice:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(176,96,54,.13)}
+  .v-head{display:flex;gap:10px;align-items:center}
+  .v-av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+        color:#fff;font-weight:800;font-size:15px;background:var(--grad);box-shadow:0 4px 10px rgba(214,110,74,.25)}
+  .v-who{flex:1;min-width:0}
+  .v-who b{display:block;font-size:14.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .v-who span{font-size:11.5px;color:#A1887F}
+  .v-stars{color:#F5A623;font-size:13px;letter-spacing:1.2px;white-space:nowrap}
+  .v-body{font-size:14px;color:#5D4A3D;line-height:1.82;display:-webkit-box;-webkit-line-clamp:4;
+          -webkit-box-orient:vertical;overflow:hidden}
+  .v-tags{display:flex;gap:6px;flex-wrap:wrap}
+  .v-tags span{background:#FCEBD7;color:#B4552F;font-size:11.5px;font-weight:700;border-radius:8px;padding:3px 9px}
+  .voices-foot{text-align:center;margin-top:26px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .voices-foot a{padding:11px 26px;border-radius:22px;font-weight:800;font-size:14px}
+  .voice-all{background:var(--grad);color:#fff;box-shadow:0 10px 22px rgba(214,110,74,.28)}
+  .voice-write{background:#fff;color:var(--purple);border:2px solid #F3D2B8}
+
   @media(max-width:900px){
     .chan-grid{grid-template-columns:repeat(2,1fr);max-width:520px}
   }
@@ -132,6 +154,7 @@
   footer a{color:#F0C8AC;display:block;margin:6px 0}
   footer .copy{grid-column:1/-1;text-align:center;margin-top:24px;color:#BC9F86;border-top:1px solid #57402F;padding-top:18px}
   @media(max-width:880px){
+    .voice-grid{grid-template-columns:1fr;max-width:560px;margin:0 auto}
     .hero{padding:34px 0 20px}
     .hero .wrap{grid-template-columns:1fr;text-align:center}
     .hero h1{font-size:32px}
@@ -144,7 +167,18 @@
     .parent{grid-template-columns:1fr;padding:30px}
     .safe-grid{grid-template-columns:repeat(2,1fr)}
     .shots{grid-template-columns:repeat(2,1fr);gap:14px;max-width:520px;margin:0 auto}
-    .nav nav{display:none}
+        /* 手机端头部：品牌 + 下载按钮一行，导航胶囊横滑（与关于页一致） */
+    .nav .wrap{display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand btn" "nav nav";
+               height:auto;align-items:center;gap:0}
+    .brand{grid-area:brand;font-size:16.5px;padding:11px 0 6px}
+    .brand img{width:30px;height:30px;border-radius:9px}
+    .nav .wrap > .btn{grid-area:btn;padding:6px 13px;font-size:12.5px;align-self:center}
+    .nav nav{grid-area:nav;display:flex;flex-wrap:nowrap;gap:8px;font-size:13.5px;overflow-x:auto;
+             padding:0 0 9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .nav nav::-webkit-scrollbar{display:none}
+    .nav nav a{flex:0 0 auto;display:inline-block;background:#fff;border:1px solid #F2E2CE;
+               border-radius:999px;padding:5px 12px;line-height:1.5;font-weight:600}
+    .nav nav a.on{background:var(--grad);color:#fff;border-color:transparent}
     footer .wrap{grid-template-columns:1fr}
   }
   @media(max-width:560px){
@@ -250,6 +284,8 @@
       <a href="#screens">界面</a>
       <a href="#parent">家长守护</a>
       <a href="#safety">安全</a>
+      <a href="comments.html">家长评价</a>
+      <a href="feedback.html">反馈与问卷</a>
       <a href="changelog.html">更新日志</a>
       <a href="download.html">下载部署</a>
     </nav>
@@ -358,6 +394,19 @@
 </section>
 
 <!-- DOWNLOAD -->
+<!-- 家长评价：数据源与 comments.html 共用 data/comments.json -->
+<section id="voices">
+  <div class="wrap">
+    <h2 class="sec-title">家长怎么说</h2>
+    <p class="sec-sub">真实使用的评价，好评不加工，差评也不删——能改的都会回到更新日志里</p>
+    <div class="voice-grid" id="voiceGrid"></div>
+    <div class="voices-foot">
+      <a class="voice-all" href="comments.html">查看全部评价</a>
+      <a class="voice-write" href="comments.html#write">我也说两句</a>
+    </div>
+  </div>
+</section>
+
 <section id="download" class="download" style="background:#fff">
   <div class="wrap">
     <h2 class="sec-title">立即下载</h2>
@@ -463,6 +512,8 @@
     </div>
     <div>
       <h4>支持</h4>
+      <a href="comments.html">家长评价</a>
+      <a href="feedback.html">意见反馈 / 满意度调查</a>
       <a href="about.html">关于我们</a>
       <a href="#community">交流群</a>
       <a href="https://pd.qq.com/s/doahjnw75" target="_blank" rel="noopener">QQ 频道</a>
@@ -491,6 +542,71 @@
   el.style.background = '#FEF2F2';
   el.style.borderColor = '#FECACA';
   el.style.color = '#B91C1C';
+})();
+
+/* 家长评价：读 data/comments.json 取 6 条（featured 优先）。
+   拉不到就整块隐藏 —— 首页宁可少一个区块，也不要留一个空框或者写死的假评价。 */
+(function () {
+  var grid = document.getElementById('voiceGrid');
+  if (!grid) return;
+
+  var NAME = { windows: 'Windows', android: 'Android', linux: 'Linux', harmony: '鸿蒙', web: '官网' };
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  fetch('data/comments.json?v=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (d) {
+      var items = (d && d.items) || [];
+      items = items.filter(function (i) { return i && i.content; });
+      items.sort(function (a, b) {
+        return (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+            || String(b.date).localeCompare(String(a.date));
+      });
+      items = items.slice(0, 6);
+      if (!items.length) throw new Error('empty');
+
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        var card = el('div', 'voice');
+
+        var head = el('div', 'v-head');
+        head.appendChild(el('div', 'v-av', it.avatar || String(it.name || '匿').slice(0, 1)));
+
+        var who = el('div', 'v-who');
+        who.appendChild(el('b', '', it.name || '匿名家长'));
+        var sub = NAME[String(it.platform || '').toLowerCase()] || '官网';
+        who.appendChild(el('span', '', sub + (it.date ? ' · ' + it.date : '')));
+        head.appendChild(who);
+
+        var r = parseInt(it.rating, 10) || 0;
+        if (r > 0) head.appendChild(el('div', 'v-stars', '★'.repeat(r)));
+
+        card.appendChild(head);
+        card.appendChild(el('p', 'v-body', it.content));
+
+        if (it.tags && it.tags.length) {
+          var tags = el('div', 'v-tags');
+          for (var j = 0; j < Math.min(3, it.tags.length); j++) {
+            tags.appendChild(el('span', '', it.tags[j]));
+          }
+          card.appendChild(tags);
+        }
+        grid.appendChild(card);
+      }
+    })
+    .catch(function () {
+      var sec = document.getElementById('voices');
+      if (sec) sec.style.display = 'none';
+    });
 })();
 </script>
 </body>
