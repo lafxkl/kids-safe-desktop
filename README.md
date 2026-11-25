@@ -170,10 +170,16 @@
 | 依赖 | 版本 | 说明 |
 |---|---|---|
 | .NET SDK | 10.0.100+ | 本项目在 `10.0.401` 上开发 |
-| MAUI workload | `maui-windows` / `maui-android` | `dotnet workload install maui-windows maui-android` |
+| MAUI workload | `maui` | 一次装 Android 与 Windows 两套，命令见下 |
 | Android SDK | API 36 平台 + API 21 最低版本 | 只编译 Windows 时不需要 |
 | Xcode | 16+（仅 iOS） | 只能在 macOS 上出包；Windows 可做编译检查 |
 | Windows | 10 1809（`10.0.17763`）以上 | Windows App SDK 要求 |
+
+首次装工作负载（只要其中一个平台，换成 `maui-android` 或 `maui-windows` 即可）：
+
+```bash
+dotnet workload install maui
+```
 
 ### 编译客户端（Windows）
 
@@ -242,21 +248,26 @@ dotnet run
 
 ## 配置与密钥
 
-仓库**不包含**任何真实密钥。下面这些文件被 `.gitignore` 排除，需要自己准备；缺了也能编译运行，只是对应功能不可用。
+仓库**不包含**任何真实密钥。下面这些文件被 `.gitignore` 排除，需要自己准备；缺了也能编译运行，只是对应功能不可用。（路径里的 `KidsSafeDesktop/` 前缀为节省宽度省略）
 
-| 文件 | 用途 | 缺失后果 |
-|---|---|---|
-| `KidsSafeServer/appsettings.json` | 管理员 PIN、第三方故事 API 密钥 | 从 `appsettings.sample.json` 复制；故事代理不可用，其余正常 |
-| `KidsSafeDesktop/Signing.props` | Android keystore 别名与口令 | 从 `Signing.props.sample` 复制；Android 打包不签名 |
-| `KidsSafeDesktop/Keys/kidssafe.keystore` | Android 签名证书 | 自签一个即可：`keytool -genkeypair -alias kidssafe -keyalg RSA -keysize 2048 -validity 10000 -keystore kidssafe.keystore` |
-| `KidsSafeDesktop/Platforms/Android/Assets/mcs-services.json` | 荣耀推送配置 | 不用荣耀推送可删除，同时删掉 csproj 里对应的 `<AndroidAsset>` 一行 |
-| `KidsSafeDesktop/Platforms/Android/libs/*.aar` | 荣耀 Push Kit SDK | 从[荣耀开发者平台](https://developer.honor.com/)自行下载，**不要提交到仓库**（非开源许可） |
+- **`KidsSafeServer/appsettings.json`** —— 管理员 PIN、第三方故事 API 密钥。
+  从 `appsettings.sample.json` 复制；缺失时故事代理不可用，其余正常。
+- **`Signing.props`** —— Android keystore 别名与口令。
+  从 `Signing.props.sample` 复制；缺失时 Android 包不签名。
+- **`Keys/kidssafe.keystore`** —— Android 签名证书，自签一个即可，命令见下。
+- **`Platforms/Android/Assets/mcs-services.json`** —— 荣耀推送配置。
+  不用荣耀推送可删除，同时删掉 csproj 里对应的 `AndroidAsset` 一行。
+- **`Platforms/Android/libs/*.aar`** —— 荣耀 Push Kit SDK。
+  从[荣耀开发者平台](https://developer.honor.com/)自行下载，**不要提交到仓库**（非开源许可）。
 
-生成模板：
+生成模板与自签证书：
 
 ```bash
 cp KidsSafeServer/appsettings.sample.json KidsSafeServer/appsettings.json
 cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
+
+keytool -genkeypair -alias kidssafe -keyalg RSA -keysize 2048 \
+  -validity 10000 -keystore KidsSafeDesktop/Keys/kidssafe.keystore
 ```
 
 > ⚠️ 换 `ApplicationId` 时注意：Android 上改包名等于换一个 App，已安装的旧版本无法覆盖升级；Windows 侧 `WindowsPackageType=None`，走安装包而不是 MSIX。

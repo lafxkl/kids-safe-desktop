@@ -162,9 +162,15 @@ All three client projects use the `KidsSafeDesktop.*` namespace. When the parent
 | Dependency | Version | Notes |
 |---|---|---|
 | .NET SDK | 10.0.100+ | Developed on `10.0.401` |
-| MAUI workloads | `maui-windows` / `maui-android` | `dotnet workload install maui-windows maui-android` |
+| MAUI workloads | `maui` | Installs both Android and Windows; see the command below |
 | Android SDK | API 36 platform, API 21 minimum | Not needed if you only build for Windows |
 | Windows | 10 1809 (`10.0.17763`) or later | Required by the Windows App SDK |
+
+First-time workload install (use `maui-android` or `maui-windows` if you only need one platform):
+
+```bash
+dotnet workload install maui
+```
 
 ### Build the Windows apps
 
@@ -229,21 +235,26 @@ Listens on `http://0.0.0.0:5180` (the port is set at the end of `Program.cs` and
 
 ## Configuration and secrets
 
-This repository contains **no real secrets**. The files below are excluded by `.gitignore` and must be created locally. Without them the projects still build and run; the related feature is simply unavailable.
+This repository contains **no real secrets**. The files below are excluded by `.gitignore` and must be created locally. Without them the projects still build and run; the related feature is simply unavailable. (The `KidsSafeDesktop/` prefix is dropped to keep the lines narrow.)
 
-| File | Purpose | If missing |
-|---|---|---|
-| `KidsSafeServer/appsettings.json` | Admin PIN, third-party story API key | Copy from `appsettings.sample.json`; the story proxy stops working, everything else is fine |
-| `KidsSafeDesktop/Signing.props` | Android keystore alias and passwords | Copy from `Signing.props.sample`; Android builds are unsigned |
-| `KidsSafeDesktop/Keys/kidssafe.keystore` | Android signing certificate | Create your own: `keytool -genkeypair -alias kidssafe -keyalg RSA -keysize 2048 -validity 10000 -keystore kidssafe.keystore` |
-| `KidsSafeDesktop/Platforms/Android/Assets/mcs-services.json` | Honor Push configuration | Delete it if you don't need push, and remove the matching `<AndroidAsset>` line from the csproj |
-| `KidsSafeDesktop/Platforms/Android/libs/*.aar` | Honor Push Kit SDK | Download from the [Honor developer portal](https://developer.honor.com/) yourself — **do not commit it**, the licence is not open source |
+- **`KidsSafeServer/appsettings.json`** — admin PIN, third-party story API key.
+  Copy from `appsettings.sample.json`; without it the story proxy stops working, everything else is fine.
+- **`Signing.props`** — Android keystore alias and passwords.
+  Copy from `Signing.props.sample`; without it Android builds are unsigned.
+- **`Keys/kidssafe.keystore`** — Android signing certificate; create your own, command below.
+- **`Platforms/Android/Assets/mcs-services.json`** — Honor Push configuration.
+  Delete it if you don't need push, and remove the matching `AndroidAsset` line from the csproj.
+- **`Platforms/Android/libs/*.aar`** — Honor Push Kit SDK.
+  Download from the [Honor developer portal](https://developer.honor.com/) yourself — **do not commit it**, the licence is not open source.
 
-Generate the templates:
+Generate the templates and a signing certificate:
 
 ```bash
 cp KidsSafeServer/appsettings.sample.json KidsSafeServer/appsettings.json
 cp KidsSafeDesktop/Signing.props.sample KidsSafeDesktop/Signing.props
+
+keytool -genkeypair -alias kidssafe -keyalg RSA -keysize 2048 \
+  -validity 10000 -keystore KidsSafeDesktop/Keys/kidssafe.keystore
 ```
 
 > ⚠️ Changing `ApplicationId` has consequences: on Android a new package name is a different app, so existing installs cannot be upgraded in place. On Windows the project uses `WindowsPackageType=None` and ships through an installer rather than MSIX.
@@ -294,7 +305,7 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 
 These are real boundaries, not roadmap prose:
 
-- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account. Windows can only do a compile check: `dotnet build -f net10.0-ios -p:EnableIosTarget=true`.
+- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account. Windows can only do a compile check: `dotnet build -f net10.0-ios` plus `-p:EnableIosTarget=true`.
 - **Linux and HarmonyOS are separate front ends** (`KidsSafeDesktop/Linux/`, Qt 6 + Kirigami; `KidsSafeDesktop/Harmony/`, ArkTS + ArkUI). Neither reuses the XAML layer, their feature sets are not identical to the desktop app, and neither was regression-tested for this release — each folder's README lists the differences.
 - **The server has no TLS and no rate limiting of its own.** It binds to `127.0.0.1:5180`; public access must sit behind a TLS reverse proxy (the official site does exactly that, proxying `/api/*` and passing `X-Forwarded-For` through). **Do not port-forward 5180 to the internet.**
 - **The parent app has no icon or release script of its own yet**, and its `ApplicationId` is a placeholder (`com.companyname.kidssafeparent`) that must be changed before packaging.
