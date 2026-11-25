@@ -6,7 +6,7 @@
 
 <p align="center">
   <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet">
-  <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows-512BD4">
+  <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows%20%7C%20iOS-512BD4">
   <img alt="Platforms" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20iOS%2015%2B%20%7C%20Linux%20%7C%20HarmonyOS-informational">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
 </p>
