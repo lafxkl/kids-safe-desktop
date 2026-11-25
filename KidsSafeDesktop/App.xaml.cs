@@ -22,6 +22,25 @@ public partial class App : Application
 	{
 		var window = base.CreateWindow(activationState);
 		KidsSafeDesktop.Helpers.EyeCare.Attach(window);
+
+		// 增量更新：应用关闭时把已经下载好的补丁交给落盘器（它等我们退出后才替换 dll）。
+		// 放在这里而不是 OnSleep：OnSleep 在最小化/切后台时也会触发，那不是「关掉」。
+		window.Destroying += (_, _) =>
+		{
+			try
+			{
+				var update = ServiceProvider.Get<KidsSafeDesktop.Updates.IUpdateService>();
+				if (update.HasPendingPatch && update.State == KidsSafeDesktop.Updates.UpdateState.Ready)
+				{
+					_ = update.ApplyAsync(restart: false);
+				}
+			}
+			catch (Exception ex)
+			{
+				Helpers.AppLog.W("增量更新", "退出时启动落盘器失败", ex);
+			}
+		};
+
 		return window;
 	}
 
@@ -29,11 +48,18 @@ public partial class App : Application
 	protected override void OnStart()
 	{
 		base.OnStart();
+		Helpers.AppLog.I("生命周期", "OnStart（应用已在前台）");
+
+#if ANDROID
+		// 能走到这里说明补丁没有把启动搞崩，把「连续失败计数」归零。
+		PatchBootstrapper.MarkHealthy();
+#endif
 	}
 
 	protected override void OnResume()
 	{
 		base.OnResume();
+		Helpers.AppLog.I("生命周期", "OnResume（从后台回到前台）");
 		// 回到前台时按当前时间重算（定时护眼可能跨入/跨出生效时段）
 		KidsSafeDesktop.Helpers.EyeCare.Refresh();
 		ServiceProvider.Get<IScreenTimeService>().Start();
@@ -41,6 +67,7 @@ public partial class App : Application
 
 	protected override void OnSleep()
 	{
+		Helpers.AppLog.I("生命周期", "OnSleep（进入后台）");
 		base.OnSleep();
 		ServiceProvider.Get<IScreenTimeService>().Stop();
 	}

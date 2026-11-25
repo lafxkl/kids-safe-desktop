@@ -1,0 +1,10 @@
+frames/
+frames_platform/
+frames_test/
+_chromeprofile/
+*.wav
+_m*.jpg
+_montage*.jpg
+
+# 宣传片成片（36MB，走 Release 附件）
+*.mp4

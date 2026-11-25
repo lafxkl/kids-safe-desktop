@@ -96,11 +96,22 @@ public static class NavFx
 #endif
     }
 
-    /// <summary>把异常追加写入 nav.log（位置见 <see cref="DiagLog"/>，安卓落在 Android/data 下）。</summary>
-    public static void Log(Exception ex) => DiagLog.Append(LogFileName, ex.ToString());
+    /// <summary>
+    /// 把异常追加写入运行日志（位置见 <see cref="DiagLog"/>，安卓落在 Android/data 下）。
+    /// nav.log 仍然照写：家长端历史上就看这个文件，别破坏既有习惯。
+    /// </summary>
+    public static void Log(Exception ex)
+    {
+        AppLog.E("导航", "页面操作异常", ex);
+        DiagLog.Append(LogFileName, ex.ToString());
+    }
 
     /// <summary>写入一行诊断信息（非异常），用于排查全屏/布局等无异常的问题。</summary>
-    public static void Log(string message) => DiagLog.Append(LogFileName, message);
+    public static void Log(string message)
+    {
+        AppLog.I("导航", message);
+        DiagLog.Append(LogFileName, message);
+    }
 
     /// <summary>统一日志文件名。</summary>
     public const string LogFileName = "nav.log";

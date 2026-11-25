@@ -16,7 +16,24 @@ set -u
 
 export KIDSSAFE_KIOSK_SESSION=1
 
-APP_BIN="${KIDSSAFE_BIN:-/usr/bin/kidssafe}"
+# 二进制位置：发行版打包在 /usr/bin，本工程默认装到 /usr/local/bin。
+# deepin 25 这类「不可变系统」把 /usr 挂成只读，装到 /usr/local 之后建不了
+# /usr/bin 软链，所以这里按顺序自己找，不再写死路径。
+APP_BIN="${KIDSSAFE_BIN:-}"
+if [ -z "$APP_BIN" ] || [ ! -x "$APP_BIN" ]; then
+    for candidate in /usr/local/bin/kidssafe /usr/bin/kidssafe "$HOME/.local/bin/kidssafe"; do
+        if [ -x "$candidate" ]; then
+            APP_BIN="$candidate"
+            break
+        fi
+    done
+fi
+if [ -z "$APP_BIN" ] || [ ! -x "$APP_BIN" ]; then
+    echo "kidssafe: 找不到可执行文件，先运行 ./scripts/install.sh（或用 KIDSSAFE_BIN 指定）" >&2
+    exit 1
+fi
+logger -t kidssafe "using $APP_BIN" 2>/dev/null || true
+
 STATE_DIR="${HOME}/.local/share/kidssafe"
 
 mkdir -p "$STATE_DIR"

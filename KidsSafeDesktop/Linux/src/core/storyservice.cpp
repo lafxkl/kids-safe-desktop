@@ -231,7 +231,9 @@ void StoryService::loadList(int typeId, int page)
         }
 
         m_currentPage = page;
-        m_hasMore = root.value(QStringLiteral("hasMore")).toBool() || !array.isEmpty();
+        // 只认服务端给的 hasMore。早先写成 `hasMore || !array.isEmpty()`，
+        // 最后一页也会被判成「还有更多」，翻页会反复拉同一页。
+        m_hasMore = root.value(QStringLiteral("hasMore")).toBool();
         Q_EMIT itemsChanged();
     });
 }
@@ -289,11 +291,72 @@ void StoryService::search(const QString &keyword, int page)
         }
 
         m_currentPage = page;
-        m_hasMore = root.value(QStringLiteral("hasMore")).toBool() || !array.isEmpty();
+        m_hasMore = root.value(QStringLiteral("hasMore")).toBool();
         if (m_items.isEmpty()) {
             setError(QStringLiteral("没有找到「%1」相关的故事").arg(m_currentKeyword));
         }
         Q_EMIT itemsChanged();
+    });
+}
+
+// ── 连接测试（家长后台用）────────────────────────────────────────
+
+void StoryService::testConnection()
+{
+    m_testResult.clear();
+    Q_EMIT testResultChanged();
+
+    const QString base = baseUrl();
+    if (base.isEmpty()) {
+        m_testing = false;
+        m_testResult = QStringLiteral("地址是空的，先填一个再测");
+        Q_EMIT testResultChanged();
+        return;
+    }
+
+    m_testing = true;
+    Q_EMIT testResultChanged();
+
+    QNetworkReply *reply = get(QStringLiteral("/api/story/types"));
+    if (!reply) {
+        m_testing = false;
+        m_testResult = QStringLiteral("地址无效，测不了");
+        Q_EMIT testResultChanged();
+        return;
+    }
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply] {
+        reply->deleteLater();
+        m_testing = false;
+
+        if (reply->error() != QNetworkReply::NoError) {
+            // 家长最常遇到的就是这一条：地址填成了 127.0.0.1，或者服务没开。
+            m_testResult = QStringLiteral("连不上（%1）。确认服务在跑、地址是局域网 IP、端口没被防火墙挡。")
+                               .arg(reply->errorString());
+            Q_EMIT testResultChanged();
+            return;
+        }
+
+        const QJsonObject root = QJsonDocument::fromJson(reply->readAll()).object();
+        const QJsonArray array = root.value(QStringLiteral("categories")).toArray();
+        if (array.isEmpty()) {
+            m_testResult = QStringLiteral("连上了，但服务器没有返回任何故事分类");
+        } else {
+            m_testResult = QStringLiteral("连接成功：服务器返回了 %1 个分类").arg(array.size());
+            // 顺手把分类塞进缓存，家长回桌面进故事屋时不用再多一次请求。
+            m_categories.clear();
+            for (const QJsonValue &value : array) {
+                const QJsonObject item = value.toObject();
+                const QString name = item.value(QStringLiteral("name")).toString();
+                m_categories.append(QVariantMap{
+                    {QStringLiteral("id"), item.value(QStringLiteral("id")).toInt()},
+                    {QStringLiteral("name"), name},
+                    {QStringLiteral("emoji"), categoryEmoji(name)},
+                });
+            }
+            Q_EMIT categoriesChanged();
+        }
+        Q_EMIT testResultChanged();
     });
 }
 

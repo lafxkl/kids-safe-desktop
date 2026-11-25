@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>儿童安全桌面 · 故事服务端</title>
+<style>
+  :root {
+    --bg: #FFF8EE;
+    --card: #FFFFFF;
+    --line: #F2E1CD;
+    --text: #4A3B32;
+    --muted: #9B8574;
+    --accent: #FF8A5C;
+    --ok: #1D9E75;
+    --warn: #C0392B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 28px 20px 60px;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.7 "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .spacer { flex: 1; }
+  .pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #FFF3E6;
+    color: #7A6759;
+    font-size: 13px;
+  }
+  .pill.ok { background: #E8F7F1; color: var(--ok); }
+  .pill.bad { background: #FDECEA; color: var(--warn); }
+  button {
+    border: 0;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    font-family: inherit;
+  }
+  button.ghost { background: #EFE1D0; color: #7A6759; }
+  button:disabled { opacity: .5; cursor: default; }
+  input[type=search] {
+    flex: 1;
+    min-width: 200px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #FFFDF9;
+    color: var(--text);
+  }
+  input[type=search]:focus { outline: 2px solid #FFD1B8; }
+  .cats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .cat {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 16px;
+    cursor: pointer;
+    background: #FFFDF9;
+    font-size: 14px;
+  }
+  .cat.active { background: #FFF3E6; border-color: #FFD1B8; font-weight: 600; }
+  .cat small { color: var(--muted); margin-left: 6px; }
+  ul.stories { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.stories li {
+    padding: 12px 4px;
+    border-top: 1px dashed var(--line);
+    cursor: pointer;
+  }
+  ul.stories li:hover { background: #FFFDF9; }
+  ul.stories b { font-weight: 600; }
+  ul.stories .meta { color: var(--muted); font-size: 13px; }
+  ul.stories .desc { color: var(--muted); font-size: 13px; }
+  #detail {
+    white-space: pre-wrap;
+    line-height: 2;
+    font-size: 16px;
+    max-height: 460px;
+    overflow: auto;
+  }
+  .hint { color: var(--muted); font-size: 13px; }
+  code {
+    background: #FFF3E6;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    background: #4A3B32;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity .25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: .95; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>故事服务端</h1>
+  <div class="sub">儿童安全桌面 · Linux 版的内容来源。这个页面只读，改内容请编辑服务器上的 <code>data/stories.json</code> 或往 <code>data/stories/</code> 放 txt。</div>
+
+  <div class="card">
+    <div class="row">
+      <span id="health" class="pill">正在检查…</span>
+      <span id="counts" class="hint"></span>
+      <span class="spacer"></span>
+      <button class="ghost" id="reload">重新载入内容</button>
+    </div>
+    <div class="hint" style="margin-top:10px">
+      孩子端（家长后台里的「故事服务器地址」）填：
+      <code id="addr">http://…</code>
+    </div>
+    <div class="hint" id="errors"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <input type="search" id="q" placeholder="搜标题、分类或正文里的词…">
+      <button id="searchBtn">搜索</button>
+      <button class="ghost" id="clearBtn">全部</button>
+    </div>
+    <div class="cats" id="cats"></div>
+    <ul class="stories" id="list"></ul>
+  </div>
+
+  <div class="card" id="detailCard" style="display:none">
+    <div class="row">
+      <b id="detailTitle"></b>
+      <span class="hint" id="detailMeta"></span>
+      <span class="spacer"></span>
+      <button class="ghost" id="closeDetail">收起</button>
+    </div>
+    <div id="detail"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+(function () {
+  var state = { typeId: 0, keyword: "", page: 1, hasMore: false };
+
+  function $(id) { return document.getElementById(id); }
+
+  function toast(text) {
+    var el = $("toast");
+    el.textContent = text;
+    el.classList.add("show");
+    setTimeout(function () { el.classList.remove("show"); }, 1800);
+  }
+
+  function api(path) {
+    return fetch(path, { cache: "no-store" }).then(function (res) {
+      if (!res.ok) { throw new Error("HTTP " + res.status); }
+      return res.json();
+    });
+  }
+
+  function loadHealth() {
+    api("/api/health").then(function (data) {
+      var el = $("health");
+      el.className = "pill ok";
+      el.textContent = "服务运行中 · v" + data.version;
+      $("counts").textContent = data.stories + " 篇故事 / " + data.categories.length + " 个分类";
+      var errors = $("errors");
+      if (data.errors && data.errors.length) {
+        errors.textContent = "注意：" + data.errors.join("；");
+      } else {
+        errors.textContent = "";
+      }
+      renderCats(data.categories);
+    }).catch(function (error) {
+      var el = $("health");
+      el.className = "pill bad";
+      el.textContent = "连不上服务：" + error.message;
+    });
+  }
+
+  function renderCats(categories) {
+    var box = $("cats");
+    box.innerHTML = "";
+    var all = document.createElement("div");
+    all.className = "cat" + (state.typeId === 0 ? " active" : "");
+    all.textContent = "全部分类";
+    all.onclick = function () { state.typeId = 0; state.keyword = ""; $("q").value = ""; loadList(); loadHealth(); };
+    box.appendChild(all);
+
+    categories.forEach(function (cat) {
+      var el = document.createElement("div");
+      el.className = "cat" + (state.typeId === cat.id ? " active" : "");
+      el.innerHTML = "";
+      el.appendChild(document.createTextNode(cat.name));
+      var small = document.createElement("small");
+      small.textContent = cat.count;
+      el.appendChild(small);
+      el.onclick = function () {
+        state.typeId = cat.id;
+        state.keyword = "";
+        $("q").value = "";
+        loadList();
+        loadHealth();
+      };
+      box.appendChild(el);
+    });
+  }
+
+  function loadList(append) {
+    var path;
+    if (state.keyword) {
+      path = "/api/story/search?keyword=" + encodeURIComponent(state.keyword) + "&page=" + state.page;
+    } else {
+      path = "/api/story/list?typeId=" + state.typeId + "&page=" + state.page;
+    }
+    api(path).then(function (data) {
+      state.hasMore = data.hasMore;
+      var list = $("list");
+      if (!append) { list.innerHTML = ""; }
+      if (!data.items.length && !append) {
+        var empty = document.createElement("li");
+        empty.className = "hint";
+        empty.textContent = state.keyword ? "没有找到相关故事" : "这个分类还没有故事";
+        list.appendChild(empty);
+        return;
+      }
+      data.items.forEach(function (item) {
+        var li = document.createElement("li");
+        var title = document.createElement("b");
+        title.textContent = item.title;
+        li.appendChild(title);
+        var meta = document.createElement("span");
+        meta.className = "meta";
+        meta.textContent = "　" + item.type + " · " + item.length + " 字 · " + item.readTime;
+        li.appendChild(meta);
+        var desc = document.createElement("div");
+        desc.className = "desc";
+        desc.textContent = item.shortDesc;
+        li.appendChild(desc);
+        li.onclick = function () { openDetail(item.id); };
+        list.appendChild(li);
+      });
+      if (state.hasMore) {
+        var more = document.createElement("li");
+        more.className = "hint";
+        more.style.textAlign = "center";
+        more.textContent = "加载更多…";
+        more.onclick = function () { state.page += 1; loadList(true); };
+        list.appendChild(more);
+      }
+    }).catch(function (error) {
+      toast("列表加载失败：" + error.message);
+    });
+  }
+
+  function openDetail(id) {
+    api("/api/story/detail?storyId=" + id).then(function (data) {
+      $("detailCard").style.display = "block";
+      $("detailTitle").textContent = data.title;
+      $("detailMeta").textContent = data.type + " · " + data.length + " 字 · " + data.readTime;
+      $("detail").textContent = data.content;
+      $("detailCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    }).catch(function (error) {
+      toast("正文打不开：" + error.message);
+    });
+  }
+
+  $("searchBtn").onclick = function () {
+    state.keyword = $("q").value.trim();
+    state.typeId = 0;
+    state.page = 1;
+    loadList();
+  };
+
+  $("q").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") { $("searchBtn").click(); }
+  });
+
+  $("clearBtn").onclick = function () {
+    $("q").value = "";
+    state.keyword = "";
+    state.typeId = 0;
+    state.page = 1;
+    loadList();
+  };
+
+  $("reload").onclick = function () {
+    $("reload").disabled = true;
+    fetch("/api/reload", { method: "POST" }).then(function (res) {
+      return res.json();
+    }).then(function () {
+      toast("内容已重新载入");
+      state.page = 1;
+      loadHealth();
+      loadList();
+    }).catch(function (error) {
+      toast("载入失败：" + error.message);
+    }).then(function () {
+      $("reload").disabled = false;
+    });
+  };
+
+  $("closeDetail").onclick = function () {
+    $("detailCard").style.display = "none";
+  };
+
+  $("addr").textContent = location.origin;
+  if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
+    $("addr").textContent = location.origin + "（本机地址，孩子端要换成局域网 IP）";
+  }
+
+  loadHealth();
+  loadList();
+})();
+</script>
+</body>
+</html>

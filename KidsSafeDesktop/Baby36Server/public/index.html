@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF6E6">
+<title>宝贝三十六计 · 家长端</title>
+<style>
+:root{
+  --bg:#FFF6E6; --card:#FFFFFF; --ink:#3A2A18; --ink2:#8A7358;
+  --line:#EFE0C8; --orange:#F0862F; --orange-d:#CE6410;
+  --blue:#2F82C4; --blue-l:#E8F3FB;
+  --green:#3FA45B; --green-l:#E9F6EC;
+  --red:#E4572E; --red-l:#FDECE7;
+  --shadow:0 2px 10px rgba(90,60,20,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:400 16px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  padding:0 0 40px;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 14px}
+
+/* ── 顶栏 ── */
+header{
+  padding:18px 0 12px;
+  display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;
+}
+header h1{
+  margin:0; font-size:21px; font-weight:800; letter-spacing:.5px;
+  display:flex; align-items:center; gap:8px;
+}
+header h1 svg{width:26px;height:26px;flex:none}
+header .sub{
+  margin-left:auto; font-size:12px; color:var(--ink2);
+  background:#fff; border:1px solid var(--line); border-radius:99px;
+  padding:4px 10px; white-space:nowrap;
+}
+
+/* ── 卡片 ── */
+.card{
+  background:var(--card); border-radius:18px; padding:16px;
+  box-shadow:var(--shadow); margin-bottom:14px;
+}
+.card > .hd{
+  display:flex; align-items:center; gap:8px; margin-bottom:12px;
+}
+.card > .hd .step{
+  width:22px;height:22px;border-radius:50%;flex:none;
+  background:var(--orange); color:#fff; font-size:13px; font-weight:700;
+  display:grid;place-items:center;
+}
+.card > .hd h2{margin:0;font-size:15px;font-weight:700}
+.card > .hd .tag{
+  margin-left:auto;font-size:12px;color:var(--ink2);
+}
+
+/* ── 按钮 ── */
+button{
+  font-family:inherit; font-size:15px; font-weight:600;
+  border:none; border-radius:12px; cursor:pointer;
+  padding:12px 18px; transition:transform .08s, filter .15s;
+}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;pointer-events:none}
+.btn-main{
+  width:100%; color:#fff;
+  background:linear-gradient(180deg,#FFA653,#EF7F22);
+  box-shadow:0 3px 0 #C9600D;
+}
+.btn-main:active{box-shadow:0 1px 0 #C9600D;transform:translateY(2px)}
+.btn-ghost{
+  background:#fff;border:1.5px solid var(--line);color:var(--ink);
+}
+.btn-mini{
+  padding:7px 12px;font-size:13px;border-radius:9px;
+}
+.btn-ok{background:linear-gradient(180deg,#54BE76,#3FA45B);color:#fff;box-shadow:0 3px 0 #2E8446}
+.btn-bad{background:linear-gradient(180deg,#F2775A,#E4572E);color:#fff;box-shadow:0 3px 0 #B8451F}
+.btn-half{flex:1}
+
+/* ── 房号 ── */
+.codeBox{
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(160deg,#FFF8EC,#FFEBCF);
+  border:1.5px dashed #E8C79A; border-radius:14px; padding:14px 16px;
+}
+.codeBox .digits{
+  font:800 38px/1 "SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  letter-spacing:8px; color:var(--orange-d); text-indent:8px;
+}
+.codeBox .lbl{font-size:12px;color:var(--ink2);line-height:1.4}
+.codeBox .lbl b{display:block;font-size:13px;color:var(--ink)}
+
+/* ── 连接灯 ── */
+.addrBox{
+  display:flex;align-items:center;gap:10px;margin-top:10px;
+  background:#FAF7F1;border-radius:12px;padding:10px 12px;
+}
+.addrBox .al{flex:1;min-width:0;font-size:11.5px;color:var(--ink2);line-height:1.35}
+.addrBox .al b{
+  display:block;font:700 14px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.addrBox button{flex:none}
+
+.lights{display:flex;gap:10px;margin-top:10px}
+.light{
+  flex:1;display:flex;align-items:center;gap:7px;
+  font-size:13px;color:var(--ink2);
+  background:#FAF7F1;border-radius:10px;padding:9px 11px;
+}
+.dot{width:9px;height:9px;border-radius:50%;background:#CBB99F;flex:none}
+.light.on{color:var(--green);background:var(--green-l)}
+.light.on .dot{background:var(--green);box-shadow:0 0 0 3px rgba(63,164,91,.18)}
+
+/* ── 提示条 ── */
+.warn{
+  display:none;
+  font-size:13px;line-height:1.6;color:#9A4A16;
+  background:#FFF0DC;border:1px solid #F6C98E;border-radius:11px;
+  padding:9px 12px;margin-bottom:10px;
+}
+.warn.on{display:block}
+.warn b{color:var(--orange-d)}
+
+.hint{
+  font-size:13px;color:var(--ink2);line-height:1.65;
+  background:#FAF7F1;border-left:3px solid var(--orange);
+  border-radius:0 10px 10px 0;padding:10px 12px;
+}
+.hint b{color:var(--orange-d)}
+.hint code{
+  font:600 13px ui-monospace,monospace;background:#fff;border:1px solid var(--line);
+  border-radius:5px;padding:1px 5px;color:var(--ink);
+}
+
+/* ── 场景 tab ── */
+.tabs{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.tab{
+  padding:7px 13px;font-size:13px;font-weight:600;border-radius:99px;
+  background:#F5EFE4;color:var(--ink2);border:none;
+}
+.tab.on{background:var(--orange);color:#fff}
+
+/* ── 台词列表 ── */
+.list{display:flex;flex-direction:column;gap:8px;max-height:330px;overflow:auto;margin:-4px -2px 0;padding:4px 2px}
+.item{
+  display:flex;gap:10px;align-items:flex-start;
+  background:#FAF7F1;border:1.5px solid transparent;border-radius:12px;
+  padding:10px 12px;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.item:active{background:#F3EADA}
+.item:hover{border-color:#E8D6B8}
+.item .nm{
+  flex:none;font-size:12px;font-weight:700;color:var(--orange-d);
+  background:#FFEEDB;border-radius:6px;padding:2px 7px;margin-top:2px;
+}
+.item .tx{font-size:14px;line-height:1.55;color:var(--ink)}
+.item .tx small{display:block;font-size:12px;color:var(--ink2);margin-top:3px}
+
+/* ── 输入 ── */
+textarea{
+  width:100%;font:400 15px/1.6 inherit;color:var(--ink);
+  background:#FAF7F1;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 13px;resize:none;min-height:70px;outline:none;
+}
+textarea:focus{border-color:var(--orange);background:#fff}
+textarea::placeholder{color:#BCAA93}
+.row{display:flex;gap:9px;margin-top:10px}
+.row .grow{flex:1}
+
+/* ── 记录 ── */
+.log{display:flex;flex-direction:column;gap:9px;max-height:360px;overflow:auto}
+.entry{display:flex;gap:9px;align-items:flex-start;font-size:14px;line-height:1.55}
+.entry .who{
+  flex:none;font-size:11px;font-weight:700;border-radius:6px;padding:3px 7px;margin-top:1px;
+}
+.entry.me .who{background:#FFEEDB;color:var(--orange-d)}
+.entry.ok .who{background:var(--green-l);color:var(--green)}
+.entry.bad .who{background:var(--red-l);color:var(--red)}
+.entry .say{flex:1;color:var(--ink)}
+.entry.ok .say{color:var(--green);font-weight:600}
+.entry.bad .say{color:var(--red);font-weight:600}
+.entry .tm{flex:none;font-size:11px;color:#C0AF98;margin-top:3px}
+.empty{text-align:center;color:#C0AF98;font-size:13.5px;padding:18px 0}
+
+.score{
+  display:flex;gap:10px;margin-bottom:12px;
+}
+.score div{
+  flex:1;text-align:center;border-radius:12px;padding:9px 4px;
+  background:#FAF7F1;
+}
+.score b{display:block;font-size:22px;font-weight:800;line-height:1.2}
+.score span{font-size:11.5px;color:var(--ink2)}
+.score .o b{color:var(--green)}
+.score .b b{color:var(--red)}
+
+footer{text-align:center;font-size:12px;color:#C0AF98;padding:8px 0 0}
+footer a{color:var(--ink2)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F0862F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 4 6v6c0 4.4 3.4 8.2 8 9 4.6-.8 8-4.6 8-9V6l-8-3z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+      宝贝三十六计
+    </h1>
+    <span class="sub" id="hostTag">…</span>
+  </header>
+
+  <!-- ① 建房间 -->
+  <section class="card" id="cardRoom">
+    <div class="hd"><span class="step">1</span><h2>开一个房间</h2></div>
+
+    <div id="noRoom">
+      <p class="hint" style="margin:0 0 12px">
+        点下面的按钮开通一个房间，把 <b>房号</b> 和 <b>上面这行地址</b> 告诉孩子，
+        孩子在平板上打开《宝贝三十六计》→「家长陪我玩」→ 填进去连上，就能开始对练了。
+      </p>
+      <button class="btn-main" id="btnCreate">开通房间</button>
+    </div>
+
+    <div id="hasRoom" class="hide">
+      <div class="codeBox">
+        <div class="digits" id="codeDigits">0000</div>
+        <div class="lbl"><b>房间号</b>念给孩子听</div>
+      </div>
+
+      <div class="addrBox">
+        <div class="al">
+          <span>孩子在平板上填这个地址</span>
+          <b id="addrShow">…</b>
+        </div>
+        <button class="btn-ghost btn-mini" id="btnCopyAddr">复制</button>
+      </div>
+
+      <div class="lights">
+        <div class="light" id="lightKid"><i class="dot"></i><span>孩子端</span></div>
+        <div class="light on" id="lightMe"><i class="dot"></i><span>家长端</span></div>
+      </div>
+      <div class="warn" id="warnKid">
+        孩子端还没连上。先在平板的《宝贝三十六计》里点「家长陪我玩」，
+        把上面的 <b>地址</b> 和 <b>房号</b> 填进去。
+      </div>
+      <div class="row">
+        <button class="btn-ghost btn-mini grow" id="btnNewRoom">换个房间</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 开始 -->
+  <section class="card hide" id="cardStart">
+    <div class="hd"><span class="step">2</span><h2>开始陪练</h2></div>
+    <p class="hint" style="margin:0 0 12px">
+      点「开始」后，孩子的平板会自动进入场景，屏幕上出现你和他面对面站着。
+      然后你在下面挑一句台词念给他听——他就是那个「陌生人」，请他判断该不该跟你走。
+    </p>
+    <div class="warn" id="warnKidStart">
+      孩子还没连上。连上之后再点「开始」，否则他看不到你念的台词。
+    </div>
+    <button class="btn-main" id="btnHello">开 始</button>
+  </section>
+
+  <!-- ③ 出题 -->
+  <section class="card hide" id="cardAsk">
+    <div class="hd">
+      <span class="step">3</span><h2>出题</h2>
+      <span class="tag" id="askTag">点一句直接发出</span>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+    <div class="list" id="list"></div>
+
+    <div style="height:12px"></div>
+    <textarea id="freeText" placeholder="也可以自己编一句，比如：&#10;「小朋友，你妈妈让我来接你，车就在门口。」"></textarea>
+    <div class="row">
+      <button class="btn-ghost btn-mini" id="btnClear">清空</button>
+      <button class="btn-main btn-mini grow" id="btnSay" style="width:auto">说这一句</button>
+    </div>
+  </section>
+
+  <!-- ④ 记录 -->
+  <section class="card hide" id="cardLog">
+    <div class="hd"><span class="step">4</span><h2>孩子的反应</h2></div>
+    <div class="score">
+      <div class="o"><b id="okNum">0</b><span>识破了</span></div>
+      <div class="b"><b id="badNum">0</b><span>上当了</span></div>
+    </div>
+    <div class="log" id="log"><div class="empty">还没有记录</div></div>
+    <div class="row">
+      <button class="btn-ok btn-half" id="btnWin">他识破了，通关</button>
+      <button class="btn-bad btn-half" id="btnLose">他被带走了</button>
+    </div>
+  </section>
+
+  <footer>
+    宝贝三十六计 · 家长端 &nbsp;|&nbsp; 服务地址即上面那行，孩子端要填同一个
+  </footer>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var JI = window.BB36_JI || [];
+  var $ = function (id) { return document.getElementById(id); };
+
+  var S = {
+    code: '',
+    es: null,
+    started: false,
+    log: [],
+    score: { ok: 0, bad: 0 },
+    presence: { kid: 0, parent: 0 },
+    tab: 'zoo'
+  };
+
+  var SCENES = [
+    { k: 'zoo', n: '动物园' },
+    { k: 'hosp', n: '医院' },
+    { k: 'school', n: '学校' },
+    { k: 'shop', n: '商店' }
+  ];
+
+  /* ───────── 服务地址 ───────── */
+  /*
+   * 家长多半是在本机浏览器里开 127.0.0.1:8099，但这个地址孩子平板上填了没用。
+   * 所以要问服务端要局域网 IP，把它显眼地摆出来 —— 这是最容易出错的一步。
+   */
+  var ADDR = { ips: [], port: 0, idx: 0, text: '' };
+
+  function setAddr(i) {
+    var host = location.hostname;
+    var isLocal = !host || host === '127.0.0.1' || host === 'localhost' || host === '::1';
+    if (isLocal && ADDR.ips.length) {
+      ADDR.idx = ((i || 0) % ADDR.ips.length + ADDR.ips.length) % ADDR.ips.length;
+      ADDR.text = ADDR.ips[ADDR.idx] + ':' + ADDR.port;
+    } else {
+      ADDR.text = location.host || '—';
+    }
+    $('hostTag').textContent = ADDR.text;
+    $('addrShow').textContent = ADDR.text;
+  }
+
+  api('/api/info').then(function (r) {
+    if (r && r.ok) { ADDR.ips = r.ips || []; ADDR.port = r.port; }
+    setAddr(0);
+  }).catch(function () { setAddr(0); });
+
+  // 家里有好几个网卡时，点了能在 IP 之间换（把每个都念一遍让孩子试）
+  $('hostTag').onclick = function () {
+    if (ADDR.ips.length < 2) return;
+    setAddr(ADDR.idx + 1);
+    toast('换一个地址：' + ADDR.text);
+  };
+
+  /* ───────── 工具 ───────── */
+  function api(path, opt) {
+    return fetch(path, opt).then(function (r) {
+      return r.json().catch(function () { return { ok: false }; });
+    });
+  }
+
+  function act(payload) {
+    if (!S.code) return Promise.resolve({ ok: false });
+    return api('/api/rooms/' + S.code + '/act', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  function hhmm(t) {
+    var d = new Date(t || Date.now());
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function toast(msg) {
+    // 轻提示，不打断操作
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);'
+      + 'background:rgba(58,42,24,.92);color:#fff;font-size:14px;padding:9px 16px;'
+      + 'border-radius:99px;z-index:99;pointer-events:none;transition:opacity .3s';
+    document.body.appendChild(el);
+    setTimeout(function () { el.style.opacity = '0'; }, 1400);
+    setTimeout(function () { el.remove(); }, 1800);
+  }
+
+  /* ───────── 建房 ───────── */
+  function createRoom() {
+    $('btnCreate').disabled = true;
+    api('/api/rooms', { method: 'POST' }).then(function (r) {
+      $('btnCreate').disabled = false;
+      if (!r || !r.ok) { toast('开通失败，服务还在跑吗？'); return; }
+      enterRoom(r.code);
+    }).catch(function () {
+      $('btnCreate').disabled = false;
+      toast('连不上服务：' + location.host);
+    });
+  }
+
+  function enterRoom(code) {
+    S.code = code;
+    S.started = false;
+    S.log = [];
+    S.score = { ok: 0, bad: 0 };
+    localStorage.setItem('bb36.parent.code', code);
+
+    $('noRoom').classList.add('hide');
+    $('hasRoom').classList.remove('hide');
+    $('cardStart').classList.remove('hide');
+    $('cardAsk').classList.add('hide');
+    $('cardLog').classList.add('hide');
+    $('codeDigits').textContent = code;
+    renderScore();
+    renderLog();
+    refreshLights();
+
+    connect();
+  }
+
+  function connect() {
+    if (S.es) { try { S.es.close(); } catch (e) {} S.es = null; }
+    if (!S.code) return;
+    var es = new EventSource('/api/rooms/' + S.code + '/events?role=parent');
+    S.es = es;
+
+    es.onopen = function () {
+      setLight('lightMe', true);
+    };
+    es.onerror = function () {
+      // 自己断了，房间里还有什么人已经不知道了，一律按「没人」处理
+      S.presence = { kid: 0, parent: 0 };
+      refreshLights();
+    };
+    es.onmessage = function (ev) {
+      var m;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      onMsg(m);
+    };
+  }
+
+  function setLight(id, on) {
+    var el = $(id);
+    el.classList.toggle('on', !!on);
+  }
+
+  function onMsg(m) {
+    if (m.type === 'sync') {
+      S.log = m.log || [];
+      S.score = m.score || { ok: 0, bad: 0 };
+      S.presence = m.presence || S.presence;
+      // 已经有 hello 记录说明陪练进行到一半，刷新后要回到出题界面
+      var hadHello = S.log.some(function (e) { return e.type === 'hello'; });
+      if (hadHello) showPlay();
+      renderLog();
+      renderScore();
+      refreshLights();
+      return;
+    }
+    if (m.type === 'presence') {
+      S.presence = m.presence || S.presence;
+      refreshLights();
+      return;
+    }
+    if (m.type === 'joined') {
+      if (m.role === 'kid') toast('孩子连上来了');
+      if (m.presence) S.presence = m.presence;
+      refreshLights();
+      return;
+    }
+    if (m.type === 'left') {
+      if (m.role === 'kid') toast('孩子端断开了');
+      if (m.presence) S.presence = m.presence;
+      refreshLights();
+      return;
+    }
+    if (m.type === 'said') {
+      // 自己发出去的回显，已经本地加过了，跳过
+      return;
+    }
+    if (m.type === 'answer') {
+      S.log.push({
+        t: Date.now(), type: 'answer', ok: !!m.ok,
+        text: m.text || ''
+      });
+      if (m.score) S.score = m.score;
+      renderLog();
+      renderScore();
+      return;
+    }
+    if (m.type === 'hello') {
+      showPlay();
+      return;
+    }
+    if (m.type === 'end') {
+      S.log.push({ t: Date.now(), type: 'end', win: !!m.win, text: m.text || '' });
+      renderLog();
+      return;
+    }
+    if (m.type === 'reset') {
+      S.log = [];
+      S.score = { ok: 0, bad: 0 };
+      renderLog();
+      renderScore();
+      showStart();
+      return;
+    }
+  }
+
+  function refreshLights() {
+    setLight('lightKid', S.presence.kid > 0);
+    setLight('lightMe', S.presence.parent > 0);
+    var off = S.presence.kid === 0;
+    $('warnKid').classList.toggle('on', off);
+    $('warnKidStart').classList.toggle('on', off);
+  }
+
+  /* ───────── 界面切换 ───────── */
+  function showStart() {
+    $('cardStart').classList.remove('hide');
+    $('cardAsk').classList.add('hide');
+    $('cardLog').classList.add('hide');
+    $('btnHello').textContent = '开 始';
+    // 「开始」卡还在，所以出题是第 3 步、记录是第 4 步
+    document.querySelector('#cardAsk .step').textContent = '3';
+    document.querySelector('#cardLog .step').textContent = '4';
+    S.started = false;
+  }
+
+  function showPlay() {
+    S.started = true;
+    $('cardStart').classList.add('hide');
+    $('cardAsk').classList.remove('hide');
+    $('cardLog').classList.remove('hide');
+    // 开始卡收了，「出题」顺位补上第 2 步 —— 否则会出现 1 → 3 → 4 的跳号
+    document.querySelector('#cardAsk .step').textContent = '2';
+    document.querySelector('#cardLog .step').textContent = '3';
+    renderList();
+  }
+
+  /* ───────── 台词库 ───────── */
+  function renderTabs() {
+    var box = $('tabs');
+    box.innerHTML = '';
+    SCENES.forEach(function (sc) {
+      var b = document.createElement('button');
+      b.className = 'tab' + (S.tab === sc.k ? ' on' : '');
+      b.textContent = sc.n;
+      b.onclick = function () { S.tab = sc.k; renderTabs(); renderList(); };
+      box.appendChild(b);
+    });
+  }
+
+  function renderList() {
+    var box = $('list');
+    box.innerHTML = '';
+    var rows = JI.filter(function (x) { return x.scene === S.tab; });
+    if (!rows.length) {
+      box.innerHTML = '<div class="empty">这个场景还没有台词</div>';
+      return;
+    }
+    rows.forEach(function (x) {
+      var d = document.createElement('div');
+      d.className = 'item';
+      d.innerHTML = '<span class="nm">' + x.name + '</span>'
+        + '<span class="tx">' + esc(x.say) + '<small>' + esc(x.tip) + '</small></span>';
+      d.onclick = function () { doSay(x.say); };
+      box.appendChild(d);
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* ───────── 说一句 ───────── */
+  function doSay(text) {
+    text = String(text || '').trim();
+    if (!text) { toast('先写一句台词'); return; }
+    act({ role: 'parent', type: 'say', who: '陌生人', text: text }).then(function (r) {
+      if (!r || !r.ok) { toast('没发出去：' + ((r && r.err) || '未知原因')); return; }
+      S.log.push({ t: Date.now(), type: 'say', text: text, who: '陌生人' });
+      renderLog();
+      $('freeText').value = '';
+      // 滚到记录底部，方便看孩子回什么
+      var lg = $('log');
+      lg.scrollTop = lg.scrollHeight;
+    });
+  }
+
+  /* ───────── 记录 ───────── */
+  function renderLog() {
+    var box = $('log');
+    if (!S.log.length) {
+      box.innerHTML = '<div class="empty">还没有记录</div>';
+      return;
+    }
+    var html = '';
+    S.log.forEach(function (e) {
+      if (e.type === 'hello') {
+        html += '<div class="entry"><span class="who" style="background:#EFE7DA;color:#8A7358">开始</span>'
+          + '<span class="say" style="color:#8A7358">陪练开始</span>'
+          + '<span class="tm">' + hhmm(e.t) + '</span></div>';
+        return;
+      }
+      if (e.type === 'say') {
+        html += '<div class="entry me"><span class="who">你</span>'
+          + '<span class="say">' + esc(e.text) + '</span>'
+          + '<span class="tm">' + hhmm(e.t) + '</span></div>';
+        return;
+      }
+      if (e.type === 'answer') {
+        html += '<div class="entry ' + (e.ok ? 'ok' : 'bad') + '">'
+          + '<span class="who">' + (e.ok ? '识破' : '上当') + '</span>'
+          + '<span class="say">' + (e.ok ? '「我不跟你走！」' : '他跟着走了…') + '</span>'
+          + '<span class="tm">' + hhmm(e.t) + '</span></div>';
+        return;
+      }
+      if (e.type === 'end') {
+        html += '<div class="entry"><span class="who" style="background:#EFE7DA;color:#8A7358">结束</span>'
+          + '<span class="say" style="color:#8A7358">' + (e.win ? '通关：他识破了' : '这一局被带走了') + '</span>'
+          + '<span class="tm">' + hhmm(e.t) + '</span></div>';
+      }
+    });
+    box.innerHTML = html;
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function renderScore() {
+    $('okNum').textContent = S.score.ok || 0;
+    $('badNum').textContent = S.score.bad || 0;
+  }
+
+  /* ───────── 事件 ───────── */
+  $('btnCreate').onclick = createRoom;
+  $('btnNewRoom').onclick = function () {
+    if (S.es) { try { S.es.close(); } catch (e) {} S.es = null; }
+    localStorage.removeItem('bb36.parent.code');
+    S.code = '';
+    $('noRoom').classList.remove('hide');
+    $('hasRoom').classList.add('hide');
+    $('cardStart').classList.add('hide');
+    $('cardAsk').classList.add('hide');
+    $('cardLog').classList.add('hide');
+  };
+
+  $('btnCopyAddr').onclick = function () {
+    var txt = '地址 ' + ADDR.text + '\n房号 ' + S.code;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(
+        function () { toast('地址和房号已复制，发给带孩子的那个手机'); },
+        function () { toast(txt.replace('\n', ' · ')); });
+    } else {
+      toast(txt.replace('\n', ' · '));
+    }
+  };
+
+  $('btnHello').onclick = function () {
+    // 没连上也允许点：服务端会把 hello 记在房间里，孩子一接上就补发给他。
+    // 这里不再弹 toast —— 房间卡里那条橙色提示已经常驻着了，别重复打扰。
+    act({ role: 'parent', type: 'hello', who: '陌生人' }).then(function (r) {
+      if (!r || !r.ok) { toast('没发出去'); return; }
+      S.log.push({ t: Date.now(), type: 'hello' });
+      renderLog();
+      showPlay();
+    });
+  };
+
+  $('btnSay').onclick = function () { doSay($('freeText').value); };
+  $('btnClear').onclick = function () { $('freeText').value = ''; $('freeText').focus(); };
+
+  $('btnWin').onclick = function () {
+    act({ role: 'parent', type: 'end', win: true, text: '他一次都没跟你走，真棒！' }).then(function () {
+      S.log.push({ t: Date.now(), type: 'end', win: true });
+      renderLog();
+    });
+  };
+  $('btnLose').onclick = function () {
+    act({ role: 'parent', type: 'end', win: false, text: '再来一局，这次要记住：不认识的人，说什么都不跟着走。' }).then(function () {
+      S.log.push({ t: Date.now(), type: 'end', win: false });
+      renderLog();
+    });
+  };
+
+  /* ───────── 启动 ───────── */
+  renderTabs();
+  renderList();
+  renderScore();
+  renderLog();
+
+  // 刷新页面后尝试回到原房间
+  var saved = localStorage.getItem('bb36.parent.code');
+  if (saved) {
+    api('/api/rooms/' + saved).then(function (r) {
+      if (r && r.ok) enterRoom(saved);
+      else localStorage.removeItem('bb36.parent.code');
+    }).catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>

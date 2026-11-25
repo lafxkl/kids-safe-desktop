@@ -34,6 +34,9 @@ class StoryService : public QObject
     Q_PROPERTY(bool hasMore READ hasMore NOTIFY itemsChanged)
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY detailChanged)
     Q_PROPERTY(bool detailLoading READ detailLoading NOTIFY detailLoadingChanged)
+    /// 家长后台「测试连接」的结果，空串表示还没测过。
+    Q_PROPERTY(QString testResult READ testResult NOTIFY testResultChanged)
+    Q_PROPERTY(bool testing READ testing NOTIFY testResultChanged)
 
 public:
     explicit StoryService(Settings *settings, QObject *parent = nullptr);
@@ -46,6 +49,8 @@ public:
     bool hasMore() const { return m_hasMore; }
     QVariantMap detail() const { return m_detail; }
     bool detailLoading() const { return m_detailLoading; }
+    QString testResult() const { return m_testResult; }
+    bool testing() const { return m_testing; }
 
     /// 家长改过服务器地址或开关后调用，重新判定能否联网。
     Q_INVOKABLE void refreshOnlineState();
@@ -56,6 +61,14 @@ public:
     Q_INVOKABLE void search(const QString &keyword, int page = 1);
     Q_INVOKABLE void loadDetail(qint64 storyId);
 
+    /**
+     * 家长后台的「测试连接」：按当前保存的地址请求一次 /api/story/types。
+     *
+     * 单独做一个探测而不是复用 loadCategories()，是因为后者有缓存
+     * （分类非空就直接返回），家长改完地址再点测试会看到上一次的结论。
+     */
+    Q_INVOKABLE void testConnection();
+
 signals:
     void onlineStateChanged();
     void loadingChanged();
@@ -64,6 +77,7 @@ signals:
     void itemsChanged();
     void detailChanged();
     void detailLoadingChanged();
+    void testResultChanged();
 
 private:
     QString baseUrl() const;
@@ -86,6 +100,8 @@ private:
     bool m_loading = false;
     bool m_detailLoading = false;
     bool m_hasMore = false;
+    bool m_testing = false;
+    QString m_testResult;
 
     int m_currentTypeId = 0;
     int m_currentPage = 0;

@@ -275,6 +275,10 @@ public partial class CareCenterPage : ContentPage
     private async void OnOpenGrowthGuide(object sender, EventArgs e)
         => await Navigation.PushAsync(new ParentGuidePage());
 
+    /// <summary>绘本怎么找：免费合法来源 + 经典绘本去哪借（清单内置，链接外跳）。</summary>
+    private async void OnOpenReading(object sender, EventArgs e)
+        => await Navigation.PushAsync(new ReadingPage());
+
     /// <summary>儿童心理学 · 自闭症关怀（公益科普，离线内置网页）。</summary>
     private async void OnOpenChildPsych(object sender, EventArgs e)
         => await Navigation.PushAsync(new ChildPsychPage());

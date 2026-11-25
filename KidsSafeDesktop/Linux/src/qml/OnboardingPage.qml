@@ -4,8 +4,14 @@ import QtQuick.Layouts
 import KidsSafe 1.0
 
 /*
- * 首次引导：起名字 → 设家长密码 → 挑允许的应用。
- * 三步走完才进桌面，等价于 C# 版的 OnboardingPage。
+ * 首次引导：选语言 → 起名字 → 设家长密码 → 挑允许的应用。
+ * 四步走完才进桌面，等价于 C# 版的 OnboardingPage（那边没有语言这一步）。
+ *
+ * 语言放在第一步，是因为它决定后面几步的文案，也决定首页出现哪些入口：
+ *   简体中文 → 不出现「故事剧场（吉里吉里）」（Settings.vnAllowed = false）；
+ *   English  → 不限制。
+ * 这个取舍是内容合规上的硬要求，不是偏好开关，所以不放进家长后台的
+ * 常规设置里，只在首次引导选一次（配置文件里仍可手改 Language=）。
  */
 Item {
     id: page
@@ -16,6 +22,15 @@ Item {
 
     Backdrop {
         anchors.fill: parent
+    }
+
+    // 引导层盖在桌面上，但 Backdrop 本身不接管鼠标。不铺这一层的话，
+    // 点在卡片之外的空白处会穿透到下面的桌面图标，小朋友可能直接
+    // 启动一个还没被允许的应用。MouseArea 只要接受按下事件就够，
+    // 不需要写处理函数。
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
     }
 
     ColumnLayout {
@@ -29,7 +44,7 @@ Item {
             spacing: 10
 
             Repeater {
-                model: 3
+                model: 4
 
                 Rectangle {
                     implicitWidth: index === page.step ? 30 : 10
@@ -60,63 +75,182 @@ Item {
                 anchors.margins: 36
                 spacing: 20
 
-                // ---- 第 1 步：起名字 ----
+                // ---- 第 1 步：选语言 ----
                 ColumnLayout {
                     visible: page.step === 0
                     Layout.fillWidth: true
                     spacing: 18
 
                     Text {
-                        text: "欢迎来到你的小天地"
+                        Layout.alignment: Qt.AlignHCenter
+                        text: Settings.t("lang.title")
                         font.pixelSize: 30
                         font.weight: Font.Bold
                         color: "#4A3B32"
-                        Layout.alignment: Qt.AlignHCenter
                     }
 
                     Text {
-                        text: "先告诉电脑，你叫什么名字？"
+                        Layout.alignment: Qt.AlignHCenter
+                        text: Settings.t("lang.hint")
+                        font.pixelSize: 16
+                        color: "#9B8574"
+                    }
+
+                    RowLayout {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.topMargin: 6
+                        spacing: 18
+
+                        Repeater {
+                            model: [
+                                { code: "zh_CN", glyph: "zh", title: "简体中文", sub: "Simplified Chinese" },
+                                { code: "en_US", glyph: "en", title: "English", sub: "英语" }
+                            ]
+
+                            Rectangle {
+                                required property var modelData
+
+                                readonly property bool chosen: Settings.language === modelData.code
+
+                                Layout.preferredWidth: 260
+                                Layout.preferredHeight: 148
+                                radius: 24
+                                color: chosen ? "#FFF1E2" : "#FBF8F4"
+                                border.color: chosen ? "#FF8A5C" : (cardHover.hovered ? "#F0D6BC" : "#EEDCC8")
+                                border.width: chosen ? 2 : 1
+
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: modelData.glyph === "zh" ? "中" : "EN"
+                                        font.pixelSize: 40
+                                        font.weight: Font.Bold
+                                        color: chosen ? "#E65100" : "#B8A492"
+                                    }
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: modelData.title
+                                        font.pixelSize: 20
+                                        font.weight: Font.DemiBold
+                                        color: "#4A3B32"
+                                    }
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: modelData.sub
+                                        font.pixelSize: 13
+                                        color: "#9B8574"
+                                    }
+                                }
+
+                                HoverHandler { id: cardHover }
+
+                                TapHandler {
+                                    onTapped: {
+                                        Settings.language = modelData.code;
+                                        page.step = 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 中文模式下一句话说明为什么没有「故事剧场」入口，
+                    // 免得家长以为是 bug。英文模式不显示。
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+                        visible: !Settings.english
+                        text: "简体中文版不含「故事剧场」入口；切换到 English 才会出现。"
+                        font.pixelSize: 12
+                        color: "#B8A492"
+                        wrapMode: Text.Wrap
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
+                        maximumLineCount: 2
+                    }
+                }
+
+                // ---- 第 2 步：起名字 ----
+                ColumnLayout {
+                    visible: page.step === 1
+                    Layout.fillWidth: true
+                    spacing: 18
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: Settings.t("onboard.welcome")
+                        font.pixelSize: 30
+                        font.weight: Font.Bold
+                        color: "#4A3B32"
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: Settings.t("onboard.nameAsk")
                         font.pixelSize: 17
                         color: "#9B8574"
-                        Layout.alignment: Qt.AlignHCenter
                     }
 
                     TextField {
                         id: nicknameField
 
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.preferredWidth: 320
+                        Layout.preferredWidth: 360
                         Layout.preferredHeight: 64
                         horizontalAlignment: TextInput.AlignHCenter
-                        placeholderText: "小朋友"
-                        text: Settings.nickname === "小朋友" ? "" : Settings.nickname
+                        placeholderText: Settings.t("onboard.namePlaceholder")
+                        text: Settings.nickname === "小朋友" || Settings.nickname === "Little friend"
+                              ? "" : Settings.nickname
                         font.pixelSize: 24
-                        onAccepted: page.step = 1
+
+                        // 外观全部自己画，不用控件默认样式：Basic 风格的
+                        // 输入框底色取自系统调色板，遇到深色主题就是白字白底，
+                        // 摆在白色卡片上等于「整个输入框消失」——deepin 上
+                        // 实测就是这个现象，家长会以为这里根本没有可填的地方。
+                        color: "#4A3B32"
+                        placeholderTextColor: "#C4AE99"
+                        background: Rectangle {
+                            radius: 16
+                            color: "#FFF8EE"
+                            border.width: nicknameField.activeFocus ? 2 : 1
+                            border.color: nicknameField.activeFocus ? "#FF8A5C" : "#EFD9C1"
+                        }
+
+                        onAccepted: page.step = 2
                     }
 
                     LargeButton {
                         Layout.alignment: Qt.AlignHCenter
                         Layout.preferredWidth: 240
-                        text: "下一步"
+                        text: Settings.t("onboard.next")
                         onClicked: {
                             const name = nicknameField.text.trim();
-                            if (name.length > 0) {
-                                Settings.nickname = name;
-                            }
-                            page.step = 1;
+                            // 留空也要落一个名字：中文默认「小朋友」，英文默认
+                            // 「Little friend」。否则英文界面会出现
+                            // 「Hello, 小朋友」这种半截混排。
+                            Settings.nickname = name.length > 0
+                                    ? name
+                                    : (Settings.english ? "Little friend" : "小朋友");
+                            page.step = 2;
                         }
                     }
                 }
 
-                // ---- 第 2 步：设家长密码 ----
+                // ---- 第 3 步：设家长密码 ----
                 ColumnLayout {
-                    visible: page.step === 1
+                    visible: page.step === 2
                     Layout.fillWidth: true
                     spacing: 16
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: page.firstPin === "" ? "设置家长密码" : "再输一次确认"
+                        text: page.firstPin === "" ? Settings.t("onboard.setPin")
+                                                   : Settings.t("onboard.confirmPin")
                         font.pixelSize: 30
                         font.weight: Font.Bold
                         color: "#4A3B32"
@@ -124,7 +258,7 @@ Item {
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: page.tipText.length > 0 ? page.tipText : "这个密码用来打开家长后台，别告诉小朋友哦"
+                        text: page.tipText.length > 0 ? page.tipText : Settings.t("onboard.pinHint")
                         font.pixelSize: 16
                         color: page.tipText.length > 0 ? "#D85A30" : "#9B8574"
                     }
@@ -143,10 +277,10 @@ Item {
                             if (page.firstPin === pin) {
                                 Settings.setPin(pin);
                                 page.tipText = "";
-                                page.step = 2;
+                                page.step = 3;
                             } else {
                                 page.firstPin = "";
-                                page.tipText = "两次输入不一样，请重新设置";
+                                page.tipText = Settings.t("onboard.pinMismatch");
                                 setupPad.clear();
                             }
                         }
@@ -154,15 +288,15 @@ Item {
                     }
                 }
 
-                // ---- 第 3 步：挑应用 ----
+                // ---- 第 4 步：挑应用 ----
                 ColumnLayout {
-                    visible: page.step === 2
+                    visible: page.step === 3
                     Layout.fillWidth: true
                     spacing: 14
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "哪些应用可以出现在桌面上？"
+                        text: Settings.t("onboard.pickApps")
                         font.pixelSize: 28
                         font.weight: Font.Bold
                         color: "#4A3B32"
@@ -170,7 +304,7 @@ Item {
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "现在不选也没关系，之后在家长后台随时能改"
+                        text: Settings.t("onboard.pickAppsHint")
                         font.pixelSize: 16
                         color: "#9B8574"
                     }
@@ -240,10 +374,11 @@ Item {
                     LargeButton {
                         Layout.alignment: Qt.AlignHCenter
                         Layout.preferredWidth: 260
-                        text: "开始使用"
+                        text: Settings.t("onboard.start")
                         onClicked: {
+                            // 只写配置。盖层由 Main.qml 监听 Settings.changed
+                            // 卸掉——这里不碰 StackView（见 Main.qml 顶部注释）。
                             Settings.onboardingDone = true;
-                            StackView.view.replace(null, Qt.resolvedUrl("HomePage.qml"));
                         }
                     }
                 }

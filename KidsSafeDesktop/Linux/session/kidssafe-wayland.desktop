@@ -2,7 +2,8 @@
 Type=Application
 Name=儿童安全桌面
 Comment=给小朋友的安全桌面环境
-Exec=kidssafe-wayland-session
+# 同 kidssafe.desktop：显式给 PATH，保证 /usr/local/bin 能被找到。
+Exec=env PATH=/usr/local/bin:/usr/bin:/bin kidssafe-wayland-session
 TryExec=kidssafe-wayland-session
 Icon=kidssafe
 Terminal=false

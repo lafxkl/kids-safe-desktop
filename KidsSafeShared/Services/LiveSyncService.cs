@@ -131,6 +131,9 @@ public class LiveSyncService : ILiveSyncService
             catch (Exception ex)
             {
                 _status = "重连中…（" + Short(ex.Message) + "）";
+                // 长轮询失败会自动退避重连，但对家长来说就是「改了配置孩子那边没反应」。
+                // 状态栏只显示最后一次错误，历史趋势要靠日志。
+                KidsSafeDesktop.Helpers.AppLog.W("实时下发", "长轮询失败，退避 " + backoff.TotalSeconds.ToString("0") + "s 后重试：" + ex.Message);
                 try { await Task.Delay(backoff, ct).ConfigureAwait(false); }
                 catch { break; }
                 backoff = TimeSpan.FromSeconds(Math.Min(30, backoff.TotalSeconds * 2));

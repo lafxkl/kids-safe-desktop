@@ -1,0 +1,133 @@
+{
+  "_comment": "媒体中心内容表。改内容只改这个文件，不用重新编译（装到 share/kidssafe/audio 即可）。file 是 assets/audio 下的音频；text 是朗读类内容，不占音频文件，由 TTS 念。",
+  "sections": [
+    {
+      "id": "songs",
+      "title": "儿歌音乐盒",
+      "glyph": "music",
+      "accent": "#EF6C8B",
+      "hint": "8 首公有领域童谣，音乐盒音色合成，播完自动接下一首"
+    },
+    {
+      "id": "sleep",
+      "title": "安睡摇篮",
+      "glyph": "moon",
+      "accent": "#5C6BC0",
+      "hint": "雨声 · 海浪 · 白噪音，点开就一直循环"
+    },
+    {
+      "id": "poems",
+      "title": "国学启蒙",
+      "glyph": "book",
+      "accent": "#8D6E63",
+      "hint": "唐诗与三字经，点开跟着念（用系统语音朗读）"
+    }
+  ],
+  "tracks": [
+    {
+      "section": "songs",
+      "title": "小星星",
+      "subtitle": "Twinkle Twinkle Little Star",
+      "file": "song_twinkle.wav"
+    },
+    {
+      "section": "songs",
+      "title": "两只老虎",
+      "subtitle": "Frère Jacques",
+      "file": "song_two_tigers.wav"
+    },
+    {
+      "section": "songs",
+      "title": "生日快乐",
+      "subtitle": "Happy Birthday to You",
+      "file": "song_happy_birthday.wav"
+    },
+    {
+      "section": "songs",
+      "title": "铃儿响叮当",
+      "subtitle": "Jingle Bells",
+      "file": "song_jingle_bells.wav"
+    },
+    {
+      "section": "songs",
+      "title": "新年好",
+      "subtitle": "Happy New Year",
+      "file": "song_new_year.wav"
+    },
+    {
+      "section": "songs",
+      "title": "小蜜蜂",
+      "subtitle": "Little Bee",
+      "file": "song_little_bee.wav"
+    },
+    {
+      "section": "songs",
+      "title": "玛丽有只小羊羔",
+      "subtitle": "Mary Had a Little Lamb",
+      "file": "song_mary_lamb.wav"
+    },
+    {
+      "section": "songs",
+      "title": "伦敦桥",
+      "subtitle": "London Bridge Is Falling Down",
+      "file": "song_london_bridge.wav"
+    },
+    {
+      "section": "sleep",
+      "title": "小雨沙沙",
+      "subtitle": "雨声 · 循环",
+      "file": "amb_rain.wav",
+      "loop": true
+    },
+    {
+      "section": "sleep",
+      "title": "海浪轻轻",
+      "subtitle": "海浪 · 循环",
+      "file": "amb_waves.wav",
+      "loop": true
+    },
+    {
+      "section": "sleep",
+      "title": "白噪音",
+      "subtitle": "安抚 · 循环",
+      "file": "amb_whitenoise.wav",
+      "loop": true
+    },
+    {
+      "section": "poems",
+      "title": "静夜思",
+      "subtitle": "唐 · 李白",
+      "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。"
+    },
+    {
+      "section": "poems",
+      "title": "春晓",
+      "subtitle": "唐 · 孟浩然",
+      "text": "春眠不觉晓，处处闻啼鸟。\n夜来风雨声，花落知多少。"
+    },
+    {
+      "section": "poems",
+      "title": "登鹳雀楼",
+      "subtitle": "唐 · 王之涣",
+      "text": "白日依山尽，黄河入海流。\n欲穷千里目，更上一层楼。"
+    },
+    {
+      "section": "poems",
+      "title": "咏鹅",
+      "subtitle": "唐 · 骆宾王",
+      "text": "鹅，鹅，鹅，曲项向天歌。\n白毛浮绿水，红掌拨清波。"
+    },
+    {
+      "section": "poems",
+      "title": "悯农",
+      "subtitle": "唐 · 李绅",
+      "text": "锄禾日当午，汗滴禾下土。\n谁知盘中餐，粒粒皆辛苦。"
+    },
+    {
+      "section": "poems",
+      "title": "三字经（节选）",
+      "subtitle": "宋 · 王应麟",
+      "text": "人之初，性本善。性相近，习相远。\n苟不教，性乃迁。教之道，贵以专。"
+    }
+  ]
+}

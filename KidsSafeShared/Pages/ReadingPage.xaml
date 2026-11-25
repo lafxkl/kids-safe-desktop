@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.ReadingPage"
+             Title="绘本怎么找"
+             BackgroundColor="#FDF6EE">
+
+    <ScrollView>
+        <!-- 卡片在 code-behind 里拼：条目少、结构一致，
+             比在 XAML 里堆三层 DataTemplate 更好改文案。 -->
+        <VerticalStackLayout x:Name="Host" Padding="16,14,16,30" Spacing="12" />
+    </ScrollView>
+</ContentPage>

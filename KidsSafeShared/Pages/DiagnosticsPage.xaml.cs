@@ -55,8 +55,12 @@ public partial class DiagnosticsPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        AppLog.I("诊断", "打开诊断日志页");
         Refresh();
     }
+
+    /// <summary>当前显示的是不是「运行日志」；false 表示在看 nav.log / crash.log。</summary>
+    private bool _showRuntime = true;
 
     private void Refresh()
     {
@@ -66,7 +70,7 @@ public partial class DiagnosticsPage : ContentPage
             PathLabel.Text = DiagLog.Dir;
             PathHintLabel.Text = DiagLog.IsExternal
                 ? "路径形如 Android/data/<包名>/files/logs（卸载应用时自动清除）"
-                : "当前写在应用内部私有目录，手机文件管理器看不到 —— 请用本页「复制全部」导出。";
+                : "当前写在应用内部私有目录，手机文件管理器看不到 —— 请用本页「复制」或「导出」拿到手。";
             PathHintLabel.IsVisible = true;
 
             // 推送状态
@@ -112,6 +116,28 @@ public partial class DiagnosticsPage : ContentPage
             }
 
             // 日志正文
+            RenderLog();
+        }
+        catch (Exception ex)
+        {
+            LogLabel.Text = "读取失败：" + ex;
+            StatusLabel.Text = "";
+        }
+    }
+
+    /// <summary>按当前 tab 渲染日志正文。</summary>
+    private void RenderLog()
+    {
+        if (_showRuntime)
+        {
+            var text = AppLog.Tail();
+            LogLabel.Text = string.IsNullOrWhiteSpace(text)
+                ? "(运行日志还没有内容 —— 正常使用一会儿再看，启动过程会自动记录)"
+                : text;
+            SizeLabel.Text = $"runtime.log {AppLog.Size / 1024.0:0.#} KB";
+        }
+        else
+        {
             var nav = DiagLog.ReadTail(NavFx.LogFileName);
             var crash = DiagLog.ReadTail("crash.log", 16 * 1024);
 
@@ -123,16 +149,110 @@ public partial class DiagnosticsPage : ContentPage
                 text += "\n======== crash.log ========\n" + crash;
 
             LogLabel.Text = string.IsNullOrWhiteSpace(text) ? "(暂无日志)" : text;
-            StatusLabel.Text = $"nav.log {DiagLog.SizeOf(NavFx.LogFileName) / 1024.0:0.#} KB";
+            SizeLabel.Text = $"nav.log {DiagLog.SizeOf(NavFx.LogFileName) / 1024.0:0.#} KB";
+        }
+
+        TabRuntime.BackgroundColor = _showRuntime ? Color.FromArgb("#00897B") : Color.FromArgb("#37474F");
+        TabRuntime.TextColor = _showRuntime ? Colors.White : Color.FromArgb("#B0BEC5");
+        TabDetail.BackgroundColor = _showRuntime ? Color.FromArgb("#37474F") : Color.FromArgb("#00897B");
+        TabDetail.TextColor = _showRuntime ? Color.FromArgb("#B0BEC5") : Colors.White;
+    }
+
+    private void OnShowRuntime(object sender, EventArgs e)
+    {
+        _showRuntime = true;
+        StatusLabel.Text = "";
+        RenderLog();
+    }
+
+    private void OnShowDetail(object sender, EventArgs e)
+    {
+        _showRuntime = false;
+        StatusLabel.Text = "";
+        RenderLog();
+    }
+
+    private async void OnClearLog(object sender, EventArgs e)
+    {
+        var what = _showRuntime ? "运行日志" : "nav.log / crash.log";
+        if (!await DisplayAlert("清空日志", $"确定清空{what}？清空后就没办法再回看这次的问题了。", "清空", "算了"))
+            return;
+
+        if (_showRuntime)
+        {
+            AppLog.Clear();
+            AppLog.I("诊断", "家长在诊断页清空了运行日志");
+            StatusLabel.Text = "运行日志已清空";
+        }
+        else
+        {
+            try
+            {
+                var a = DiagLog.PathOf(NavFx.LogFileName);
+                if (File.Exists(a)) File.Delete(a);
+                var b = DiagLog.PathOf("crash.log");
+                if (File.Exists(b)) File.Delete(b);
+                StatusLabel.Text = "nav.log / crash.log 已清空";
+            }
+            catch (Exception ex)
+            {
+                StatusLabel.Text = "清空失败：" + ex.Message;
+            }
+        }
+
+        RenderLog();
+    }
+
+    private async void OnExport(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!File.Exists(AppLog.FilePath))
+            {
+                StatusLabel.Text = "还没有运行日志可以导出";
+                return;
+            }
+
+            var name = $"运行日志-{DateTime.Now:yyyyMMdd-HHmm}.log";
+            var dest = Path.Combine(FileSystem.CacheDirectory, name);
+            if (AppLog.ExportTo(dest) is null)
+            {
+                StatusLabel.Text = "导出失败，可以改用「复制」";
+                return;
+            }
+
+#if ANDROID
+            // 走系统分享：微信、邮箱、企业微信都能直接发出去，不需要任何存储权限
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "儿童安全桌面 · 运行日志",
+                File = new ShareFile(dest),
+            });
+            StatusLabel.Text = "已打开分享，选一个应用发出去即可";
+#else
+            // Windows：在资源管理器里直接选中日志文件，拷给开发者最省事
+            var psi = new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{AppLog.FilePath}\"")
+            {
+                UseShellExecute = true,
+            };
+            System.Diagnostics.Process.Start(psi);
+            StatusLabel.Text = "已在资源管理器中定位到 runtime.log";
+            await Task.CompletedTask;
+#endif
         }
         catch (Exception ex)
         {
-            LogLabel.Text = "读取失败：" + ex;
-            StatusLabel.Text = "";
+            // 用户取消分享也会走到这里，不当成错误
+            AppLog.W("诊断", "导出日志未完成：" + ex.Message);
+            StatusLabel.Text = "导出没有完成，可以改用「复制」";
         }
     }
 
-    private void OnRefresh(object sender, EventArgs e) => Refresh();
+    private void OnRefresh(object sender, EventArgs e)
+    {
+        StatusLabel.Text = "";
+        Refresh();
+    }
 
     private async void OnCopy(object sender, EventArgs e)
     {
@@ -141,7 +261,8 @@ public partial class DiagnosticsPage : ContentPage
             var body = "【日志目录】\n" + DiagLog.Dir
                      + "\n\n【推送】\n" + PushLabel.Text
                      + "\n\n【包名/签名】\n" + SignLabel.Text
-                     + "\n\n【日志】\n" + LogLabel.Text;
+                     + "\n\n【运行日志 runtime.log】\n" + AppLog.Tail(32 * 1024)
+                     + "\n\n【页面日志 nav.log】\n" + DiagLog.ReadTail(NavFx.LogFileName, 16 * 1024);
             await Clipboard.SetTextAsync(body);
             StatusLabel.Text = "已复制，粘贴给开发者即可";
         }

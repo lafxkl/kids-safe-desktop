@@ -1,10 +1,17 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import KidsSafe 1.0
 
 Item {
     id: page
+
+    // TapHandler 不是 Item，`Window.window` 附加属性对它返回 null——附加属性
+    // 是靠「item → 所在窗口」反查的，handler 没有窗口归属。所以统一在根 Item
+    // 上取一次窗口，页面里所有跳转都用这个属性；MouseArea、TapHandler、定时器
+    // 里表现一致。（deepin / Qt 6.8 实测：MouseArea 里能用、TapHandler 里必 null）
+    readonly property var navWin: Window.window
 
     Backdrop {
         anchors.fill: parent
@@ -14,10 +21,12 @@ Item {
         anchors.centerIn: parent
         spacing: 22
 
-        Text {
+        GlyphIcon {
             Layout.alignment: Qt.AlignHCenter
-            text: "🌙"
-            font.pixelSize: 96
+            Layout.preferredWidth: 96
+            Layout.preferredHeight: 96
+            name: "moon"
+            color: "#FFC46B"
         }
 
         Text {
@@ -45,7 +54,7 @@ Item {
             Layout.preferredWidth: 280
             text: "家长解锁 15 分钟"
             accentColor: "#B388FF"
-            onClicked: StackView.view.push(Qt.resolvedUrl("ParentGatePage.qml"), {
+            onClicked: page.navWin.pushPage(Qt.resolvedUrl("ParentGatePage.qml"), {
                 "purpose": "extend"
             })
         }

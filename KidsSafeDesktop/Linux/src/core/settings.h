@@ -31,6 +31,34 @@ class Settings : public QObject
     /// 是否允许从家长服务器拉取在线内容（故事 / 补充教材）。
     Q_PROPERTY(bool onlineContentEnabled READ onlineContentEnabled WRITE setOnlineContentEnabled NOTIFY changed)
 
+    // ── 天气 ───────────────────────────────────────────────────
+    // 天气数据来自 Open-Meteo（免密钥、免注册），与家长服务器无关，
+    // 所以单独给一个开关：不想要任何外部请求的家庭可以整块关掉。
+    Q_PROPERTY(bool weatherEnabled READ weatherEnabled WRITE setWeatherEnabled NOTIFY changed)
+    /// "auto" 或留空 = 按出口 IP 定位；其它值当作城市名去地理编码。
+    Q_PROPERTY(QString weatherCity READ weatherCity WRITE setWeatherCity NOTIFY changed)
+
+    // ── 护眼（暖色滤镜）────────────────────────────────────────
+    // 与 C# 端 ChildSettings 的同名字段一一对应，唯一的差别是强度在这里用
+    // 0~100 的整数存（KConfig 里手写 0.55 这种浮点很容易被写成 0 或 0.055，
+    // 家长排查时也不好读）。实际不透明度由 EyeCare 换算，上限 55%。
+    Q_PROPERTY(bool eyeCareEnabled READ eyeCareEnabled WRITE setEyeCareEnabled NOTIFY changed)
+    Q_PROPERTY(int eyeCareIntensity READ eyeCareIntensity WRITE setEyeCareIntensity NOTIFY changed)
+    Q_PROPERTY(bool eyeCareAutoEnabled READ eyeCareAutoEnabled WRITE setEyeCareAutoEnabled NOTIFY changed)
+    Q_PROPERTY(int eyeCareStartHour READ eyeCareStartHour WRITE setEyeCareStartHour NOTIFY changed)
+    Q_PROPERTY(int eyeCareEndHour READ eyeCareEndHour WRITE setEyeCareEndHour NOTIFY changed)
+
+    // ── 语言 ───────────────────────────────────────────────────
+    /// 启动时选的语言：`zh_CN`（默认）或 `en_US`。
+    Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY changed)
+    /// 是否英文界面。QML 里用它决定取哪一套文案（`Settings.t("key")`）。
+    Q_PROPERTY(bool english READ english NOTIFY changed)
+    /// 「故事剧场（吉里吉里）」入口是否允许出现。
+    /// **简体中文模式下故意不出现**：这不是偏好，是内容合规要求 ——
+    /// 吉里吉里游戏绝大多数是成人向视觉小说，中文分发版不能带这个入口。
+    /// 英文模式不限制。
+    Q_PROPERTY(bool vnAllowed READ vnAllowed NOTIFY changed)
+
 public:
     explicit Settings(QObject *parent = nullptr);
 
@@ -58,6 +86,38 @@ public:
 
     bool onlineContentEnabled() const { return m_onlineContentEnabled; }
     void setOnlineContentEnabled(bool value);
+
+    bool weatherEnabled() const { return m_weatherEnabled; }
+    void setWeatherEnabled(bool value);
+
+    QString weatherCity() const { return m_weatherCity; }
+    void setWeatherCity(const QString &value);
+
+    bool eyeCareEnabled() const { return m_eyeCareEnabled; }
+    void setEyeCareEnabled(bool value);
+
+    int eyeCareIntensity() const { return m_eyeCareIntensity; }
+    void setEyeCareIntensity(int value);
+
+    bool eyeCareAutoEnabled() const { return m_eyeCareAutoEnabled; }
+    void setEyeCareAutoEnabled(bool value);
+
+    int eyeCareStartHour() const { return m_eyeCareStartHour; }
+    void setEyeCareStartHour(int value);
+
+    int eyeCareEndHour() const { return m_eyeCareEndHour; }
+    void setEyeCareEndHour(int value);
+
+    QString language() const { return m_language; }
+    void setLanguage(const QString &value);
+
+    bool english() const { return m_language.startsWith(QLatin1String("en"), Qt::CaseInsensitive); }
+
+    bool vnAllowed() const { return english(); }
+
+    /// 取一条两语文案。key 不存在时原样返回 key —— 漏翻译时界面显示的是
+    /// 一个英文 key，比空白或崩溃都好定位。字典在 settings.cpp 里。
+    Q_INVOKABLE QString t(const QString &key) const;
 
     /// 校验家长密码。未设置密码时返回 false（必须先设密码才能进家长后台）。
     Q_INVOKABLE bool verifyPin(const QString &pin) const;
@@ -93,4 +153,16 @@ private:
     QVariantList m_allowedApps;
     QString m_serverUrl;
     bool m_onlineContentEnabled = false;
+    bool m_weatherEnabled = true;
+    QString m_weatherCity = QStringLiteral("auto");
+
+    bool m_eyeCareEnabled = false;
+    int m_eyeCareIntensity = 60;      // 0~100
+    bool m_eyeCareAutoEnabled = false;
+    int m_eyeCareStartHour = 19;
+    int m_eyeCareEndHour = 7;
+
+    /// 界面语言。默认中文：老用户升级上来不会突然变成英文，
+    /// 也不会突然多出一个吉里吉里入口。
+    QString m_language = QStringLiteral("zh_CN");
 };

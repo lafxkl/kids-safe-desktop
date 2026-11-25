@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+#
+# 发行版打包规则（debhelper 13）。
+#
+# 装什么完全由 CMakeLists.txt 的 install() 决定，这里不额外 dw_install：
+#   /usr/bin/kidssafe                        主程序
+#   /usr/bin/kidssafe-session                X11 会话入口（守护 + 崩溃重启）
+#   /usr/bin/kidssafe-wayland-session        Wayland 会话入口
+#   /usr/share/kidssafe/playland             15 款网页小游戏（走文件系统，不进 qrc）
+#   /usr/share/xsessions/*.desktop           登录界面的会话菜单
+#   /usr/share/wayland-sessions/*.desktop
+#   /usr/share/icons/hicolor/scalable/apps/kidssafe.svg
+#
+# 注意别把二进制和会话脚本分开装到不同 package：会话脚本按
+# /usr/local/bin → /usr/bin 的顺序找二进制，拆包只会让「找不到可执行文件」。
+
+%:
+	dh $@ --buildsystem=cmake
+
+# RelWithDebInfo：孩子点一下就要出画面，Release 的 -O2 足够了，但要留调试符号
+# 好让崩溃栈能看。debhelper 默认也是这个，写出来是为了别被环境变量改掉。
+override_dh_auto_configure:
+	dh_auto_configure -- -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+# 没有单元测试。不覆盖的话 dh_auto_test 会跑 ctest，而 ctest 在没有测试时
+# 返回 8（No tests were found），整个打包直接失败。
+override_dh_auto_test:

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>儿童安全桌面 · 宣传片</title>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;width:1920px;height:1080px;overflow:hidden;background:#FDF6EC;}
+  body{font-family:"Microsoft YaHei UI","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+       color:#3A2B22;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;}
+  .stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:#FDF6EC;}
+
+  /* ---------- 通用背景 ---------- */
+  .bgwash{position:absolute;inset:0;background:
+      radial-gradient(900px 620px at 12% 8%, #FFF3DF 0%, rgba(255,243,223,0) 70%),
+      radial-gradient(820px 640px at 92% 92%, #E8F7F5 0%, rgba(232,247,245,0) 72%),
+      linear-gradient(160deg,#FEF9F1 0%,#FDF3E6 52%,#FBF0E3 100%);}
+  .blob{position:absolute;border-radius:50%;filter:blur(70px);will-change:transform;}
+  .b1{width:620px;height:620px;left:-140px;top:520px;background:rgba(242,160,61,.30);}
+  .b2{width:520px;height:520px;right:-80px;top:-140px;background:rgba(47,184,206,.20);}
+  .b3{width:420px;height:420px;right:420px;bottom:-220px;background:rgba(226,96,61,.16);}
+
+  /* ---------- 场景 ---------- */
+  .scene{position:absolute;inset:0;opacity:0;visibility:hidden;will-change:opacity;}
+  .scene.dark{background:radial-gradient(1300px 900px at 50% 42%,#40220F 0%,#241407 48%,#120A05 100%);}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:14px;font-size:22px;font-weight:700;
+    letter-spacing:.22em;color:#C4572F;text-transform:uppercase;}
+  .eyebrow::before{content:"";width:46px;height:3px;border-radius:3px;background:linear-gradient(90deg,#F2A03D,#E2603D);}
+
+  h2{font-size:76px;line-height:1.18;font-weight:800;letter-spacing:-1.5px;margin:22px 0 0;color:#3A2B22;}
+  h2 .ln{display:block;overflow:hidden;}
+  h2 .ln>i{display:block;font-style:normal;will-change:transform,opacity;}
+  .lede{font-size:29px;line-height:1.72;color:#6B5240;margin:26px 0 0;max-width:760px;font-weight:400;}
+  .lede b{color:#3A2B22;font-weight:700;}
+
+  .chips{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap;}
+  .chips span{font-size:21px;font-weight:600;color:#8A4B2C;background:rgba(255,255,255,.86);
+    border:1px solid rgba(226,96,61,.22);padding:11px 22px;border-radius:999px;
+    box-shadow:0 8px 22px -14px rgba(58,43,34,.5);}
+
+  /* ---------- 手机模型 ---------- */
+  .phone{position:relative;border-radius:44px;padding:10px;
+    background:linear-gradient(158deg,#3A2A1E 0%,#181009 48%,#2A1B12 100%);
+    box-shadow:0 46px 90px -26px rgba(58,43,34,.55),
+               0 12px 28px -12px rgba(58,43,34,.4),
+               inset 0 0 0 1.5px rgba(255,255,255,.16);}
+  .phone .scr{border-radius:35px;overflow:hidden;background:#fff;position:relative;aspect-ratio:540/1150;}
+  .phone .scr img{display:block;width:100%;height:100%;object-fit:cover;}
+  .phone .glare{position:absolute;inset:0;border-radius:35px;pointer-events:none;
+    background:linear-gradient(122deg,rgba(255,255,255,.30) 0%,rgba(255,255,255,0) 34%,rgba(255,255,255,0) 68%,rgba(255,255,255,.10) 100%);}
+  .shadowpad{position:absolute;border-radius:50%;background:rgba(58,43,34,.22);filter:blur(34px);}
+
+  /* ---------- 品牌角标 ---------- */
+  .brandmark{position:absolute;left:150px;top:58px;display:flex;align-items:center;gap:14px;opacity:0;}
+  .brandmark img{width:44px;height:44px;border-radius:12px;box-shadow:0 8px 18px -8px rgba(58,43,34,.6);}
+  .brandmark b{font-size:24px;font-weight:800;letter-spacing:.02em;color:#4A3628;}
+
+  /* ---------- 进度条 ---------- */
+  .progress{position:absolute;left:0;bottom:0;height:4px;width:0;
+    background:linear-gradient(90deg,#F2A03D,#E2603D);opacity:.55;border-radius:0 4px 4px 0;}
+
+  /* ================= S1 / S8 ================= */
+  .s1rings{position:absolute;left:50%;top:50%;width:1240px;height:1240px;margin:-620px 0 0 -620px;opacity:.5;}
+  .s1rings circle{fill:none;stroke:rgba(242,160,61,.28);stroke-width:1.4;}
+  .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .logohero{width:150px;height:150px;border-radius:38px;box-shadow:0 40px 90px -24px rgba(242,160,61,.65),
+             0 0 0 1px rgba(255,255,255,.12);}
+  .h1{font-size:112px;font-weight:800;letter-spacing:2px;margin:40px 0 0;color:#FFF6EA;line-height:1.05;}
+  .h1 .ln{display:block;overflow:hidden;}
+  .h1 .ln>i{display:block;font-style:normal;background:linear-gradient(96deg,#FFE9CD 0%,#FFC07A 46%,#FF9F6B 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .sub1{font-size:36px;color:#E9C7A6;margin-top:26px;letter-spacing:.06em;font-weight:400;}
+  .chips-dark{display:flex;gap:16px;margin-top:52px;}
+  .chips-dark span{font-size:22px;font-weight:600;color:#FFD9B7;border:1px solid rgba(255,180,120,.34);
+    background:rgba(255,160,90,.09);padding:12px 26px;border-radius:999px;letter-spacing:.04em;}
+  .meta1{position:absolute;left:0;right:0;bottom:74px;text-align:center;font-size:21px;color:rgba(255,220,190,.62);letter-spacing:.14em;}
+
+  /* ================= S2 ================= */
+  .s2-l{position:absolute;left:150px;top:300px;width:780px;}
+  .s2-phone-wrap{position:absolute;left:1210px;top:120px;width:430px;}
+
+  /* ================= S3 ================= */
+  .s3-head{position:absolute;left:0;right:0;top:96px;text-align:center;}
+  .s3-head h2{font-size:66px;margin-top:16px;}
+  .s3-row{position:absolute;left:0;right:0;top:300px;height:760px;display:flex;justify-content:center;align-items:flex-end;gap:96px;}
+  .s3-item{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:auto;}
+  .s3-cap{margin-top:28px;text-align:center;white-space:nowrap;}
+  .s3-cap b{font-size:28px;font-weight:800;color:#3A2B22;}
+  .s3-cap i{font-style:normal;font-size:20px;color:#8A6C57;margin-left:14px;letter-spacing:.02em;}
+
+  /* ================= S4 ================= */
+  .s4-l{position:absolute;left:150px;top:222px;width:740px;}
+  .s4-ring{position:absolute;left:1035px;top:190px;width:700px;height:700px;display:flex;align-items:center;justify-content:center;}
+  .s4-ring svg{position:absolute;inset:0;}
+  .ringnum{font-size:104px;font-weight:800;letter-spacing:-2px;color:#3A2B22;font-variant-numeric:tabular-nums;}
+  .ringlab{font-size:24px;color:#8A6C57;margin-top:10px;letter-spacing:.1em;}
+  .rows{margin-top:44px;display:flex;flex-direction:column;gap:18px;}
+  .row{display:flex;align-items:center;gap:20px;background:rgba(255,255,255,.82);border-radius:20px;
+    padding:20px 26px;box-shadow:0 16px 36px -26px rgba(58,43,34,.75);border:1px solid rgba(226,96,61,.10);}
+  .row .ico{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(140deg,#FFEBD3,#FFD9BE);flex:0 0 auto;}
+  .row b{display:block;font-size:25px;font-weight:800;}
+  .row i{display:block;font-style:normal;font-size:19px;color:#8A6C57;margin-top:5px;}
+
+  /* ================= S5 ================= */
+  .s5-head{position:absolute;left:0;right:0;top:118px;text-align:center;}
+  .s5-head h2{font-size:72px;}
+  .s5-grid{position:absolute;left:0;right:0;top:336px;display:flex;justify-content:center;gap:30px;}
+  .card{width:372px;height:404px;border-radius:30px;background:rgba(255,255,255,.92);
+    box-shadow:0 34px 70px -40px rgba(58,43,34,.85),inset 0 0 0 1px rgba(226,96,61,.10);
+    padding:44px 36px;display:flex;flex-direction:column;align-items:flex-start;}
+  .card .ci{width:88px;height:88px;border-radius:24px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(140deg,#FFF0DC,#FFDDC2);margin-bottom:34px;}
+  .card h3{font-size:34px;font-weight:800;margin:0 0 16px;letter-spacing:.01em;}
+  .card p{font-size:21px;line-height:1.62;color:#7C6353;margin:0;}
+  .s5-foot{position:absolute;left:0;right:0;top:800px;text-align:center;font-size:22px;color:#8A6C57;letter-spacing:.03em;}
+  .s5-foot b{color:#3A2B22;font-weight:700;}
+
+  /* ================= S6 ================= */
+  .s6-l{position:absolute;left:150px;top:168px;width:1100px;}
+  .bars{margin-top:52px;}
+  .bar-row{display:flex;align-items:center;gap:26px;margin-bottom:30px;}
+  .bar-row .tag{width:124px;font-size:23px;font-weight:700;color:#8A6C57;}
+  .bar-track{position:relative;width:880px;height:64px;border-radius:14px;background:rgba(58,43,34,.07);overflow:hidden;}
+  .bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:14px;width:0;}
+  .f1{background:linear-gradient(90deg,#CFBBA9,#B7A08C);}
+  .f2{background:linear-gradient(90deg,#F2A03D,#E2603D);box-shadow:0 10px 26px -10px rgba(226,96,61,.7);}
+  .bar-val{position:absolute;right:22px;top:50%;transform:translateY(-50%);font-size:23px;font-weight:800;color:#fff;}
+  .bar-val.dark{color:#8A6C57;}
+  .s6-r{position:absolute;right:150px;top:300px;width:420px;text-align:right;}
+  .delta{font-size:96px;font-weight:800;letter-spacing:-3px;line-height:1;
+    background:linear-gradient(96deg,#F2A03D,#E2603D);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .delta-lab{font-size:22px;color:#8A6C57;letter-spacing:.12em;margin-top:16px;}
+  .s6-note{margin-top:32px;font-size:21px;line-height:1.9;color:#8A6C57;max-width:400px;margin-left:auto;}
+  .s6-stats{position:absolute;left:150px;right:150px;bottom:104px;display:flex;gap:28px;}
+  .stat{flex:1;background:rgba(255,255,255,.9);border-radius:20px;padding:26px 30px;
+    box-shadow:0 22px 44px -32px rgba(58,43,34,.8);border:1px solid rgba(226,96,61,.10);}
+  .stat b{display:block;font-size:20px;color:#8A6C57;font-weight:600;letter-spacing:.04em;}
+  .stat span{display:block;font-size:27px;font-weight:800;color:#3A2B22;margin-top:10px;letter-spacing:.01em;}
+  .stat span em{font-style:normal;color:#C4572F;}
+
+  /* ================= S7 ================= */
+  .s7-l{position:absolute;left:150px;top:286px;width:900px;}
+  .url{font-size:70px;font-weight:800;letter-spacing:-1px;margin-top:26px;
+    background:linear-gradient(96deg,#E2603D,#F2A03D);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .qrwrap{position:absolute;right:210px;top:300px;width:360px;background:#fff;border-radius:30px;padding:28px;
+    box-shadow:0 40px 80px -34px rgba(58,43,34,.8),inset 0 0 0 1px rgba(226,96,61,.12);}
+  .qrwrap img{display:block;width:304px;height:304px;}
+  .qrwrap span{display:block;text-align:center;font-size:19px;color:#8A6C57;margin-top:14px;letter-spacing:.1em;}
+  .s7-steps{position:absolute;left:150px;right:150px;bottom:112px;display:flex;gap:26px;}
+  .step{flex:1;display:flex;align-items:center;gap:20px;background:rgba(255,255,255,.88);border-radius:22px;
+    padding:26px 30px;box-shadow:0 24px 48px -34px rgba(58,43,34,.85);border:1px solid rgba(226,96,61,.10);}
+  .step .n{width:48px;height:48px;border-radius:50%;flex:0 0 auto;color:#fff;font-weight:800;font-size:22px;
+    display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#F2A03D,#E2603D);}
+  .step b{display:block;font-size:23px;font-weight:800;color:#3A2B22;}
+  .step i{display:block;font-style:normal;font-size:18px;color:#8A6C57;margin-top:5px;}
+
+  /* ============ S7b 平台合规版：功能纵览，不含任何站外链接 / 二维码 / 账号 ============ */
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;margin-top:40px;width:880px;}
+  .fitem{background:rgba(255,255,255,.9);border-radius:18px;padding:20px 24px;
+    box-shadow:0 20px 40px -32px rgba(58,43,34,.8);border:1px solid rgba(226,96,61,.10);}
+  .fitem b{display:block;font-size:25px;font-weight:800;color:#3A2B22;}
+  .fitem i{display:block;font-style:normal;font-size:18px;color:#8A6C57;margin-top:7px;line-height:1.45;}
+  .s7b-phone{position:absolute;right:168px;top:206px;width:340px;}
+
+  /* ================= S8 ================= */
+  .s8url{margin-top:46px;font-size:30px;color:#FFC79A;letter-spacing:.16em;}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <!-- 背景 -->
+  <div class="bgwash" id="bgwash"></div>
+  <div class="blob b1" id="blob1"></div>
+  <div class="blob b2" id="blob2"></div>
+  <div class="blob b3" id="blob3"></div>
+
+  <!-- 品牌角标 -->
+  <div class="brandmark" id="brand">
+    <img src="assets/icon.png" alt="">
+    <b>儿童安全桌面</b>
+  </div>
+
+  <!-- ============ S1 开场 ============ -->
+  <section class="scene dark" id="s1">
+    <svg class="s1rings" id="rings" viewBox="0 0 1240 1240">
+      <circle cx="620" cy="620" r="300"/>
+      <circle cx="620" cy="620" r="430"/>
+      <circle cx="620" cy="620" r="560"/>
+    </svg>
+    <div class="center">
+      <img class="logohero" id="hero-logo" src="assets/icon.png" alt="">
+      <h1 class="h1" id="hero-title" style="margin-top:40px">
+        <span class="ln"><i>儿童安全桌面</i></span>
+      </h1>
+      <p class="sub1" id="hero-sub">给孩子一个安全又好玩的成长空间</p>
+      <div class="chips-dark" id="hero-chips">
+        <span>无广告</span><span>无外链</span><span>离线可玩</span><span>家长可控</span>
+      </div>
+    </div>
+    <div class="meta1" id="hero-meta">v1.20　·　ANDROID / WINDOWS　·　GITEE 开源</div>
+  </section>
+
+  <!-- ============ S2 桌面入口 ============ -->
+  <section class="scene" id="s2">
+    <div class="s2-l">
+      <div class="eyebrow" id="s2-eb">01 · 桌面式入口</div>
+      <h2 id="s2-h2">
+        <span class="ln"><i>一块桌面，</i></span>
+        <span class="ln"><i>孩子一看就会</i></span>
+      </h2>
+      <p class="lede" id="s2-p">首页就是桌面：<b>圆角图标 + 名称</b>，点一点就能玩、能学。手机、折叠屏、平板自动排出更多列，小手里的第一块屏幕，长成他熟悉的样子。</p>
+      <div class="chips" id="s2-chips">
+        <span>圆角大图标</span><span>图标带名称</span><span>平板自适应</span>
+      </div>
+    </div>
+    <div class="s2-phone-wrap">
+      <div class="shadowpad" id="s2-shadow" style="left:-40px;right:-40px;bottom:-52px;height:80px;"></div>
+      <div class="phone" id="s2-phone" style="width:430px">
+        <div class="scr"><img src="assets/home.png" alt=""><div class="glare"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S3 学习与游戏 ============ -->
+  <section class="scene" id="s3">
+    <div class="s3-head">
+      <div class="eyebrow" id="s3-eb">02 · 学习与游戏</div>
+      <h2 id="s3-h2"><span class="ln"><i>学得进去，也玩得开心</i></span></h2>
+    </div>
+    <div class="s3-row">
+      <div class="s3-item">
+        <div class="phone" id="s3p0" style="width:280px">
+          <div class="scr"><img src="assets/learn.png" alt=""><div class="glare"></div></div>
+        </div>
+        <div class="s3-cap" id="s3c0"><b>学习天地</b><i>口算 · 古诗 · 模拟考</i></div>
+      </div>
+      <div class="s3-item">
+        <div class="phone" id="s3p1" style="width:320px">
+          <div class="scr"><img src="assets/games.png" alt=""><div class="glare"></div></div>
+        </div>
+        <div class="s3-cap" id="s3c1"><b>小游戏乐园</b><i>21 款益智游戏</i></div>
+      </div>
+      <div class="s3-item">
+        <div class="phone" id="s3p2" style="width:280px">
+          <div class="scr"><img src="assets/player.png" alt=""><div class="glare"></div></div>
+        </div>
+        <div class="s3-cap" id="s3c2"><b>听一听</b><i>儿歌故事 · 连播</i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S4 家长守护 ============ -->
+  <section class="scene" id="s4">
+    <div class="s4-l">
+      <div class="eyebrow" id="s4-eb">03 · 家长守护</div>
+      <h2 id="s4-h2">
+        <span class="ln"><i>到点就休息，</i></span>
+        <span class="ln"><i>退出要密码</i></span>
+      </h2>
+      <div class="rows">
+        <div class="row" id="s4r0">
+          <div class="ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="3"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/><circle cx="12" cy="15.6" r="1.5" fill="#C4572F" stroke="none"/></svg></div>
+          <div><b>独立家长锁</b><i>退出儿童模式必须家长鉴权，孩子自己退不出去</i></div>
+        </div>
+        <div class="row" id="s4r1">
+          <div class="ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12.6" r="8"/><path d="M12 8.4v4.2l2.8 1.8"/><path d="M9 3h6"/></svg></div>
+          <div><b>每日屏幕时长</b><i>自己定多久，到点自动进入休息页</i></div>
+        </div>
+        <div class="row" id="s4r2">
+          <div class="ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h10M18 8h2M4 16h4M12 16h8"/><circle cx="16" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/></svg></div>
+          <div><b>内容开关</b><i>小游戏与各类应用按需开关，设置只留在这台设备</i></div>
+        </div>
+      </div>
+    </div>
+    <div class="s4-ring">
+      <svg viewBox="0 0 700 700">
+        <circle cx="350" cy="350" r="272" fill="none" stroke="rgba(58,43,34,.08)" stroke-width="26"/>
+        <circle id="ring-arc" cx="350" cy="350" r="272" fill="none" stroke="url(#rg)" stroke-width="26"
+                stroke-linecap="round" transform="rotate(-90 350 350)"
+                stroke-dasharray="1709" stroke-dashoffset="0"/>
+        <defs>
+          <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F2A03D"/><stop offset="100%" stop-color="#E2603D"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div style="text-align:center">
+        <div class="ringnum" id="ringnum">30:00</div>
+        <div class="ringlab">今日剩余可用时长</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S5 安全底线 ============ -->
+  <section class="scene" id="s5">
+    <div class="s5-head">
+      <div class="eyebrow" id="s5-eb">04 · 安全底线</div>
+      <h2 id="s5-h2"><span class="ln"><i>安全，是底线</i></span></h2>
+    </div>
+    <div class="s5-grid">
+      <div class="card" id="c0">
+        <div class="ci"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4"/><path d="M6 6l12 12"/></svg></div>
+        <h3>无广告</h3><p>不含任何第三方广告 SDK，不弹窗、不诱导点击。</p>
+      </div>
+      <div class="card" id="c1">
+        <div class="ci"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 13.7a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 1 0-5.7-5.7L11.6 6.7"/><path d="M13.7 10.3a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 1 0 5.7 5.7l1.3-1.3"/><path d="M4 20L20 4"/></svg></div>
+        <h3>无外链</h3><p>内容都在应用内加载，不会跳到陌生网页。</p>
+      </div>
+      <div class="card" id="c2">
+        <div class="ci"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.8a13 13 0 0 1 18 0"/><path d="M6.4 12.3a8.6 8.6 0 0 1 11.2 0"/><path d="M9.6 15.7a4.3 4.3 0 0 1 4.8 0"/><circle cx="12" cy="19" r="1" fill="#C4572F" stroke="none"/><path d="M4 20L20 4"/></svg></div>
+        <h3>离线可玩</h3><p>儿歌、故事、实验、小游戏断网也能用。</p>
+      </div>
+      <div class="card" id="c3">
+        <div class="ci"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#C4572F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.2 3v6c0 4.4-3 7.6-7.2 9-4.2-1.4-7.2-4.6-7.2-9V6z"/><path d="M8.8 12.1l2.3 2.3 4-4.3"/></svg></div>
+        <h3>纯净环境</h3><p>无社交、无支付、无陌生人联系。</p>
+      </div>
+    </div>
+    <div class="s5-foot" id="s5-foot">所有设置只保存在本机　·　<b>不上传任何儿童个人信息</b></div>
+  </section>
+
+  <!-- ============ S6 体积 ============ -->
+  <section class="scene" id="s6">
+    <div class="s6-l">
+      <div class="eyebrow" id="s6-eb">05 · v1.20 更新</div>
+      <h2 id="s6-h2">
+        <span class="ln"><i>包更小了，</i></span>
+        <span class="ln"><i>功能一个没少</i></span>
+      </h2>
+      <div class="bars">
+        <div class="bar-row">
+          <div class="tag">v1.19</div>
+          <div class="bar-track"><div class="bar-fill f1" id="bar1"></div><div class="bar-val" id="val1">116 MB</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="tag" style="color:#C4572F">v1.20</div>
+          <div class="bar-track"><div class="bar-fill f2" id="bar2"></div><div class="bar-val dark" id="val2">93 MB</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="s6-r">
+      <div class="delta" id="delta">−23 MB</div>
+      <div class="delta-lab" id="deltalab">比上一版更小</div>
+      <div class="s6-note" id="s6n3">没有砍掉功能：去掉的是永远用不到的运行时诊断组件。</div>
+    </div>
+    <div class="s6-stats">
+      <div class="stat" id="st0"><b>Android APK</b><span>116 MB <em>→</em> 93 MB</span></div>
+      <div class="stat" id="st1"><b>Windows 安装版</b><span>138 MB <em>→</em> 111 MB</span></div>
+      <div class="stat" id="st2"><b>Windows 免安装版</b><span>166 MB <em>→</em> 140 MB</span></div>
+    </div>
+  </section>
+
+  <!-- ============ S7 下载 ============ -->
+  <section class="scene" id="s7">
+    <div class="s7-l">
+      <div class="eyebrow" id="s7-eb">06 · 立即下载</div>
+      <h2 id="s7-h2">
+        <span class="ln"><i>现在就能装上</i></span>
+      </h2>
+      <div class="url" id="s7-url">kids.siguangblog.cc</div>
+      <div class="chips" id="s7-chips">
+        <span>Android 手机 / 折叠屏 / 平板</span><span>Windows 桌面版</span><span>永久免费 · 无广告</span>
+      </div>
+      <p class="lede" id="s7-note" style="margin-top:34px;font-size:24px;color:#8A6C57">扫码直达官网下载页，安装包由开发者直接提供，不经第三方市场。</p>
+    </div>
+    <div class="qrwrap" id="s7-qr">
+      <img src="qr-site.png" alt="">
+      <span>扫码下载</span>
+    </div>
+    <div class="s7-steps">
+      <div class="step" id="stp0"><div class="n">1</div><div><b>下载安装包</b><i>手机浏览器打开官网直接下</i></div></div>
+      <div class="step" id="stp1"><div class="n">2</div><div><b>允许未知来源</b><i>安卓首次安装需在设置里放行</i></div></div>
+      <div class="step" id="stp2"><div class="n">3</div><div><b>打开就能玩</b><i>不登录、不注册、不收集信息</i></div></div>
+    </div>
+  </section>
+
+  <!-- ============ S7b 还有更多（平台合规版，无站外链接/二维码/账号） ============ -->
+  <section class="scene" id="s7b">
+    <div class="s7-l" style="top:214px">
+      <div class="eyebrow" id="s7b-eb">06 · 还有更多</div>
+      <h2 id="s7b-h2"><span class="ln"><i>不止桌面这一屏</i></span></h2>
+      <div class="fgrid">
+        <div class="fitem" id="f0"><b>电子课本</b><i>语文 24 册 · 数学 106 册</i></div>
+        <div class="fitem" id="f1"><b>模拟考试</b><i>21 套期末卷 · 252 道题</i></div>
+        <div class="fitem" id="f2"><b>无限想象</b><i>说一句心愿，织成睡前故事</i></div>
+        <div class="fitem" id="f3"><b>我的日记</b><i>孩子自己的密码本，离开就上锁</i></div>
+        <div class="fitem" id="f4"><b>关爱中心</b><i>视障 / 听障 / 社交情绪训练</i></div>
+        <div class="fitem" id="f5"><b>成长指南</b><i>0-15 岁家长长文，离线内置</i></div>
+      </div>
+    </div>
+    <div class="s7b-phone">
+      <div class="phone" id="s7b-phone" style="width:340px">
+        <div class="scr"><img src="assets/science.png" alt=""><div class="glare"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S8 收尾 ============ -->
+  <section class="scene dark" id="s8">
+    <div class="center">
+      <img class="logohero" id="s8-logo" src="assets/icon.png" alt="" style="width:128px;height:128px;border-radius:32px">
+      <h1 class="h1" id="s8-title" style="font-size:86px;margin-top:34px">
+        <span class="ln"><i>儿童安全桌面</i></span>
+      </h1>
+      <p class="sub1" id="s8-sub" style="font-size:30px">给孩子一个安全又好玩的成长空间</p>
+      <div class="s8url" id="s8-url">kids.siguangblog.cc</div>
+      <div id="s8-from" style="margin-top:26px;font-size:21px;color:rgba(255,205,165,.62);letter-spacing:.16em">GITEE 开源　·　永久免费　·　无广告</div>
+    </div>
+  </section>
+
+  <div class="progress" id="prog"></div>
+</div>
+
+<script>
+const DUR = 46.4;
+const $ = s => document.querySelector(s);
+const clamp=(x,a=0,b=1)=>x<a?a:(x>b?b:x);
+const seg=(t,a,b)=>b<=a?(t>=b?1:0):clamp((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const back=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+
+/* 模式：site = 官网自用（含网址与二维码）；platform = 平台投放（无任何站外链接/二维码/账号） */
+const MODE = (new URLSearchParams(location.search).get('mode')||'site');
+const S7ID = MODE==='platform' ? 's7b' : 's7';
+
+/* 场景进出 */
+const SC = [
+  ['s1',0.0,4.9],['s2',4.9,11.5],['s3',11.5,18.3],['s4',18.3,24.9],
+  ['s5',24.9,30.9],['s6',30.9,37.1],[S7ID,37.1,42.7],['s8',42.7,46.4]
+];
+const scenes = SC.map(([id,a,b])=>({id,a,b,el:document.getElementById(id)}));
+
+/* 非当前模式的那一屏永久隐藏 */
+document.getElementById(MODE==='platform'?'s7':'s7b').style.display='none';
+
+/* 平台版替换掉带站外信息的文案 */
+if(MODE==='platform'){
+  document.getElementById('hero-meta').textContent='v1.20　·　ANDROID / WINDOWS　·　永久免费';
+  document.getElementById('s8-from').textContent='永久免费　·　无广告　·　不收集儿童信息';
+  document.getElementById('s8-url').style.display='none';
+}
+
+function sceneOpacity(t,s){
+  const fin=0.55,fout=0.55,ov=0.28;
+  return clamp(Math.min(seg(t,s.a-ov,s.a-ov+fin), 1-seg(t,s.b-ov,s.b-ov+fout)));
+}
+function lines(el,t,start,stagger=0.1,dur=0.62){
+  const inns=el.querySelectorAll('.ln>i');
+  inns.forEach((inn,i)=>{
+    const e=eo(seg(t,start+i*stagger,start+i*stagger+dur));
+    inn.style.transform=`translateY(${(1-e)*104}%)`;
+    inn.style.opacity=e;
+  });
+}
+function fade(el,t,start,dur=0.55,dy=26){
+  const e=eo(seg(t,start,start+dur));
+  el.style.opacity=e;
+  el.style.transform=`translateY(${(1-e)*dy}px)`;
+}
+
+/* 手机入场 */
+function enterPhone(el,t,start,cfg){
+  const {dy=280,dz=0,ry=0,endRy=0,s0=0.9} = cfg||{};
+  const e=eo(seg(t,start,start+1.0));
+  const fl=Math.sin((t-start)*1.15)*6*e;
+  el.style.opacity=clamp(seg(t,start,start+0.5));
+  el.style.transform=`perspective(1700px) translate3d(0,${(1-e)*dy+fl}px,${(1-e)*dz}px)`
+    +` rotateY(${ry+(endRy-ry)*e}deg) rotateX(1.4deg) scale(${s0+(1-s0)*e})`;
+}
+
+function render(t){
+  /* 背景缓慢漂移 */
+  $('#blob1').style.transform=`translate(${Math.sin(t*0.35)*26}px,${Math.cos(t*0.3)*30}px)`;
+  $('#blob2').style.transform=`translate(${Math.cos(t*0.28)*30}px,${Math.sin(t*0.33)*26}px)`;
+  $('#blob3').style.transform=`translate(${Math.sin(t*0.24+1)*34}px,${Math.cos(t*0.27)*22}px)`;
+
+  /* 场景显隐 */
+  scenes.forEach(s=>{
+    const o=sceneOpacity(t,s);
+    s.el.style.opacity=o;
+    s.el.style.visibility=o>0.002?'visible':'hidden';
+    s.el.style.display=(t>s.a-0.3&&t<s.b+0.3)?'block':'none';
+    /* 缓慢推镜，避免长镜头完全静止 */
+    const p=clamp((t-s.a)/(s.b-s.a));
+    s.el.style.transform=`scale(${(1.004+0.024*p).toFixed(5)})`;
+  });
+
+  /* 品牌角标 */
+  const bo=clamp(Math.min(seg(t,5.3,5.9),1-seg(t,42.4,42.9)));
+  $('#brand').style.opacity=bo*0.9;
+  $('#brand').style.transform=`translateY(${(1-bo)*10}px)`;
+
+  /* 进度条 */
+  $('#prog').style.width=(t/DUR*1920)+'px';
+
+  /* ---- S1 ---- */
+  if(t<5.1){
+    const e=back(seg(t,0.30,1.35));
+    $('#hero-logo').style.opacity=clamp(seg(t,0.30,0.85));
+    $('#hero-logo').style.transform=`scale(${0.62+0.38*e}) rotate(${(1-e)*-8}deg)`;
+    $('#rings').style.transform=`rotate(${t*3.2}deg) scale(${0.96+e*0.04})`;
+    $('#rings').style.opacity=0.35*clamp(seg(t,0.6,2.2));
+    lines($('#hero-title'),t,1.15,0.10);
+    fade($('#hero-sub'),t,1.78,0.6,20);
+    [...$('#hero-chips').children].forEach((c,i)=>fade(c,t,2.16+i*0.09,0.5,14));
+    fade($('#hero-meta'),t,2.75,0.6,12);
+  }
+
+  /* ---- S2 ---- */
+  if(t>4.6&&t<11.8){
+    fade($('#s2-eb'),t,5.06,0.5,16);
+    lines($('#s2-h2'),t,5.22,0.11);
+    fade($('#s2-p'),t,5.62,0.6,24);
+    [...$('#s2-chips').children].forEach((c,i)=>fade(c,t,5.90+i*0.09,0.5,16));
+    enterPhone($('#s2-phone'),t,5.40,{dy:300,dz:-160,ry:4,endRy:-10,s0:0.88});
+    $('#s2-shadow').style.opacity=clamp(seg(t,5.9,6.8))*0.9;
+  }
+
+  /* ---- S3 ---- */
+  if(t>11.2&&t<18.6){
+    fade($('#s3-eb'),t,11.66,0.5,16);
+    lines($('#s3-h2'),t,11.80,0.1);
+    [['s3p0','s3c0'],['s3p1','s3c1'],['s3p2','s3c2']].forEach((p,i)=>{
+      const st=12.02+i*0.15;
+      enterPhone($('#'+p[0]),t,st,{dy:250,dz:-120,ry:(i-1)*3,endRy:(i-1)*4.5,s0:0.9});
+      fade($('#'+p[1]),t,st+0.42,0.55,18);
+    });
+  }
+
+  /* ---- S4 ---- */
+  if(t>18.0&&t<25.2){
+    fade($('#s4-eb'),t,18.46,0.5,16);
+    lines($('#s4-h2'),t,18.60,0.11);
+    ['s4r0','s4r1','s4r2'].forEach((id,i)=>fade($('#'+id),t,19.10+i*0.13,0.6,26));
+    const r=seg(t,18.85,24.55);
+    const remain=1-r*0.78;
+    const C=2*Math.PI*272;
+    $('#ring-arc').setAttribute('stroke-dashoffset',(C*(1-remain)).toFixed(1));
+    const secs=Math.round(1800*remain);
+    $('#ringnum').textContent=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');
+    const pr=back(seg(t,18.55,19.35));
+    $('#s4-eb').style.opacity*=1;
+    const wrap=$('#s4-ring')||null;
+  }
+
+  /* ---- S5 ---- */
+  if(t>24.6&&t<31.2){
+    fade($('#s5-eb'),t,25.02,0.5,16);
+    lines($('#s5-h2'),t,25.16,0.1);
+    ['c0','c1','c2','c3'].forEach((id,i)=>{
+      const st=25.42+i*0.12;
+      const e=eo(seg(t,st,st+0.72));
+      const el=$('#'+id);
+      el.style.opacity=e;
+      el.style.transform=`translateY(${(1-e)*70}px) scale(${0.93+0.07*e})`;
+    });
+    fade($('#s5-foot'),t,26.15,0.6,16);
+  }
+
+  /* ---- S6 ---- */
+  if(t>30.6&&t<37.4){
+    fade($('#s6-eb'),t,31.06,0.5,16);
+    lines($('#s6-h2'),t,31.20,0.11);
+    const bw1=eio(seg(t,31.62,32.55))*880;
+    const bw2=eio(seg(t,31.86,32.95))*704;
+    $('#bar1').style.width=bw1+'px';
+    $('#bar2').style.width=bw2+'px';
+    $('#val1').style.opacity=clamp(seg(t,31.95,32.45));
+    $('#val2').style.opacity=clamp(seg(t,32.25,32.75));
+    const de=back(seg(t,32.85,33.65));
+    $('#delta').style.opacity=clamp(seg(t,32.85,33.2));
+    $('#delta').style.transform=`scale(${0.55+0.45*de})`;
+    fade($('#deltalab'),t,33.15,0.5,14);
+    fade($('#s6n3'),t,33.35,0.55,18);
+    ['st0','st1','st2'].forEach((id,i)=>{
+      const st=33.55+i*0.1;
+      const e=eo(seg(t,st,st+0.6));
+      const el=$('#'+id);
+      el.style.opacity=e;
+      el.style.transform=`translateY(${(1-e)*26}px)`;
+    });
+  }
+
+  /* ---- S7（官网版：网址 + 二维码 + 安装步骤） ---- */
+  if(MODE==='site' && t>36.9 && t<43.0){
+    fade($('#s7-eb'),t,37.36,0.5,16);
+    lines($('#s7-h2'),t,37.50,0.1);
+    const ue=back(seg(t,37.72,38.5));
+    $('#s7-url').style.opacity=clamp(seg(t,37.72,38.1));
+    $('#s7-url').style.transform=`translateY(${(1-ue)*18}px) scale(${0.92+0.08*ue})`;
+    [...$('#s7-chips').children].forEach((c,i)=>fade(c,t,38.15+i*0.09,0.5,16));
+    fade($('#s7-note'),t,38.5,0.55,16);
+    const qe=eo(seg(t,37.95,38.85));
+    const q=$('#s7-qr');
+    q.style.opacity=qe;
+    q.style.transform=`translateY(${(1-qe)*40}px) scale(${0.9+0.1*qe}) rotate(${(1-qe)*-4}deg)`;
+    ['stp0','stp1','stp2'].forEach((id,i)=>{
+      const st=38.35+i*0.1;
+      const e=eo(seg(t,st,st+0.6));
+      const el=$('#'+id);
+      el.style.opacity=e;
+      el.style.transform=`translateY(${(1-e)*30}px)`;
+    });
+  }
+
+  /* ---- S7b（平台版：功能纵览，无站外信息） ---- */
+  if(MODE==='platform' && t>36.9 && t<43.0){
+    fade($('#s7b-eb'),t,37.36,0.5,16);
+    lines($('#s7b-h2'),t,37.50,0.1);
+    ['f0','f1','f2','f3','f4','f5'].forEach((id,i)=>{
+      const st=37.80+i*0.10;
+      const e=eo(seg(t,st,st+0.6));
+      const el=$('#'+id);
+      el.style.opacity=e;
+      el.style.transform=`translateY(${(1-e)*26}px)`;
+    });
+    enterPhone($('#s7b-phone'),t,37.86,{dy:220,dz:-120,ry:3,endRy:-7,s0:0.92});
+  }
+
+  /* ---- S8 ---- */
+  if(t>42.5){
+    const e=back(seg(t,42.88,43.7));
+    $('#s8-logo').style.opacity=clamp(seg(t,42.88,43.35));
+    $('#s8-logo').style.transform=`scale(${0.8+0.2*e})`;
+    lines($('#s8-title'),t,43.08,0.1);
+    fade($('#s8-sub'),t,43.44,0.6,20);
+    fade($('#s8-url'),t,43.78,0.6,14);
+    fade($('#s8-from'),t,44.05,0.6,12);
+  }
+
+  /* 结尾淡出 */
+  if(t>45.9){
+    const k=seg(t,45.9,DUR);
+    $('#stage').style.opacity=1-k*0.9;
+  }else{
+    $('#stage').style.opacity=1;
+  }
+}
+
+window.render=render;
+window.DUR=DUR;
+render(0);
+
+/* 图片加载完成后标记就绪 */
+const imgs=[...document.images];
+let left=imgs.filter(i=>!i.complete).length;
+window.IMGLEFT=left;
+imgs.forEach(i=>{ if(!i.complete){ i.addEventListener('load',()=>{left--;window.IMGLEFT=left;});
+  i.addEventListener('error',()=>{left--;window.IMGLEFT=left;}); }});
+window.READY = left===0;
+setInterval(()=>{window.READY=window.IMGLEFT===0;},100);
+</script>
+</body>
+</html>

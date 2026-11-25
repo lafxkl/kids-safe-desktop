@@ -32,24 +32,42 @@
             </VerticalStackLayout>
         </Border>
 
-        <!-- ===== 中间：日志正文 ===== -->
+        <!-- ===== 中间：日志正文（运行日志 / 详细，两个视图切换）===== -->
         <Border Grid.Row="1" BackgroundColor="#263238" StrokeThickness="0"
                 StrokeShape="RoundRectangle 16" Padding="12">
-            <ScrollView>
-                <Label x:Name="LogLabel" Text="正在读取…" FontSize="11"
-                       FontFamily="Consolas" TextColor="#B2FF59"
-                       LineBreakMode="CharacterWrap" />
-            </ScrollView>
+            <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
+                    <Button x:Name="TabRuntime" Grid.Column="0" Text="运行日志" FontSize="13"
+                            Padding="12,0" HeightRequest="34" CornerRadius="9"
+                            BackgroundColor="#00897B" TextColor="White" Clicked="OnShowRuntime" />
+                    <Button x:Name="TabDetail" Grid.Column="1" Text="详细" FontSize="13"
+                            Padding="12,0" HeightRequest="34" CornerRadius="9"
+                            BackgroundColor="#37474F" TextColor="#B0BEC5" Clicked="OnShowDetail" />
+                    <Label x:Name="SizeLabel" Grid.Column="2" FontSize="11" TextColor="#78909C"
+                           VerticalOptions="Center" HorizontalTextAlignment="End" />
+                    <Button Grid.Column="3" Text="🗑" FontSize="15" Padding="0" WidthRequest="34"
+                            HeightRequest="34" CornerRadius="9" BackgroundColor="#37474F"
+                            TextColor="#B0BEC5" Clicked="OnClearLog" />
+                </Grid>
+
+                <ScrollView Grid.Row="1">
+                    <Label x:Name="LogLabel" Text="正在读取…" FontSize="11"
+                           FontFamily="Consolas" TextColor="#B2FF59"
+                           LineBreakMode="CharacterWrap" />
+                </ScrollView>
+            </Grid>
         </Border>
 
         <!-- ===== 底部：操作 ===== -->
         <VerticalStackLayout Grid.Row="2" Spacing="10">
             <Label x:Name="StatusLabel" FontSize="13" TextColor="#2E7D32" HorizontalOptions="Center" />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Button Grid.Column="0" Text="🔄 刷新" FontSize="16" BackgroundColor="#ECEFF1"
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Text="🔄 刷新" FontSize="15" BackgroundColor="#ECEFF1"
                         TextColor="#37474F" CornerRadius="12" HeightRequest="50" Clicked="OnRefresh" />
-                <Button Grid.Column="1" Text="📋 复制全部" FontSize="16" BackgroundColor="#00897B"
+                <Button Grid.Column="1" Text="📋 复制" FontSize="15" BackgroundColor="#00897B"
                         TextColor="White" CornerRadius="12" HeightRequest="50" Clicked="OnCopy" />
+                <Button Grid.Column="2" Text="📤 导出" FontSize="15" BackgroundColor="#5E35B1"
+                        TextColor="White" CornerRadius="12" HeightRequest="50" Clicked="OnExport" />
             </Grid>
             <Button x:Name="RetryPushButton" Text="🔁 重新申请推送 token" FontSize="15"
                     BackgroundColor="#1565C0" TextColor="White" CornerRadius="12" HeightRequest="46"

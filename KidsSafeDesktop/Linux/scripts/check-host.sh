@@ -73,10 +73,18 @@ else
     bad "缺少 QtQuick.Controls（qml6-module-qtquick-controls）"
 fi
 
-if ldconfig -p 2>/dev/null | grep -q 'libKF6Service'; then
-    ok "libKF6Service 已加载（.desktop 枚举依赖它）"
+# 样式模块缺失不会让程序崩溃，但如果不做探测就会整屏加载失败（黑屏）。
+# 程序里已经做了探测 + 回退，这里只提示观感差异。
+if [ -d "$QMLDIR/org/kde/breeze" ]; then
+    ok "Breeze 控件样式：$QMLDIR/org/kde/breeze"
 else
-    warn "ldconfig 里没看到 libKF6Service，应用启动时可能报错，用 ldd 检查"
+    warn "没有 org.kde.breeze 控件样式（qqc2-breeze-style），程序会自动回退到内置样式"
+fi
+
+# 应用清单自己遍历 XDG 目录读 .desktop，不再依赖 KService / kbuildsycoca6。
+# 这里只记一笔运行时库的情况，缺了也不影响白名单。
+if ldconfig -p 2>/dev/null | grep -q 'libKF6Service'; then
+    ok "libKF6Service 已加载（Kirigami 运行时依赖，应用清单不再用它）"
 fi
 
 # ── 4. 合成器（Wayland 会话必需）────────────────────────────────

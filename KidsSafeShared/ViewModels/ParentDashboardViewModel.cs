@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using KidsSafeDesktop.Helpers;
 using KidsSafeDesktop.Models;
 using KidsSafeDesktop.Services;
+using KidsSafeDesktop.Updates;
 
 namespace KidsSafeDesktop.ViewModels;
 
@@ -120,6 +121,145 @@ public class ParentDashboardViewModel : BaseViewModel
                 ? "已开启防退出：被切到后台会立刻自动回到儿童桌面"
                 : "已关闭防退出：可以正常切出儿童桌面";
         }
+    }
+
+    /// <summary>
+    /// 开机自启（仅 Windows）：写 HKCU\...\Run，起的是**守护模式**（--kiosk-guard），
+    /// 不是主程序本身——直接起主程序的话，被任务管理器结束一次就再也不回来了。
+    /// </summary>
+    public bool AutoStartEnabled
+    {
+        get
+        {
+#if WINDOWS
+            try { return Platforms.Windows.WindowsStartup.IsAutoStartEnabled(); } catch { return false; }
+#else
+            return false;
+#endif
+        }
+        set
+        {
+#if WINDOWS
+            try
+            {
+                if (Platforms.Windows.WindowsStartup.IsAutoStartEnabled() == value) return;
+                var ok = Platforms.Windows.WindowsStartup.SetAutoStart(value);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SystemGuardStatus));
+                Status = ok
+                    ? (value ? "已开启开机自启：下次登录会自动进入儿童桌面（含守护）"
+                             : "已关闭开机自启：下次登录不再自动启动")
+                    : "开机自启设置失败：被安全软件拦截了注册表写入";
+            }
+            catch (Exception ex)
+            {
+                Helpers.NavFx.Log(ex);
+            }
+#endif
+        }
+    }
+
+    /// <summary>
+    /// 屏蔽任务管理器（仅 Windows）：写 HKCU 策略 DisableTaskMgr（可逆备份），
+    /// 同时前台守护会盯 taskmgr 进程。Ctrl+Shift+Esc 本身由键盘钩子拦下。
+    /// </summary>
+    public bool BlockTaskManagerEnabled
+    {
+        get => Microsoft.Maui.Storage.Preferences.Get("block_task_manager", true);
+        set
+        {
+            if (Microsoft.Maui.Storage.Preferences.Get("block_task_manager", true) == value) return;
+            Microsoft.Maui.Storage.Preferences.Set("block_task_manager", value);
+            OnPropertyChanged();
+#if WINDOWS
+            try
+            {
+                if (value) Platforms.Windows.WindowsSystemPolicy.Apply();
+                else Platforms.Windows.WindowsSystemPolicy.Restore();
+            }
+            catch (Exception ex) { Helpers.NavFx.Log(ex); }
+#endif
+            OnPropertyChanged(nameof(SystemGuardStatus));
+            Status = value
+                ? "已开启任务管理器屏蔽（Ctrl+Shift+Esc 也被拦）"
+                : "已解除任务管理器屏蔽";
+        }
+    }
+
+    /// <summary>系统守护卡片上的一行状态文案。仅 Windows 有意义。</summary>
+    public string SystemGuardStatus
+    {
+        get
+        {
+#if WINDOWS
+            try
+            {
+                var auto = Platforms.Windows.WindowsStartup.IsAutoStartEnabled() ? "开机自启 已开" : "开机自启 未开";
+                var tm = Microsoft.Maui.Storage.Preferences.Get("block_task_manager", true) ? "任务管理器 已屏蔽" : "任务管理器 未屏蔽";
+                var policy = Platforms.Windows.WindowsSystemPolicy.IsApplied ? "策略生效中" : "策略未写入";
+                return $"{auto} · {tm} · {policy}";
+            }
+            catch { return string.Empty; }
+#else
+            return string.Empty;
+#endif
+        }
+    }
+
+    /// <summary>
+    /// 后台常驻守护（仅安卓）：前台服务 + 心跳 + 开机自启。
+    /// 关掉它等于放弃「被系统清掉后自己回来」，一般不建议关。
+    /// </summary>
+    public bool AndroidGuardEnabled
+    {
+        get => Microsoft.Maui.Storage.Preferences.Get("guard_service", true);
+        set
+        {
+            if (Microsoft.Maui.Storage.Preferences.Get("guard_service", true) == value) return;
+            Microsoft.Maui.Storage.Preferences.Set("guard_service", value);
+            OnPropertyChanged();
+#if ANDROID
+            try
+            {
+                if (value) Platforms.Android.AndroidHooks.StartGuardService?.Invoke();
+                else Platforms.Android.AndroidHooks.StopGuardService?.Invoke();
+            }
+            catch (Exception ex) { Helpers.NavFx.Log(ex); }
+#endif
+            Status = value
+                ? "已开启后台守护：前台服务常驻，被系统清理后会自动回来"
+                : "已关闭后台守护：本次开机内不再自动拉起";
+            OnPropertyChanged(nameof(AndroidGuardStatus));
+        }
+    }
+
+    /// <summary>安卓守护三件套的当前状态（前台服务 / 无障碍 / 设备管理员）。</summary>
+    public string AndroidGuardStatus
+    {
+        get
+        {
+#if ANDROID
+            try
+            {
+                var acc = Platforms.Android.AndroidHooks.IsAccessibilityGuardOn?.Invoke() == true;
+                var admin = Platforms.Android.AndroidHooks.IsDeviceAdminOn?.Invoke() == true;
+                var service = Microsoft.Maui.Storage.Preferences.Get("guard_service", true);
+                return $"前台守护 {(service ? "已开" : "已关")} · 无障碍 {(acc ? "已开" : "未开")} · 设备管理员 {(admin ? "已激活" : "未激活")}";
+            }
+            catch { return string.Empty; }
+#else
+            return string.Empty;
+#endif
+        }
+    }
+
+    /// <summary>从系统设置页返回后刷新守护状态（开关是系统管的，我们只能读）。</summary>
+    public void RefreshGuardState()
+    {
+        OnPropertyChanged(nameof(AndroidGuardStatus));
+        OnPropertyChanged(nameof(AndroidGuardEnabled));
+        OnPropertyChanged(nameof(AutoStartEnabled));
+        OnPropertyChanged(nameof(SystemGuardStatus));
     }
 
     public int DailyLimitMinutes    {
@@ -305,6 +445,197 @@ public class ParentDashboardViewModel : BaseViewModel
 
     /// <summary>应用版本展示文本（页脚显示）。</summary>
     public string VersionText => AppVersion.Display;
+
+    // ===== 软件更新 =====
+    //
+    // 界面只有一张卡片 + 一两个按钮，所以状态判断全放在这里：
+    // 按钮文字随状态变，点下去做什么也由状态决定，页面只管弹确认框。
+    // UpdateService 自己实现了 INotifyPropertyChanged，这里转发成 VM 的属性通知，
+    // 免得 XAML 里写 Update.Status 这种跨层绑定（换了实现就断）。
+
+    private IUpdateService? _updateSvc;
+    private bool _updateBusy;
+
+    /// <summary>更新服务（懒取：拿不到就当作本版本没启用，不把异常甩给界面）。</summary>
+    private IUpdateService? UpdateSvc
+    {
+        get
+        {
+            if (_updateSvc is not null) return _updateSvc;
+            try
+            {
+                _updateSvc = ServiceProvider.Get<IUpdateService>();
+                _updateSvc.PropertyChanged += (_, _) => RefreshUpdateFields();
+            }
+            catch
+            {
+                return null;
+            }
+            return _updateSvc;
+        }
+    }
+
+    /// <summary>把更新服务的变更搬到 VM 的属性上（更新在后台线程走，必须切主线程）。</summary>
+    private void RefreshUpdateFields()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            OnPropertyChanged(nameof(UpdateVersionText));
+            OnPropertyChanged(nameof(UpdateStatusText));
+            OnPropertyChanged(nameof(UpdateProgress));
+            OnPropertyChanged(nameof(UpdateProgressText));
+            OnPropertyChanged(nameof(UpdateProgressVisible));
+            OnPropertyChanged(nameof(UpdateActionText));
+            OnPropertyChanged(nameof(UpdateActionVisible));
+            OnPropertyChanged(nameof(UpdateCancelVisible));
+            OnPropertyChanged(nameof(UpdateNotes));
+            OnPropertyChanged(nameof(UpdateNotesVisible));
+            OnPropertyChanged(nameof(UpdateLastResult));
+            OnPropertyChanged(nameof(UpdateLastResultVisible));
+        });
+    }
+
+    public string UpdateVersionText
+    {
+        get
+        {
+            var current = "当前版本 v" + AppVersion.Version;
+            var v = UpdateSvc?.AvailableVersion;
+            return string.IsNullOrWhiteSpace(v) ? current : $"{current} → v{v}";
+        }
+    }
+
+    public string UpdateStatusText
+    {
+        get
+        {
+            var u = UpdateSvc;
+            if (u is null) return "此安装包未包含更新模块";
+            if (!string.IsNullOrWhiteSpace(u.Status)) return u.Status;
+            // Status 为空只发生在启动后还没检查过的时候。
+            var s = _settings.Current;
+            return !s.ServerEnabled || string.IsNullOrWhiteSpace(s.ServerUrl)
+                ? "未连接家长服务器，不检查更新"
+                : "还没有检查过更新";
+        }
+    }
+
+    public double UpdateProgress => UpdateSvc?.Progress ?? 0;
+
+    public string UpdateProgressText => $"{(int)Math.Round(UpdateProgress * 100)}%";
+
+    /// <summary>只在下载时显示进度条：检查阶段用状态文字就够了。</summary>
+    public bool UpdateProgressVisible => UpdateSvc?.State == UpdateState.Downloading;
+
+    /// <summary>主按钮文字。同一位置随状态换字，家长不用理解「先检查再下载」。</summary>
+    public string UpdateActionText => UpdateSvc?.State switch
+    {
+        UpdateState.Checking => "正在检查…",
+        UpdateState.Downloading => "正在下载…",
+        UpdateState.Available => "下载并安装",
+        UpdateState.Ready => OperatingSystem.IsAndroid() ? "下次启动生效" : "安装并重启",
+        UpdateState.Applying => "正在安装…",
+        UpdateState.Failed => "重试",
+        UpdateState.UpToDate => "再检查一次",
+        _ => "检查更新"
+    };
+
+    /// <summary>检查中/下载中不让再点，避免重复下同一份文件。</summary>
+    public bool UpdateActionVisible => UpdateSvc?.State
+        is not (UpdateState.Checking or UpdateState.Downloading or UpdateState.Applying);
+
+    /// <summary>下载中可以取消；已经下载完就不给了，取消反而让人以为要白下。</summary>
+    public bool UpdateCancelVisible => UpdateSvc?.State == UpdateState.Downloading;
+
+    public string UpdateNotes => UpdateSvc?.Notes ?? string.Empty;
+
+    public bool UpdateNotesVisible => !string.IsNullOrWhiteSpace(UpdateSvc?.Notes);
+
+    /// <summary>上次落盘的结果（「已更新到 v1.21」/「已回滚到 v1.20：原因」）。</summary>
+    public string UpdateLastResult => UpdateSvc?.LastResult ?? string.Empty;
+
+    public bool UpdateLastResultVisible => !string.IsNullOrWhiteSpace(UpdateSvc?.LastResult);
+
+    /// <summary>检查一次（卡片出现时也会调用）。返回 true 表示有新版本。</summary>
+    public async Task<bool> CheckUpdateAsync()
+    {
+        var u = UpdateSvc;
+        if (u is null) return false;
+        if (_updateBusy) return false;
+        _updateBusy = true;
+        try
+        {
+            return await u.CheckAsync();
+        }
+        catch (Exception ex)
+        {
+            Helpers.NavFx.Log(ex);
+            return false;
+        }
+        finally
+        {
+            _updateBusy = false;
+            RefreshUpdateFields();
+        }
+    }
+
+    /// <summary>下载补丁。返回 true 表示已就绪。</summary>
+    public async Task<bool> DownloadUpdateAsync()
+    {
+        var u = UpdateSvc;
+        if (u is null) return false;
+        try
+        {
+            return await u.DownloadAsync();
+        }
+        catch (Exception ex)
+        {
+            Helpers.NavFx.Log(ex);
+            return false;
+        }
+        finally
+        {
+            RefreshUpdateFields();
+        }
+    }
+
+    /// <summary>让补丁生效。<paramref name="restart"/> 为 true 时 Windows 会重启应用。</summary>
+    public async Task<bool> ApplyUpdateAsync(bool restart)
+    {
+        var u = UpdateSvc;
+        if (u is null) return false;
+        try
+        {
+            return await u.ApplyAsync(restart);
+        }
+        catch (Exception ex)
+        {
+            Helpers.NavFx.Log(ex);
+            return false;
+        }
+        finally
+        {
+            RefreshUpdateFields();
+        }
+    }
+
+    public void CancelUpdate()
+    {
+        try { UpdateSvc?.Cancel(); }
+        catch (Exception ex) { Helpers.NavFx.Log(ex); }
+    }
+
+    /// <summary>
+    /// 页面出现时调用：还没查过就悄悄查一次。
+    /// 查不到（没连服务器、服务器没开）由服务自己写进 Status，不弹窗、不打断家长。
+    /// </summary>
+    public void AutoCheckUpdate()
+    {
+        var u = UpdateSvc;
+        if (u is null) return;
+        if (u.State != UpdateState.Idle) return;
+        _ = CheckUpdateAsync();
+    }
 
     public ParentDashboardViewModel()
     {

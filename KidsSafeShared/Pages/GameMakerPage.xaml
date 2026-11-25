@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.GameMakerPage"
+             Title="小游戏工坊"
+             BackgroundColor="#1A237E">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- 顶部：返回 / 标题 / 刷新。配色沿用「小游戏乐园」的紫色系，家长一眼认得是同一块功能。 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="12,10" BackgroundColor="#5E35B1">
+            <Button Grid.Column="0" Text="← 返回" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="15" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label x:Name="TitleLabel" Grid.Column="1" Text="🛠 小游戏工坊" TextColor="White" FontSize="19"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"
+                   LineBreakMode="TailTruncation" MaxLines="1" />
+            <Button Grid.Column="2" Text="🔄" TextColor="White" BackgroundColor="Transparent"
+                    BorderWidth="0" FontSize="18" Clicked="OnReload" />
+        </Grid>
+
+        <WebView x:Name="MakerView" Grid.Row="1" />
+
+        <!-- 底部动作条：导入素材要调系统选图器，必须由宿主发起（页面自己点不出来）。 -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" Padding="8,6,8,10" ColumnSpacing="6"
+              BackgroundColor="#283593">
+            <Button Grid.Column="0" Text="🖼 导入素材" FontSize="14" Padding="0,8"
+                    TextColor="White" BackgroundColor="#4527A0" CornerRadius="10"
+                    Clicked="OnImportAsset" />
+            <Button Grid.Column="1" Text="📥 打开作品" FontSize="14" Padding="0,8"
+                    TextColor="White" BackgroundColor="#4527A0" CornerRadius="10"
+                    Clicked="OnImportProject" />
+            <Button Grid.Column="2" Text="📤 导出作品" FontSize="14" Padding="0,8"
+                    TextColor="White" BackgroundColor="#4527A0" CornerRadius="10"
+                    Clicked="OnExportProject" />
+        </Grid>
+
+        <!-- 释放资源时的加载提示 -->
+        <Grid x:Name="LoadingMask" Grid.Row="0" Grid.RowSpan="2"
+              BackgroundColor="#CC1A237E" IsVisible="False">
+            <VerticalStackLayout Spacing="14" VerticalOptions="Center" HorizontalOptions="Center">
+                <ActivityIndicator IsRunning="True" Color="#FFFFFF" WidthRequest="48" HeightRequest="48" />
+                <Label x:Name="LoadingLabel" Text="🛠 正在准备编辑器…" FontSize="18" TextColor="White"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+    </Grid>
+</ContentPage>

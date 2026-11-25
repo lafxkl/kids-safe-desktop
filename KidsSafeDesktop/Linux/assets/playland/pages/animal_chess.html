@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🦁 森林斗兽棋 - 智勇双全 · 亲子策略对弈</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 15%, #1a3a2a 0%, #0d1f17 65%, #07120d 100%);
+      --forest-green: #10b981;
+      --forest-dark: #064e3b;
+      --river-blue: #0284c7;
+      --river-light: #38bdf8;
+      --sand-gold: #f59e0b;
+      --danger-red: #ef4444;
+      --blue-team: #2563eb;
+      --blue-team-light: #60a5fa;
+      --red-team: #dc2626;
+      --red-team-light: #f87171;
+      --card-bg: rgba(13, 31, 23, 0.88);
+      --card-border: rgba(16, 185, 129, 0.22);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      height: 100vh;
+      height: 100dvh;
+      background: var(--bg-gradient);
+      font-family: var(--font-family);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 6px 12px;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    /* 背景柔光氛围 */
+    .bg-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.28;
+      animation: pulseGlow 14s ease-in-out infinite alternate;
+    }
+    .glow-1 {
+      width: 480px; height: 480px;
+      background: #10b981;
+      top: -100px; left: -120px;
+    }
+    .glow-2 {
+      width: 520px; height: 520px;
+      background: #0284c7;
+      bottom: -150px; right: -120px;
+      animation-delay: -7s;
+    }
+    @keyframes pulseGlow {
+      0% { transform: scale(1) translate(0, 0); opacity: 0.2; }
+      100% { transform: scale(1.18) translate(30px, 20px); opacity: 0.38; }
+    }
+
+    /* 顶部导航条 */
+    header {
+      width: 100%;
+      max-width: 1060px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      z-index: 10;
+      padding: 2px 6px;
+      flex-shrink: 0;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-logo {
+      font-size: 26px;
+      filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.5));
+      animation: gentleFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #f8fafc, #86efac, #fcd34d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.2;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 5px 11px;
+      border-radius: 16px;
+      font-size: 11.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      text-decoration: none;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    /* 主布局 */
+    .game-layout {
+      width: 100%;
+      max-width: 1060px;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 10;
+      overflow: hidden;
+      margin-bottom: 2px;
+    }
+
+    @media (max-width: 860px) {
+      .game-layout {
+        flex-direction: column;
+        align-items: center;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .side-panel {
+        width: 100% !important;
+        max-width: 480px !important;
+        order: 2;
+        flex-shrink: 0;
+      }
+      .board-container {
+        width: 100% !important;
+        max-width: 480px !important;
+        flex-shrink: 0;
+      }
+      .board-wrapper {
+        height: min(52dvh, calc((100vw - 32px) * 720 / 560), 460px) !important;
+      }
+    }
+
+    /* 侧边信息栏 */
+    .side-panel {
+      width: 240px;
+      max-height: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(12px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .side-panel::-webkit-scrollbar {
+      width: 4px;
+    }
+    .side-panel::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.3);
+      border-radius: 4px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #86efac;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 4px;
+    }
+
+    /* 对手 / 己方 状态卡片 */
+    .player-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s ease;
+    }
+
+    .player-card.active-turn {
+      border-color: #fcd34d;
+      box-shadow: 0 0 15px rgba(252, 211, 77, 0.25);
+      background: rgba(252, 211, 77, 0.08);
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .player-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .player-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .avatar-blue {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: 1px solid #93c5fd;
+    }
+
+    .avatar-red {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: 1px solid #fca5a5;
+    }
+
+    .player-name {
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .turn-tag {
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      background: #f59e0b;
+      color: #000;
+      font-weight: 800;
+      display: none;
+      animation: pulse 1.5s infinite;
+    }
+
+    .active-turn .turn-tag {
+      display: inline-block;
+    }
+
+    /* 存活棋子网格 */
+    .pieces-shelf {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .mini-piece {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    .mini-piece.captured {
+      opacity: 0.18;
+      filter: grayscale(100%);
+      transform: scale(0.85);
+      text-decoration: line-through;
+    }
+
+    /* 核心棋盘容器 */
+    .board-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      position: relative;
+      height: 100%;
+      max-height: 100%;
+      min-height: 0;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .board-wrapper {
+      position: relative;
+      background: linear-gradient(145deg, #1b4d32, #0d2e1e);
+      padding: 6px;
+      border-radius: 16px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.15);
+      border: 2px solid #2d6a45;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      /* 核心高度自适应：保证 100% 视口无溢出 */
+      height: min(calc(100dvh - 146px), calc(100vh - 146px), 640px);
+      aspect-ratio: 560 / 720;
+      max-width: 100%;
+      max-height: calc(100% - 74px);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 560 / 720;
+      border-radius: 10px;
+      cursor: pointer;
+      touch-action: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      object-fit: contain;
+    }
+
+    /* 顶部回合提示横幅 */
+    .status-banner {
+      width: 100%;
+      max-width: 560px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 4px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .banner-text {
+      font-size: 12.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .banner-tip {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    /* 控制操作工具栏 */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      max-width: 560px;
+      margin-top: 0;
+      flex-shrink: 0;
+    }
+
+    .tool-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 5px 11px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.18s ease;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .tool-btn:hover:not(:disabled) {
+      background: rgba(16, 185, 129, 0.2);
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .tool-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .tool-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .tool-btn.active {
+      background: #10b981;
+      color: #064e3b;
+      font-weight: 800;
+      border-color: #6ee7b7;
+    }
+
+    /* 相克等级速查表 */
+    .rank-cheat-sheet {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 10.5px;
+      color: #cbd5e1;
+      line-height: 1.4;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 8px;
+      border-radius: 8px;
+    }
+
+    .rank-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rank-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 600;
+    }
+
+    /* 弹窗与遮罩 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 480px;
+      background: #0f271c;
+      border: 2px solid #10b981;
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.show .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 54px;
+      margin-bottom: 8px;
+      animation: floatIcon 2s ease-in-out infinite;
+    }
+
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #86efac;
+      margin-bottom: 8px;
+    }
+
+    .modal-body {
+      font-size: 13.5px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-body p {
+      margin-bottom: 8px;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      border-radius: 14px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .modal-btn:hover {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      transform: translateY(-2px);
+    }
+
+    .rule-item {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border-left: 3px solid #10b981;
+    }
+
+    .rule-item strong {
+      color: #fcd34d;
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 柔光氛围光晕 -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <!-- 顶部导航 -->
+  <header>
+    <div class="brand-group">
+      <div class="app-logo">🦁</div>
+      <div class="header-text">
+        <h1>森林斗兽棋</h1>
+        <p>智勇相克 · 亲子策略对弈 · 双人&人机</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="nav-btn" id="btnSoundToggle">
+        <span>🔊</span> 音效: 开
+      </button>
+      <button class="nav-btn" id="btnRuleHelp">
+        <span>📖</span> 规则说明
+      </button>
+      <a href="../index.html" class="nav-btn" title="返回乐园大厅">
+        <span>🏠</span> 乐园大厅
+      </a>
+    </div>
+  </header>
+
+  <!-- 游戏主区域 -->
+  <div class="game-layout">
+
+    <!-- 左侧/上方信息栏：红方与蓝方战况 -->
+    <div class="side-panel">
+      <div class="panel-title">
+        <span>⚔️</span> 战况面板
+      </div>
+
+      <!-- 蓝方卡片 (上方/电脑) -->
+      <div class="player-card" id="cardBlue">
+        <div class="player-header">
+          <div class="player-badge">
+            <div class="player-avatar avatar-blue">🔵</div>
+            <div>
+              <div class="player-name" id="nameBlue">蓝方 (森林盟军)</div>
+              <div style="font-size: 11px; color: #94a3b8;" id="roleBlue">🤖 电脑 AI</div>
+            </div>
+          </div>
+          <span class="turn-tag">行动中</span>
+        </div>
+        <div class="pieces-shelf" id="shelfBlue">
+          <!-- 动态生成 8 颗棋子 -->
+        </div>
+      </div>
+
+      <!-- 红方卡片 (下方/玩家) -->
+      <div class="player-card active-turn" id="cardRed">
+        <div class="player-header">
+          <div class="player-badge">
+            <div class="player-avatar avatar-red">🔴</div>
+            <div>
+              <div class="player-name" id="nameRed">红方 (热带猎手)</div>
+              <div style="font-size: 11px; color: #94a3b8;" id="roleRed">👤 玩家 (先手)</div>
+            </div>
+          </div>
+          <span class="turn-tag">行动中</span>
+        </div>
+        <div class="pieces-shelf" id="shelfRed">
+          <!-- 动态生成 8 颗棋子 -->
+        </div>
+      </div>
+
+      <!-- 相克速查手册 -->
+      <div class="rank-cheat-sheet">
+        <div style="font-weight: 700; color: #86efac; margin-bottom: 2px;">⚡ 动物战力与相克等级：</div>
+        <div>🐘象(8) ＞ 🦁狮(7) ＞ 🐯虎(6) ＞ 🐆豹(5)</div>
+        <div>🐺狼(4) ＞ 🐕狗(3) ＞ 🐱猫(2) ＞ 🐭鼠(1)</div>
+        <div style="color: #fcd34d; margin-top: 3px;">
+          ★ 特殊克制：🐭鼠克🐘象（象不能吃鼠）<br>
+          ★ 飞渡小河：🦁狮、🐯虎可纵横飞跃小河<br>
+          ★ 潜水潜行：仅🐭鼠可进入小河水域<br>
+          ★ 陷阱压制：进敌方陷阱战力归0，任意吃！
+        </div>
+      </div>
+    </div>
+
+    <!-- 中间棋盘主视窗 -->
+    <div class="board-container">
+      
+      <!-- 回合动态提示条 -->
+      <div class="status-banner">
+        <div class="banner-text" id="statusMessage">
+          <span>🚩</span> 轮到红方走子，点击棋子选择移动
+        </div>
+        <div class="banner-tip" id="statusSubTip">
+          目标：攻占对方兽穴或全歼敌兽
+        </div>
+      </div>
+
+      <!-- Canvas 棋盘画布 -->
+      <div class="board-wrapper">
+        <canvas id="chessCanvas" width="560" height="720"></canvas>
+      </div>
+
+      <!-- 控制工具条 -->
+      <div class="toolbar">
+        <button class="tool-btn active" id="btnModePVE">🤖 人机对战</button>
+        <button class="tool-btn" id="btnModePVP">👥 双人对弈</button>
+        <button class="tool-btn" id="btnUndo">↩️ 悔棋</button>
+        <button class="tool-btn" id="btnRestart">🔄 重新开始</button>
+        
+        <!-- AI 难度选择 -->
+        <div style="display: flex; gap: 4px;" id="diffButtonGroup">
+          <button class="tool-btn active" data-diff="easy" id="diffEasy">🌱 简单</button>
+          <button class="tool-btn" data-diff="normal" id="diffNormal">⚡ 一般</button>
+          <button class="tool-btn" data-diff="hard" id="diffHard">🔥 大师</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 胜负结算弹窗 -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-box">
+      <div class="modal-icon" id="vicIcon">🏆</div>
+      <h2 class="modal-title" id="vicTitle">胜利！</h2>
+      <div class="modal-body" id="vicDesc" style="text-align: center;">
+        红方成功占领敌方兽穴，称霸森林！
+      </div>
+      <button class="modal-btn" id="btnModalRestart">再来一局 🔄</button>
+    </div>
+  </div>
+
+  <!-- 规则说明弹窗 -->
+  <div class="modal-overlay" id="ruleModal">
+    <div class="modal-box">
+      <div class="modal-icon">📜</div>
+      <h2 class="modal-title">森林斗兽棋 · 玩法规则</h2>
+      <div class="modal-body">
+        <div class="rule-item">
+          <strong>🏆 获胜目标：</strong>率先攻入对方底线正中央的<strong>「兽穴」</strong>，或将敌方所有野兽全部消灭。
+        </div>
+        <div class="rule-item">
+          <strong>🐾 移动规则：</strong>所有棋子每次可向上下左右<strong>相邻一格</strong>移动（不可进己方兽穴）。
+        </div>
+        <div class="rule-item">
+          <strong>⚔️ 大小相克：</strong>
+          象(8) ＞ 狮(7) ＞ 虎(6) ＞ 豹(5) ＞ 狼(4) ＞ 狗(3) ＞ 猫(2) ＞ 鼠(1)。同级相遇先吃者胜。<br>
+          <strong>特殊神技：</strong>最小的<strong>🐭老鼠可以吃大象</strong>，而<strong>大象不能吃老鼠</strong>！
+        </div>
+        <div class="rule-item">
+          <strong>🌊 小河规则：</strong>
+          只有<strong>🐭老鼠</strong>能下水。老鼠在水中不能吃陆地上的象；老鼠在陆地上也不能吃水里的老鼠。<br>
+          <strong>🦁狮子</strong>和<strong>🐯老虎</strong>可以纵横<strong>飞跃小河</strong>！但如果河道中有任何一只老鼠阻挡，则无法飞跃。
+        </div>
+        <div class="rule-item">
+          <strong>🕳️ 陷阱规则：</strong>
+          兽穴周围设有陷阱。如果野兽走进<strong>对方的陷阱</strong>，战斗力立刻降为0，任何敌兽都可将其吃掉！
+        </div>
+      </div>
+      <button class="modal-btn" id="btnCloseRule">我知道啦，开始战斗！</button>
+    </div>
+  </div>
+
+  <!-- 核心逻辑脚本 -->
+  <script>
+    /* =========================================================================
+     * 1. 纯原生 Web Audio API 合成音效系统 (零外部音频依赖)
+     * ========================================================================= */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playSelect() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(780, now + 0.08);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      }
+
+      playMove() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+
+      playWater() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // 拟真水花泛起音效
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.22);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+
+      playJump() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // 狮虎飞渡呼啸
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(480, now + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.28);
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      }
+
+      playCapture() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // 扑咬打击音
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.18);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+
+      playTrap() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.setValueAtTime(120, now + 0.1);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+
+      playWin() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + idx * 0.12;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        });
+      }
+
+      playLose() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const notes = [440, 392, 349.23, 293.66];
+        notes.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + idx * 0.16;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        });
+      }
+    }
+
+    /* =========================================================================
+     * 2. 斗兽棋核心数据结构与规则引擎
+     * ========================================================================= */
+    const COLS = 7;
+    const ROWS = 9;
+
+    const SIDE_BLUE = 'blue'; // 蓝方 (上方，电脑)
+    const SIDE_RED = 'red';   // 红方 (下方，玩家)
+
+    // 动物基础配置表 (战力 8~1)
+    const ANIMAL_INFO = {
+      8: { name: '象', emoji: '🐘', value: 1000 },
+      7: { name: '狮', emoji: '🦁', value: 850 },
+      6: { name: '虎', emoji: '🐯', value: 800 },
+      5: { name: '豹', emoji: '🐆', value: 500 },
+      4: { name: '狼', emoji: '🐺', value: 380 },
+      3: { name: '狗', emoji: '🐕', value: 280 },
+      2: { name: '猫', emoji: '🐱', value: 180 },
+      1: { name: '鼠', emoji: '🐭', value: 650 } // 鼠控制水路且能吃象，战略价值极高
+    };
+
+    // 地形判断辅助函数
+    function isBlueDen(c, r) { return c === 3 && r === 0; }
+    function isRedDen(c, r) { return c === 3 && r === 8; }
+
+    function isBlueTrap(c, r) {
+      return (c === 2 && r === 0) || (c === 4 && r === 0) || (c === 3 && r === 1);
+    }
+
+    function isRedTrap(c, r) {
+      return (c === 2 && r === 8) || (c === 4 && r === 8) || (c === 3 && r === 7);
+    }
+
+    function isRiver(c, r) {
+      return (c >= 1 && c <= 2 && r >= 3 && r <= 5) ||
+             (c >= 4 && c <= 5 && r >= 3 && r <= 5);
+    }
+
+    class AnimalChessGame {
+      constructor() {
+        this.board = Array(COLS).fill(null).map(() => Array(ROWS).fill(null));
+        this.currentTurn = SIDE_RED;
+        this.selectedPos = null;
+        this.validMoves = [];
+        this.lastMove = null;
+        this.history = [];
+        this.gameOver = false;
+        this.mode = 'pve'; // 'pve' 或 'pvp'
+        this.difficulty = 'normal'; // 'easy', 'normal', 'hard'
+        this.isAiThinking = false;
+        
+        this.sound = new SoundEngine();
+        this.initBoard();
+      }
+
+      // 初始化标准斗兽棋布局
+      initBoard() {
+        this.board = Array(COLS).fill(null).map(() => Array(ROWS).fill(null));
+        this.currentTurn = SIDE_RED;
+        this.selectedPos = null;
+        this.validMoves = [];
+        this.lastMove = null;
+        this.history = [];
+        this.gameOver = false;
+        this.isAiThinking = false;
+
+        // 蓝方棋子摆放 (顶部)
+        this.setPiece(0, 0, 7, SIDE_BLUE); // 狮
+        this.setPiece(6, 0, 6, SIDE_BLUE); // 虎
+        this.setPiece(1, 1, 3, SIDE_BLUE); // 狗
+        this.setPiece(5, 1, 2, SIDE_BLUE); // 猫
+        this.setPiece(0, 2, 1, SIDE_BLUE); // 鼠
+        this.setPiece(2, 2, 5, SIDE_BLUE); // 豹
+        this.setPiece(4, 2, 4, SIDE_BLUE); // 狼
+        this.setPiece(6, 2, 8, SIDE_BLUE); // 象
+
+        // 红方棋子摆放 (底部)
+        this.setPiece(0, 6, 8, SIDE_RED);  // 象
+        this.setPiece(2, 6, 4, SIDE_RED);  // 狼
+        this.setPiece(4, 6, 5, SIDE_RED);  // 豹
+        this.setPiece(6, 6, 1, SIDE_RED);  // 鼠
+        this.setPiece(1, 7, 2, SIDE_RED);  // 猫
+        this.setPiece(5, 7, 3, SIDE_RED);  // 狗
+        this.setPiece(0, 8, 6, SIDE_RED);  // 虎
+        this.setPiece(6, 8, 7, SIDE_RED);  // 狮
+      }
+
+      setPiece(c, r, rank, side) {
+        this.board[c][r] = {
+          rank,
+          side,
+          name: ANIMAL_INFO[rank].name,
+          emoji: ANIMAL_INFO[rank].emoji
+        };
+      }
+
+      // 获取棋子在指定格的战斗力（若处于对方陷阱中，战力降为0）
+      getEffectiveRank(c, r) {
+        const piece = this.board[c][r];
+        if (!piece) return 0;
+        if (piece.side === SIDE_BLUE && isRedTrap(c, r)) return 0;
+        if (piece.side === SIDE_RED && isBlueTrap(c, r)) return 0;
+        return piece.rank;
+      }
+
+      // 判断能否吃子
+      canEat(attackerPos, defenderPos) {
+        const aPiece = this.board[attackerPos.c][attackerPos.r];
+        const dPiece = this.board[defenderPos.c][defenderPos.r];
+        if (!dPiece || aPiece.side === dPiece.side) return false;
+
+        const aInRiver = isRiver(attackerPos.c, attackerPos.r);
+        const dInRiver = isRiver(defenderPos.c, defenderPos.r);
+
+        // 水中与陆地规则：
+        // 1. 水里的老鼠不能吃陆地上的象或其它陆地动物
+        if (aInRiver && !dInRiver) return false;
+        // 2. 陆地上的动物不能吃水里的老鼠
+        if (!aInRiver && dInRiver) return false;
+        // 3. 水里老鼠吃水里老鼠：可以
+        if (aInRiver && dInRiver) return true;
+
+        // 陷阱规则：敌方在己方陷阱里，任何棋子都可以吃它！
+        if (dPiece.side === SIDE_BLUE && isRedTrap(defenderPos.c, defenderPos.r)) return true;
+        if (dPiece.side === SIDE_RED && isBlueTrap(defenderPos.c, defenderPos.r)) return true;
+
+        // 特殊克制：鼠克象，象不能吃鼠
+        if (aPiece.rank === 1 && dPiece.rank === 8) return true;
+        if (aPiece.rank === 8 && dPiece.rank === 1) return false;
+
+        // 常规等级克制：大于等于即可吃
+        return aPiece.rank >= dPiece.rank;
+      }
+
+      // 计算指定棋子的所有合法走法
+      getValidMoves(c, r) {
+        const piece = this.board[c][r];
+        if (!piece) return [];
+        const moves = [];
+        const dirs = [
+          { dc: 0, dr: -1 },
+          { dc: 0, dr: 1 },
+          { dc: -1, dr: 0 },
+          { dc: 1, dr: 0 }
+        ];
+
+        for (const d of dirs) {
+          const nc = c + d.dc;
+          const nr = r + d.dr;
+
+          // 越界
+          if (nc < 0 || nc >= COLS || nr < 0 || nr >= ROWS) continue;
+
+          // 不能进入己方兽穴
+          if (piece.side === SIDE_BLUE && isBlueDen(nc, nr)) continue;
+          if (piece.side === SIDE_RED && isRedDen(nc, nr)) continue;
+
+          const targetInRiver = isRiver(nc, nr);
+
+          // 1. 常规陆地移动
+          if (!targetInRiver) {
+            const destPiece = this.board[nc][nr];
+            if (!destPiece) {
+              moves.push({ c: nc, r: nr, type: 'step' });
+            } else if (destPiece.side !== piece.side && this.canEat({ c, r }, { c: nc, r: nr })) {
+              moves.push({ c: nc, r: nr, type: 'capture' });
+            }
+            continue;
+          }
+
+          // 2. 目标格是小河水域
+          // 仅鼠可直接走入小河
+          if (piece.rank === 1) {
+            const destPiece = this.board[nc][nr];
+            if (!destPiece) {
+              moves.push({ c: nc, r: nr, type: 'water' });
+            } else if (destPiece.side !== piece.side && this.canEat({ c, r }, { c: nc, r: nr })) {
+              moves.push({ c: nc, r: nr, type: 'capture' });
+            }
+            continue;
+          }
+
+          // 3. 狮虎飞渡小河 (跳跃)
+          if (piece.rank === 7 || piece.rank === 6) {
+            let jc = c;
+            let jr = r;
+            let blockedByRat = false;
+
+            // 沿着方向一直推进，直到越过小河到达对岸
+            while (true) {
+              jc += d.dc;
+              jr += d.dr;
+
+              // 仍在河里
+              if (isRiver(jc, jr)) {
+                // 如果河里有任何老鼠（不论敌我），跳跃被阻断
+                if (this.board[jc][jr] !== null) {
+                  blockedByRat = true;
+                  break;
+                }
+              } else {
+                // 已抵达对岸陆地
+                break;
+              }
+            }
+
+            if (!blockedByRat && jc >= 0 && jc < COLS && jr >= 0 && jr < ROWS) {
+              // 检查对岸着陆点
+              if (piece.side === SIDE_BLUE && isBlueDen(jc, jr)) continue;
+              if (piece.side === SIDE_RED && isRedDen(jc, jr)) continue;
+
+              const landPiece = this.board[jc][jr];
+              if (!landPiece) {
+                moves.push({ c: jc, r: jr, type: 'jump' });
+              } else if (landPiece.side !== piece.side && this.canEat({ c, r }, { c: jc, r: jr })) {
+                moves.push({ c: jc, r: jr, type: 'capture_jump' });
+              }
+            }
+          }
+        }
+
+        return moves;
+      }
+
+      // 获取某一方当前所有的合法动作集
+      getAllValidMoves(side) {
+        const allMoves = [];
+        for (let c = 0; c < COLS; c++) {
+          for (let r = 0; r < ROWS; r++) {
+            const piece = this.board[c][r];
+            if (piece && piece.side === side) {
+              const moves = this.getValidMoves(c, r);
+              for (const m of moves) {
+                allMoves.push({
+                  from: { c, r },
+                  to: { c: m.c, r: m.r },
+                  type: m.type,
+                  piece: piece
+                });
+              }
+            }
+          }
+        }
+        return allMoves;
+      }
+
+      // 执行走子
+      makeMove(from, to) {
+        const movingPiece = this.board[from.c][from.r];
+        const targetPiece = this.board[to.c][to.r];
+
+        // 记录历史供悔棋
+        this.history.push({
+          boardState: JSON.parse(JSON.stringify(this.board)),
+          currentTurn: this.currentTurn,
+          lastMove: this.lastMove ? { ...this.lastMove } : null
+        });
+
+        // 移位与吃子
+        this.board[to.c][to.r] = movingPiece;
+        this.board[from.c][from.r] = null;
+        this.lastMove = { from: { ...from }, to: { ...to } };
+
+        // 判定音效
+        if (targetPiece) {
+          this.sound.playCapture();
+        } else if (isRiver(to.c, to.r)) {
+          this.sound.playWater();
+        } else if (Math.abs(from.c - to.c) > 1 || Math.abs(from.r - to.r) > 1) {
+          this.sound.playJump();
+        } else if ((movingPiece.side === SIDE_RED && isBlueTrap(to.c, to.r)) ||
+                   (movingPiece.side === SIDE_BLUE && isRedTrap(to.c, to.r))) {
+          this.sound.playTrap();
+        } else {
+          this.sound.playMove();
+        }
+
+        // 胜负检测
+        const winner = this.checkWin();
+        if (winner) {
+          this.gameOver = true;
+          return winner;
+        }
+
+        // 切换回合
+        this.currentTurn = (this.currentTurn === SIDE_RED) ? SIDE_BLUE : SIDE_RED;
+        return null;
+      }
+
+      // 胜负检测
+      checkWin() {
+        // 1. 占领兽穴
+        if (this.board[3][0] && this.board[3][0].side === SIDE_RED) return SIDE_RED;
+        if (this.board[3][8] && this.board[3][8].side === SIDE_BLUE) return SIDE_BLUE;
+
+        // 2. 统计残余棋子
+        let redCount = 0;
+        let blueCount = 0;
+        for (let c = 0; c < COLS; c++) {
+          for (let r = 0; r < ROWS; r++) {
+            const p = this.board[c][r];
+            if (p) {
+              if (p.side === SIDE_RED) redCount++;
+              else blueCount++;
+            }
+          }
+        }
+        if (redCount === 0) return SIDE_BLUE;
+        if (blueCount === 0) return SIDE_RED;
+
+        // 3. 无路可走判定
+        const nextMoves = this.getAllValidMoves(this.currentTurn === SIDE_RED ? SIDE_BLUE : SIDE_RED);
+        if (nextMoves.length === 0) {
+          return this.currentTurn;
+        }
+
+        return null;
+      }
+
+      // 悔棋撤回
+      undo() {
+        if (this.history.length === 0) return false;
+        
+        if (this.mode === 'pve') {
+          // 人机对战退两步（撤销AI与玩家自己的走子）
+          if (this.history.length >= 2) {
+            this.history.pop(); // 弹出AI那步
+            const prevState = this.history.pop(); // 弹出玩家那步
+            this.board = prevState.boardState;
+            this.currentTurn = prevState.currentTurn;
+            this.lastMove = prevState.lastMove;
+          } else {
+            const prevState = this.history.pop();
+            this.board = prevState.boardState;
+            this.currentTurn = prevState.currentTurn;
+            this.lastMove = prevState.lastMove;
+          }
+        } else {
+          // 双人对战退一步
+          const prevState = this.history.pop();
+          this.board = prevState.boardState;
+          this.currentTurn = prevState.currentTurn;
+          this.lastMove = prevState.lastMove;
+        }
+
+        this.selectedPos = null;
+        this.validMoves = [];
+        this.gameOver = false;
+        return true;
+      }
+    }
+
+    /* =========================================================================
+     * 3. 智能电脑 AI 引擎 (简单随机 / 进阶极小化极大 + 剪枝)
+     * ========================================================================= */
+    class AnimalChessAI {
+      static getBestMove(game, difficulty) {
+        const moves = game.getAllValidMoves(SIDE_BLUE);
+        if (moves.length === 0) return null;
+
+        // 1. 简单难度：优先吃子，否则随机行走
+        if (difficulty === 'easy') {
+          const captureMoves = moves.filter(m => m.type.includes('capture'));
+          if (captureMoves.length > 0 && Math.random() < 0.7) {
+            return captureMoves[Math.floor(Math.random() * captureMoves.length)];
+          }
+          return moves[Math.floor(Math.random() * moves.length)];
+        }
+
+        // 2. 一般难度：深度 2 Minimax 启发式搜索
+        if (difficulty === 'normal') {
+          return this.minimaxBestMove(game, 2);
+        }
+
+        // 3. 大师难度：深度 3 评估搜索 + 兽穴诱惑 + 陷阱压制
+        return this.minimaxBestMove(game, 3);
+      }
+
+      static minimaxBestMove(game, depth) {
+        const moves = game.getAllValidMoves(SIDE_BLUE);
+        let bestVal = -Infinity;
+        let bestMove = moves[0];
+
+        // 乱序打破平局对称性
+        moves.sort(() => Math.random() - 0.5);
+
+        for (const m of moves) {
+          // 模拟走子
+          const origTarget = game.board[m.to.c][m.to.r];
+          const movingPiece = game.board[m.from.c][m.from.r];
+          
+          game.board[m.to.c][m.to.r] = movingPiece;
+          game.board[m.from.c][m.from.r] = null;
+
+          // 立即获胜检查（占领红方兽穴）
+          if (m.to.c === 3 && m.to.r === 8) {
+            game.board[m.from.c][m.from.r] = movingPiece;
+            game.board[m.to.c][m.to.r] = origTarget;
+            return m;
+          }
+
+          const val = this.minimax(game, depth - 1, -Infinity, Infinity, false);
+
+          // 回溯
+          game.board[m.from.c][m.from.r] = movingPiece;
+          game.board[m.to.c][m.to.r] = origTarget;
+
+          if (val > bestVal) {
+            bestVal = val;
+            bestMove = m;
+          }
+        }
+
+        return bestMove;
+      }
+
+      static minimax(game, depth, alpha, beta, isMaximizing) {
+        if (depth === 0) {
+          return this.evaluate(game);
+        }
+
+        const side = isMaximizing ? SIDE_BLUE : SIDE_RED;
+        const moves = game.getAllValidMoves(side);
+
+        if (moves.length === 0) {
+          return isMaximizing ? -20000 : 20000;
+        }
+
+        if (isMaximizing) {
+          let maxEval = -Infinity;
+          for (const m of moves) {
+            const origTarget = game.board[m.to.c][m.to.r];
+            const movingPiece = game.board[m.from.c][m.from.r];
+
+            if (m.to.c === 3 && m.to.r === 8) return 50000; // 直接取胜
+
+            game.board[m.to.c][m.to.r] = movingPiece;
+            game.board[m.from.c][m.from.r] = null;
+
+            const evalVal = this.minimax(game, depth - 1, alpha, beta, false);
+
+            game.board[m.from.c][m.from.r] = movingPiece;
+            game.board[m.to.c][m.to.r] = origTarget;
+
+            maxEval = Math.max(maxEval, evalVal);
+            alpha = Math.max(alpha, evalVal);
+            if (beta <= alpha) break;
+          }
+          return maxEval;
+        } else {
+          let minEval = Infinity;
+          for (const m of moves) {
+            const origTarget = game.board[m.to.c][m.to.r];
+            const movingPiece = game.board[m.from.c][m.from.r];
+
+            if (m.to.c === 3 && m.to.r === 0) return -50000; // 红方取胜
+
+            game.board[m.to.c][m.to.r] = movingPiece;
+            game.board[m.from.c][m.from.r] = null;
+
+            const evalVal = this.minimax(game, depth - 1, alpha, beta, true);
+
+            game.board[m.from.c][m.from.r] = movingPiece;
+            game.board[m.to.c][m.to.r] = origTarget;
+
+            minEval = Math.min(minEval, evalVal);
+            beta = Math.min(beta, evalVal);
+            if (beta <= alpha) break;
+          }
+          return minEval;
+        }
+      }
+
+      // 评估函数：子力分 + 推进距离分 + 兽穴威胁分
+      static evaluate(game) {
+        let score = 0;
+
+        for (let c = 0; c < COLS; c++) {
+          for (let r = 0; r < ROWS; r++) {
+            const p = game.board[c][r];
+            if (!p) continue;
+
+            const val = ANIMAL_INFO[p.rank].value;
+            if (p.side === SIDE_BLUE) {
+              score += val;
+              // 靠近红方兽穴加分 (越靠下分越高)
+              const distToDen = Math.abs(c - 3) + Math.abs(r - 8);
+              score += (14 - distToDen) * 18;
+
+              // 处于危险陷阱扣分
+              if (isRedTrap(c, r)) score -= 250;
+            } else {
+              score -= val;
+              // 靠近蓝方兽穴扣分 (越靠上分越低)
+              const distToDen = Math.abs(c - 3) + Math.abs(r - 0);
+              score -= (14 - distToDen) * 18;
+
+              // 处于危险陷阱蓝方优势
+              if (isBlueTrap(c, r)) score += 250;
+            }
+          }
+        }
+
+        return score;
+      }
+    }
+
+    /* =========================================================================
+     * 4. 棋盘渲染与交互系统 (Canvas API)
+     * ========================================================================= */
+    const canvas = document.getElementById('chessCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const CELL_W = canvas.width / COLS; // 80px
+    const CELL_H = canvas.height / ROWS; // 80px
+
+    const game = new AnimalChessGame();
+
+    // 绘制棋盘地形
+    function drawBoard() {
+      // 1. 草原底色网格
+      for (let c = 0; c < COLS; c++) {
+        for (let r = 0; r < ROWS; r++) {
+          const x = c * CELL_W;
+          const y = r * CELL_H;
+
+          // 棋盘格交错微弱草地纹理
+          ctx.fillStyle = (c + r) % 2 === 0 ? '#1f5738' : '#1a4b30';
+          ctx.fillRect(x, y, CELL_W, CELL_H);
+
+          // 细格线
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, CELL_W, CELL_H);
+        }
+      }
+
+      // 2. 绘制小河水域
+      drawRiverArea(1, 3, 2, 3);
+      drawRiverArea(4, 3, 2, 3);
+
+      // 3. 绘制陷阱与兽穴
+      drawSpecialTile(3, 0, 'den_blue', '🏰 蓝穴');
+      drawSpecialTile(3, 8, 'den_red', '🏰 红穴');
+
+      drawSpecialTile(2, 0, 'trap_blue', '🕳️');
+      drawSpecialTile(4, 0, 'trap_blue', '🕳️');
+      drawSpecialTile(3, 1, 'trap_blue', '🕳️');
+
+      drawSpecialTile(2, 8, 'trap_red', '🕳️');
+      drawSpecialTile(4, 8, 'trap_red', '🕳️');
+      drawSpecialTile(3, 7, 'trap_red', '🕳️');
+
+      // 4. 绘制上一手轨迹高亮
+      if (game.lastMove) {
+        const { from, to } = game.lastMove;
+        ctx.fillStyle = 'rgba(252, 211, 77, 0.22)';
+        ctx.fillRect(from.c * CELL_W, from.r * CELL_H, CELL_W, CELL_H);
+        ctx.fillRect(to.c * CELL_W, to.r * CELL_H, CELL_W, CELL_H);
+
+        // 虚线轨迹连线
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(from.c * CELL_W + CELL_W / 2, from.r * CELL_H + CELL_H / 2);
+        ctx.lineTo(to.c * CELL_W + CELL_W / 2, to.r * CELL_H + CELL_H / 2);
+        ctx.strokeStyle = '#fcd34d';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // 5. 选中棋子高亮圈
+      if (game.selectedPos) {
+        const { c, r } = game.selectedPos;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.fillRect(c * CELL_W, r * CELL_H, CELL_W, CELL_H);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(c * CELL_W + 2, r * CELL_H + 2, CELL_W - 4, CELL_H - 4);
+      }
+
+      // 6. 可走点提示光斑
+      for (const m of game.validMoves) {
+        const mx = m.c * CELL_W + CELL_W / 2;
+        const my = m.r * CELL_H + CELL_H / 2;
+
+        if (m.type.includes('capture')) {
+          // 目标吃子圈
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(mx, my, CELL_W * 0.4, 0, Math.PI * 2);
+          ctx.stroke();
+          // 角标脉冲小标
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
+          ctx.fill();
+        } else {
+          // 普通移动绿斑
+          ctx.fillStyle = '#4ade80';
+          ctx.beginPath();
+          ctx.arc(mx, my, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 7. 绘制所有存活棋子
+      for (let c = 0; c < COLS; c++) {
+        for (let r = 0; r < ROWS; r++) {
+          const piece = game.board[c][r];
+          if (piece) {
+            drawPiece(c, r, piece);
+          }
+        }
+      }
+    }
+
+    // 绘制小河水流质感
+    function drawRiverArea(startCol, startRow, wCols, hRows) {
+      const rx = startCol * CELL_W;
+      const ry = startRow * CELL_H;
+      const rw = wCols * CELL_W;
+      const rh = hRows * CELL_H;
+
+      const grad = ctx.createLinearGradient(rx, ry, rx + rw, ry + rh);
+      grad.addColorStop(0, '#0284c7');
+      grad.addColorStop(0.5, '#0369a1');
+      grad.addColorStop(1, '#075985');
+      ctx.fillStyle = grad;
+      ctx.fillRect(rx, ry, rw, rh);
+
+      // 水波纹线条
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1.5;
+      for (let y = ry + 15; y < ry + rh; y += 22) {
+        ctx.beginPath();
+        ctx.moveTo(rx + 6, y);
+        ctx.bezierCurveTo(rx + rw * 0.3, y - 5, rx + rw * 0.6, y + 5, rx + rw - 6, y);
+        ctx.stroke();
+      }
+
+      // 岸边水草点缀
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('🌊 小河', rx + rw / 2 - 18, ry + rh / 2 + 4);
+    }
+
+    // 绘制兽穴与陷阱
+    function drawSpecialTile(c, r, type, label) {
+      const x = c * CELL_W;
+      const y = r * CELL_H;
+
+      if (type.startsWith('den')) {
+        // 兽穴
+        ctx.fillStyle = type === 'den_blue' ? 'rgba(37, 99, 235, 0.45)' : 'rgba(220, 38, 38, 0.45)';
+        ctx.fillRect(x, y, CELL_W, CELL_H);
+        ctx.strokeStyle = type === 'den_blue' ? '#93c5fd' : '#fca5a5';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x + 2, y + 2, CELL_W - 4, CELL_H - 4);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x + CELL_W / 2, y + CELL_H / 2);
+      } else {
+        // 陷阱
+        ctx.fillStyle = type === 'trap_blue' ? 'rgba(59, 130, 246, 0.25)' : 'rgba(239, 68, 68, 0.25)';
+        ctx.fillRect(x, y, CELL_W, CELL_H);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 3, y + 3, CELL_W - 6, CELL_H - 6);
+
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🕳️', x + CELL_W / 2, y + CELL_H / 2 - 6);
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillText('陷阱', x + CELL_W / 2, y + CELL_H / 2 + 12);
+      }
+    }
+
+    // 绘制生动拟真棋子
+    function drawPiece(c, r, piece) {
+      const cx = c * CELL_W + CELL_W / 2;
+      const cy = r * CELL_H + CELL_H / 2;
+      const radius = CELL_W * 0.41;
+
+      // 投影
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+
+      // 棋子外圆渐变背景
+      const grad = ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.3, radius * 0.1, cx, cy, radius);
+      if (piece.side === SIDE_RED) {
+        grad.addColorStop(0, '#f87171');
+        grad.addColorStop(0.7, '#dc2626');
+        grad.addColorStop(1, '#991b1b');
+      } else {
+        grad.addColorStop(0, '#60a5fa');
+        grad.addColorStop(0.7, '#2563eb');
+        grad.addColorStop(1, '#1e40af');
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+
+      // 金色/银色双重立体边框
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius - 1, 0, Math.PI * 2);
+      ctx.strokeStyle = piece.side === SIDE_RED ? '#fde047' : '#e0e7ff';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // 动物 Emoji 图标
+      ctx.font = `${Math.floor(CELL_W * 0.36)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(piece.emoji, cx, cy - 8);
+
+      // 汉字与等级标识 (如: 象 8)
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = 3;
+      ctx.fillText(`${piece.name} (${piece.rank})`, cx, cy + 16);
+      ctx.shadowBlur = 0;
+    }
+
+    // 更新侧边栏存活棋子卡片展示
+    function updateShelves() {
+      const redPieces = [];
+      const bluePieces = [];
+
+      for (let c = 0; c < COLS; c++) {
+        for (let r = 0; r < ROWS; r++) {
+          const p = game.board[c][r];
+          if (p) {
+            if (p.side === SIDE_RED) redPieces.push(p.rank);
+            else bluePieces.push(p.rank);
+          }
+        }
+      }
+
+      renderShelf('shelfRed', redPieces);
+      renderShelf('shelfBlue', bluePieces);
+
+      // 切换指示卡高亮
+      const cardRed = document.getElementById('cardRed');
+      const cardBlue = document.getElementById('cardBlue');
+      if (game.currentTurn === SIDE_RED) {
+        cardRed.classList.add('active-turn');
+        cardBlue.classList.remove('active-turn');
+      } else {
+        cardBlue.classList.add('active-turn');
+        cardRed.classList.remove('active-turn');
+      }
+    }
+
+    function renderShelf(containerId, aliveRanks) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      // 8 ~ 1 倒序展示
+      for (let rank = 8; rank >= 1; rank--) {
+        const item = document.createElement('div');
+        item.className = 'mini-piece';
+        const isAlive = aliveRanks.includes(rank);
+        if (!isAlive) item.classList.add('captured');
+        item.innerHTML = ANIMAL_INFO[rank].emoji;
+        item.title = `${ANIMAL_INFO[rank].name} (等级 ${rank})`;
+        container.appendChild(item);
+      }
+    }
+
+    // 更新顶部横幅提示
+    function updateBanner(text, subText) {
+      const banner = document.getElementById('statusMessage');
+      const sub = document.getElementById('statusSubTip');
+      if (text) banner.innerHTML = text;
+      if (subText) sub.innerHTML = subText;
+    }
+
+    // 棋盘点击响应逻辑
+    canvas.addEventListener('pointerdown', (e) => {
+      if (game.gameOver || game.isAiThinking) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const clickX = (e.clientX - rect.left) * scaleX;
+      const clickY = (e.clientY - rect.top) * scaleY;
+
+      const c = Math.floor(clickX / CELL_W);
+      const r = Math.floor(clickY / CELL_H);
+
+      if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+
+      const clickedPiece = game.board[c][r];
+
+      // 1. 如果已选棋子，点击了合法移动目标点
+      if (game.selectedPos) {
+        const isTargetMove = game.validMoves.some(m => m.c === c && m.r === r);
+        if (isTargetMove) {
+          executeMove(game.selectedPos, { c, r });
+          return;
+        }
+      }
+
+      // 2. 选择己方棋子
+      if (clickedPiece && clickedPiece.side === game.currentTurn) {
+        game.selectedPos = { c, r };
+        game.validMoves = game.getValidMoves(c, r);
+        game.sound.playSelect();
+        drawBoard();
+        updateBanner(`<span>🐾</span> 已选中【${clickedPiece.emoji} ${clickedPiece.name}】，点击绿点移动`);
+        return;
+      }
+
+      // 3. 点击空白或其他无效位置，取消选中
+      game.selectedPos = null;
+      game.validMoves = [];
+      drawBoard();
+    });
+
+    // 执行走子流程
+    let aiTimer = null;
+    function executeMove(from, to) {
+      const winner = game.makeMove(from, to);
+      game.selectedPos = null;
+      game.validMoves = [];
+
+      drawBoard();
+      updateShelves();
+
+      if (winner) {
+        handleGameOver(winner);
+        return;
+      }
+
+      // 如果是人机模式且轮到蓝方（电脑）
+      if (game.mode === 'pve' && game.currentTurn === SIDE_BLUE) {
+        game.isAiThinking = true;
+        updateBanner('<span>🤖</span> 电脑小伙伴正在思考中...', '请稍候片刻');
+
+        if (aiTimer) clearTimeout(aiTimer);
+        aiTimer = setTimeout(() => {
+          aiTimer = null;
+          if (game.gameOver) return;
+          const bestMove = AnimalChessAI.getBestMove(game, game.difficulty);
+          if (bestMove) {
+            const aiWinner = game.makeMove(bestMove.from, bestMove.to);
+            drawBoard();
+            updateShelves();
+
+            game.isAiThinking = false;
+
+            if (aiWinner) {
+              handleGameOver(aiWinner);
+            } else {
+              updateBanner('<span>🚩</span> 轮到红方走子', '点击己方棋子进行移动');
+            }
+          } else {
+            // AI 无路可走，玩家胜
+            game.isAiThinking = false;
+            handleGameOver(SIDE_RED);
+          }
+        }, 500);
+      } else {
+        const sideName = game.currentTurn === SIDE_RED ? '红方' : '蓝方';
+        updateBanner(`<span>🚩</span> 轮到【${sideName}】走子`, '请选择棋子');
+      }
+    }
+
+    // 游戏结束结算
+    function handleGameOver(winner) {
+      const modal = document.getElementById('victoryModal');
+      const icon = document.getElementById('vicIcon');
+      const title = document.getElementById('vicTitle');
+      const desc = document.getElementById('vicDesc');
+
+      if (winner === SIDE_RED) {
+        game.sound.playWin();
+        icon.textContent = '🎉';
+        title.textContent = '恭喜红方获胜！';
+        title.style.color = '#86efac';
+        desc.textContent = game.mode === 'pve' ?
+          '智慧超群！成功攻破森林防线，战胜了电脑智者！' :
+          '恭喜红方！成功击败蓝方，勇夺森林霸主桂冠！';
+      } else {
+        if (game.mode === 'pve') {
+          game.sound.playLose();
+          icon.textContent = '🦊';
+          title.textContent = '蓝方电脑获胜！';
+          title.style.color = '#60a5fa';
+          desc.textContent = '电脑智者抢先占领了兽穴！调整策略再战一局吧～';
+        } else {
+          game.sound.playWin();
+          icon.textContent = '🏆';
+          title.textContent = '恭喜蓝方获胜！';
+          title.style.color = '#60a5fa';
+          desc.textContent = '恭喜蓝方！步步为营智夺胜局！';
+        }
+      }
+
+      modal.classList.add('show');
+    }
+
+    /* =========================================================================
+     * 5. 界面事件绑定与系统初始化
+     * ========================================================================= */
+    // 音效开关
+    const btnSound = document.getElementById('btnSoundToggle');
+    btnSound.addEventListener('click', () => {
+      game.sound.enabled = !game.sound.enabled;
+      btnSound.innerHTML = game.sound.enabled ? '<span>🔊</span> 音效: 开' : '<span>🔇</span> 音效: 关';
+    });
+
+    // 规则弹窗
+    const btnRule = document.getElementById('btnRuleHelp');
+    const ruleModal = document.getElementById('ruleModal');
+    const btnCloseRule = document.getElementById('btnCloseRule');
+
+    btnRule.addEventListener('click', () => ruleModal.classList.add('show'));
+    btnCloseRule.addEventListener('click', () => ruleModal.classList.remove('show'));
+
+    // 悔棋
+    document.getElementById('btnUndo').addEventListener('click', () => {
+      if (game.isAiThinking) return;
+      if (aiTimer) {
+        clearTimeout(aiTimer);
+        aiTimer = null;
+      }
+      if (game.undo()) {
+        game.sound.playMove();
+        drawBoard();
+        updateShelves();
+        updateBanner('<span>↩️</span> 悔棋成功，请继续走子');
+      }
+    });
+
+    // 重玩
+    function restartGame() {
+      if (aiTimer) {
+        clearTimeout(aiTimer);
+        aiTimer = null;
+      }
+      game.isAiThinking = false;
+      game.initBoard();
+      drawBoard();
+      updateShelves();
+      document.getElementById('victoryModal').classList.remove('show');
+      updateBanner('<span>🚩</span> 新对局已开始！红方先手');
+    }
+    document.getElementById('btnRestart').addEventListener('click', restartGame);
+    document.getElementById('btnModalRestart').addEventListener('click', restartGame);
+
+    // 模式切换 (PVE / PVP)
+    const btnModePVE = document.getElementById('btnModePVE');
+    const btnModePVP = document.getElementById('btnModePVP');
+    const diffGroup = document.getElementById('diffButtonGroup');
+    const roleBlue = document.getElementById('roleBlue');
+
+    btnModePVE.addEventListener('click', () => {
+      btnModePVE.classList.add('active');
+      btnModePVP.classList.remove('active');
+      diffGroup.style.display = 'flex';
+      roleBlue.textContent = '🤖 电脑 AI';
+      game.mode = 'pve';
+      restartGame();
+    });
+
+    btnModePVP.addEventListener('click', () => {
+      btnModePVP.classList.add('active');
+      btnModePVE.classList.remove('active');
+      diffGroup.style.display = 'none';
+      roleBlue.textContent = '👤 蓝方玩家 (同屏切磋)';
+      game.mode = 'pvp';
+      restartGame();
+    });
+
+    // AI 难度切换
+    const diffBtns = [
+      document.getElementById('diffEasy'),
+      document.getElementById('diffNormal'),
+      document.getElementById('diffHard')
+    ];
+
+    diffBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        diffBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        game.difficulty = btn.dataset.diff;
+      });
+    });
+
+    // 首次载入渲染
+    drawBoard();
+    updateShelves();
+  </script>
+</body>
+</html>

@@ -41,6 +41,12 @@ var throttle = new LoginThrottle();
 // 配置变更信号：家长保存配置后唤醒该账号下所有正在长轮询的儿童设备（见 /api/watch）
 var signal = new WatchSignal();
 
+// 用户反馈：意见反馈 / 满意度 / 问卷统一落 data/feedback/*.jsonl，
+// 官网（同域 /api/）与各端都写这里，管理端用 AdminKey 看明细、导 CSV。
+var feedback = new FeedbackStore(Path.Combine(dataDir, "feedback"));
+var feedbackLimiter = new FeedbackLimiter();
+var feedbackAdminKey = builder.Configuration["Feedback:AdminKey"] ?? "";
+
 // 启动时间：/api/health 用它算运行时长，便于判断「服务是不是刚重启过」
 var startedAt = DateTimeOffset.UtcNow;
 
@@ -59,6 +65,26 @@ static string? TokenOf(HttpContext ctx, string? query)
 }
 
 AuthSession? SessionOf(HttpContext ctx, string? query) => auth.Resolve(TokenOf(ctx, query));
+
+// 反馈管理端鉴权：优先用配置里的 Feedback:AdminKey（官网管理页用），
+// 没配这个键时退回「已登录的 owner 账号」——开发机上不必为了看几条反馈去改配置。
+// 比较走定长比较，避免有人靠响应时间逐字节猜密钥。
+bool IsFeedbackAdmin(HttpContext ctx, string? key)
+{
+    var given = key;
+    if (string.IsNullOrWhiteSpace(given))
+        given = ctx.Request.Headers["X-Admin-Key"].ToString();
+
+    if (!string.IsNullOrWhiteSpace(feedbackAdminKey) &&
+        !string.IsNullOrWhiteSpace(given) &&
+        given.Length == feedbackAdminKey.Length &&
+        System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(given),
+            System.Text.Encoding.UTF8.GetBytes(feedbackAdminKey)))
+        return true;
+
+    return SessionOf(ctx, null) is { Role: "owner" };
+}
 
 static object UserPayload(AuthSession s) => new
 {
@@ -280,8 +306,20 @@ app.MapGet("/api/health", () => Results.Ok(new
     pulseCount = signal.PulseCount,
     lastPulseAt = signal.LastPulseUtc,
     accountCount = auth.Store.Count,     // 0 表示还没注册家长账号
+    // 用户反馈：官网「数据看板」的数据源。这里只给条数，明细要 AdminKey。
+    feedbackCount = feedback.Count,
     latestAppVersion = Releases.Latest.Version,
-    latestAppVersionCode = Releases.Latest.VersionCode
+    latestAppVersionCode = Releases.Latest.VersionCode,
+    // 增量补丁发到哪一版了：运维不用登服务器翻目录，看这一行就知道
+    patchVersion = new
+    {
+        windows = PatchFeed.VersionOf(
+            app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"),
+            "windows"),
+        android = PatchFeed.VersionOf(
+            app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"),
+            "android")
+    }
 }));
 
 // ── 发布信息：给客户端「检查更新」和官网更新日志用的同一份数据 ──
@@ -341,6 +379,27 @@ app.MapGet("/api/app/update-check", (int versionCode, string? platform) =>
         signatureChanged = versionCode < Releases.SignatureChangedAt,
         downloadUrl,
         releasePage
+    });
+});
+
+// ── 增量更新：返回签名清单与补丁文件根地址 ──────────────────────────────
+// 服务端只转发发版机上签好的文件，不持有私钥、不在线签名：
+// 即使服务器被入侵，也发不出能通过客户端验签的补丁（见 Docs/增量更新方案.md 第七节）。
+app.MapGet("/api/app/patch", (string? platform, string? from, IWebHostEnvironment env) =>
+{
+    var key = (platform ?? "android").Trim().ToLowerInvariant();
+    if (key is not ("android" or "windows"))
+    {
+        return Results.BadRequest(new { ok = false, error = "platform 只支持 android / windows" });
+    }
+
+    var webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+    var feed = PatchFeed.Read(webRoot, key, from);
+    return Results.Ok(feed ?? new
+    {
+        ok = true,
+        available = false,
+        reason = "服务端还没有发布这个平台的增量补丁，请用完整安装包更新"
     });
 });
 
@@ -519,6 +578,87 @@ app.MapGet("/api/story/search", async (MxnzpStoryService svc, string keyword, in
     });
 });
 
+// ── 用户反馈 / 满意度 / 问卷 ─────────────────────────────────────────────
+// 三端（Windows / Android / Linux / 鸿蒙）与官网共用这一组接口：
+//   POST /api/feedback/submit   提交（幂等：同 id 重发不会多算一份）
+//   GET  /api/feedback/stats    汇总（官网「数据看板」与提交页的成功提示都读它）
+//   GET  /api/feedback/quotes   官网展示的匿名留言（只有勾选了「同意展示」的）
+//   GET  /api/feedback/list     管理端明细（需要 AdminKey 或 owner 令牌）
+//   GET  /api/feedback/export.csv  导出（Excel 可直接打开）
+//   DELETE /api/feedback/{id}   按用户要求删除
+//
+// 隐私边界写死在接口里：不存 IP、不存设备号、不存账号；联系方式只有管理端能看到。
+
+app.MapPost("/api/feedback/submit", (FeedbackItem body, HttpContext ctx) =>
+{
+    // nginx 反代后 RemoteIpAddress 全是 127.0.0.1，必须优先看 X-Forwarded-For，
+    // 否则限流会变成「全站共享 60 条/天」，正常用户第二天就提交不了了。
+    var forwarded = ctx.Request.Headers["X-Forwarded-For"].ToString();
+    var ip = !string.IsNullOrWhiteSpace(forwarded)
+        ? forwarded.Split(',')[0].Trim()
+        : ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+    var isLocal = ip is "127.0.0.1" or "::1" or "unknown";
+    if (!feedbackLimiter.Allow(ip, isLocal ? 60 : 12, isLocal ? 600 : 60))
+        return Results.Json(new { ok = false, error = "提交有点频繁，休息一会儿再试" }, statusCode: 429);
+
+    if (!feedback.TryAdd(body, out var error, out var duplicate))
+        return Results.Json(new { ok = false, error }, statusCode: 400);
+
+    return Results.Ok(new { ok = true, duplicate, id = body.Id });
+});
+
+app.MapGet("/api/feedback/stats", (int? days, HttpContext ctx) =>
+{
+    var window = Math.Clamp(days ?? 90, 0, 3650);
+    ctx.Response.Headers.CacheControl = "no-store";
+    return Results.Ok(feedback.Stats(window));
+});
+
+app.MapGet("/api/feedback/quotes", (int? limit, HttpContext ctx) =>
+{
+    ctx.Response.Headers.CacheControl = "no-store";
+    return Results.Ok(new { ok = true, items = feedback.PublicQuotes(limit ?? 6) });
+});
+
+app.MapGet("/api/feedback/list", (string? kind, int? days, int? limit, int? offset, string? key, HttpContext ctx) =>
+{
+    if (!IsFeedbackAdmin(ctx, key))
+        return Results.Json(new { ok = false, error = "需要管理密钥" }, statusCode: 401);
+
+    var window = Math.Clamp(days ?? 0, 0, 3650);
+    ctx.Response.Headers.CacheControl = "no-store";
+    return Results.Ok(new
+    {
+        ok = true,
+        total = feedback.CountOf(kind, window),
+        items = feedback.Query(kind, window, limit ?? 100, offset ?? 0)
+    });
+});
+
+app.MapGet("/api/feedback/export.csv", (string? kind, int? days, string? key, HttpContext ctx) =>
+{
+    if (!IsFeedbackAdmin(ctx, key))
+        return Results.Json(new { ok = false, error = "需要管理密钥" }, statusCode: 401);
+
+    var csv = feedback.ToCsv(kind, Math.Clamp(days ?? 0, 0, 3650));
+    // BOM 不能省：没有它 Excel 会把 UTF-8 中文按 GBK 解，整列问号
+    var bytes = System.Text.Encoding.UTF8.GetPreamble()
+        .Concat(System.Text.Encoding.UTF8.GetBytes(csv)).ToArray();
+    return Results.File(bytes, "text/csv; charset=utf-8",
+        $"kidssafe-feedback-{DateTime.Now:yyyyMMdd-HHmm}.csv");
+});
+
+app.MapDelete("/api/feedback/{id}", (string id, string? key, HttpContext ctx) =>
+{
+    if (!IsFeedbackAdmin(ctx, key))
+        return Results.Json(new { ok = false, error = "需要管理密钥" }, statusCode: 401);
+
+    if (!feedback.TryDelete(id, out var error))
+        return Results.Json(new { ok = false, error }, statusCode: 404);
+    return Results.Ok(new { ok = true, id });
+});
+
 // 监听所有网卡，方便局域网内其他设备访问。
 // 默认 5180；同一个项目要开第二个实例做验证时，用环境变量 KS_URLS=http://127.0.0.1:5199 换端口，
 // 免得和自己的调试进程抢端口（app.Urls 一旦 Add 就会盖掉 ASPNETCORE_URLS / --urls）。
@@ -533,6 +673,9 @@ Console.WriteLine($"  后台地址：{lan}/  （登录页 {lan}/login.html）");
 Console.WriteLine(auth.Store.Count == 0
     ? $"  还没有家长账号：打开网页注册；也可以先用老密码 {authOptions.AdminPin} 登录"
     : $"  已注册 {auth.Store.Count} 个家长账号：请用账号密码登录；(老密码登录已{(auth.PinLoginEnabled ? "开启" : "关闭")})");
+Console.WriteLine($"  已收到用户反馈 {feedback.Count} 条" + (string.IsNullOrWhiteSpace(feedbackAdminKey)
+    ? "（未配置 Feedback:AdminKey，管理端只能用 owner 账号令牌访问）"
+    : "（管理端：/api/feedback/list?key=<AdminKey>）"));
 Console.WriteLine("──────────────────────────────────────────────");
 
 app.Run();

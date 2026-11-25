@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.SurveyPage"
+             Title="使用问卷"
+             BackgroundColor="#FDF6EC">
+
+    <ContentPage.Resources>
+        <Style x:Key="ChipBorder" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="#EADFD3" />
+            <Setter Property="StrokeThickness" Value="1.5" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Border" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="BackgroundColor" Value="#FDEBDA" />
+                    <Setter Property="Stroke" Value="#E2603D" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ChipLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="TextColor" Value="#7C6353" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Label" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="TextColor" Value="#B4552F" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" BackgroundColor="#B3FFFFFF">
+            <Button Text="← 返回" TextColor="#5D4037" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="📋 使用问卷" TextColor="#5D4037" FontSize="20"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="✏️" FontSize="22" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,10,18,40">
+            <VerticalStackLayout Spacing="14">
+
+                <Label Text="6 道选择题，30 秒填完。我们靠它决定下一个版本先做什么——比拍脑袋准。"
+                       FontSize="13.5" TextColor="#8D6E63" LineBreakMode="WordWrap" />
+                <Label Text="{Binding ProgressText}" FontSize="13" TextColor="#B4552F" FontAttributes="Bold" />
+
+                <!-- 题目：外层一题、内层若干选项，都用 BindableLayout 生成 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="16" BindableLayout.ItemsSource="{Binding Questions}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="{Binding Title}" FontSize="15" FontAttributes="Bold"
+                                           TextColor="#3A2B22" />
+                                    <FlexLayout Direction="Row" Wrap="Wrap"
+                                                BindableLayout.ItemsSource="{Binding Options}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource ChipBorder}" Margin="0,0,8,8">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Tapped="OnQuestionTap" />
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="{Binding Text}" Style="{StaticResource ChipLabel}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </FlexLayout>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 补充 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="其他想补充的（选填）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <Editor Text="{Binding Content}" Placeholder="使用场景、设备型号、期待的功能，都可以写在这里"
+                                FontSize="14" TextColor="#3A2B22" BackgroundColor="#FFFDF9"
+                                AutoSize="TextChanges" MinimumHeightRequest="100" MaxLength="2000" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 联系方式 + 公开 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="联系方式（选填）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <Entry Text="{Binding Contact}" Placeholder="邮箱 / 微信 / QQ"
+                               FontSize="14" MaxLength="120" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="允许匿名展示在官网" FontSize="14.5" TextColor="#3A2B22" />
+                                <Label Text="只显示正文、星级和月份" FontSize="12" TextColor="#A1887F" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding AllowPublic}" OnColor="#E2603D"
+                                    ThumbColor="White" VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="提交问卷" FontSize="16" FontAttributes="Bold" BackgroundColor="#E2603D"
+                        TextColor="White" CornerRadius="24" HeightRequest="52"
+                        IsEnabled="{Binding CanSubmit}" Clicked="OnSubmit" />
+
+                <Label Text="{Binding Status}" IsVisible="{Binding HasStatus}" FontSize="13.5"
+                       TextColor="#2E7D32" LineBreakMode="WordWrap" />
+                <Label Text="{Binding PendingText}" IsVisible="{Binding HasPending}" FontSize="12.5"
+                       TextColor="#B4552F" LineBreakMode="WordWrap" />
+
+                <Label Text="问卷结果是汇总统计用的，不会公开某一个人的答案；愿意匿名展示的只有你写的文字。"
+                       FontSize="11.5" TextColor="#A1887F" LineBreakMode="WordWrap" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

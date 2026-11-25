@@ -1,8 +1,12 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import KidsSafe 1.0
 
+/*
+ * 启动闪屏：纯展示，不做任何导航。
+ * 什么时候消失由 Main.qml 的 Loader 控制（1.4 秒后淡出并卸载），
+ * 所以这里没有 Timer，也不碰 StackView。
+ */
 Item {
     id: page
 
@@ -27,10 +31,12 @@ Item {
                 GradientStop { position: 1.0; color: "#7C5CE0" }
             }
 
-            Text {
+            GlyphIcon {
                 anchors.centerIn: parent
-                text: "🚀"
-                font.pixelSize: 64
+                width: 78
+                height: 78
+                name: "rocket"
+                color: "white"
             }
 
             SequentialAnimation on scale {
@@ -64,19 +70,5 @@ Item {
         width: 44
         height: 44
         running: true
-    }
-
-    Timer {
-        interval: 1400
-        running: true
-        onTriggered: {
-            if (!Settings.onboardingDone) {
-                StackView.view.replace(null, Qt.resolvedUrl("OnboardingPage.qml"));
-            } else if (ScreenTime.lockedOut) {
-                StackView.view.replace(null, Qt.resolvedUrl("LockoutPage.qml"));
-            } else {
-                StackView.view.replace(null, Qt.resolvedUrl("HomePage.qml"));
-            }
-        }
     }
 }

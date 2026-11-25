@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import KidsSafe 1.0
 
 /*
@@ -13,12 +14,14 @@ import KidsSafe 1.0
 Item {
     id: page
 
+    // TapHandler 不是 Item，`Window.window` 附加属性对它返回 null——附加属性
+    // 是靠「item → 所在窗口」反查的，handler 没有窗口归属。所以统一在根 Item
+    // 上取一次窗口，页面里所有跳转都用这个属性；MouseArea、TapHandler、定时器
+    // 里表现一致。（deepin / Qt 6.8 实测：MouseArea 里能用、TapHandler 里必 null）
+    readonly property var navWin: Window.window
+
     property string purpose: "dashboard"
     property string errorText: ""
-
-    function backToHome() {
-        StackView.view.pop(null);
-    }
 
     Backdrop {
         anchors.fill: parent
@@ -75,7 +78,7 @@ Item {
             text: "返回"
             accentColor: "#EFE1D0"
             labelColor: "#7A6759"
-            onClicked: StackView.view.pop()
+            onClicked: page.navWin.popPage()
         }
     }
 
@@ -91,11 +94,18 @@ Item {
     function grant() {
         if (page.purpose === "extend") {
             ScreenTime.extend(15);
-            page.backToHome();
+            /*
+             * 一直弹回桌面，而不是只弹一层。
+             *
+             * 这条路的入口在锁定页上，栈是「桌面 → 锁定页 → 本页」。只弹一层
+             * 会回到锁定页：时间明明已经加上了，屏幕上还是「今天的时间用完啦」，
+             * 家长只能再点一次。popToRoot 会把锁定页一起收掉，落到真正的桌面。
+             */
+            page.navWin.popToRoot();
             return;
         }
 
         pad.clear();
-        StackView.view.push(Qt.resolvedUrl("ParentDashboardPage.qml"));
+        page.navWin.pushPage(Qt.resolvedUrl("ParentDashboardPage.qml"));
     }
 }

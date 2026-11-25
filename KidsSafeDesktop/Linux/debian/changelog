@@ -1,0 +1,10 @@
+kidssafe (1.19.0) unstable; urgency=medium
+
+  * 首个 Linux 发行版包。
+  * 儿童桌面：应用白名单、每日时长、护眼模式、头像与昵称。
+  * 家长后台：PIN 验证、时长延长、白名单、密码重置、退出会话。
+  * 内容：安全学堂（10 个主题）、故事屋（可接自建服务端）、15 款
+    网页小游戏（QtWebEngine 可选）、红白机（SimpleNes）。
+  * 会话：X11 / Wayland 两套入口，崩溃自动重启，家长主动退出才算结束。
+
+ -- KidsSafe Desktop <kidssafe@localhost>  Sat, 21 Nov 2026 16:45:00 +0800

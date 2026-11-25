@@ -31,10 +31,19 @@ class Kiosk : public QObject
     /// 是否运行在专属 kiosk 会话里（由会话脚本设置环境变量）。
     Q_PROPERTY(bool sessionMode READ sessionMode CONSTANT)
 
+    /// 调试模式：窗口化运行，不无边框、不全屏、允许关闭。
+    ///
+    /// 从登录界面进会话（或 kiosk 会话）时是全屏无边框，切不到终端看日志，
+    /// 出了问题只能靠猜。排障时用 `kidssafe --windowed` 起一个普通窗口，
+    /// 旁边就摆着终端，日志能实时看。
+    Q_PROPERTY(bool windowed READ windowed NOTIFY windowedChanged)
+
 public:
     explicit Kiosk(QObject *parent = nullptr);
 
     bool sessionMode() const;
+    bool windowed() const;
+    void setWindowed(bool on);
 
     /// 由 QML 在启动时调用，接管主窗口。幂等。
     Q_INVOKABLE void attach(QWindow *window);
@@ -48,9 +57,13 @@ public:
     /// 紧急恢复：清除锁定标记并退出。帮助页/故障时用。
     Q_INVOKABLE void panicRestore();
 
+Q_SIGNALS:
+    void windowedChanged();
+
 private:
     void writeMarker();
     void clearMarker();
 
     QPointer<QWindow> m_window;
+    bool m_windowed = false;
 };

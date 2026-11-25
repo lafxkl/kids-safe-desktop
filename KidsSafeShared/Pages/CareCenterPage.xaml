@@ -158,6 +158,31 @@
                     </Grid>
                 </Frame>
 
+                <!-- 绘本怎么找（免费合法来源 + 经典绘本去哪借，离线清单 + 外链） -->
+                <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#E9F1FB"
+                       BorderColor="#BBDEFB">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenReading" />
+                    </Frame.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="📚" FontSize="26" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="7">
+                                <Label Text="绘本怎么找" FontSize="15" FontAttributes="Bold" TextColor="#1B4F72"
+                                       VerticalOptions="Center" />
+                                <Border BackgroundColor="#2E86C1" StrokeThickness="0" Padding="6,1"
+                                        StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                    <Label Text="免费合法" TextColor="White" FontSize="9.5" />
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Label Text="三个能免费看童书的网站，和经典绘本该去哪借"
+                                   FontSize="11.5" TextColor="#5B7C99" LineHeight="1.35" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="#7FA8C9"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+
                 <!-- 儿童心理学 · 自闭症关怀（公益科普长文，离线内置） -->
                 <Frame Padding="16,13" CornerRadius="20" HasShadow="False" BackgroundColor="#E8F6F2"
                        BorderColor="#B2DFDB">

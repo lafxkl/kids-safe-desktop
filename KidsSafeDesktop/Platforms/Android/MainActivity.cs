@@ -47,6 +47,12 @@ public class MainActivity : MauiAppCompatActivity
     /// <summary>家长在家长入口点了「退出」：此后不再自动回前台。</summary>
     public static void AllowExit() => _allowExit = true;
 
+    /// <summary>
+    /// 当前是否处于「临时放行」窗口（去系统设置授权 / 打开家长放行的外部应用）。
+    /// 无障碍守护也要看这个标记：否则家长一打开设置就被自己弹回来，永远授不了权。
+    /// </summary>
+    public static bool AutoReturnSuppressed => DateTime.UtcNow < _suppressUntil;
+
     /// <summary>临时放行一段时间（例如去系统设置授权、或启动家长放行的外部应用）。</summary>
     public static void SuppressAutoReturnFor(TimeSpan duration)
     {
@@ -83,7 +89,30 @@ public class MainActivity : MauiAppCompatActivity
         Platforms.Android.AndroidHooks.SuppressAutoReturnFor = SuppressAutoReturnFor;
         Platforms.Android.AndroidHooks.MainActivityType = typeof(MainActivity);
 
-        // 荣耀推送：初始化 + 申请 token（后台线程执行，失败只写 nav.log，绝不影响启动）
+        // ── 常驻守护（阳光守护式运行方案）────────────────────────────────
+        // 服务、无障碍、设备管理员都实现在本工程（Platforms/Android/Guard），
+        // 共享库不能引用 App 工程，所以和上面几项一样走钩子。
+        Platforms.Android.AndroidHooks.StartGuardService = () => Droid.Guard.KioskGuard.Start(this);
+        Platforms.Android.AndroidHooks.StopGuardService = () => Droid.Guard.KioskGuard.Stop(this);
+        Platforms.Android.AndroidHooks.IsAccessibilityGuardOn =
+            () => Droid.Guard.KioskAccessibilityService.IsEnabled(this);
+        Platforms.Android.AndroidHooks.OpenAccessibilitySettings =
+            () => Droid.Guard.KioskAccessibilityService.OpenSettings(this);
+        Platforms.Android.AndroidHooks.IsDeviceAdminOn =
+            () => Droid.Guard.KioskDeviceAdmin.IsActive(this);
+        Platforms.Android.AndroidHooks.RequestDeviceAdmin =
+            () => Droid.Guard.KioskDeviceAdmin.Request(this);
+        Platforms.Android.AndroidHooks.DisableDeviceAdmin =
+            () => Droid.Guard.KioskDeviceAdmin.Disable(this);
+
+        // 冷启动就把前台服务拉起来：一次启动失败（比如通知权限没给）不影响后续，
+        // KioskGuard.Start 内部已经 try/catch。
+        Droid.Guard.KioskGuard.Start(this);
+
+        // Android 13+ 前台服务的通知要运行时授权；不授权服务照跑但通知不显示，
+        // 家长会以为「守护没生效」，所以首启问一次。
+        TryRequestNotificationPermission();
+
         HonorPush.Start();
 
         // 注册「返回守卫」：全屏手势下从左右边缘内滑就是返回键，极易误触退出。
@@ -185,6 +214,31 @@ public class MainActivity : MauiAppCompatActivity
 
         a._lockTaskTried = false;
         a.TryStartLockTask();
+    }
+
+    /// <summary>
+    /// Android 13+ 的 POST_NOTIFICATIONS：前台服务的常驻通知需要它。
+    /// 不申请也能跑，但通知栏里看不到「守护中」，家长会以为功能没生效。
+    /// 只问一次；拒绝后不再骚扰（系统也只允许问有限次数）。
+    /// </summary>
+    private void TryRequestNotificationPermission()
+    {
+        try
+        {
+            if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+            {
+                return;
+            }
+            if (CheckSelfPermission("android.permission.POST_NOTIFICATIONS") == Permission.Granted)
+            {
+                return;
+            }
+            RequestPermissions(new[] { "android.permission.POST_NOTIFICATIONS" }, 0x201);
+        }
+        catch (Exception ex)
+        {
+            Helpers.NavFx.Log(ex);
+        }
     }
 
     // ── 防退出实现 ────────────────────────────────────────────────────────

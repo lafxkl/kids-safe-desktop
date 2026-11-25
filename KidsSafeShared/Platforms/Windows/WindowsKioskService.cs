@@ -48,6 +48,23 @@ public class WindowsKioskService : IKioskService
         try { MakeFullScreen(); } catch { /* 非致命 */ }
         try { BlockSystemKeys(); } catch { /* 非致命 */ }
         try { TrackWindowActivation(GetWindow()); } catch { /* 非致命 */ }
+
+        // 任务管理器与锁屏入口：写 HKCU 策略（带可逆备份），再起一个前台守护
+        // 兜住「安全桌面返回」和「策略没生效」两种情况。详见 WindowsSystemPolicy。
+        // 策略受家长面板的「② 屏蔽任务管理器」开关控制：家长关掉过就不要再写。
+        try
+        {
+            if (Microsoft.Maui.Storage.Preferences.Get("block_task_manager", true))
+                WindowsSystemPolicy.Apply();
+        }
+        catch { /* 非致命 */ }
+        try
+        {
+            var hwnd = GetWindowHwnd();
+            if (hwnd != IntPtr.Zero) WindowsForegroundGuard.Start(hwnd);
+        }
+        catch { /* 非致命 */ }
+
         try
         {
             WriteTaskbarMarker();          // 先落标记，再隐藏：崩溃时也能靠启动自救恢复
@@ -101,10 +118,29 @@ public class WindowsKioskService : IKioskService
     public Task ExitAppAsync()
     {
         _exiting = true;                 // 退出后不再被激活事件重新隐藏
+
+        // 先告诉守护「这次是家长主动退出」：否则守护看到非零退出码会立刻把应用拉回来，
+        // 家长会觉得「点了退出又自己弹回来」，根本退不出去。
+        try { WindowsStartup.MarkParentExit(); } catch { }
+
+        try { WindowsForegroundGuard.Stop(); } catch { }
+        try { WindowsSystemPolicy.Restore(); } catch { }
         RestoreTaskbar();
         try { UnblockSystemKeys(); } catch { }
         Microsoft.Maui.Controls.Application.Current?.Quit();
         return Task.CompletedTask;
+    }
+
+    /// <summary>主窗口的 Win32 句柄（抢前台要用）。</summary>
+    private static IntPtr GetWindowHwnd()
+    {
+        try
+        {
+            var window = GetWindow();
+            if (window is null) return IntPtr.Zero;
+            return WinRT.Interop.WindowNative.GetWindowHandle(window);
+        }
+        catch { return IntPtr.Zero; }
     }
 
     // ---- 任务栏恢复（对外公开，供崩溃兜底与帮助页调用）----
@@ -239,6 +275,11 @@ public class WindowsKioskService : IKioskService
 
     private static void SafeRestore()
     {
+        // 策略是持久化的注册表值，进程无论怎么退出都得按备份还原，
+        // 否则下次开机会是一台「任务管理器永远打不开」的机器。
+        try { WindowsSystemPolicy.Restore(); } catch { }
+        try { WindowsForegroundGuard.Stop(); } catch { }
+
         if (!_taskbarHidden && !MarkerExists()) return;
         RestoreTaskbar();
     }
@@ -334,16 +375,25 @@ public class WindowsKioskService : IKioskService
             bool ctrl = (GetAsyncKeyState(0x11) & 0x8000) != 0;
             bool shift = (GetAsyncKeyState(0x10) & 0x8000) != 0;
 
-            if (vk is 0x5B or 0x5C)          // 左右 Win 键
+            if (vk is 0x5B or 0x5C)          // 左右 Win 键（Win+R / Win+E / Win+X 全部失效）
                 return (IntPtr)1;
             if (alt && vk == 0x09)           // Alt+Tab
                 return (IntPtr)1;
-            if (ctrl && vk == 0x1B)          // Ctrl+Esc
+            if (ctrl && alt && vk == 0x09)   // Ctrl+Alt+Tab（方向键切换窗口）
                 return (IntPtr)1;
-            if (ctrl && shift && vk == 0x1B) // Ctrl+Shift+Esc
+            if (alt && vk == 0x1B)           // Alt+Esc（直接切到下一个窗口，绕过 Alt+Tab）
                 return (IntPtr)1;
             if (alt && vk == 0x73)           // Alt+F4
                 return (IntPtr)1;
+            if (ctrl && vk == 0x1B)          // Ctrl+Esc（打开开始菜单）
+                return (IntPtr)1;
+            if (ctrl && shift && vk == 0x1B) // Ctrl+Shift+Esc（任务管理器）
+                return (IntPtr)1;
+
+            // Ctrl+Alt+Del 不在这里：它由 winlogon 在「安全注意序列」里直接处理，
+            // 根本不进用户态键盘钩子，任何 SetWindowsHookEx 都收不到。
+            // 缓解手段是 DisableTaskMgr（进了安全桌面也没任务管理器可点）
+            // + 安全桌面返回后抢回前台（WindowsForegroundGuard）。
         }
         return CallNextHookEx(_hookId, nCode, wParam, lParam);
     }

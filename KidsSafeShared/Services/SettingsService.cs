@@ -33,8 +33,11 @@ public class SettingsService : ISettingsService
                     _current = loaded;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            // 读不出来就回默认设置 —— 但这意味着家长设好的 PIN / 白名单可能凭空消失。
+            // 这是「设置没保存上」类反馈的唯一线索，必须留痕。
+            KidsSafeDesktop.Helpers.AppLog.W("设置", "读取设置失败，已回退到默认设置（家长 PIN 可能失效）", ex);
             _current = new ChildSettings();
         }
 
@@ -49,15 +52,20 @@ public class SettingsService : ISettingsService
             var json = JsonSerializer.Serialize(_current);
             await SecureStorage.Default.SetAsync(StorageKey, json);
         }
-        catch
+        catch (Exception ex)
         {
             // 在某些环境下安全存储不可用，退化为明文偏好设置
+            KidsSafeDesktop.Helpers.AppLog.W("设置", "安全存储不可用，改用明文偏好设置保存", ex);
             try
             {
                 var json = JsonSerializer.Serialize(_current);
                 Preferences.Default.Set(StorageKey, json);
             }
-            catch { /* 忽略 */ }
+            catch (Exception ex2)
+            {
+                // 两条路都断了：这次的改动会丢，重启后回到旧设置
+                KidsSafeDesktop.Helpers.AppLog.E("设置", "设置保存彻底失败，本次修改重启后会丢失", ex2);
+            }
         }
     }
 

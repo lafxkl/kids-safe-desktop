@@ -35,4 +35,15 @@
 	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 	<!-- 特需关爱板块：听障训练用「振动」替代声音做对错反馈（HapticFeedback 需要此权限） -->
 	<uses-permission android:name="android.permission.VIBRATE" />
+
+	<!-- ===== 常驻守护（对应阳光守护的运行方式）=====
+	     前台服务：常驻通知 + 心跳，防止被系统回收；
+	     开机自启：系统启动后直接把儿童桌面拉起来，不用家长点一次；
+	     POST_NOTIFICATIONS：Android 13+ 前台服务的通知要用户授权，没授权
+	     服务仍在跑但通知不显示（家长会以为没生效），所以引导页会要一次。 -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

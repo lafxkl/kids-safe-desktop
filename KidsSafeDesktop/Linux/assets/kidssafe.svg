@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  应用图标（scalable）。
+
+  会话菜单里的图标就叫 kidssafe，所以文件名必须和 .desktop 的 Icon= 一致。
+  配色取自界面本身：米色底 #FFF3E0、主橙 #FFB45A、深棕 #4A3B32。
+  造型是盾牌 —— 「安全桌面」这件事比「儿童」更该被画出来，而且盾牌在
+  16px~512px 之间都能认出轮廓，emoji 头像则不行。
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect x="16" y="16" width="480" height="480" rx="112" ry="112" fill="#FFF3E0"/>
+  <path d="M256 72 L416 128 v120 c0 84 -70 148 -160 176 C166 396 96 332 96 248 V128 Z"
+        fill="#FFB45A"/>
+  <path d="M256 110 L382 154 v94 c0 66 -56 118 -126 142 C186 366 130 314 130 248 v-94 Z"
+        fill="#FFD3A0"/>
+  <circle cx="208" cy="240" r="15" fill="#4A3B32"/>
+  <circle cx="304" cy="240" r="15" fill="#4A3B32"/>
+  <path d="M208 288 q48 42 96 0" fill="none" stroke="#4A3B32" stroke-width="15"
+        stroke-linecap="round"/>
+</svg>

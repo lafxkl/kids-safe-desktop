@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🧩 汉字合体消消乐 - 智趣游戏乐园</title>
+  <style>
+    :root {
+      --bg-color: #f7f9fa;
+      --card-bg: #ffffff;
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --text-main: #1f2937;
+      --text-sub: #6b7280;
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #eef2ff;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(199, 210, 254, 0.6) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(254, 215, 170, 0.5) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 80%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px;
+      overflow-x: hidden;
+    }
+
+    /* 顶部导航 */
+    .top-bar {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #312e81;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: normal;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: #fff;
+      border: 1px solid #c7d2fe;
+      padding: 7px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #3730a3;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
+      transition: all 0.2s;
+    }
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15);
+    }
+
+    /* 模式切换选项卡 */
+    .mode-tab-bar {
+      display: flex;
+      background: #e0e7ff;
+      border-radius: 24px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .mode-tab {
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 700;
+      color: #4338ca;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-tab.active {
+      background: #fff;
+      color: #312e81;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+    }
+
+    /* 游戏主容器 */
+    .game-card {
+      width: 100%;
+      max-width: 860px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 32px rgba(49, 46, 129, 0.08);
+      border: 2px solid #e0e7ff;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    /* 关卡模式 - 目标汉字卡 */
+    .target-box {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .target-ctrl-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-lvl-btn {
+      background: #ffffff;
+      border: 1px solid #c7d2fe;
+      color: #4338ca;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+      transition: all 0.2s;
+    }
+    .ctrl-lvl-btn:hover {
+      background: #eef2ff;
+      transform: translateY(-1px);
+    }
+    .ctrl-lvl-btn.btn-random {
+      background: #fef3c7;
+      border-color: #fde68a;
+      color: #b45309;
+    }
+    .ctrl-lvl-btn.btn-random:hover {
+      background: #fde68a;
+    }
+
+    .level-tag {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6366f1;
+      background: #eef2ff;
+      padding: 3px 12px;
+      border-radius: 12px;
+    }
+
+    .target-title {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .target-preview-char {
+      width: 84px;
+      height: 84px;
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+      border: 3px dashed #818cf8;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      font-weight: 900;
+      color: #3730a3;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+      position: relative;
+    }
+
+    /* 合成炼金台 */
+    .fusion-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: #f8fafc;
+      padding: 12px 20px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .slot-part {
+      width: 64px;
+      height: 64px;
+      background: #ffffff;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .slot-part.filled {
+      border: 2px solid #4f46e5;
+      background: #eef2ff;
+      color: #4f46e5;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+
+    .plus-symbol, .equal-symbol {
+      font-size: 24px;
+      font-weight: 900;
+      color: #94a3b8;
+    }
+
+    .btn-fuse {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-fuse:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(234, 88, 12, 0.4);
+    }
+    .btn-fuse:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(0.6);
+    }
+
+    /* 部首选择池 */
+    .pool-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pool-header {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .radicals-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      max-width: 600px;
+      min-height: 120px;
+    }
+
+    .radical-chip {
+      width: 58px;
+      height: 58px;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #1e293b;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .radical-chip:hover {
+      transform: translateY(-3px) scale(1.08);
+      border-color: #6366f1;
+      box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
+    }
+
+    .radical-chip.selected {
+      border-color: #4f46e5;
+      background: #e0e7ff;
+      color: #4f46e5;
+      transform: scale(0.95);
+    }
+
+    .radical-chip.used {
+      opacity: 0.25;
+      pointer-events: none;
+      transform: scale(0.85);
+    }
+
+    /* 成功合成弹层 */
+    .result-popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .popup-content {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 28px 24px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 3px solid #818cf8;
+      animation: popScale 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popScale {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-word {
+      font-size: 72px;
+      font-weight: 900;
+      color: #312e81;
+      margin-bottom: 4px;
+      text-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .popup-pinyin {
+      font-size: 18px;
+      color: #6366f1;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .popup-formula {
+      font-size: 15px;
+      color: #ea580c;
+      font-weight: 700;
+      background: #fff7ed;
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+
+    .popup-desc {
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.6;
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .popup-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-speak-word {
+      background: #e0e7ff;
+      color: #4338ca;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-next-level {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    /* 自由消除模式网格 */
+    .free-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 440px;
+      margin-top: 10px;
+    }
+
+    .free-card {
+      aspect-ratio: 1;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #1e293b;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .free-card:hover {
+      transform: translateY(-2px) scale(1.05);
+      border-color: #6366f1;
+    }
+    .free-card.selected {
+      border-color: #4f46e5;
+      background: #e0e7ff;
+      color: #4f46e5;
+      transform: scale(0.96);
+    }
+    .free-card.matched {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0);
+    }
+
+    .free-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #4b5563;
+      margin-bottom: 12px;
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 顶部状态导航 -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <span>🧩</span>
+      <span>汉字合体消消乐</span>
+      <span class="brand-badge">45组神奇合体字</span>
+    </div>
+    <div class="top-actions">
+      <a href="../index.html" class="nav-btn" title="返回乐园大厅">
+        <span>🏠</span> 乐园大厅
+      </a>
+    </div>
+  </header>
+
+  <!-- 玩法模式切换 -->
+  <div class="mode-tab-bar">
+    <button class="mode-tab active" id="tabChallenge">🎯 目标造字闯关</button>
+    <button class="mode-tab" id="tabFreeMatch">✨ 汉字合体消除</button>
+  </div>
+
+  <!-- 游戏主卡片 -->
+  <main class="game-card">
+
+    <!-- 模式 1：目标造字闯关 -->
+    <div id="challengeSection" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+      <div class="target-box">
+        <div class="target-ctrl-row">
+          <button class="ctrl-lvl-btn" id="btnPrevLevel" title="上一关">⏮️ 上一关</button>
+          <div class="level-tag" id="levelTag">🎲 随机关卡 1 / 45</div>
+          <button class="ctrl-lvl-btn" id="btnNextLevelDirect" title="下一关">下一关 ⏭️</button>
+          <button class="ctrl-lvl-btn btn-random" id="btnRandomLevel" title="重新随机洗牌出题">🎲 重新洗牌</button>
+        </div>
+        <div class="target-title">请组合出下方汉字：</div>
+        <div class="target-preview-char" id="targetPreview">？</div>
+      </div>
+
+      <!-- 合成台 -->
+      <div class="fusion-stage">
+        <div class="slot-part" id="slotA" title="点击取消选择">？</div>
+        <div class="plus-symbol">＋</div>
+        <div class="slot-part" id="slotB" title="点击取消选择">？</div>
+        <div class="equal-symbol">＝</div>
+        <button class="btn-fuse" id="btnFuse" disabled>合体！💥</button>
+      </div>
+
+      <!-- 部首备选池 -->
+      <section class="pool-section">
+        <div class="pool-header">👇 点击两个能够合体为目标字的偏旁部首：</div>
+        <div class="radicals-grid" id="radicalsGrid">
+          <!-- 动态生成部首 -->
+        </div>
+      </section>
+    </div>
+
+    <!-- 模式 2：自由消除消消乐 -->
+    <div id="freeMatchSection" style="width: 100%; display: none; flex-direction: column; align-items: center;">
+      <div class="free-stats">
+        <div>⭐ 已合体消除: <span id="statEliminated" style="color:#4f46e5;">0</span> 组</div>
+        <div>🏆 得分: <span id="statScore" style="color:#ea580c;">0</span></div>
+      </div>
+      <div class="free-grid" id="freeGrid">
+        <!-- 4x4 部首卡牌矩阵 -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 合成成功弹层 -->
+  <div class="result-popup" id="resultPopup">
+    <div class="popup-content">
+      <div class="popup-word" id="popupWord">明</div>
+      <div class="popup-pinyin" id="popupPinyin">míng</div>
+      <div class="popup-formula" id="popupFormula">日 + 月 = 明</div>
+      <div class="popup-desc" id="popupDesc">【字义】太阳与月亮聚在一起，光芒普照，意为光明、明亮。</div>
+      <div class="popup-actions">
+        <button class="btn-speak-word" id="btnSpeakWord">
+          <span>🔊</span> 发音释义
+        </button>
+        <button class="btn-next-level" id="btnNextLevel">
+          下一关 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Web Audio 音效系统
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playNote(freq, type = 'sine', duration = 0.2, gain = 0.2) {
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          g.gain.setValueAtTime(gain, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+      playSelect() {
+        this.playNote(440, 'triangle', 0.12, 0.15);
+      }
+      playDeselect() {
+        this.playNote(330, 'sine', 0.1, 0.1);
+      }
+      playFuseSuccess() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+          setTimeout(() => this.playNote(f, 'sine', 0.35, 0.25), idx * 80);
+        });
+      }
+      playFuseFail() {
+        this.playNote(220, 'sawtooth', 0.25, 0.15);
+      }
+    }
+
+    const sfx = new SoundFX();
+
+    // 汉字部首合成字典库 (45组经典汉字)
+    const FUSION_DATA = [
+      { result: "明", pinyin: "míng", parts: ["日", "月"], desc: "太阳与月亮聚在一起，光芒普照，意为光明、明亮。" },
+      { result: "林", pinyin: "lín", parts: ["木", "木"], desc: "两棵大树并立，茂盛成长，指成片的树木、森林。" },
+      { result: "森", pinyin: "sēn", parts: ["木", "林"], desc: "树木层层叠叠众多，树冠遮天蔽日，指广阔茂密的原始森林。" },
+      { result: "从", pinyin: "cóng", parts: ["人", "人"], desc: "一人走在前面，一人跟在后面，表示跟随、顺从。" },
+      { result: "众", pinyin: "zhòng", parts: ["人", "从"], desc: "三人为众，许多人聚在一起，意为众多、群众。" },
+      { result: "男", pinyin: "nán", parts: ["田", "力"], desc: "古时在田地里付出气力辛勤耕耘的人，指男子汉。" },
+      { result: "好", pinyin: "hǎo", parts: ["女", "子"], desc: "女子与孩童相互依偎守护，寓意幸福安康、美满美好。" },
+      { result: "尖", pinyin: "jiān", parts: ["小", "大"], desc: "一头小、一头大，形状锐利前细后粗，即为尖端。" },
+      { result: "秋", pinyin: "qiū", parts: ["禾", "火"], desc: "庄稼禾谷成熟时宛如金黄色火焰，迎来了收获的秋季。" },
+      { result: "鲜", pinyin: "xiān", parts: ["鱼", "羊"], desc: "鲜鱼之肥美与羊肉之香嫩结合，味道至极，意为鲜美。" },
+      { result: "休", pinyin: "xiū", parts: ["人", "木"], desc: "一个人劳作后靠在大树旁乘凉歇息，意为休息。" },
+      { result: "香", pinyin: "xiāng", parts: ["禾", "日"], desc: "禾苗谷物在温暖日照下成熟飘散出宜人醇香，指香甜。" },
+      { result: "吞", pinyin: "tūn", parts: ["天", "口"], desc: "张开大口仿佛能容下天地，意为吞食、咽下。" },
+      { result: "闪", pinyin: "shǎn", parts: ["门", "人"], desc: "有人在门缝中一掠而过，速度极快，意为闪现、闪电。" },
+      { result: "鸣", pinyin: "míng", parts: ["口", "鸟"], desc: "小鸟张开嘴巴欢快啼叫，指鸟鸣、共鸣。" },
+      { result: "泪", pinyin: "lèi", parts: ["氵", "目"], desc: "眼睛（目）里流淌出晶莹的水滴，即为泪水。" },
+      { result: "清", pinyin: "qīng", parts: ["氵", "青"], desc: "水质纯净澄澈呈现碧青之色，意为清新、清澈。" },
+      { result: "岩", pinyin: "yán", parts: ["山", "石"], desc: "高山上的坚固大石块，指岩石、崇山峻岭。" },
+      { result: "尘", pinyin: "chén", parts: ["小", "土"], desc: "极其微小的尘土飞扬，指尘埃、灰尘。" },
+      { result: "看", pinyin: "kàn", parts: ["手", "目"], desc: "把手搭在眼睛上方遮挡强光极目远眺，意为观看。" },
+      { result: "信", pinyin: "xìn", parts: ["人", "言"], desc: "人说出的话必须诚实守信，意为诚信、信任。" },
+      { result: "歪", pinyin: "wāi", parts: ["不", "正"], desc: "不直不正就是歪，斜靠一边，指歪斜、歪头。" },
+      { result: "卡", pinyin: "kǎ", parts: ["上", "下"], desc: "夹在上与下之间不上不下，意为卡住、关卡。" },
+      { result: "灭", pinyin: "miè", parts: ["一", "火"], desc: "在火上面用盖板一压灭掉火苗，意为熄灭、消灭。" },
+      { result: "苗", pinyin: "miáo", parts: ["艹", "田"], desc: "肥沃的农田中萌发钻出的青青幼苗，指田苗、禾苗。" },
+      { result: "萌", pinyin: "méng", parts: ["艹", "明"], desc: "草木在明媚的春光阳光下苏醒发芽，意为萌芽、萌生。" },
+      { result: "早", pinyin: "zǎo", parts: ["日", "十"], desc: "清晨一轮旭日从地平线升起，迎来了崭新的一天，指清早。" },
+      { result: "旦", pinyin: "dàn", parts: ["日", "一"], desc: "红日高高升起在一横地平线之上，指早晨、元旦。" },
+      { result: "泉", pinyin: "quán", parts: ["白", "水"], desc: "白花花清澈甘甜的清泉从地下涌出，意为泉水、温泉。" },
+      { result: "炎", pinyin: "yán", parts: ["火", "火"], desc: "两团烈火熊熊燃烧，天气酷热难耐，指炎热、炎夏。" },
+      { result: "友", pinyin: "yǒu", parts: ["又", "又"], desc: "两只右手紧密交握，彼此扶持互助，意为朋友、友好。" },
+      { result: "妙", pinyin: "miào", parts: ["女", "少"], desc: "年轻少女天真烂漫姿态美好，意为奇妙、美妙。" },
+      { result: "灾", pinyin: "zāi", parts: ["宀", "火"], desc: "房屋屋顶下意外燃起大火，指火灾、受灾。" },
+      { result: "拿", pinyin: "ná", parts: ["合", "手"], desc: "两只手掌相互配合合拢抓住物品，意为拿取、抓拿。" },
+      { result: "掰", pinyin: "bāi", parts: ["手", "分"], desc: "双手用力朝两个相反方向撕开，意为掰开、掰断。" },
+      { result: "笔", pinyin: "bǐ", parts: ["竹", "毛"], desc: "上方用轻便竹管作笔杆，下方镶嵌柔软毫毛，指毛笔、书写。" },
+      { result: "盒", pinyin: "hé", parts: ["合", "皿"], desc: "带有盖子可以严密闭合的盛物器皿，意为盒子、饭盒。" },
+      { result: "竿", pinyin: "gān", parts: ["竹", "干"], desc: "砍下竹子制成笔直细长的挺拔木杆，指竹竿、鱼竿。" },
+      { result: "雷", pinyin: "léi", parts: ["雨", "田"], desc: "乌云密布大雨将倾，闪电雷声震动田野，指雷电、打雷。" },
+      { result: "闲", pinyin: "xián", parts: ["门", "木"], desc: "掩起大门，庭院里的古木静静伫立，意为悠闲、空闲。" },
+      { result: "间", pinyin: "jiān", parts: ["门", "日"], desc: "温暖的阳光透过门缝悄悄洒入，指门缝、房间、时间。" },
+      { result: "闷", pinyin: "mèn", parts: ["门", "心"], desc: "将一颗心关在紧闭的深门里，感到烦闷透不过气，指闷热、郁闷。" },
+      { result: "闭", pinyin: "bì", parts: ["门", "才"], desc: "推上大门插上门栓阻挡风雨，意为关闭、闭门。" },
+      { result: "困", pinyin: "kùn", parts: ["囗", "木"], desc: "一棵树木被四周高高围墙死死困住无法伸展，意为困难、困境。" },
+      { result: "安", pinyin: "ān", parts: ["宀", "女"], desc: "屋檐居所之下有温柔娴静的女子安居守护，意为平安、安定。" }
+    ];
+
+    // Fisher-Yates 真正随机洗牌算法
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    class RadicalMergeGame {
+      constructor() {
+        this.currentStep = 0;   // 当前在随机关卡队列中的位置
+        this.playlist = [];     // 全随机打乱的关卡序列
+        this.slotA = null;
+        this.slotB = null;
+
+        // 自由模式状态
+        this.freeScore = 0;
+        this.freeEliminated = 0;
+        this.freeSelected = [];
+
+        this.initDOM();
+        this.bindEvents();
+
+        // 彻底清空旧版单一固定关卡记录，确保每次进入或刷新都是真正的全随机乱序
+        try { localStorage.removeItem('radical_merge_last_level'); } catch(e) {}
+        this.resetRandomPlaylist();
+      }
+
+      // 生成全新的全随机顺序关卡库
+      resetRandomPlaylist() {
+        this.playlist = shuffleArray([...FUSION_DATA]);
+        this.currentStep = 0;
+        this.loadCurrentStep();
+      }
+
+      initDOM() {
+        this.tabChallenge = document.getElementById('tabChallenge');
+        this.tabFreeMatch = document.getElementById('tabFreeMatch');
+        this.challengeSection = document.getElementById('challengeSection');
+        this.freeMatchSection = document.getElementById('freeMatchSection');
+
+        this.levelTag = document.getElementById('levelTag');
+        this.targetPreview = document.getElementById('targetPreview');
+        this.slotAEl = document.getElementById('slotA');
+        this.slotBEl = document.getElementById('slotB');
+        this.btnFuse = document.getElementById('btnFuse');
+        this.radicalsGrid = document.getElementById('radicalsGrid');
+
+        this.resultPopup = document.getElementById('resultPopup');
+        this.popupWord = document.getElementById('popupWord');
+        this.popupPinyin = document.getElementById('popupPinyin');
+        this.popupFormula = document.getElementById('popupFormula');
+        this.popupDesc = document.getElementById('popupDesc');
+
+        this.freeGrid = document.getElementById('freeGrid');
+        this.statEliminated = document.getElementById('statEliminated');
+        this.statScore = document.getElementById('statScore');
+      }
+
+      bindEvents() {
+        this.tabChallenge.onclick = () => {
+          this.tabChallenge.classList.add('active');
+          this.tabFreeMatch.classList.remove('active');
+          this.challengeSection.style.display = 'flex';
+          this.freeMatchSection.style.display = 'none';
+        };
+
+        this.tabFreeMatch.onclick = () => {
+          this.tabFreeMatch.classList.add('active');
+          this.tabChallenge.classList.remove('active');
+          this.challengeSection.style.display = 'none';
+          this.freeMatchSection.style.display = 'flex';
+          this.initFreeMatchMode();
+        };
+
+        this.slotAEl.onclick = () => this.deselectSlot('A');
+        this.slotBEl.onclick = () => this.deselectSlot('B');
+
+        this.btnFuse.onclick = () => this.handleFuse();
+
+        // 关卡控制：上一关、下一关、重新洗牌
+        document.getElementById('btnPrevLevel').onclick = () => {
+          this.currentStep = (this.currentStep - 1 + this.playlist.length) % this.playlist.length;
+          this.loadCurrentStep();
+        };
+        document.getElementById('btnNextLevelDirect').onclick = () => {
+          this.currentStep = (this.currentStep + 1) % this.playlist.length;
+          this.loadCurrentStep();
+        };
+        document.getElementById('btnRandomLevel').onclick = () => {
+          this.resetRandomPlaylist();
+        };
+
+        document.getElementById('btnNextLevel').onclick = () => {
+          this.resultPopup.style.display = 'none';
+          this.nextChallengeLevel();
+        };
+
+        document.getElementById('btnSpeakWord').onclick = () => {
+          const item = this.playlist[this.currentStep];
+          this.speakText(`${item.result}，${item.pinyin}。${item.parts[0]}加${item.parts[1]}等于${item.result}。${item.desc}`);
+        };
+      }
+
+      loadCurrentStep() {
+        const data = this.playlist[this.currentStep];
+
+        this.levelTag.textContent = `第 ${this.currentStep + 1} / ${this.playlist.length} 关`;
+        this.targetPreview.textContent = data.result;
+
+        this.slotA = null;
+        this.slotB = null;
+        this.updateSlotsDisplay();
+
+        // 挑选部件：包含正确的两个部首 + 4~5个干扰部首（从全部FUSION_DATA的部件中提取）
+        const correctParts = [...data.parts];
+        const allParts = Array.from(new Set(FUSION_DATA.flatMap(item => item.parts)));
+        const distractorPool = allParts.filter(p => !correctParts.includes(p));
+
+        const shuffledDistractors = shuffleArray(distractorPool).slice(0, 4);
+        const options = shuffleArray([...correctParts, ...shuffledDistractors]);
+
+        this.radicalsGrid.innerHTML = '';
+        options.forEach(part => {
+          const chip = document.createElement('div');
+          chip.className = 'radical-chip';
+          chip.textContent = part;
+          chip.onclick = () => this.handleRadicalClick(chip, part);
+          this.radicalsGrid.appendChild(chip);
+        });
+      }
+
+      handleRadicalClick(chipEl, part) {
+        if (chipEl.classList.contains('used')) return;
+
+        sfx.playSelect();
+
+        if (!this.slotA) {
+          this.slotA = { part, chipEl };
+          chipEl.classList.add('used');
+        } else if (!this.slotB) {
+          this.slotB = { part, chipEl };
+          chipEl.classList.add('used');
+        }
+        this.updateSlotsDisplay();
+      }
+
+      deselectSlot(slotName) {
+        sfx.playDeselect();
+        if (slotName === 'A' && this.slotA) {
+          this.slotA.chipEl.classList.remove('used');
+          this.slotA = null;
+        } else if (slotName === 'B' && this.slotB) {
+          this.slotB.chipEl.classList.remove('used');
+          this.slotB = null;
+        }
+        this.updateSlotsDisplay();
+      }
+
+      updateSlotsDisplay() {
+        if (this.slotA) {
+          this.slotAEl.textContent = this.slotA.part;
+          this.slotAEl.classList.add('filled');
+        } else {
+          this.slotAEl.textContent = '？';
+          this.slotAEl.classList.remove('filled');
+        }
+
+        if (this.slotB) {
+          this.slotBEl.textContent = this.slotB.part;
+          this.slotBEl.classList.add('filled');
+        } else {
+          this.slotBEl.textContent = '？';
+          this.slotBEl.classList.remove('filled');
+        }
+
+        this.btnFuse.disabled = !(this.slotA && this.slotB);
+      }
+
+      handleFuse() {
+        if (!this.slotA || !this.slotB) return;
+        const currentData = this.playlist[this.currentStep];
+        const chosen = [this.slotA.part, this.slotB.part].sort().join('');
+        const required = [...currentData.parts].sort().join('');
+
+        if (chosen === required) {
+          // 合成成功！
+          sfx.playFuseSuccess();
+          this.showPopup(currentData);
+        } else {
+          // 合成失败
+          sfx.playFuseFail();
+          alert('这两个部件合不出来当前目标字哦，再试一次吧！');
+          this.deselectSlot('A');
+          this.deselectSlot('B');
+        }
+      }
+
+      showPopup(data) {
+        this.popupWord.textContent = data.result;
+        this.popupPinyin.textContent = data.pinyin;
+        this.popupFormula.textContent = `${data.parts[0]} + ${data.parts[1]} = ${data.result}`;
+        this.popupDesc.textContent = `【字义】${data.desc}`;
+        this.resultPopup.style.display = 'flex';
+
+        // 自动语音播报
+        this.speakText(`${data.result}，${data.pinyin}。${data.parts[0]}加${data.parts[1]}等于${data.result}`);
+      }
+
+      nextChallengeLevel() {
+        this.currentStep = (this.currentStep + 1) % this.playlist.length;
+        this.loadCurrentStep();
+      }
+
+      // 自由消除模式逻辑
+      initFreeMatchMode() {
+        this.freeScore = 0;
+        this.freeEliminated = 0;
+        this.freeSelected = [];
+        this.statScore.textContent = '0';
+        this.statEliminated.textContent = '0';
+
+        // 自由模式：从全部 45 组题库中随机抽取 8 组（共 16 张卡片）
+        const selectedPairs = shuffleArray(FUSION_DATA).slice(0, 8);
+        const cards = [];
+        selectedPairs.forEach((pair, idx) => {
+          cards.push({ part: pair.parts[0], pairId: idx, fullData: pair });
+          cards.push({ part: pair.parts[1], pairId: idx, fullData: pair });
+        });
+
+        // 真实随机打乱卡片
+        const shuffledCards = shuffleArray(cards);
+
+        this.freeGrid.innerHTML = '';
+        shuffledCards.forEach((c) => {
+          const cardEl = document.createElement('div');
+          cardEl.className = 'free-card';
+          cardEl.textContent = c.part;
+          cardEl.onclick = () => this.handleFreeCardClick(cardEl, c);
+          this.freeGrid.appendChild(cardEl);
+        });
+      }
+
+      handleFreeCardClick(cardEl, cardData) {
+        if (cardEl.classList.contains('matched') || cardEl.classList.contains('selected')) return;
+
+        sfx.playSelect();
+        cardEl.classList.add('selected');
+        this.freeSelected.push({ cardEl, cardData });
+
+        if (this.freeSelected.length === 2) {
+          const [first, second] = this.freeSelected;
+          if (first.cardData.pairId === second.cardData.pairId && first.cardEl !== second.cardEl) {
+            // 配对成功！
+            sfx.playFuseSuccess();
+            first.cardEl.classList.remove('selected');
+            second.cardEl.classList.remove('selected');
+            first.cardEl.classList.add('matched');
+            second.cardEl.classList.add('matched');
+
+            this.freeEliminated++;
+            this.freeScore += 100;
+            this.statEliminated.textContent = this.freeEliminated;
+            this.statScore.textContent = this.freeScore;
+
+            const fullData = first.cardData.fullData;
+            this.speakText(`合成了：${fullData.result}！${fullData.parts[0]}加${fullData.parts[1]}等于${fullData.result}`);
+
+            if (this.freeEliminated === 8) {
+              setTimeout(() => {
+                alert('🎉 太棒啦！全部汉字部件合体消除完毕！');
+                this.initFreeMatchMode();
+              }, 600);
+            }
+          } else {
+            // 配对失败
+            sfx.playFuseFail();
+            setTimeout(() => {
+              first.cardEl.classList.remove('selected');
+              second.cardEl.classList.remove('selected');
+            }, 500);
+          }
+          this.freeSelected = [];
+        }
+      }
+
+      speakText(text) {
+        if (!('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'zh-CN';
+          utterance.rate = 0.9;
+          window.speechSynthesis.speak(utterance);
+        } catch(e) {}
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      new RadicalMergeGame();
+    });
+  </script>
+</body>
+</html>

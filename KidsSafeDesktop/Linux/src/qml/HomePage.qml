@@ -1,10 +1,17 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import KidsSafe 1.0
 
 Item {
     id: page
+
+    // TapHandler 不是 Item，`Window.window` 附加属性对它返回 null——附加属性
+    // 是靠「item → 所在窗口」反查的，handler 没有窗口归属。所以统一在根 Item
+    // 上取一次窗口，页面里所有跳转都用这个属性；MouseArea、TapHandler、定时器
+    // 里表现一致。（deepin / Qt 6.8 实测：MouseArea 里能用、TapHandler 里必 null）
+    readonly property var navWin: Window.window
 
     function openApp(app) {
         if (!app) {
@@ -13,6 +20,47 @@ Item {
         // exec 来自 .desktop 的 Exec 字段，也可能是家长手填的 http 链接，
         // 两种情况都由 AppLauncher 统一处理。
         AppLauncher.launch(app.exec || "", app.name || "");
+    }
+
+    /*
+     * 头像 emoji → 自绘图标。
+     *
+     * 头像是孩子每天第一眼看到的东西，不能是黑白线稿。deepin 默认没有彩色
+     * emoji 字体（🧸 会渲染成一团黑），所以在常用 emoji 上都挂了手绘头像；
+     * 表里没有的（家长自己输入的任意字符）仍然按原样用 Text 画出来，
+     * 不剥夺自定义能力，只是那一种情况下效果取决于系统字体。
+     */
+    function avatarGlyph(value) {
+        switch (value) {
+        case "🧸":
+        case "🐻":
+        case "🐨":
+            return "bear";
+        // 🐯 是 Windows 端的默认头像，必须映射，否则 Linux 上退回 emoji 文本
+        // 就是一团黑（deepin 没有彩色 emoji 字体）——首页左上角那个「小黑熊」
+        // 就是这么来的。
+        case "🐯":
+        case "🐅":
+            return "tiger";
+        case "🐶":
+        case "🐕":
+            return "dog";
+        case "🦊":
+            return "fox";
+        case "🐷":
+        case "🐖":
+            return "pig";
+        case "🐱":
+        case "🐈":
+            return "cat";
+        case "🐰":
+        case "🐇":
+            return "rabbit";
+        case "🐼":
+            return "panda";
+        default:
+            return "";
+        }
     }
 
     Backdrop {
@@ -29,14 +77,26 @@ Item {
             Layout.fillWidth: true
             spacing: 16
 
+            // 与 Windows 端同一个样子：白底圆形 + 大号动物头像
+            // （那边是 emoji 字体渲染成彩色贴纸，这边用 GlyphIcon 手绘，
+            //  否则在 deepin 上只会得到一团黑色轮廓）。
             Rectangle {
                 Layout.preferredWidth: 68
                 Layout.preferredHeight: 68
                 radius: 34
-                color: "#FFE0C2"
+                color: "#FFFFFF"
+
+                GlyphIcon {
+                    anchors.centerIn: parent
+                    visible: page.avatarGlyph(Settings.avatarEmoji) !== ""
+                    name: page.avatarGlyph(Settings.avatarEmoji)
+                    width: 56
+                    height: 56
+                }
 
                 Text {
                     anchors.centerIn: parent
+                    visible: page.avatarGlyph(Settings.avatarEmoji) === ""
                     text: Settings.avatarEmoji
                     font.pixelSize: 34
                 }
@@ -46,14 +106,14 @@ Item {
                 spacing: 2
 
                 Text {
-                    text: "你好，" + Settings.nickname
+                    text: Settings.t("home.hello") + Settings.nickname
                     font.pixelSize: 26
                     font.weight: Font.Bold
                     color: "#4A3B32"
                 }
 
                 Text {
-                    text: "今天也要开开心心"
+                    text: Settings.t("home.subtitle")
                     font.pixelSize: 15
                     color: "#9B8574"
                 }
@@ -67,8 +127,10 @@ Item {
                 Layout.preferredHeight: 58
                 Layout.preferredWidth: timeRow.implicitWidth + 44
                 radius: 29
-                color: ScreenTime.lockedOut ? "#FFD9D2" : "#FFFFFF"
-                border.color: "#F2E1CD"
+                // 与 Windows 首页的剩余时间胶囊同一套配色：橙底橙字，
+                // 在白底页面上是最容易被孩子认出来的那一块
+                color: ScreenTime.lockedOut ? "#FFD9D2" : "#FFE0B2"
+                border.color: ScreenTime.lockedOut ? "#F5B7B1" : "#FFCC94"
                 border.width: 1
 
                 RowLayout {
@@ -77,16 +139,49 @@ Item {
                     anchors.centerIn: parent
                     spacing: 10
 
-                    Text {
-                        text: "⏳"
-                        font.pixelSize: 22
+                    GlyphIcon {
+                        Layout.preferredWidth: 24
+                        Layout.preferredHeight: 24
+                        name: "hourglass"
+                        color: ScreenTime.lockedOut ? "#C0392B" : "#E65100"
                     }
 
                     Text {
                         text: ScreenTime.lockedOut ? "今天的时间用完啦" : ("还可以玩 " + ScreenTime.remainingText)
                         font.pixelSize: 19
                         font.weight: Font.DemiBold
-                        color: ScreenTime.lockedOut ? "#C0392B" : "#4A3B32"
+                        color: ScreenTime.lockedOut ? "#C0392B" : "#E65100"
+                    }
+                }
+            }
+
+            // 护眼生效时给个明确提示，否则孩子/家长只会觉得「屏幕怎么发黄了」
+            Rectangle {
+                visible: EyeCare.active
+                Layout.preferredHeight: 58
+                Layout.preferredWidth: eyeBadgeText.implicitWidth + 66
+                radius: 29
+                color: "#FFF0DC"
+                border.color: "#F6D8AE"
+                border.width: 1
+
+                RowLayout {
+                    anchors.centerIn: parent
+                    spacing: 7
+
+                    GlyphIcon {
+                        Layout.preferredWidth: 22
+                        Layout.preferredHeight: 22
+                        name: "eye"
+                        color: "#8A6A3A"
+                    }
+
+                    Text {
+                        id: eyeBadgeText
+
+                        text: "护眼"
+                        font.pixelSize: 17
+                        color: "#8A6A3A"
                     }
                 }
             }
@@ -94,133 +189,160 @@ Item {
             LargeButton {
                 Layout.preferredWidth: 116
                 Layout.preferredHeight: 58
-                text: "家长"
+                text: Settings.t("home.parent")
                 accentColor: "#FFFFFF"
                 labelColor: "#7A6759"
-                onClicked: StackView.view.push(Qt.resolvedUrl("ParentGatePage.qml"), {
+                onClicked: page.navWin.pushPage(Qt.resolvedUrl("ParentGatePage.qml"), {
                     "purpose": "dashboard"
                 })
             }
         }
 
-        // ---- 内置内容入口：目前只有故事屋，后续学习世界/游戏乐园往这里加 ----
-        Rectangle {
-            id: storyBanner
-
+        // ---- 天气 ----
+        // 全宽一条，和 Windows 首页「时钟下面的天气条」位置对应。
+        // 没网、没缓存、家长关掉天气时自身 visible 为 false，ColumnLayout 会
+        // 整个跳过它，不会留一条空白。
+        WeatherCard {
             Layout.fillWidth: true
-            Layout.preferredHeight: 124
-            radius: 28
+        }
 
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: "#8E7CFF" }
-                GradientStop { position: 1.0; color: "#B388FF" }
+        // ---- 内置内容入口 ----
+        // 四个都有「离线也能用」的部分：故事屋离线时提示去家长后台，
+        // 安全学堂、游戏乐园、眼保健操完全内置，不依赖任何服务器。
+        // 四卡一行：1280 宽时每张约 290px，副标题会自动省略，标题不会被挤。
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 16
+
+            HomeBanner {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 124
+                glyph: "book"
+                title: Settings.t("banner.story")
+                subtitle: Settings.t("banner.storySub")
+                colorFrom: "#8E7CFF"
+                colorTo: "#B388FF"
+                onTapped: page.navWin.pushPage(Qt.resolvedUrl("StoryHousePage.qml"))
             }
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 22
-                spacing: 18
-
-                Rectangle {
-                    Layout.preferredWidth: 76
-                    Layout.preferredHeight: 76
-                    radius: 24
-                    color: "#33FFFFFF"
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "📖"
-                        font.pixelSize: 38
-                    }
-                }
-
-                ColumnLayout {
-                    spacing: 6
-
-                    Text {
-                        text: "故事屋"
-                        font.pixelSize: 26
-                        font.weight: Font.Bold
-                        color: "white"
-                    }
-
-                    Text {
-                        text: "睡前故事、格林童话、成语典故…"
-                        font.pixelSize: 15
-                        color: "#EFE9FF"
-                    }
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    text: "进去看看 ›"
-                    font.pixelSize: 17
-                    color: "white"
-                }
+            HomeBanner {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 124
+                glyph: "music"
+                title: Settings.t("banner.media")
+                subtitle: Settings.t("banner.mediaSub")
+                colorFrom: "#F06292"
+                colorTo: "#FFB0C8"
+                onTapped: page.navWin.pushPage(Qt.resolvedUrl("MediaHubPage.qml"))
             }
 
-            TapHandler {
-                onTapped: StackView.view.push(Qt.resolvedUrl("StoryHousePage.qml"))
+            HomeBanner {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 124
+                glyph: "shield"
+                title: Settings.t("banner.safety")
+                subtitle: Settings.t("banner.safetySub")
+                colorFrom: "#FF9F6B"
+                colorTo: "#FFC46B"
+                onTapped: page.navWin.pushPage(Qt.resolvedUrl("SafetyWorldPage.qml"))
+            }
+
+            HomeBanner {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 124
+                glyph: "gamepad"
+                title: Settings.t("banner.games")
+                subtitle: Settings.t("banner.gamesSub")
+                colorFrom: "#5AC8E8"
+                colorTo: "#7BD9A5"
+                onTapped: page.navWin.pushPage(Qt.resolvedUrl("GamesHubPage.qml"))
+            }
+
+            // 眼保健操：对应 Windows 端首页的「👀 眼保健操」磁贴。
+            // 排在游戏乐园后面 —— 玩之前先护眼，位置也算个暗示。
+            HomeBanner {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 124
+                glyph: "eye"
+                title: Settings.t("banner.eye")
+                subtitle: Settings.t("banner.eyeSub")
+                colorFrom: "#7E57C2"
+                colorTo: "#B39DDB"
+                onTapped: page.navWin.pushPage(Qt.resolvedUrl("EyeExercisePage.qml"))
             }
         }
 
         Text {
             Layout.leftMargin: 6
-            text: "我的应用"
+            text: Settings.t("home.myApps")
             font.pixelSize: 18
             font.weight: Font.DemiBold
             color: "#9B8574"
         }
 
         // ---- 应用磁贴网格 ----
-        GridView {
-            id: appGrid
+        // 网格和「空状态」放在同一个普通 Item 里，空状态用 anchors.centerIn
+        // 指向这个 Item：直接 centerIn 一个由 Layout 管理的子项时，实测
+        // （deepin / Qt 6.8）空状态会被摆到左上角，压住顶部问候语。
+        Item {
+            id: gridArea
 
             Layout.fillWidth: true
             Layout.fillHeight: true
-            clip: true
 
-            // 列数随窗口宽度自适应，单格不小于 190px，保证触屏也好点
-            cellWidth: Math.floor(width / Math.max(2, Math.min(5, Math.floor(width / 190))))
-            cellHeight: Math.floor(cellWidth * 0.84)
+            GridView {
+                id: appGrid
 
-            model: Settings.allowedApps
+                anchors.fill: parent
+                clip: true
 
-            delegate: Item {
-                width: appGrid.cellWidth
-                height: appGrid.cellHeight
+                // 与 Windows 磁贴同一套尺寸逻辑：每格约 104px（84 色块 + 左右间距），
+                // 列数按可用宽度算，同一块屏永远算出同一组尺寸。
+                // 行高只留「间隙 + 名称胶囊」的高度就够了 —— 之前按 1.08 倍留白，
+                // 多出来的十几像素把图标推得稀稀拉拉，和 Windows 的紧凑排布对不上。
+                readonly property int columns: Math.max(3, Math.min(12, Math.floor(width / 104)))
+                readonly property real cell: Math.floor(width / columns)
+                readonly property real badge: Math.min(84, cell * 0.81)
 
-                AppTile {
-                    anchors.fill: parent
-                    appName: modelData.name || ""
-                    accent: modelData.accent || "#4C8BF5"
-                    onClicked: page.openApp(modelData)
+                cellWidth: cell
+                cellHeight: Math.round(badge + 46)
+
+                model: Settings.allowedApps
+
+                delegate: Item {
+                    width: appGrid.cellWidth
+                    height: appGrid.cellHeight
+
+                    AppTile {
+                        anchors.fill: parent
+                        appName: modelData.name || ""
+                        iconName: modelData.icon || ""
+                        accent: modelData.accent || "#4C8BF5"
+                        onClicked: page.openApp(modelData)
+                    }
                 }
             }
-        }
-    }
 
-    ColumnLayout {
-        anchors.centerIn: appGrid
-        spacing: 14
-        visible: Settings.allowedApps.length === 0
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 14
+                visible: Settings.allowedApps.length === 0
 
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: "这里还空空的"
-            font.pixelSize: 26
-            font.weight: Font.Bold
-            color: "#B8A492"
-        }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "这里还空空的"
+                    font.pixelSize: 26
+                    font.weight: Font.Bold
+                    color: "#B8A492"
+                }
 
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: "请家长点右上角「家长」，进后台挑几个应用吧"
-            font.pixelSize: 17
-            color: "#B8A492"
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "请家长点右上角「家长」，进后台挑几个应用吧"
+                    font.pixelSize: 17
+                    color: "#B8A492"
+                }
+            }
         }
     }
 
@@ -324,9 +446,16 @@ Item {
         target: ScreenTime
 
         function onLimitReached() {
-            StackView.view.push(Qt.resolvedUrl("LockoutPage.qml"));
+            page.navWin.pushPage(Qt.resolvedUrl("LockoutPage.qml"));
         }
     }
 
-    Component.onCompleted: ScreenTime.start()
+    // 引导还没走完时，这一页只是垫在引导盖层下面（见 Main.qml），
+    // 那时候不该开始扣时间。
+    Component.onCompleted: {
+        if (Settings.onboardingDone) {
+            ScreenTime.start();
+        }
+    }
+
 }

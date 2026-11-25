@@ -17,6 +17,18 @@ set -u
 
 export KIDSSAFE_KIOSK_SESSION=1
 
+# 同目录下的 kidssafe-session 才是真正拉应用的地方。用自身路径定位，
+# 避免依赖 PATH（显示管理器给的 PATH 未必含 /usr/local/bin）。
+SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SIBLING_SESSION="${SELF_DIR}/kidssafe-session"
+if [ ! -x "$SIBLING_SESSION" ]; then
+    SIBLING_SESSION="$(command -v kidssafe-session 2>/dev/null || true)"
+fi
+if [ -z "$SIBLING_SESSION" ] || [ ! -x "$SIBLING_SESSION" ]; then
+    echo "kidssafe: 找不到 kidssafe-session，先运行 ./scripts/install.sh" >&2
+    exit 1
+fi
+
 # 关掉 KDE 锁屏。儿童会话里锁屏没有意义（没人会回来解锁），
 # 而且 KWin 的空闲锁屏会把孩子挡在自己的桌面外面。
 if command -v kwriteconfig6 >/dev/null 2>&1; then
@@ -27,11 +39,11 @@ fi
 if command -v kwin_wayland >/dev/null 2>&1; then
     kwin_wayland --xwayland &
     sleep 1
-    exec kidssafe-session
+    exec "$SIBLING_SESSION"
 fi
 
 if command -v cage >/dev/null 2>&1; then
-    exec cage -s -d -- kidssafe-session
+    exec cage -s -d -- "$SIBLING_SESSION"
 fi
 
 echo "kidssafe: 需要 kwin_wayland 或 cage 之一才能启动 Wayland 会话" >&2

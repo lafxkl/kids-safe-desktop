@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🎈 听音识字打气球 - 智趣游戏乐园</title>
+  <style>
+    :root {
+      --bg-sky: linear-gradient(180deg, #38bdf8 0%, #bae6fd 60%, #e0f2fe 100%);
+      --text-main: #0f172a;
+      --primary: #0284c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg-sky);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 顶部导航与状态栏 */
+    .top-nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #0369a1;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-nav {
+      background: #ffffff;
+      border: 1px solid #bae6fd;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0369a1;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+    .btn-nav:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 题目播报与HUD信息卡 */
+    .question-hud {
+      position: absolute;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.92);
+      border: 2px solid #38bdf8;
+      border-radius: 30px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15);
+      z-index: 20;
+    }
+
+    .btn-repeat-sound {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+      animation: pulseBtn 1.8s infinite;
+      transition: all 0.2s;
+    }
+    .btn-repeat-sound:hover {
+      transform: scale(1.1);
+    }
+
+    @keyframes pulseBtn {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    .question-text-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .q-title {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .q-prompt {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-strip {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      border-left: 2px solid #e2e8f0;
+      padding-left: 14px;
+    }
+    .stat-score { color: #ea580c; }
+    .stat-combo { color: #10b981; }
+
+    /* 气球升空舞台 */
+    .sky-arena {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* 底部草地装饰 */
+    .grass-layer {
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, #86efac 0%, #22c55e 100%);
+      border-radius: 40px 40px 0 0;
+      z-index: 10;
+      box-shadow: 0 -4px 14px rgba(34, 197, 94, 0.2);
+    }
+
+    /* 动态飘浮气球 */
+    .balloon {
+      position: absolute;
+      width: 82px;
+      height: 98px;
+      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: inset -6px -6px 12px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 5;
+    }
+
+    .balloon::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 24px;
+      background: rgba(100, 116, 139, 0.6);
+    }
+
+    .balloon .b-pinyin {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: -6px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .balloon .b-char {
+      font-size: 38px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.35);
+    }
+
+    .balloon:hover {
+      transform: scale(1.12);
+    }
+
+    .balloon:active {
+      transform: scale(0.92);
+    }
+
+    /* 气球色彩方案 */
+    .b-red { background: linear-gradient(135deg, #f87171, #ef4444); }
+    .b-blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+    .b-green { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .b-orange { background: linear-gradient(135deg, #fb923c, #f97316); }
+    .b-purple { background: linear-gradient(135deg, #c084fc, #a855f7); }
+    .b-pink { background: linear-gradient(135deg, #f472b6, #ec4899); }
+    .b-yellow { background: linear-gradient(135deg, #facc15, #eab308); }
+
+    /* 气球爆炸散开动画 */
+    @keyframes popBoom {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: 0.8; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .popped {
+      animation: popBoom 0.25s forwards;
+      pointer-events: none;
+    }
+
+    /* 点击错误晃动 */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+    .wrong-shake {
+      animation: shake 0.3s ease-in-out;
+    }
+
+    /* 粒子渲染画布 */
+    #fxCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    /* 开始提示遮罩 */
+    .start-modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .start-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .start-btn {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 24px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+      margin-top: 16px;
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 顶部状态栏 -->
+  <header class="top-nav">
+    <div class="brand">
+      <span>🎈</span>
+      <span>听音识字打气球</span>
+      <span style="font-size: 12px; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 2px 8px; border-radius: 12px; font-weight: 600;">130+ 汉字</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-nav" id="btnTogglePinyin">🔤 拼音: 开</button>
+      <button class="btn-nav" id="btnToggleSpeed">⚡ 速度: 正常</button>
+      <a href="../index.html" class="btn-nav" title="返回乐园大厅">🏠 乐园大厅</a>
+    </div>
+  </header>
+
+  <!-- 题目提示卡片 -->
+  <div class="question-hud">
+    <button class="btn-repeat-sound" id="btnRepeatSound" title="点击重新听发音">🔊</button>
+    <div class="question-text-box">
+      <div class="q-title">仔细听，点击听到的汉字气球：</div>
+      <div class="q-prompt" id="qPrompt">
+        <span>请找出：</span>
+        <span id="targetCharDisplay" style="color:#ea580c; font-size:26px;">“ 听音中... ”</span>
+      </div>
+    </div>
+    <div class="stats-strip">
+      <div>🏆 得分: <span class="stat-score" id="scoreDisplay">0</span></div>
+      <div>🔥 连击: <span class="stat-combo" id="comboDisplay">0</span></div>
+    </div>
+  </div>
+
+  <!-- 气球升空竞技场 -->
+  <main class="sky-arena" id="skyArena">
+    <!-- 动态气球元素在此生成 -->
+  </main>
+
+  <!-- 底部草地 -->
+  <div class="grass-layer"></div>
+
+  <!-- 粒子特效应 -->
+  <canvas id="fxCanvas"></canvas>
+
+  <!-- 初次点击启动音频遮罩 (适配浏览器自动播放策略) -->
+  <div class="start-modal" id="startModal">
+    <div class="start-card">
+      <div style="font-size: 52px; margin-bottom: 8px;">🎈</div>
+      <h2 style="font-size: 24px; color: #0369a1; margin-bottom: 8px;">听音识字大冒险</h2>
+      <p style="font-size: 14px; color: #64748b; line-height: 1.6;">
+        戴上小耳朵仔细听！系统会语音朗读汉字，点击屏幕中升起对应的彩色气球击破得分！<br>
+        <span style="display:inline-block; margin-top:6px; color:#0284c7; font-weight:600;">✨ 已收录 130+ 幼儿园高频启蒙汉字</span>
+      </p>
+      <button class="start-btn" id="btnStartGame">开始游戏 🚀</button>
+    </div>
+  </div>
+
+  <script>
+    // Web Audio 音效系统
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playPop() {
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.12);
+        } catch(e) {}
+      }
+      playCorrect() {
+        this.init();
+        try {
+          [523.25, 659.25, 783.99].forEach((f, idx) => {
+            setTimeout(() => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(f, this.ctx.currentTime);
+              gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 0.2);
+            }, idx * 70);
+          });
+        } catch(e) {}
+      }
+      playWrong() {
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.25);
+        } catch(e) {}
+      }
+    }
+
+    const sfx = new SoundFX();
+
+    // 核心少儿汉字库 (带拼音) - 132字超大字库
+    const WORDS_BANK = [
+      // 1. 自然天文
+      { char: "日", pinyin: "rì" },
+      { char: "月", pinyin: "yuè" },
+      { char: "水", pinyin: "shuǐ" },
+      { char: "火", pinyin: "huǒ" },
+      { char: "山", pinyin: "shān" },
+      { char: "石", pinyin: "shí" },
+      { char: "田", pinyin: "tián" },
+      { char: "禾", pinyin: "hé" },
+      { char: "天", pinyin: "tiān" },
+      { char: "地", pinyin: "dì" },
+      { char: "风", pinyin: "fēng" },
+      { char: "雨", pinyin: "yǔ" },
+      { char: "雪", pinyin: "xuě" },
+      { char: "云", pinyin: "yún" },
+      { char: "星", pinyin: "xīng" },
+      { char: "阳", pinyin: "yáng" },
+      { char: "土", pinyin: "tǔ" },
+      { char: "江", pinyin: "jiāng" },
+      { char: "河", pinyin: "hé" },
+      { char: "海", pinyin: "hǎi" },
+
+      // 2. 四季植物
+      { char: "春", pinyin: "chūn" },
+      { char: "夏", pinyin: "xià" },
+      { char: "秋", pinyin: "qiū" },
+      { char: "冬", pinyin: "dōng" },
+      { char: "花", pinyin: "huā" },
+      { char: "草", pinyin: "cǎo" },
+      { char: "树", pinyin: "shù" },
+      { char: "叶", pinyin: "yè" },
+      { char: "木", pinyin: "mù" },
+      { char: "林", pinyin: "lín" },
+      { char: "松", pinyin: "sōng" }, // 用户指定
+
+      // 3. 身体部位与基础概念
+      { char: "人", pinyin: "rén" },
+      { char: "口", pinyin: "kǒu" },
+      { char: "目", pinyin: "mù" },
+      { char: "耳", pinyin: "ěr" },
+      { char: "手", pinyin: "shǒu" },
+      { char: "足", pinyin: "zú" },
+      { char: "心", pinyin: "xīn" },
+      { char: "大", pinyin: "dà" },
+      { char: "小", pinyin: "xiǎo" },
+      { char: "多", pinyin: "duō" },
+      { char: "少", pinyin: "shǎo" },
+      { char: "上", pinyin: "shàng" },
+      { char: "下", pinyin: "xià" },
+      { char: "左", pinyin: "zuǒ" },
+      { char: "右", pinyin: "yòu" },
+      { char: "前", pinyin: "qián" },
+      { char: "后", pinyin: "hòu" },
+      { char: "中", pinyin: "zhōng" },
+      { char: "空", pinyin: "kōng" }, // 用户指定
+
+      // 4. 数字认知 (1-10)
+      { char: "一", pinyin: "yī" },
+      { char: "二", pinyin: "èr" },
+      { char: "三", pinyin: "sān" },
+      { char: "四", pinyin: "sì" },
+      { char: "五", pinyin: "wǔ" },
+      { char: "六", pinyin: "liù" },
+      { char: "七", pinyin: "qī" },
+      { char: "八", pinyin: "bā" },
+      { char: "九", pinyin: "jiǔ" },
+      { char: "十", pinyin: "shí" },
+
+      // 5. 亲情与人物称谓
+      { char: "爸", pinyin: "bà" },
+      { char: "妈", pinyin: "mā" },
+      { char: "爷", pinyin: "yé" },
+      { char: "奶", pinyin: "nǎi" },
+      { char: "哥", pinyin: "gē" },
+      { char: "姐", pinyin: "jiě" },
+      { char: "弟", pinyin: "dì" },
+      { char: "妹", pinyin: "mèi" },
+      { char: "我", pinyin: "wǒ" },
+      { char: "你", pinyin: "nǐ" },
+      { char: "他", pinyin: "tā" },
+      { char: "儿", pinyin: "ér" },
+      { char: "女", pinyin: "nǚ" },
+      { char: "友", pinyin: "yǒu" },
+
+      // 6. 可爱动物与昆虫
+      { char: "鸟", pinyin: "niǎo" },
+      { char: "鱼", pinyin: "yú" },
+      { char: "牛", pinyin: "niú" },
+      { char: "羊", pinyin: "yáng" },
+      { char: "马", pinyin: "mǎ" },
+      { char: "猫", pinyin: "māo" },
+      { char: "狗", pinyin: "gǒu" },
+      { char: "兔", pinyin: "tù" },
+      { char: "鸭", pinyin: "yā" },
+      { char: "鸡", pinyin: "jī" },
+      { char: "鹅", pinyin: "é" },
+      { char: "猪", pinyin: "zhū" },
+      { char: "猴", pinyin: "hóu" },
+      { char: "虫", pinyin: "chóng" },
+      { char: "蝶", pinyin: "dié" },
+      { char: "蛙", pinyin: "wā" },
+      { char: "熊", pinyin: "xióng" },
+
+      // 7. 色彩与饮食生活
+      { char: "红", pinyin: "hóng" },
+      { char: "黄", pinyin: "huáng" },
+      { char: "蓝", pinyin: "lán" },
+      { char: "绿", pinyin: "lǜ" },
+      { char: "白", pinyin: "bái" },
+      { char: "黑", pinyin: "hēi" },
+      { char: "米", pinyin: "mǐ" },
+      { char: "面", pinyin: "miàn" },
+      { char: "肉", pinyin: "ròu" },
+      { char: "果", pinyin: "guǒ" },
+      { char: "茶", pinyin: "chá" },
+      { char: "饭", pinyin: "fàn" },
+      { char: "酒", pinyin: "jiǔ" }, // 用户指定
+
+      // 8. 趣味动作与日常行为
+      { char: "学", pinyin: "xué" }, // 用户指定
+      { char: "坐", pinyin: "zuò" }, // 用户指定
+      { char: "招", pinyin: "zhāo" }, // 用户指定
+      { char: "举", pinyin: "jǔ" }, // 用户指定
+      { char: "居", pinyin: "jū" }, // 用户指定
+      { char: "成", pinyin: "chéng" }, // 用户指定
+      { char: "吃", pinyin: "chī" },
+      { char: "喝", pinyin: "hē" },
+      { char: "跑", pinyin: "pǎo" },
+      { char: "跳", pinyin: "tiào" },
+      { char: "走", pinyin: "zǒu" },
+      { char: "飞", pinyin: "fēi" },
+      { char: "游", pinyin: "yóu" },
+      { char: "看", pinyin: "kàn" },
+      { char: "听", pinyin: "tīng" },
+      { char: "说", pinyin: "shuō" },
+      { char: "读", pinyin: "dú" },
+      { char: "写", pinyin: "xiě" },
+      { char: "画", pinyin: "huà" },
+      { char: "笑", pinyin: "xiào" },
+      { char: "哭", pinyin: "kū" },
+      { char: "唱", pinyin: "chàng" },
+      { char: "开", pinyin: "kāi" },
+      { char: "关", pinyin: "guān" },
+
+      // 9. 物品与生活环境
+      { char: "书", pinyin: "shū" },
+      { char: "笔", pinyin: "bǐ" },
+      { char: "车", pinyin: "chē" },
+      { char: "船", pinyin: "chuán" },
+      { char: "门", pinyin: "mén" },
+      { char: "家", pinyin: "jiā" }
+    ];
+
+    const COLOR_CLASSES = ['b-red', 'b-blue', 'b-green', 'b-orange', 'b-purple', 'b-pink', 'b-yellow'];
+
+    class WordBalloonGame {
+      constructor() {
+        this.arena = document.getElementById('skyArena');
+        this.targetCharDisplay = document.getElementById('targetCharDisplay');
+        this.scoreDisplay = document.getElementById('scoreDisplay');
+        this.comboDisplay = document.getElementById('comboDisplay');
+
+        this.score = 0;
+        this.combo = 0;
+        this.showPinyin = true;
+        this.speedMode = 'normal'; // normal or slow
+        this.balloons = [];
+        this.currentTarget = null;
+        this.isRunning = false;
+
+        this.initCanvas();
+        this.bindEvents();
+      }
+
+      initCanvas() {
+        this.canvas = document.getElementById('fxCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
+        this.animLoop();
+      }
+
+      resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      bindEvents() {
+        document.getElementById('btnStartGame').onclick = () => {
+          document.getElementById('startModal').style.display = 'none';
+          sfx.init();
+          this.startGame();
+        };
+
+        document.getElementById('btnRepeatSound').onclick = () => {
+          if (this.currentTarget) this.speakWord(this.currentTarget.char);
+        };
+
+        const btnPinyin = document.getElementById('btnTogglePinyin');
+        btnPinyin.onclick = () => {
+          this.showPinyin = !this.showPinyin;
+          btnPinyin.textContent = `🔤 拼音: ${this.showPinyin ? '开' : '关'}`;
+          document.querySelectorAll('.b-pinyin').forEach(el => {
+            el.style.display = this.showPinyin ? 'block' : 'none';
+          });
+        };
+
+        const btnSpeed = document.getElementById('btnToggleSpeed');
+        btnSpeed.onclick = () => {
+          this.speedMode = this.speedMode === 'normal' ? 'slow' : 'normal';
+          btnSpeed.textContent = `⚡ 速度: ${this.speedMode === 'normal' ? '正常' : '慢速'}`;
+        };
+      }
+
+      startGame() {
+        this.isRunning = true;
+        this.nextRound();
+        this.gameLoop();
+      }
+
+      nextRound() {
+        // 随机选出一个目标字
+        const nextTarget = WORDS_BANK[Math.floor(Math.random() * WORDS_BANK.length)];
+        this.currentTarget = nextTarget;
+
+        this.targetCharDisplay.textContent = `“ ${nextTarget.char} ”`;
+        this.speakWord(nextTarget.char);
+
+        // 每次生成 3~4 个气球（必须包含一个目标字）
+        this.spawnBalloonsWave(nextTarget);
+      }
+
+      spawnBalloonsWave(target) {
+        // 清理过剩气球
+        if (this.balloons.length > 8) {
+          const removed = this.balloons.splice(0, 3);
+          removed.forEach(b => b.el.remove());
+        }
+
+        // 选出2~3个干扰字
+        const distractors = WORDS_BANK.filter(w => w.char !== target.char)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3);
+
+        const waveItems = [target, ...distractors].sort(() => 0.5 - Math.random());
+
+        const arenaWidth = this.arena.clientWidth || window.innerWidth;
+        const segment = arenaWidth / (waveItems.length + 1);
+
+        waveItems.forEach((item, index) => {
+          const balloonEl = document.createElement('div');
+          const colorClass = COLOR_CLASSES[Math.floor(Math.random() * COLOR_CLASSES.length)];
+          balloonEl.className = `balloon ${colorClass}`;
+
+          balloonEl.innerHTML = `
+            <span class="b-pinyin" style="${this.showPinyin ? '' : 'display:none;'}">${item.pinyin}</span>
+            <span class="b-char">${item.char}</span>
+          `;
+
+          const x = segment * (index + 0.5) + (Math.random() * 30 - 15) - 40;
+          const y = window.innerHeight + Math.random() * 60;
+          const speed = (this.speedMode === 'normal' ? (1.5 + Math.random() * 0.8) : (0.9 + Math.random() * 0.4));
+
+          const balloonObj = {
+            el: balloonEl,
+            word: item,
+            x: Math.max(10, Math.min(arenaWidth - 90, x)),
+            y: y,
+            speed: speed,
+            isTarget: item.char === target.char
+          };
+
+          balloonEl.style.left = `${balloonObj.x}px`;
+          balloonEl.style.top = `${balloonObj.y}px`;
+
+          balloonEl.onclick = () => this.handleBalloonClick(balloonObj);
+
+          this.arena.appendChild(balloonEl);
+          this.balloons.push(balloonObj);
+        });
+      }
+
+      handleBalloonClick(balloon) {
+        if (!this.isRunning || balloon.popped) return;
+
+        const rect = balloon.el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        if (balloon.word.char === this.currentTarget.char) {
+          // 点对目标气球！
+          sfx.playPop();
+          sfx.playCorrect();
+          balloon.popped = true;
+          balloon.el.classList.add('popped');
+
+          this.createExplosion(centerX, centerY);
+
+          this.score += 10 + this.combo * 2;
+          this.combo++;
+          this.scoreDisplay.textContent = this.score;
+          this.comboDisplay.textContent = this.combo;
+
+          setTimeout(() => {
+            balloon.el.remove();
+            this.balloons = this.balloons.filter(b => b !== balloon);
+            this.nextRound();
+          }, 300);
+        } else {
+          // 点错气球
+          sfx.playWrong();
+          balloon.el.classList.add('wrong-shake');
+          setTimeout(() => balloon.el.classList.remove('wrong-shake'), 350);
+          this.combo = 0;
+          this.comboDisplay.textContent = 0;
+        }
+      }
+
+      gameLoop() {
+        if (!this.isRunning) return;
+
+        for (let i = this.balloons.length - 1; i >= 0; i--) {
+          const b = this.balloons[i];
+          b.y -= b.speed;
+          b.el.style.top = `${b.y}px`;
+
+          // 超出屏幕顶端则重置或清理
+          if (b.y < -120) {
+            b.el.remove();
+            this.balloons.splice(i, 1);
+          }
+        }
+
+        // 如果屏幕里没有气球了，自动生成一批
+        if (this.balloons.length < 2) {
+          this.spawnBalloonsWave(this.currentTarget);
+        }
+
+        requestAnimationFrame(() => this.gameLoop());
+      }
+
+      createExplosion(x, y) {
+        const colors = ['#f43f5e', '#38bdf8', '#fbbf24', '#34d399', '#a855f7', '#fb923c'];
+        for (let i = 0; i < 28; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 6;
+          this.particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 3 + Math.random() * 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            decay: 0.02 + Math.random() * 0.03
+          });
+        }
+      }
+
+      animLoop() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.15; // 重力
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+          } else {
+            this.ctx.save();
+            this.ctx.globalAlpha = p.alpha;
+            this.ctx.fillStyle = p.color;
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+          }
+        }
+
+        requestAnimationFrame(() => this.animLoop());
+      }
+
+      speakWord(char) {
+        if (!('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(`请找出：${char}字`);
+          utterance.lang = 'zh-CN';
+          utterance.rate = 0.85;
+          window.speechSynthesis.speak(utterance);
+        } catch(e) {}
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      new WordBalloonGame();
+    });
+  </script>
+</body>
+</html>

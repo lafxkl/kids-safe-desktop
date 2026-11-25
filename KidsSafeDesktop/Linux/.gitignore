@@ -3,3 +3,14 @@ build-*/
 *.user
 .cache/
 compile_commands.json
+
+# ---- deb 打包产物 ----
+# debhelper 在源码树里就地构建，会在这些位置留东西
+dist/
+obj-*/
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars
+debian/kidssafe/
+*_*.buildinfo

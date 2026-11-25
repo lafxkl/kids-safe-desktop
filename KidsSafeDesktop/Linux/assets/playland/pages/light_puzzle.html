@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光线反射小游戏 ✨</title>
+<style>
+  :root{
+    --bg1:#fef9e7; --bg2:#e3f2fd; --ink:#5a3b2b; --accent:#26a69a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; font-family:'Segoe UI',system-ui,'PingFang SC',sans-serif;
+    background:radial-gradient(circle at 20% 20%,var(--bg1),var(--bg2));
+    color:var(--ink); padding:12px;
+  }
+  h1{ font-size:26px; margin:6px 0 2px; letter-spacing:2px; }
+  .sub{ font-size:14px; opacity:.75; margin-bottom:10px; }
+  #stage{ position:relative; }
+  canvas{
+    border-radius:18px; background:linear-gradient(160deg,#fff8e1,#e3f2fd);
+    box-shadow:0 10px 30px rgba(80,90,140,.18); display:block; cursor:pointer;
+    max-width:100%; height:auto; touch-action:manipulation;
+  }
+  .bar{ display:flex; align-items:center; gap:14px; margin-top:12px; flex-wrap:wrap; justify-content:center;}
+  button{
+    border:none; border-radius:999px; padding:9px 18px; font-size:15px; cursor:pointer;
+    background:var(--accent); color:#fff; box-shadow:0 5px 12px rgba(38,166,154,.35);
+    font-weight:600; transition:transform .12s;
+  }
+  button:hover{ transform:translateY(-2px);}
+  button:active{ transform:scale(.96);}
+  button.ghost{ background:#fff; color:var(--ink); box-shadow:0 4px 10px rgba(80,90,140,.15);}
+  label{ font-size:14px; display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;}
+  .msg{
+    position:absolute; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; text-align:center; border-radius:18px; z-index:5;
+    background:rgba(255,255,255,.35); backdrop-filter:blur(3px);
+  }
+  .msg.show{ display:flex; }
+  .msg .big{ font-size:44px; }
+  #winText{ font-size:30px; font-weight:800; margin:6px 0; }
+  #hint{ font-size:14px; opacity:.8; margin-top:4px; }
+</style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+  <h1>🌈 光线宝石</h1>
+  <div class="sub">点击 ╲ 或 ╱ 镜子,让光线射中宝石</div>
+
+  <div id="stage">
+    <canvas id="cv" width="720" height="540"></canvas>
+    <div class="msg" id="msg">
+      <div class="big">🎉</div>
+      <div id="winText">通关啦!</div>
+      <div id="hint"></div>
+      <button id="nextBtn">下一关 ➡️</button>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button id="reset" class="ghost">🔄 重置本关</button>
+    <label><input type="checkbox" id="glow" checked>✨ 柔和光效</label>
+    <div id="lvTxt" style="font-size:14px;"></div>
+  </div>
+
+<script>
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const msg=document.getElementById('msg'), winText=document.getElementById('winText');
+const hint=document.getElementById('hint'), lvTxt=document.getElementById('lvTxt');
+const nextBtn=document.getElementById('nextBtn'), glowChk=document.getElementById('glow');
+
+const BACKSLASH=1, SLASH=-1, CW=90; // 每格像素
+// 关卡: src 光源起点, tgt 宝石, mirrors[c,r,o] (o 为初始方向)
+const LEVELS=[
+ {rows:6,cols:8,src:{c:0,r:2},tgt:{c:4,r:0},mirrors:[{c:4,r:2,o:SLASH}]},
+ {rows:6,cols:8,src:{c:0,r:2},tgt:{c:7,r:1},mirrors:[{c:5,r:2,o:SLASH},{c:5,r:1,o:SLASH}]},
+ {rows:6,cols:8,src:{c:0,r:3},tgt:{c:6,r:4},mirrors:[{c:5,r:3,o:SLASH},{c:5,r:1,o:SLASH},{c:6,r:1,o:BACKSLASH}]},
+ {rows:6,cols:8,src:{c:0,r:2},tgt:{c:3,r:5},mirrors:[{c:6,r:2,o:SLASH},{c:6,r:1,o:BACKSLASH},{c:3,r:1,o:SLASH}]}
+];
+
+let lvl=0, cur=null; // 当前关卡运行数据
+let traceResult={pts:[],win:false};
+
+function resetLevel(i){
+  lvl=i; const L=LEVELS[i];
+  cur={rows:L.rows,cols:L.cols,src:L.src,tgt:L.tgt,mirrors:L.mirrors.map(m=>({c:m.c,r:m.r,o:m.o}))};
+  msg.classList.remove('show');
+  lvTxt.textContent='第 '+(i+1)+' / '+LEVELS.length+' 关';
+  trace(); draw();
+}
+
+function mirrorAt(c,r){ return cur.mirrors.find(m=>m.c===c&&m.r===r); }
+
+// 反射方向: 按镜子法线计算
+function refl(dx,dy,o){
+  const nx=1, ny=o;                 // 法线 /√2 (比例可约掉)
+  const dot=dx*nx+dy*ny;
+  return [Math.round(dx-dot*nx)||0, Math.round(dy-dot*ny)||0];
+}
+
+function trace(){
+  const cs=cur.cols, rs=cur.rows, s=cur.src, t=cur.tgt;
+  const pts=[{x:(s.c+0.5)*CW,y:(s.r+0.5)*CW}];
+  let dx=1, dy=0, cx=s.c, cy=s.r;
+  let win=false;
+  for(let k=0;k<40;k++){
+    const m=mirrorAt(cx,cy);
+    if(m){ const r=refl(dx,dy,m.o); dx=r[0]; dy=r[1]; }
+    let turned=false;
+    for(let step=1;step<20;step++){
+      const nx=cx+dx*step, ny=cy+dy*step;
+      if(nx<0||nx>=cs||ny<0||ny>=rs){           // 射出边界
+        pts.push({x:(cx+0.5)*CW+dx*0.5*CW,y:(cy+0.5)*CW+dy*0.5*CW});
+        break;
+      }
+      if(nx===t.c&&ny===t.r){                   // 命中宝石
+        pts.push({x:(nx+0.5)*CW,y:(ny+0.5)*CW}); win=true; break;
+      }
+      if(mirrorAt(nx,ny)){                      // 命中镜子
+        pts.push({x:(nx+0.5)*CW,y:(ny+0.5)*CW}); cx=nx; cy=ny; turned=true; break;
+      }
+    }
+    if(win||(!turned)) break;
+  }
+  traceResult={pts,win};
+  return traceResult;
+}
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const {rows,cols}=cur;
+  // 棋盘背景
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if((r+c)%2===0){ ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(c*CW,r*CW,CW,CW); }
+  }
+  ctx.strokeStyle='rgba(90,60,40,.08)'; ctx.lineWidth=1;
+  for(let r=1;r<rows;r++){ ctx.beginPath();ctx.moveTo(0,r*CW);ctx.lineTo(cv.width,r*CW);ctx.stroke(); }
+  for(let c=1;c<cols;c++){ ctx.beginPath();ctx.moveTo(c*CW,0);ctx.lineTo(c*CW,cv.height);ctx.stroke(); }
+  drawSource();
+  drawMirrors();
+  drawGem();
+  drawRay();
+}
+
+function drawSource(){ // 光源
+  const x=(cur.src.c+0.5)*CW-6, y=(cur.src.r+0.5)*CW;
+  ctx.save(); ctx.shadowBlur=18; ctx.shadowColor='#ffb300';
+  ctx.fillStyle='#ffd54f'; ctx.strokeStyle='#f9a825';
+  ctx.beginPath(); ctx.arc(x,y,16,0,Math.PI*2); ctx.fill(); ctx.lineWidth=3; ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle='#fff'; ctx.font='bold 13px sans-serif';
+  ctx.textAlign='center';ctx.fillText('☀️',x,y+4);
+}
+
+function drawMirrors(){
+  for(const m of cur.mirrors){
+    const x=(m.c+0.5)*CW, y=(m.r+0.5)*CW;
+    let x1,y1,x2,y2;
+    if(m.o===BACKSLASH){ x1=x-16;y1=y-16; x2=x+16;y2=y+16; }   // ╲
+    else{ x1=x-16;y1=y+16; x2=x+16;y2=y-16; }                  // ╱
+    ctx.save(); ctx.strokeStyle='#455a64'; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.strokeStyle='#26a69a'; ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawGem(){
+  const x=(cur.tgt.c+0.5)*CW, y=(cur.tgt.r+0.5)*CW;
+  ctx.save(); ctx.shadowBlur=glowChk.checked?16:0; ctx.shadowColor='#4dd0e1';
+  ctx.fillStyle='#4dd0e1'; ctx.strokeStyle='#00acc1'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(x,y-16); ctx.lineTo(x+12,y); ctx.lineTo(x,y+16); ctx.lineTo(x-12,y);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.beginPath(); ctx.moveTo(x,y-16); ctx.lineTo(x+12,y); ctx.lineTo(x,y+2); ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+
+function drawRay(){
+  const glow=glowChk.checked;
+  if(glow){ ctx.save(); ctx.shadowBlur=16; ctx.shadowColor='#ffca28'; }
+  ctx.strokeStyle='#ffb300'; ctx.lineWidth=6; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath();
+  traceResult.pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.stroke();
+  // 高光
+  ctx.strokeStyle='rgba(255,255,255,.65)'; ctx.lineWidth=2;
+  ctx.beginPath();
+  traceResult.pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.stroke();
+  if(glow) ctx.restore();
+}
+
+// 点击: 旋转命中的镜子
+cv.addEventListener('click',e=>{
+  if(msg.classList.contains('show')) return;
+  const rect=cv.getBoundingClientRect();
+  const x=(e.clientX-rect.left)*cv.width/rect.width;
+  const y=(e.clientY-rect.top)*cv.height/rect.height;
+  const c=Math.floor(x/CW), r=Math.floor(y/CW);
+  if(c<0||c>=cur.cols||r<0||r>=cur.rows) return;
+  const m=mirrorAt(c,r);
+  if(!m) return;
+  m.o = m.o===BACKSLASH ? SLASH : BACKSLASH;   // 旋转镜子
+  trace(); draw();
+  if(traceResult.win){ winText.textContent='🎉 第 '+(lvl+1)+' 关通关!'; hint.textContent='你真棒!'; nextBtn.style.display='block'; msg.classList.add('show'); }
+});
+nextBtn.addEventListener('click',()=>{
+  if(lvl>=LEVELS.length-1){ resetLevel(0); }
+  else resetLevel(lvl+1);
+});
+document.getElementById('reset').addEventListener('click',()=>resetLevel(lvl));
+glowChk.addEventListener('change',draw);
+window.addEventListener('resize',()=>{});
+
+resetLevel(0);
+</script>
+</body>
+</html>

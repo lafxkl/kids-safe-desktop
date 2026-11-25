@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  无障碍守护的声明文件。
+
+  注意两点：
+  · accessibilityEventTypes 只要窗口状态变化类事件（typeWindowStateChanged /
+    typeWindowsChanged），不要加 typeViewClicked / typeTextChanged —— 那会让系统
+    把每一次点击/输入都推给我们，既费电又容易被误认为键盘记录器。
+  · description / summary 会显示在「设置 → 无障碍」列表里，必须写清楚用途，
+    否则家长不敢开，应用商店审核也会问。
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowsChanged"
+    android:accessibilityFlags="flagReportViewIds"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canRetrieveWindowContent="true"
+    android:notificationTimeout="80"
+    android:description="@string/kiosk_accessibility_description"
+    android:summary="@string/kiosk_accessibility_summary" />

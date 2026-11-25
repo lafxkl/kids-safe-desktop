@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🚀 算术小飞行员 - 极速光门穿梭加减法乐园</title>
+  <style>
+    :root {
+      --primary-cyan: #06b6d4;
+      --primary-blue: #3b82f6;
+      --primary-indigo: #6366f1;
+      --primary-amber: #f59e0b;
+      --primary-emerald: #10b981;
+      --primary-rose: #f43f5e;
+      --bg-dark: #090d16;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scrollbar-gutter: stable;
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+      font-family: var(--font-family);
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px 10px 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 背景星云微光 */
+    .bg-nebula {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(85px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.45;
+      animation: floatNebula 18s ease-in-out infinite alternate;
+    }
+    .nebula-1 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, #38bdf8, #6366f1);
+      top: -80px; left: -100px;
+    }
+    .nebula-2 {
+      width: 460px; height: 460px;
+      background: radial-gradient(circle, #ec4899, #8b5cf6);
+      bottom: -100px; right: -120px;
+      animation-delay: -6s;
+    }
+
+    @keyframes floatNebula {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 20px) scale(1.08); }
+      100% { transform: translate(-20px, 35px) scale(0.94); }
+    }
+
+    /* 主视窗容器 */
+    .game-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 顶部导航控制条 */
+    .top-navbar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .btn-back-hub {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      padding: 6px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s;
+    }
+    .btn-back-hub:hover {
+      background: rgba(51, 65, 85, 0.95);
+      color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    /* 难度分级切换 */
+    .difficulty-bar {
+      display: flex;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      padding: 3px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      gap: 3px;
+    }
+
+    .diff-btn {
+      padding: 5px 11px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .diff-btn.active {
+      background: linear-gradient(135deg, #0284c7, #3b82f6);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover {
+      background: rgba(51, 65, 85, 0.95);
+      color: #38bdf8;
+      transform: scale(1.05);
+    }
+
+    /* 仪表板 HUD */
+    .hud-dashboard {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border-radius: 18px;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+
+    .hud-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    /* 生命装甲指示器 */
+    .hp-hearts-box {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 16px;
+      min-width: 68px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* 飞行里程与护盾状态 */
+    .flight-status-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(30, 41, 59, 0.8);
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge-distance strong,
+    .badge-score strong {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+      display: inline-block;
+      text-align: right;
+    }
+
+    .badge-distance strong {
+      color: #38bdf8;
+      font-size: 13.5px;
+      min-width: 44px;
+    }
+
+    .badge-score strong {
+      color: #fbbf24;
+      font-size: 13.5px;
+      min-width: 42px;
+    }
+
+    /* 航速调节按钮组 */
+    .speed-toggle-group {
+      display: inline-flex;
+      background: rgba(30, 41, 59, 0.85);
+      padding: 3px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .speed-pill-btn {
+      padding: 3px 8px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .speed-pill-btn.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+
+    /* 核心算术题目显示大横幅（位于选左门与选右门上方） */
+    .question-banner {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.8), rgba(88, 28, 135, 0.8));
+      border: 1.5px solid rgba(96, 165, 250, 0.5);
+      border-radius: 18px;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 0 16px rgba(59, 130, 246, 0.2);
+      backdrop-filter: blur(12px);
+      min-height: 52px;
+      box-sizing: border-box;
+    }
+
+    .question-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .question-math {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #ffffff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+    }
+
+    .question-combo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 900;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.15);
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .question-combo #comboVal {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-variant-numeric: tabular-nums;
+      min-width: 26px;
+      display: inline-block;
+      text-align: center;
+    }
+
+    /* 游戏主画布容器 */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1.5px rgba(255, 255, 255, 0.12);
+      background: #020617;
+      touch-action: none;
+    }
+
+    #flightCanvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 9 / 14;
+      max-height: 520px;
+      cursor: pointer;
+    }
+
+    /* 超光速冲刺横幅通知 */
+    .hyper-banner {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.6);
+      background: linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4);
+      color: #ffffff;
+      padding: 8px 22px;
+      border-radius: 999px;
+      font-size: 19px;
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(236, 72, 153, 0.45);
+      pointer-events: none;
+      z-index: 30;
+      opacity: 0;
+      transition: transform 0.22s ease-out, opacity 0.22s ease-out;
+      will-change: transform, opacity;
+      white-space: nowrap;
+    }
+
+    .hyper-banner.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    /* 移动端底部超大触摸变道控制区 */
+    .mobile-controls {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-steer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px 10px;
+      border-radius: 18px;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      transition: transform 0.12s ease;
+      -webkit-tap-highlight-color: transparent;
+      height: 54px;
+      box-sizing: border-box;
+    }
+
+    .btn-steer .btn-arrow {
+      font-size: 20px;
+      opacity: 0.8;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-steer .btn-answer-val {
+      font-size: 28px;
+      font-weight: 900;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .btn-steer:active {
+      transform: scale(0.96);
+    }
+
+    .btn-steer-left {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.85), rgba(79, 70, 229, 0.85));
+    }
+    .btn-steer-left:hover {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+    }
+
+    .btn-steer-right {
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.85), rgba(219, 39, 119, 0.85));
+    }
+    .btn-steer-right:hover {
+      background: linear-gradient(135deg, #9333ea, #db2777);
+    }
+
+    /* 弹窗通用样式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(2, 6, 23, 0.75);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: #0f172a;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 420px;
+      padding: 26px 22px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-overlay.active .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 52px;
+      margin-bottom: 10px;
+      animation: floatIcon 2s infinite ease-in-out;
+    }
+
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #f8fafc;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .modal-stats-list {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.7);
+      border-radius: 18px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+
+    .modal-stat-item strong {
+      font-size: 18px;
+      color: #38bdf8;
+    }
+
+    .modal-btn-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-modal {
+      flex: 1;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-modal-primary {
+      background: linear-gradient(135deg, #0284c7, #3b82f6);
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+    }
+    .btn-modal-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-modal-secondary {
+      background: rgba(51, 65, 85, 0.8);
+      color: #cbd5e1;
+    }
+
+    /* 规则列表 */
+    .rules-list {
+      text-align: left;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.65;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rule-bullet {
+      background: rgba(30, 41, 59, 0.8);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border-left: 4px solid #38bdf8;
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 背景星云 -->
+  <div class="bg-nebula nebula-1"></div>
+  <div class="bg-nebula nebula-2"></div>
+
+  <div class="game-wrapper">
+
+    <!-- 顶部导航 -->
+    <header class="top-navbar">
+      <a href="../index.html" class="btn-back-hub">
+        <span>🏠</span> 乐园大厅
+      </a>
+
+      <!-- 难度切换 -->
+      <div class="difficulty-bar">
+        <button class="diff-btn active" id="diffEasy" onclick="game.switchDiff('easy')">🌱 10以内</button>
+        <button class="diff-btn" id="diffMedium" onclick="game.switchDiff('medium')">⚡ 20以内</button>
+        <button class="diff-btn" id="diffHard" onclick="game.switchDiff('hard')">🔥 100以内</button>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" id="soundBtn" onclick="game.sound.toggleMute()" title="音效开关">🔊</button>
+        <button class="icon-btn" onclick="game.showRules()" title="飞行手册">❓</button>
+      </div>
+    </header>
+
+    <!-- 仪表板 HUD -->
+    <section class="hud-dashboard">
+      <div class="hud-top-row">
+        <!-- 生命护盾 -->
+        <div class="hp-hearts-box" id="hpBox">
+          <span>💖</span><span>💖</span><span>💖</span>
+        </div>
+
+        <!-- 航速调节档位 (默认悠闲慢速) -->
+        <div class="speed-toggle-group">
+          <button class="speed-pill-btn active" id="spdSlow" onclick="game.setSpeedMode('slow')">🐢 悠闲慢速</button>
+          <button class="speed-pill-btn" id="spdNormal" onclick="game.setSpeedMode('normal')">⚡ 标准航速</button>
+        </div>
+
+        <!-- 距离与得分 -->
+        <div class="flight-status-badges">
+          <div class="status-badge badge-distance">
+            <span>🚀 距离</span>
+            <strong id="distVal">0m</strong>
+          </div>
+          <div class="status-badge badge-score">
+            <span>⭐ 得分</span>
+            <strong id="scoreVal">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 游戏主画布容器 -->
+    <main class="canvas-container" id="canvasBox">
+      <canvas id="flightCanvas" width="450" height="700"></canvas>
+      <div class="hyper-banner" id="hyperBanner">⚡ 超光速狂暴冲刺！</div>
+    </main>
+
+    <!-- 核心算术题目大横幅（置于选左门和选右门按键正上方） -->
+    <div class="question-banner">
+      <div class="question-label">
+        <span>🎯</span> 请计算：
+      </div>
+      <div class="question-math" id="questionMath">
+        5 + 3 = ?
+      </div>
+      <div class="question-combo" id="comboBadge">
+        <span>⚡ 连击</span> <span id="comboVal">x0</span>
+      </div>
+    </div>
+
+    <!-- 底部双变道触摸控制按键（直接显示左右答案） -->
+    <footer class="mobile-controls">
+      <button class="btn-steer btn-steer-left" id="btnSteerLeft" onmousedown="game.steer('left')" ontouchstart="event.preventDefault(); game.steer('left')" title="左门答案">
+        <span class="btn-arrow">◀</span>
+        <span class="btn-answer-val" id="leftDoorVal">8</span>
+      </button>
+      <button class="btn-steer btn-steer-right" id="btnSteerRight" onmousedown="game.steer('right')" ontouchstart="event.preventDefault(); game.steer('right')" title="右门答案">
+        <span class="btn-answer-val" id="rightDoorVal">9</span>
+        <span class="btn-arrow">▶</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- 坠机/游戏结束弹窗 -->
+  <div class="modal-overlay" id="modalGameOver">
+    <div class="modal-dialog">
+      <div class="modal-icon">💥</div>
+      <h2 class="modal-title">装甲耗尽 · 迫降救援！</h2>
+      <p class="modal-desc" id="gameOverDesc">本次飞行表现卓越，心算大脑高速运转！</p>
+      <div class="modal-stats-list">
+        <div class="modal-stat-item">
+          <span>最终航行距离</span>
+          <strong id="finalDist" style="color: #38bdf8;">0 m</strong>
+        </div>
+        <div class="modal-stat-item">
+          <span>穿过正确光门</span>
+          <strong id="finalGates">0 座</strong>
+        </div>
+        <div class="modal-stat-item">
+          <span>最高连击数</span>
+          <strong id="finalMaxCombo" style="color: #f59e0b;">0 连击</strong>
+        </div>
+        <div class="modal-stat-item">
+          <span>最终总积分</span>
+          <strong id="finalScore" style="color: #fbbf24;">0</strong>
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="btn-modal btn-modal-secondary" onclick="game.closeGameOver()">查看星空</button>
+        <button class="btn-modal btn-modal-primary" onclick="game.restart()">再度启航 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 飞行员手册弹窗 -->
+  <div class="modal-overlay" id="modalRules">
+    <div class="modal-dialog">
+      <div class="modal-icon">📖</div>
+      <h2 class="modal-title">算术小飞行员 · 操作指南</h2>
+      <div class="rules-list">
+        <div class="rule-bullet">
+          <strong>1. 核心操作：</strong>
+          <br>• <strong>电脑键盘：</strong> 按 <code>← / →</code> 或 <code>A / D</code> 变道。
+          <br>• <strong>鼠标/触控：</strong> 点击底部变道大按键，或直接点击屏幕左/右半侧！
+        </div>
+        <div class="rule-bullet">
+          <strong>2. 算术穿门：</strong>
+          <br>抬头观察屏幕上方题目（如 <code>14 - 6 = ?</code>），计算出答案后变道飞入标有正确数值的光门！
+        </div>
+        <div class="rule-bullet">
+          <strong>3. 连击狂暴冲刺 (Hyper Boost)：</strong>
+          <br>连续穿对 5 座光门，飞船将激活<strong>「⚡ 超光速狂暴冲刺」</strong>，5秒内进入无敌状态并狂飙加分！
+        </div>
+        <div class="rule-bullet">
+          <strong>4. 沿途补给道具：</strong>
+          <br>• 💖 维修扳手：恢复 1 点装甲
+          <br>• 🛡️ 能量护盾：抵挡 1 次穿错撞击
+          <br>• 🪙 星际金币：额外积分加成
+        </div>
+      </div>
+      <button class="btn-modal btn-modal-primary" style="width: 100%;" onclick="game.closeRules()">出征星海！</button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Web Audio 原生音效引擎
+     */
+    class PilotSound {
+      constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('math_pilot_muted') === 'true';
+        this.updateUI();
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('math_pilot_muted', this.muted);
+        this.updateUI();
+        if (!this.muted) this.playTone(587.33, 0.1, 'sine', 0.15);
+      }
+
+      updateUI() {
+        const btn = document.getElementById('soundBtn');
+        if (btn) btn.textContent = this.muted ? '🔇' : '🔊';
+      }
+
+      playTone(freq, duration, type = 'sine', gainVal = 0.12) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      }
+
+      // 变道推进器喷射
+      playThrust() {
+        this.playTone(180, 0.08, 'triangle', 0.08);
+      }
+
+      // 穿过正确光门（清脆能量冲刺音）
+      playCorrect(combo = 1) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const freq1 = 523.25 * (1 + (combo - 1) * 0.06);
+        const freq2 = freq1 * 1.5;
+        [freq1, freq2].forEach((f, i) => {
+          try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + i * 0.06);
+            gain.gain.setValueAtTime(0.12, now + i * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.2);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.06);
+            osc.stop(now + i * 0.06 + 0.22);
+          } catch(e) {}
+        });
+      }
+
+      // 穿错撞门破损
+      playCrash() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.3);
+        } catch(e) {}
+      }
+
+      // 吃到金币
+      playCoin() {
+        this.playTone(987.77, 0.08, 'sine', 0.12);
+        setTimeout(() => this.playTone(1318.51, 0.12, 'sine', 0.12), 60);
+      }
+
+      // 吃到道具
+      playPowerup() {
+        [440, 554, 659, 880].forEach((f, idx) => {
+          setTimeout(() => this.playTone(f, 0.1, 'triangle', 0.1), idx * 50);
+        });
+      }
+
+      // 超光速模式激活
+      playHyper() {
+        [523, 659, 784, 1046].forEach((f, idx) => {
+          setTimeout(() => this.playTone(f, 0.16, 'sawtooth', 0.12), idx * 60);
+        });
+      }
+    }
+
+    /**
+     * 游戏核心类
+     */
+    class MathPilotGame {
+      constructor() {
+        this.canvas = document.getElementById('flightCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.sound = new PilotSound();
+
+        this.renderWidth = 450;
+        this.renderHeight = 700;
+        this.initCanvasSize();
+        window.addEventListener('resize', () => this.initCanvasSize());
+
+        // 难度级别: 'easy'(10以内), 'medium'(20以内进退位), 'hard'(100以内)
+        this.diff = 'easy';
+
+        // 飞船状态 (飞机往下移至 615，留足前方视野，完全不遮挡光门答案)
+        this.ship = {
+          lane: 0, // 0: 左道, 1: 右道
+          currentX: 130, // 实际平滑过渡位置
+          targetX: 130,
+          y: 615,
+          hp: 3,
+          maxHp: 3,
+          hasShield: false,
+          isHyper: false,
+          hyperTimer: 0,
+          tilt: 0
+        };
+
+        // 航道位置
+        this.laneX = [120, 330];
+
+        // 航行参数 (默认悠闲慢速，给足心算口算思考时间)
+        this.speedMode = 'slow';
+        this.speed = 1.6;
+        this.distance = 0;
+        this.score = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.gatesPassed = 0;
+        this.isGameOver = false;
+
+        // 实体系统：星空、光门组、道具、粒子、飘字
+        this.stars = [];
+        this.gateGroups = [];
+        this.items = [];
+        this.particles = [];
+        this.floatingTexts = [];
+
+        // 当前目标题目
+        this.currentProblem = null;
+
+        this.initStars();
+        this.bindEvents();
+        this.restart();
+        this.loop();
+      }
+
+      initCanvasSize() {
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = this.renderWidth * dpr;
+        this.canvas.height = this.renderHeight * dpr;
+        this.ctx.scale(dpr, dpr);
+      }
+
+      initStars() {
+        this.stars = [];
+        for (let i = 0; i < 70; i++) {
+          this.stars.push({
+            x: Math.random() * this.renderWidth,
+            y: Math.random() * this.renderHeight,
+            radius: Math.random() * 1.8 + 0.5,
+            speed: Math.random() * 2 + 1,
+            color: Math.random() > 0.4 ? '#ffffff' : '#38bdf8'
+          });
+        }
+      }
+
+      // 生成加减法题目
+      generateProblem() {
+        let a, b, op, ans, wrongAns;
+        if (this.diff === 'easy') {
+          // 10 以内加减法
+          op = Math.random() > 0.5 ? '+' : '-';
+          if (op === '+') {
+            a = Math.floor(Math.random() * 8) + 1;
+            b = Math.floor(Math.random() * (10 - a)) + 1;
+            ans = a + b;
+          } else {
+            a = Math.floor(Math.random() * 9) + 2;
+            b = Math.floor(Math.random() * (a - 1)) + 1;
+            ans = a - b;
+          }
+        } else if (this.diff === 'medium') {
+          // 20 以内进退位加减法
+          op = Math.random() > 0.5 ? '+' : '-';
+          if (op === '+') {
+            // 进位加法为主
+            a = Math.floor(Math.random() * 6) + 5; // 5-10
+            b = Math.floor(Math.random() * (19 - a)) + 1;
+            ans = a + b;
+          } else {
+            // 破十退位减法为主
+            a = Math.floor(Math.random() * 8) + 11; // 11-18
+            b = Math.floor(Math.random() * 8) + 2;
+            ans = a - b;
+          }
+        } else {
+          // 100 以内加减法
+          op = Math.random() > 0.5 ? '+' : '-';
+          if (op === '+') {
+            a = Math.floor(Math.random() * 45) + 10;
+            b = Math.floor(Math.random() * 45) + 5;
+            ans = a + b;
+          } else {
+            a = Math.floor(Math.random() * 70) + 25;
+            b = Math.floor(Math.random() * (a - 10)) + 5;
+            ans = a - b;
+          }
+        }
+
+        // 生成干扰项 (误差 +-1 到 +-3 之间，确保不等于正确答案且为正数)
+        const offset = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 2) + 1);
+        wrongAns = ans + offset;
+        if (wrongAns <= 0 || wrongAns === ans) wrongAns = ans + 2;
+
+        // 随机分配左门还是右门为正确
+        const correctLane = Math.random() > 0.5 ? 0 : 1;
+        const leftVal = correctLane === 0 ? ans : wrongAns;
+        const rightVal = correctLane === 1 ? ans : wrongAns;
+
+        return {
+          questionText: `${a} ${op} ${b} = ?`,
+          correctAnswer: ans,
+          correctLane: correctLane,
+          leftVal: leftVal,
+          rightVal: rightVal
+        };
+      }
+
+      spawnGateGroup() {
+        this.currentProblem = this.generateProblem();
+        this.updateProblemHUD();
+
+        this.gateGroups.push({
+          y: -70,
+          problem: this.currentProblem,
+          passed: false
+        });
+
+        // 40% 概率在两道光门前随机掉落一个金币或补给道具
+        if (Math.random() < 0.45) {
+          const itemLane = Math.random() > 0.5 ? 0 : 1;
+          const randType = Math.random();
+          let type = 'coin';
+          if (randType < 0.15) type = 'repair';
+          else if (randType < 0.3) type = 'shield';
+
+          this.items.push({
+            x: this.laneX[itemLane],
+            y: 30,
+            type: type,
+            collected: false
+          });
+        }
+      }
+
+      updateProblemHUD() {
+        if (!this.currentProblem) return;
+        document.getElementById('questionMath').textContent = this.currentProblem.questionText;
+        document.getElementById('leftDoorVal').textContent = this.currentProblem.leftVal;
+        document.getElementById('rightDoorVal').textContent = this.currentProblem.rightVal;
+      }
+
+      bindEvents() {
+        // 键盘按键变道
+        window.addEventListener('keydown', (e) => {
+          if (this.isGameOver) return;
+          if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+            this.steer('left');
+          } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+            this.steer('right');
+          }
+        });
+
+        // 点击画布左/右半屏变道
+        const handleCanvasPointer = (e) => {
+          if (this.isGameOver) return;
+          this.sound.init();
+          const rect = this.canvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const x = clientX - rect.left;
+          if (x < rect.width / 2) {
+            this.steer('left');
+          } else {
+            this.steer('right');
+          }
+        };
+
+        this.canvas.addEventListener('mousedown', handleCanvasPointer);
+        this.canvas.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          handleCanvasPointer(e);
+        }, { passive: false });
+      }
+
+      steer(dir) {
+        if (this.isGameOver) return;
+        this.sound.init();
+        if (dir === 'left') {
+          this.ship.lane = 0;
+          this.ship.tilt = -0.22;
+        } else {
+          this.ship.lane = 1;
+          this.ship.tilt = 0.22;
+        }
+        this.ship.targetX = this.laneX[this.ship.lane];
+        this.sound.playThrust();
+      }
+
+      switchDiff(d) {
+        this.diff = d;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        if (d === 'easy') document.getElementById('diffEasy').classList.add('active');
+        if (d === 'medium') document.getElementById('diffMedium').classList.add('active');
+        if (d === 'hard') document.getElementById('diffHard').classList.add('active');
+        this.restart();
+      }
+
+      setSpeedMode(mode) {
+        this.speedMode = mode;
+        const btnSlow = document.getElementById('spdSlow');
+        const btnNormal = document.getElementById('spdNormal');
+        if (btnSlow) btnSlow.classList.toggle('active', mode === 'slow');
+        if (btnNormal) btnNormal.classList.toggle('active', mode === 'normal');
+        this.speed = this.getBaseSpeed();
+      }
+
+      getBaseSpeed() {
+        return this.speedMode === 'slow' ? 1.6 : 2.5;
+      }
+
+      getMaxSpeed() {
+        return this.speedMode === 'slow' ? 2.3 : 3.6;
+      }
+
+      restart() {
+        this.ship.lane = 0;
+        this.ship.currentX = this.laneX[0];
+        this.ship.targetX = this.laneX[0];
+        this.ship.y = 615; // 飞机位于靠下黄金位置，视野开阔不挡答案
+        this.ship.hp = 3;
+        this.ship.hasShield = false;
+        this.ship.isHyper = false;
+        this.ship.hyperTimer = 0;
+        this.ship.tilt = 0;
+
+        this.distance = 0;
+        this.score = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.gatesPassed = 0;
+        this.speed = this.getBaseSpeed();
+        this.isGameOver = false;
+
+        this._lastDist = -1;
+        this._lastScore = -1;
+        this._lastCombo = -1;
+        this._lastHpKey = '';
+
+        this.gateGroups = [];
+        this.items = [];
+        this.particles = [];
+        this.floatingTexts = [];
+
+        this.closeGameOver();
+        this.spawnGateGroup();
+        this.updateHUD();
+      }
+
+      showRules() {
+        document.getElementById('modalRules').classList.add('active');
+      }
+
+      closeRules() {
+        document.getElementById('modalRules').classList.remove('active');
+      }
+
+      closeGameOver() {
+        document.getElementById('modalGameOver').classList.remove('active');
+      }
+
+      triggerGameOver() {
+        this.isGameOver = true;
+        this.sound.playCrash();
+
+        document.getElementById('finalDist').textContent = `${Math.floor(this.distance)} m`;
+        document.getElementById('finalGates').textContent = `${this.gatesPassed} 座`;
+        document.getElementById('finalMaxCombo').textContent = `${this.maxCombo} 连击`;
+        document.getElementById('finalScore').textContent = this.score;
+
+        document.getElementById('modalGameOver').classList.add('active');
+      }
+
+      triggerHyperBoost() {
+        this.ship.isHyper = true;
+        this.ship.hyperTimer = 260; // 约 4.3 秒
+        this.sound.playHyper();
+
+        const banner = document.getElementById('hyperBanner');
+        if (banner) {
+          if (this._hyperBannerTimer) clearTimeout(this._hyperBannerTimer);
+          banner.classList.add('active');
+          this._hyperBannerTimer = setTimeout(() => {
+            banner.classList.remove('active');
+            this._hyperBannerTimer = null;
+          }, 1400);
+        }
+      }
+
+      addFloatingText(text, x, y, color, maxLife = 20, fontSize = 20, isBanner = false) {
+        this.floatingTexts.push({
+          text, x, y, color,
+          alpha: 1,
+          vy: -1.2,
+          life: 0,
+          maxLife: maxLife,
+          fontSize: fontSize,
+          isBanner: isBanner
+        });
+      }
+
+      createParticles(x, y, color, count = 10, speedMult = 1) {
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (Math.random() * 4 + 2) * speedMult;
+          this.particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: Math.random() * 3 + 1.5,
+            color,
+            alpha: 1,
+            decay: Math.random() * 0.03 + 0.02
+          });
+        }
+      }
+
+      updateHUD() {
+        const distInt = Math.floor(this.distance);
+        if (this._lastDist !== distInt) {
+          this._lastDist = distInt;
+          const distEl = document.getElementById('distVal');
+          if (distEl) distEl.textContent = `${distInt}m`;
+        }
+
+        // 仅在得分变化时更新 DOM，避免 60Hz 高频无效重排
+        if (this._lastScore !== this.score) {
+          this._lastScore = this.score;
+          const scoreEl = document.getElementById('scoreVal');
+          if (scoreEl) scoreEl.textContent = this.score;
+        }
+
+        if (this._lastCombo !== this.combo) {
+          this._lastCombo = this.combo;
+          const comboEl = document.getElementById('comboVal');
+          if (comboEl) comboEl.textContent = `x${this.combo}`;
+        }
+
+        // 生命值与护盾状态按需更新，不再每帧无意义替换 DOM
+        const hpKey = `${this.ship.hp}_${this.ship.hasShield}`;
+        if (this._lastHpKey !== hpKey) {
+          this._lastHpKey = hpKey;
+          let hpStr = '';
+          for (let i = 0; i < this.ship.maxHp; i++) {
+            hpStr += i < this.ship.hp ? '💖' : '🖤';
+          }
+          if (this.ship.hasShield) hpStr += ' 🛡️';
+          const hpBox = document.getElementById('hpBox');
+          if (hpBox) hpBox.textContent = hpStr;
+        }
+      }
+
+      loop() {
+        this.update();
+        this.render();
+        requestAnimationFrame(() => this.loop());
+      }
+
+      update() {
+        if (this.isGameOver) return;
+
+        // 1. 航行速度与距离增加 (平滑柔和提速，慢速模式上限2.3)
+        const base = this.getBaseSpeed();
+        const max = this.getMaxSpeed();
+        this.speed = Math.min(base + (this.distance / 300) * 0.1, max);
+
+        // 冲刺速度温和提升 1.35x (保持超光速爽快感同时完全消除画面剧烈晃动与撕裂)
+        const currentSpeed = this.ship.isHyper ? this.speed * 1.35 : this.speed;
+        this.distance += currentSpeed * 0.08;
+
+        // 2. 超光速状态倒计时 (分数每5帧平滑递增，避免每帧高频无效触发重排)
+        if (this.ship.isHyper) {
+          this.ship.hyperTimer--;
+          if (this.ship.hyperTimer % 5 === 0) {
+            this.score += 10;
+          }
+          if (this.ship.hyperTimer <= 0) {
+            this.ship.isHyper = false;
+          }
+        }
+
+        // 3. 飞船平滑横向位移与侧倾复原
+        this.ship.currentX += (this.ship.targetX - this.ship.currentX) * 0.22;
+        this.ship.tilt *= 0.85;
+
+        // 4. 背景星星移动 (温和流速，超光速时自然提速而不晃眼)
+        for (const star of this.stars) {
+          star.y += star.speed * (this.ship.isHyper ? 1.4 : 0.8);
+          if (star.y > this.renderHeight) {
+            star.y = 0;
+            star.x = Math.random() * this.renderWidth;
+          }
+        }
+
+        // 5. 光门组移动与碰撞检测
+        for (let i = this.gateGroups.length - 1; i >= 0; i--) {
+          const group = this.gateGroups[i];
+          group.y += currentSpeed;
+
+          // 穿门判定线（当光门来到飞船机头高度附近时）
+          if (!group.passed && group.y >= this.ship.y - 30 && group.y <= this.ship.y + 40) {
+            group.passed = true;
+            this.resolveGatePass(group);
+          }
+
+          if (group.y > this.renderHeight + 80) {
+            this.gateGroups.splice(i, 1);
+          }
+        }
+
+        // 当屏幕中没有光门或上一道光门已穿过离开飞船时，平稳生成下一道光门
+        if (this.gateGroups.length === 0 || (this.gateGroups[this.gateGroups.length - 1].passed && this.gateGroups[this.gateGroups.length - 1].y > this.ship.y + 35)) {
+          this.spawnGateGroup();
+        }
+
+        // 6. 道具拾取
+        for (let i = this.items.length - 1; i >= 0; i--) {
+          const item = this.items[i];
+          item.y += currentSpeed;
+
+          const dx = item.x - this.ship.currentX;
+          const dy = item.y - this.ship.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (!item.collected && dist < 45) {
+            item.collected = true;
+            this.resolveItemPickup(item);
+            this.items.splice(i, 1);
+            continue;
+          }
+
+          if (item.y > this.renderHeight + 50) {
+            this.items.splice(i, 1);
+          }
+        }
+
+        // 7. 粒子更新
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= p.decay;
+          if (p.alpha <= 0) this.particles.splice(i, 1);
+        }
+
+        // 8. 飘字更新
+        for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+          const ft = this.floatingTexts[i];
+          ft.y += ft.vy;
+          ft.life++;
+          const hold = ft.maxLife || 20;
+          if (ft.life > hold) ft.alpha -= 0.035;
+          if (ft.alpha <= 0) this.floatingTexts.splice(i, 1);
+        }
+
+        this.updateHUD();
+      }
+
+      resolveGatePass(group) {
+        const prob = group.problem;
+        const playerLane = this.ship.lane;
+        const isCorrect = (playerLane === prob.correctLane) || this.ship.isHyper;
+
+        if (isCorrect) {
+          // 穿对光门！
+          this.combo++;
+          if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+          this.gatesPassed++;
+
+          const addScore = 100 * (1 + (this.combo - 1) * 0.25);
+          this.score += Math.round(addScore);
+
+          this.sound.playCorrect(this.combo);
+          this.addFloatingText(`答对! +${Math.round(addScore)}`, this.ship.currentX, this.ship.y - 70, '#38bdf8', 25);
+          this.createParticles(this.ship.currentX, this.ship.y, '#38bdf8', 16, 1.2);
+
+          // 达成 5 连击激活超光速冲刺！
+          if (this.combo > 0 && this.combo % 5 === 0) {
+            this.triggerHyperBoost();
+          }
+        } else {
+          // 穿错光门！
+          this.combo = 0;
+          this.createParticles(this.ship.currentX, this.ship.y, '#ef4444', 22, 1.5);
+
+          // 核心错题反馈：文字明显往上提一大截 (ship.y - 125)，居中大号胶囊显示，留足约 1.5 秒反应时间，完全不遮挡光门
+          const errorMsg = `❌ 算错啦！正确是: ${prob.correctAnswer}`;
+          this.addFloatingText(errorMsg, this.renderWidth / 2, this.ship.y - 125, '#f87171', 65, 21, true);
+
+          if (this.ship.hasShield) {
+            // 护盾抵挡
+            this.ship.hasShield = false;
+            this.sound.playCrash();
+            this.addFloatingText('护盾破碎 🛡️💥', this.ship.currentX, this.ship.y - 65, '#f59e0b', 30);
+          } else {
+            // 扣除生命值
+            this.ship.hp--;
+            this.sound.playCrash();
+
+            if (this.ship.hp <= 0) {
+              this.ship.hp = 0;
+              this.triggerGameOver();
+            }
+          }
+        }
+      }
+
+      resolveItemPickup(item) {
+        if (item.type === 'coin') {
+          this.score += 50;
+          this.sound.playCoin();
+          this.addFloatingText('+50 🪙', item.x, item.y, '#fbbf24');
+          this.createParticles(item.x, item.y, '#fbbf24', 8);
+        } else if (item.type === 'repair') {
+          if (this.ship.hp < this.ship.maxHp) this.ship.hp++;
+          this.sound.playPowerup();
+          this.addFloatingText('维修装甲 💖+1', item.x, item.y, '#f43f5e');
+          this.createParticles(item.x, item.y, '#f43f5e', 12);
+        } else if (item.type === 'shield') {
+          this.ship.hasShield = true;
+          this.sound.playPowerup();
+          this.addFloatingText('获得护盾 🛡️', item.x, item.y, '#06b6d4');
+          this.createParticles(item.x, item.y, '#06b6d4', 12);
+        }
+      }
+
+      render() {
+        this.ctx.clearRect(0, 0, this.renderWidth, this.renderHeight);
+
+        // 1. 绘制深空背景与分界赛道线
+        this.renderTrack();
+
+        // 2. 绘制星空
+        for (const star of this.stars) {
+          this.ctx.fillStyle = star.color;
+          this.ctx.beginPath();
+          this.ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+
+        // 3. 绘制光门组
+        for (const group of this.gateGroups) {
+          this.renderGateGroup(group);
+        }
+
+        // 4. 绘制漂浮道具
+        for (const item of this.items) {
+          this.renderItem(item);
+        }
+
+        // 5. 绘制玩家飞船
+        this.renderShip();
+
+        // 6. 绘制爆炸粒子
+        for (const p of this.particles) {
+          this.ctx.save();
+          this.ctx.globalAlpha = Math.max(0, p.alpha);
+          this.ctx.fillStyle = p.color;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+
+        // 7. 绘制飘字与醒目算错反馈横幅
+        for (const ft of this.floatingTexts) {
+          this.ctx.save();
+          this.ctx.globalAlpha = Math.max(0, ft.alpha);
+          const fSize = ft.fontSize || 20;
+          this.ctx.font = `bold ${fSize}px -apple-system, sans-serif`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+
+          if (ft.isBanner) {
+            // 绘制高对比度胶囊底板，防止星空或门柱背景干扰，字迹分外清晰
+            const textWidth = this.ctx.measureText(ft.text).width;
+            this.ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+            this.ctx.strokeStyle = ft.color;
+            this.ctx.lineWidth = 2.5;
+            this.drawRoundedRect(ft.x - textWidth / 2 - 16, ft.y - fSize / 2 - 8, textWidth + 32, fSize + 16, 12);
+            this.ctx.fill();
+            this.ctx.stroke();
+          }
+
+          this.ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          this.ctx.shadowBlur = 6;
+          this.ctx.fillStyle = ft.color;
+          this.ctx.fillText(ft.text, ft.x, ft.y);
+          this.ctx.restore();
+        }
+      }
+
+      renderTrack() {
+        // 中间虚线分割左右航道
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([16, 16]);
+        this.ctx.lineDashOffset = -this.distance * 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.renderWidth / 2, 0);
+        this.ctx.lineTo(this.renderWidth / 2, this.renderHeight);
+        this.ctx.stroke();
+
+        // 两侧安全边界发光线
+        this.ctx.setLineDash([]);
+        this.ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(20, 0);
+        this.ctx.lineTo(20, this.renderHeight);
+        this.ctx.moveTo(this.renderWidth - 20, 0);
+        this.ctx.lineTo(this.renderWidth - 20, this.renderHeight);
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
+
+      renderGateGroup(group) {
+        const y = group.y;
+        const gateWidth = 160;
+        const gateHeight = 44;
+
+        // 左门
+        this.renderSingleGate(this.laneX[0], y, gateWidth, gateHeight, group.problem.leftVal, 'left');
+        // 右门
+        this.renderSingleGate(this.laneX[1], y, gateWidth, gateHeight, group.problem.rightVal, 'right');
+      }
+
+      renderSingleGate(cx, cy, w, h, value, side) {
+        this.ctx.save();
+        this.ctx.translate(Math.round(cx), Math.round(cy));
+
+        // 光门外边框与能量流光
+        const isLeft = side === 'left';
+        const grad = this.ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+        if (isLeft) {
+          grad.addColorStop(0, '#0284c7');
+          grad.addColorStop(1, '#6366f1');
+        } else {
+          grad.addColorStop(0, '#8b5cf6');
+          grad.addColorStop(1, '#ec4899');
+        }
+
+        // 门柱光晕
+        this.ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        this.ctx.strokeStyle = grad;
+        this.ctx.lineWidth = 3;
+
+        // 圆角门框
+        this.drawRoundedRect(-w / 2, -h / 2, w, h, 14);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // 门内数字
+        this.ctx.font = '900 24px ui-monospace, SFMono-Regular, monospace';
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(value, 0, 1);
+
+        this.ctx.restore();
+      }
+
+      renderItem(item) {
+        this.ctx.save();
+        this.ctx.translate(Math.round(item.x), Math.round(item.y));
+        this.ctx.font = '26px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        if (item.type === 'coin') {
+          this.ctx.fillText('🪙', 0, 0);
+        } else if (item.type === 'repair') {
+          this.ctx.fillText('💖', 0, 0);
+        } else if (item.type === 'shield') {
+          this.ctx.fillText('🛡️', 0, 0);
+        }
+        this.ctx.restore();
+      }
+
+      renderShip() {
+        const x = Math.round(this.ship.currentX);
+        const y = Math.round(this.ship.y);
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.rotate(this.ship.tilt);
+
+        // 1. 引擎尾焰粒子流 (稳定呼吸脉冲，杜绝随机抖动)
+        const flameColor = this.ship.isHyper ? '#ec4899' : '#38bdf8';
+        const pulse = this.ship.isHyper ? (this.ship.hyperTimer % 5) : (Math.floor(this.distance * 2) % 4);
+        this.ctx.fillStyle = flameColor;
+        this.ctx.beginPath();
+        this.ctx.moveTo(-10, 26);
+        this.ctx.lineTo(0, 42 + pulse);
+        this.ctx.lineTo(10, 26);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // 2. 护盾/超光速能量环 (双层高能同心光晕，渲染丝滑且零性能损耗)
+        if (this.ship.hasShield || this.ship.isHyper) {
+          this.ctx.save();
+          const haloColor = this.ship.isHyper ? 'rgba(244, 63, 94, 0.3)' : 'rgba(56, 189, 248, 0.3)';
+          const ringColor = this.ship.isHyper ? '#f43f5e' : '#38bdf8';
+
+          // 外圈能量柔光
+          this.ctx.strokeStyle = haloColor;
+          this.ctx.lineWidth = 6;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, 38, 0, Math.PI * 2);
+          this.ctx.stroke();
+
+          // 核心光盾
+          this.ctx.strokeStyle = ringColor;
+          this.ctx.lineWidth = 2.5;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, 35, 0, Math.PI * 2);
+          this.ctx.stroke();
+          this.ctx.restore();
+        }
+
+        // 3. 飞船机身 (炫酷未来卡通战机)
+        // 机翼
+        this.ctx.fillStyle = '#1e293b';
+        this.ctx.strokeStyle = '#38bdf8';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, -28);
+        this.ctx.lineTo(28, 22);
+        this.ctx.lineTo(12, 18);
+        this.ctx.lineTo(0, 24);
+        this.ctx.lineTo(-12, 18);
+        this.ctx.lineTo(-28, 22);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // 驾驶舱光罩
+        const cockpitGrad = this.ctx.createLinearGradient(0, -18, 0, 8);
+        cockpitGrad.addColorStop(0, '#38bdf8');
+        cockpitGrad.addColorStop(1, '#0284c7');
+        this.ctx.fillStyle = cockpitGrad;
+        this.ctx.beginPath();
+        this.ctx.ellipse(0, -2, 7, 14, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.restore();
+      }
+
+      drawRoundedRect(x, y, w, h, r) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + r, y);
+        this.ctx.arcTo(x + w, y, x + w, y + h, r);
+        this.ctx.arcTo(x + w, y + h, x, y + h, r);
+        this.ctx.arcTo(x, y + h, x, y, r);
+        this.ctx.arcTo(x, y, x + w, y, r);
+        this.ctx.closePath();
+      }
+    }
+
+    // 全局启动
+    let game;
+    window.addEventListener('DOMContentLoaded', () => {
+      game = new MathPilotGame();
+    });
+  </script>
+</body>
+</html>

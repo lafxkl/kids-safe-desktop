@@ -58,7 +58,14 @@ bool AppLauncher::launch(const QString &exec, const QString &name)
     auto *process = new KProcess(this);
     process->setProgram(args.first());
     process->setArguments(args.mid(1));
-    process->setProcessChannelMode(QProcess::ForwardedChannels);
+    // QProcess::setProcessChannelMode() 是 protected 成员，构造外部调用不了；
+    // KProcess 对外暴露的是 setOutputChannelMode()，语义相同：
+    // 子进程直接继承父进程的通道，输出不会憋在管道里。
+    process->setOutputChannelMode(KProcess::ForwardedChannels);
+
+    // program() 在不同 KF6 版本里返回 QString 或 QStringList 不一致，
+    // 这里留一份 QString 局部变量，避免 .arg() 收到 QStringList 而编译失败。
+    const QString programName = args.first();
 
     connect(process, &KProcess::finished, this, [this](int exitCode, QProcess::ExitStatus status) {
         Q_UNUSED(exitCode)
@@ -66,9 +73,9 @@ bool AppLauncher::launch(const QString &exec, const QString &name)
         cleanup();
     });
 
-    connect(process, &KProcess::errorOccurred, this, [this, process](QProcess::ProcessError error) {
+    connect(process, &KProcess::errorOccurred, this, [this, programName](QProcess::ProcessError error) {
         if (error == QProcess::FailedToStart) {
-            Q_EMIT launchFailed(QStringLiteral("启动失败：%1").arg(process->program()));
+            Q_EMIT launchFailed(QStringLiteral("启动失败：%1").arg(programName));
             cleanup();
         }
     });

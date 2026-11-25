@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  无障碍服务在系统「设置 → 无障碍」列表里显示的两段文字。
+  这一段是家长决定「敢不敢开」的唯一依据，写得越具体越容易被信任：
+  说清楚只看「哪个应用到了前台」，不看输入内容、不截屏、不联网上传。
+-->
+<resources>
+    <string name="kiosk_accessibility_summary">防止孩子打开系统设置或应用商店绕过家长控制</string>
+    <string name="kiosk_accessibility_description">儿童安全桌面需要知道「当前前台是哪个应用」：当孩子打开系统设置、应用商店、安装或卸载界面时，自动退回儿童桌面，避免家长控制被关掉。本服务只读取窗口切换事件（应用包名），不读取输入内容、不截屏、不上传任何数据。</string>
+</resources>

@@ -1,6 +1,7 @@
 #include "settings.h"
 
 #include <QCryptographicHash>
+#include <QHash>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -44,6 +45,19 @@ void Settings::load()
 
     m_serverUrl = group.readEntry("ServerUrl", QString());
     m_onlineContentEnabled = group.readEntry("OnlineContentEnabled", false);
+
+    m_weatherEnabled = group.readEntry("WeatherEnabled", true);
+    m_weatherCity = group.readEntry("WeatherCity", QStringLiteral("auto"));
+
+    m_eyeCareEnabled = group.readEntry("EyeCareEnabled", false);
+    m_eyeCareIntensity = qBound(0, group.readEntry("EyeCareIntensity", 60), 100);
+    m_eyeCareAutoEnabled = group.readEntry("EyeCareAutoEnabled", false);
+    m_eyeCareStartHour = qBound(0, group.readEntry("EyeCareStartHour", 19), 23);
+    m_eyeCareEndHour = qBound(0, group.readEntry("EyeCareEndHour", 7), 23);
+
+    // 默认 zh_CN。老配置里没有这一项，读出来就是中文 —— 这样升级上来的
+    // 用户不会突然变成英文界面，也不会突然看到吉里吉里入口。
+    m_language = group.readEntry("Language", QStringLiteral("zh_CN"));
 }
 
 void Settings::save()
@@ -66,6 +80,16 @@ void Settings::save()
 
     group.writeEntry("ServerUrl", m_serverUrl);
     group.writeEntry("OnlineContentEnabled", m_onlineContentEnabled);
+    group.writeEntry("WeatherEnabled", m_weatherEnabled);
+    group.writeEntry("WeatherCity", m_weatherCity);
+
+    group.writeEntry("EyeCareEnabled", m_eyeCareEnabled);
+    group.writeEntry("EyeCareIntensity", m_eyeCareIntensity);
+    group.writeEntry("EyeCareAutoEnabled", m_eyeCareAutoEnabled);
+    group.writeEntry("EyeCareStartHour", m_eyeCareStartHour);
+    group.writeEntry("EyeCareEndHour", m_eyeCareEndHour);
+
+    group.writeEntry("Language", m_language);
 
     m_config->sync();
 
@@ -218,4 +242,152 @@ void Settings::setOnlineContentEnabled(bool value)
     }
     m_onlineContentEnabled = value;
     save();
+}
+
+void Settings::setWeatherEnabled(bool value)
+{
+    if (m_weatherEnabled == value) {
+        return;
+    }
+    m_weatherEnabled = value;
+    save();
+}
+
+void Settings::setWeatherCity(const QString &value)
+{
+    const QString normalized = value.trimmed();
+    if (m_weatherCity == normalized) {
+        return;
+    }
+    m_weatherCity = normalized;
+    save();
+}
+
+void Settings::setEyeCareEnabled(bool value)
+{
+    if (m_eyeCareEnabled == value) {
+        return;
+    }
+    m_eyeCareEnabled = value;
+    save();
+}
+
+void Settings::setEyeCareIntensity(int value)
+{
+    value = qBound(0, value, 100);
+    if (m_eyeCareIntensity == value) {
+        return;
+    }
+    m_eyeCareIntensity = value;
+    save();
+}
+
+void Settings::setEyeCareAutoEnabled(bool value)
+{
+    if (m_eyeCareAutoEnabled == value) {
+        return;
+    }
+    m_eyeCareAutoEnabled = value;
+    save();
+}
+
+void Settings::setEyeCareStartHour(int value)
+{
+    value = qBound(0, value, 23);
+    if (m_eyeCareStartHour == value) {
+        return;
+    }
+    m_eyeCareStartHour = value;
+    save();
+}
+
+void Settings::setEyeCareEndHour(int value)
+{
+    value = qBound(0, value, 23);
+    if (m_eyeCareEndHour == value) {
+        return;
+    }
+    m_eyeCareEndHour = value;
+    save();
+}
+
+void Settings::setLanguage(const QString &value)
+{
+    // 只接受这两个值：配置文件是纯文本，家长手改错一个字符不该让界面
+    // 变成「既不是中文也不是英文」的中间态。
+    const QString normalized =
+        value.startsWith(QLatin1String("en"), Qt::CaseInsensitive) ? QStringLiteral("en_US")
+                                                                  : QStringLiteral("zh_CN");
+    if (m_language == normalized) {
+        return;
+    }
+    m_language = normalized;
+    save();
+}
+
+QString Settings::t(const QString &key) const
+{
+    // 两语文案表。不引 Qt 的 .ts/.qm 一套，原因：
+    //   1. 这里只需要「中/英」两套、条目数可控，.ts 的编译链（lupdate/lrelease）
+    //      在任何一台构建机上都要额外装工具，而我们的构建说明已经够长了；
+    //   2. 文案和用法在同一个文件里，改一句不用切工具。
+    // 条目多了再迁到 .ts 也不迟 —— 调用点写的是 Settings.t("key")，替换实现即可。
+    struct Entry {
+        const char *zh;
+        const char *en;
+    };
+    static const QHash<QString, Entry> dictionary{
+        // 语言选择
+        {QStringLiteral("lang.title"), {"选择语言", "Choose your language"}},
+        {QStringLiteral("lang.hint"), {"之后可以在家长后台修改", "You can change this later in Parent settings"}},
+        {QStringLiteral("lang.zh"), {"简体中文", "Simplified Chinese"}},
+        {QStringLiteral("lang.en"), {"English", "English"}},
+        {QStringLiteral("lang.continue"), {"继续", "Continue"}},
+
+        // 引导
+        {QStringLiteral("onboard.welcome"), {"欢迎来到你的小天地", "Welcome to your little world"}},
+        {QStringLiteral("onboard.nameAsk"), {"先告诉电脑，你叫什么名字？", "What should we call you?"}},
+        {QStringLiteral("onboard.namePlaceholder"), {"小朋友", "Little friend"}},
+        {QStringLiteral("onboard.next"), {"下一步", "Next"}},
+        {QStringLiteral("onboard.setPin"), {"设置家长密码", "Set a parent PIN"}},
+        {QStringLiteral("onboard.confirmPin"), {"再输一次确认", "Enter it again"}},
+        {QStringLiteral("onboard.pinHint"),
+         {"这个密码用来打开家长后台，别告诉小朋友哦",
+          "This PIN opens Parent settings — don't tell the kids"}},
+        {QStringLiteral("onboard.pinMismatch"),
+         {"两次输入不一样，请重新设置", "The two entries differ, please try again"}},
+        {QStringLiteral("onboard.pickApps"),
+         {"哪些应用可以出现在桌面上？", "Which apps may appear on the desktop?"}},
+        {QStringLiteral("onboard.pickAppsHint"),
+         {"现在不选也没关系，之后在家长后台随时能改",
+          "You can skip this — change it anytime in Parent settings"}},
+        {QStringLiteral("onboard.start"), {"开始使用", "Start"}},
+
+        // 通用
+        {QStringLiteral("common.back"), {"返回", "Back"}},
+
+        // 首页
+        {QStringLiteral("home.hello"), {"你好，", "Hello, "}},
+        {QStringLiteral("home.subtitle"), {"今天也要开开心心", "Have a happy day"}},
+        {QStringLiteral("home.parent"), {"家长", "Parents"}},
+        {QStringLiteral("home.myApps"), {"我的应用", "My apps"}},
+        {QStringLiteral("banner.story"), {"故事屋", "Stories"}},
+        {QStringLiteral("banner.storySub"),
+         {"睡前故事、成语典故、古诗…", "Bedtime stories, idioms, poems…"}},
+        {QStringLiteral("banner.media"), {"听一听", "Listen"}},
+        {QStringLiteral("banner.mediaSub"), {"儿歌 · 雨声 · 国学", "Songs · rain · poems"}},
+        {QStringLiteral("banner.safety"), {"安全学堂", "Safety School"}},
+        {QStringLiteral("banner.safetySub"), {"10 个主题 · 40 道问答", "10 topics · 40 quizzes"}},
+        {QStringLiteral("banner.games"), {"游戏乐园", "Playground"}},
+        {QStringLiteral("banner.gamesSub"),
+         {"小游戏 · 编程 · 网页 15 款", "Mini games · coding · 15 web games"}},
+        {QStringLiteral("banner.eye"), {"眼保健操", "Eye Exercises"}},
+        {QStringLiteral("banner.eyeSub"), {"闭眼 · 按揉 · 远眺", "Close eyes · massage · look far"}},
+    };
+
+    const auto it = dictionary.constFind(key);
+    if (it == dictionary.constEnd()) {
+        return key;
+    }
+    return english() ? QString::fromUtf8(it->en) : QString::fromUtf8(it->zh);
 }

@@ -8,9 +8,15 @@
  * Android 侧用 PackageManager）。
  *
  * Linux 侧的等价物是 XDG 桌面条目：/usr/share/applications 与
- * ~/.local/share/applications 下的 *.desktop。这里用 KF6 的
- * KApplicationTrader 枚举，能自动处理 NoDisplay、Hidden、
- * 本地化 Name（Name[zh_CN]）以及用户级覆盖（同名 .desktop 后者胜出）。
+ * ~/.local/share/applications 下的 *.desktop。这里直接遍历目录读文件，
+ * 自己处理 NoDisplay、Hidden、Type、本地化 Name（Name[zh_CN]）以及
+ * 用户级覆盖（同名 .desktop 由靠前的目录胜出）。
+ *
+ * 为什么不用 KF6 的 KApplicationTrader：它依赖 ksycoca 缓存和
+ * kbuildsycoca6 进程。在 kiosk/容器这类没有完整会话总线的环境里，
+ * 首次查询可能卡住不返回（界面停在闪屏，看起来像死机），或者在缓存
+ * 未生成时安静地返回空表（家长后台一个应用都没有）。直接读文件
+ * 毫秒级完成、不依赖任何外部进程，代价只是少了 vendor 过滤等细节。
  *
  * 启动参数：Exec 里的字段代码（%f %U 等）在启动前统一剥掉，
  * 见 AppLauncher。这里保留原始 Exec 字符串，不预先改写，
@@ -49,6 +55,9 @@ private:
         QString icon;
         QString comment;
     };
+
+    /// 遍历 XDG 应用目录，逐个解析 .desktop。
+    void scanDesktopFiles();
 
     QList<Entry> m_entries;
 };

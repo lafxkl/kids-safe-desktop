@@ -51,6 +51,7 @@ dotnet run
 | 发布 | `GET /api/app/release`、`/release/latest`、`/release/{version}`、`/changelog`、`/update-check?versionCode=&platform=` |
 | 内容 | `GET /api/content/audio`（另有 `video`、`articles`）、`GET /api/books`、`/api/books/{id}` |
 | 故事代理 | `GET /api/story/types`、`…/list`、`…/detail`、`…/search`（第三方密钥只在服务端） |
+| 用户反馈 | `POST /api/feedback/submit`、`GET /api/feedback/stats`、`GET /api/feedback/quotes`；管理端 `GET /api/feedback/list`、`/export.csv`、`DELETE /api/feedback/{id}`（需 `Feedback:AdminKey` 或 owner 令牌） |
 | 运维 | `GET /api/health`、`GET /api/download/list` |
 
 `/api/health` 返回 `serverVersion`、`uptimeSeconds`、`accountCount`（0 表示还没注册账号）、`watchVersion`，排障先看这个。
@@ -62,7 +63,8 @@ data/
 ├── accounts.json          账号列表（含 PBKDF2 哈希）
 ├── auth.key               令牌签名密钥（自动生成）
 ├── profile.json           老的全局配置，未注册时给 default 账号用
-└── profiles/{id}.json     每个账号一份配置
+├── profiles/{id}.json     每个账号一份配置
+└── feedback/YYYY-MM.jsonl 用户反馈 / 满意度 / 问卷，一行一条（UTF-8 无 BOM）
 ```
 
 **整个 `data/` 目录拷走就是完整备份**。它被 `.gitignore` 排除，不要提交。
@@ -78,6 +80,7 @@ data/
 | `Site:DownloadUrl` | 空 | 官网/应用市场下载地址，空表示暂不提供公网下载 |
 | `Site:ReleasePage` | `changelog.html` | 更新日志页路径 |
 | `Mxnzp:AppId` / `AppSecret` | 空 | 第三方故事大全 API。留空则 `/api/story/*` 返回错误，客户端降级到内置故事 |
+| `Feedback:AdminKey` | 空 | 反馈管理密钥。官网 `feedback-admin.html` 用它看明细、导 CSV；留空则只有 owner 账号令牌能访问 |
 
 ## 安全边界
 
@@ -85,7 +88,8 @@ data/
 
 - 没有 HTTPS，令牌与密码明文过网。需要公网访问请在前面挂 Nginx / Caddy 做 TLS 与访问控制。
 - CORS 全开（`AllowAnyOrigin`），因为家长可能用手机浏览器从任意来源访问后台。
-- 只有登录接口有频率限制（同 IP 连续 5 次失败锁 60 秒），其余接口没有限流。
+- 只有登录接口与反馈提交接口有频率限制（登录：同 IP 连续 5 次失败锁 60 秒；反馈：同 IP 10 分钟 12 条、24 小时 60 条），其余接口没有限流。
+- 反馈数据不存 IP、账号、设备标识；联系方式只有管理端可见，公开统计接口永远不带。
 - 静态目录直接暴露 `wwwroot`。别把私密文件放进去。
 - 令牌是自签格式，不是标准 JWT，没有过期时间——退出登录只清客户端，不吊销令牌；改密码才会让家长令牌失效。
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设备管理员策略声明。
+
+  ⚠️ 只声明 force-lock 这一项（家长面板里的「立即锁屏」将来可能会用），
+  刻意不声明 wipe-data / reset-password / limit-password：
+  · 家长控制用不到，一旦被滥用破坏力极大；
+  · 声明得越多，应用商店审核问得越多，安装时系统吓人的提示也越长。
+
+  「防卸载」不需要单独的策略：只要管理员处于激活状态，卸载界面就会要求
+  先取消激活。
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <force-lock />
+    </uses-policies>
+</device-admin>

@@ -30,8 +30,12 @@ public sealed record ReleaseNote(
 public static class Releases
 {
     /// <summary>服务端接口版本：新增/变更接口时递增，客户端可据此判断服务端能力。</summary>
-    /// <remarks>1.3：新增家长账号体系（注册/登录/配对码/改密码/设备管理），配置按账号隔离。</remarks>
-    public const string ServerVersion = "1.3";
+    /// <remarks>
+    /// 1.3：新增家长账号体系（注册/登录/配对码/改密码/设备管理），配置按账号隔离。
+    /// 1.4：新增用户反馈 / 满意度 / 问卷接口（data/feedback，管理端走 AdminKey）。
+    /// 1.4.1：反馈记录加可选 nickname，公开留言接口带上它并放宽到 100 条（官网评论区用）。
+    /// </remarks>
+    public const string ServerVersion = "1.4.1";
 
     /// <summary>发布渠道。</summary>
     public const string Channel = "stable";

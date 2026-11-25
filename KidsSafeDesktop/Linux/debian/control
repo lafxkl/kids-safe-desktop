@@ -1,0 +1,61 @@
+Source: kidssafe
+Section: x11
+Priority: optional
+Maintainer: KidsSafe Desktop <kidssafe@localhost>
+# 构建依赖只写「这个工程自己编译时要用的东西」。
+# 不要写 libxkbcommon-dev / libxkbcommon-x11-dev：本工程一行 xkbcommon 代码都没有，
+# 它们纯粹是某些发行版上 Qt 自己的构建期依赖；写进这里会让 dpkg-checkbuilddeps
+# 在没装它们的机器上直接拒绝打包（实测 deepin 25 上就是这两个把构建卡住的）。
+# 真遇到 cmake 报 XKB 相关错误时，临时装一下即可，不必写进依赖。
+# libx11-dev 是 kiosk 会话里用 XGrabKey 抢占 Alt+Tab / Ctrl+Shift+Esc 的
+# （core/hotkeyguard）。代码里是 #ifdef KIDSSAFE_X11：没有它也能编过，但打包出来的
+# 二进制会静默失去「屏蔽快捷键」这一项。qt6-base-dev 本身就依赖 libx11-dev，
+# 写在这里只是把这件事说明白，不会额外增加构建机负担。
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.20),
+               extra-cmake-modules,
+               qt6-base-dev,
+               qt6-declarative-dev,
+               libx11-dev,
+               libkf6config-dev,
+               libkf6coreaddons-dev,
+               libkf6i18n-dev,
+               libkf6kirigami-dev | libkirigami-dev,
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://example.invalid/kidssafe
+
+Package: kidssafe
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         qml6-module-qtquick,
+         qml6-module-qtquick-window,
+         qml6-module-qtquick-controls,
+         qml6-module-qtquick-templates,
+         qml6-module-qtquick-layouts,
+         qml6-module-qtqml-workerscript
+Recommends: qml6-module-qtwebengine,
+            # 小游戏工坊「导入素材 / 打开作品」用 FileDialog。缺这个包时页面照常打开、
+            # 编辑器照常能画能试玩，只是点了导入会说「文件选择器不可用」——
+            # 所以放 Recommends，不拿它卡安装。
+            qml6-module-qtquick-dialogs,
+            speech-dispatcher,
+            # 媒体中心的音频解码后端。QtMultimedia 自己是框架，真正解码的是
+            # 这两个插件之一；缺了会出现「能编译、点了没声音、无报错」。
+            qt6-multimedia-ffmpeg | qt6-multimedia-gstreamer,
+            # 小小程序员要调系统的 C 编译器。放 Recommends 而不是 Depends：
+            # 不装也能打开看代码，只是点「运行」时会提示家长装。
+            gcc,
+            kwin-wayland | cage
+Description: 儿童安全桌面（kiosk 会话）
+ 一个给小朋友用的全屏桌面：应用白名单、每日时长、护眼模式、
+ 家长后台（PIN 保护）、安全学堂、小游戏、网页小游戏、红白机。
+ .
+ 锁定靠的是「会话裁剪」而不是窗口装饰：不启动 plasmashell、
+ 不加载全局快捷键，会话里只有本程序一个窗口。因此它装的是一个
+ 登录会话（/usr/share/xsessions + /usr/share/wayland-sessions），
+ 而不是普通应用菜单项——在已有的桌面里点开会把自己锁在全屏里。
+ .
+ 家长密码、时长统计、ROM 与存档都在用户目录
+ （~/.config/kidssafe、~/.local/share/kidssafe），升级与卸载不会丢。

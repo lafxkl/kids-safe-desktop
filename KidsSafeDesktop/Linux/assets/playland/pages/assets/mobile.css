@@ -1,0 +1,141 @@
+/* ==========================================================================
+   网页小游戏 · 手机端适配补丁
+   由 PlaylandPage 内置加载；只作用于窄屏（<=820px），桌面端表现完全不变。
+
+   为什么需要：这 13 个页面是按桌面（最低 820px）设计的，棋盘多用画布固定像素、
+   主容器 100vh + overflow:hidden。在手机上会出现三类问题：
+     1. 横向溢出：按钮行 / 画布 / 固定宽面板超出屏幕右侧，被裁掉；
+     2. 纵向裁切：body 高度锁死 100vh，内容多的页面下半部分直接不可见；
+     3. 头部挤压：标题字号与按钮内边距按桌面给的，手机上一行放不下，文字竖排换行。
+
+   原则：只放开滚动与限制宽度，不改布局语义，避免打乱各游戏自身的绝对定位与画布坐标系。
+   ========================================================================== */
+
+@media (max-width: 820px) {
+
+  /* ---- 1. 基础：允许横向裁掉装饰、允许纵向滚动 ---- */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* 图片与画布不得撑破屏幕；高度交给原页面的 aspect-ratio / 内联样式 */
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* !important 是必要的：不少页面用 JS 给 canvas 写了内联 width/height 像素值，
+     普通规则压不住内联样式，棋盘就会比屏幕宽。 */
+  canvas {
+    max-width: 100% !important;
+    height: auto;
+  }
+
+  .board-card,
+  .board-wrap,
+  .board-section {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* ---- 2. 顶部导航：允许换行，压缩字号与内边距 ---- */
+  header {
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 100%;
+  }
+
+  .nav-btn,
+  .btn-act,
+  .action-btn,
+  .mode-tab-btn,
+  .level-btn,
+  .read-aloud-btn {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  /* ---- 5. 头部按钮组：自身也要允许换行，否则单个按钮仍会被右边界裁掉 ---- */
+  .nav-actions,
+  .top-actions,
+  .header-actions,
+  .toolbar {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* 竖排标题在窄屏上改为横排，避免占掉半屏高度 */
+  .brand-title,
+  .vertical-title {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    font-size: 17px !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* ---- 6. 得分/状态条：本是 nowrap 的单行，窄屏必须允许换行 ---- */
+  .hud-top-row,
+  .flight-status-badges,
+  .difficulty-bar,
+  .hud-dashboard,
+  .stats-row,
+  .score-bar {
+    flex-wrap: wrap !important;
+  }
+
+  /* ---- 3. 侧栏 / 面板：改为满宽，避免固定 300+ 像素被裁 ---- */
+  .side-panel,
+  .panel-card,
+  .settings-panel,
+  .battle-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* ---- 4. 超窄屏（<=380px，小屏手机横屏/分屏）：进一步压缩 ---- */
+@media (max-width: 380px) {
+
+  header {
+    gap: 4px;
+  }
+
+  .nav-btn,
+  .btn-act,
+  .action-btn,
+  .mode-tab-btn {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
+/* ==========================================================================
+   第二阶段：解除 body 高度锁死
+   多数页面写的是 body{height:100vh;overflow:hidden}，桌面上一屏放得下，
+   手机上内容一多下半部分就永久不可见。这里改成「自然高度 + 纵向滚动」。
+   画布类页面（俄罗斯方块/贪吃蛇等）依赖容器高度，另在各自文件中保留 100% 高度。
+   ========================================================================== */
+@media (max-width: 820px) {
+  /* html 同样要放开：多数页面写的是 html,body{height:100%;overflow:hidden}，
+     只改 body 的话裁剪行为会落到 html 上，内容依旧被切掉。 */
+  html {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  body {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+}

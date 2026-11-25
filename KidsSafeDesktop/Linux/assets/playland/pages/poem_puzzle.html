@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>📜 点字成诗 · 诗词大闯关 - 智趣游戏乐园</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #fdfbf7 0%, #ebedee 100%);
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --primary-color: #2b5876;
+      --accent-color: #c0392b;
+      --gold-color: #d4af37;
+      --text-main: #2c3e50;
+      --text-sub: #7f8c8d;
+      --slot-bg: #eef2f5;
+      --slot-border: #bdc3c7;
+      --char-bg: linear-gradient(145deg, #ffffff, #f0f4f8);
+      --char-shadow: 0 6px 14px rgba(43, 88, 118, 0.15);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f4ede2;
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(220, 230, 222, 0.6) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(243, 218, 190, 0.5) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.8) 0px, transparent 80%);
+      font-family: -apple-system, BlinkMacSystemFont, "Kaiti SC", "STKaiti", "KaiTi", "SimKai", "PingFang SC", "Microsoft YaHei", serif;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px;
+      overflow-x: hidden;
+    }
+
+    /* 顶部导航条 */
+    .top-bar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #2c3e50;
+      letter-spacing: 1px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      background: #c0392b;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-family: sans-serif;
+      font-weight: normal;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-act {
+      background: #fff;
+      border: 1px solid #d5dbdb;
+      padding: 7px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #34495e;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-act:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-color: #bdc3c7;
+    }
+    .btn-act.active {
+      background: #2b5876;
+      color: #fff;
+      border-color: #2b5876;
+      box-shadow: 0 3px 8px rgba(43, 88, 118, 0.25);
+    }
+
+    /* 主舞台卡片容器 */
+    .poem-stage {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card-bg);
+      border: 2px solid #e2d7c5;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(80, 60, 40, 0.08);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      backdrop-filter: blur(8px);
+    }
+
+    /* 水墨装饰印章 */
+    .seal-decor {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      width: 52px;
+      height: 52px;
+      border: 2px solid #c0392b;
+      color: #c0392b;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1.1;
+      opacity: 0.85;
+      transform: rotate(6deg);
+      pointer-events: none;
+    }
+
+    /* 关卡控制器 */
+    .level-controller {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .level-btn {
+      background: #fdfaf5;
+      border: 1px solid #dcd4c7;
+      color: #5d6d7e;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .level-btn:hover:not(:disabled) {
+      background: #2b5876;
+      color: #fff;
+      border-color: #2b5876;
+    }
+    .level-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .level-indicator {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    /* 诗词信息头部 */
+    .poem-meta {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .poem-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a252f;
+      letter-spacing: 3px;
+      margin-bottom: 4px;
+    }
+    .poem-author {
+      font-size: 15px;
+      color: #7f8c8d;
+      letter-spacing: 1px;
+    }
+
+    /* 诗文展示与填字区 */
+    .poem-lines-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .poem-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+    .poem-line.active {
+      background: rgba(212, 175, 55, 0.12);
+      box-shadow: 0 0 0 1.5px rgba(212, 175, 55, 0.4);
+    }
+    .poem-line.completed {
+      background: rgba(46, 125, 50, 0.06);
+    }
+
+    /* 诗句中的单个字位槽 */
+    .char-slot {
+      width: 52px;
+      height: 60px;
+      border-radius: 10px;
+      border: 2px dashed var(--slot-border);
+      background: var(--slot-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .char-slot .pinyin {
+      font-size: 11px;
+      color: #8c7b66;
+      font-family: sans-serif;
+      margin-top: -2px;
+      opacity: 0.9;
+    }
+
+    .char-slot .char-text {
+      font-size: 26px;
+      font-weight: 700;
+      color: transparent;
+      line-height: 1;
+    }
+
+    /* 已完成填入字态 */
+    .char-slot.filled {
+      border: 2px solid #b38842;
+      background: #fdfaf4;
+      box-shadow: 0 4px 10px rgba(179, 136, 66, 0.15);
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .char-slot.filled .char-text {
+      color: #2c3e50;
+    }
+
+    /* 预置显示的固定字（提示字） */
+    .char-slot.preset {
+      border: 1px solid #d5dbdb;
+      background: #fafafa;
+    }
+    .char-slot.preset .char-text {
+      color: #7f8c8d;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* 提示与音效工具条 */
+    .play-tools {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .read-aloud-btn {
+      background: linear-gradient(135deg, #2b5876, #4e4376);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(43, 88, 118, 0.25);
+      transition: all 0.2s;
+    }
+    .read-aloud-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(43, 88, 118, 0.35);
+    }
+
+    /* 底部乱序选字区 */
+    .char-picker-section {
+      width: 100%;
+      background: rgba(245, 241, 233, 0.9);
+      border: 1px solid #e1d8ca;
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .picker-hint {
+      font-size: 13px;
+      color: #7f8c8d;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .char-options-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      min-height: 64px;
+      align-items: center;
+    }
+
+    .char-option-tile {
+      width: 54px;
+      height: 60px;
+      background: #ffffff;
+      border: 2px solid #d0c5b4;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .char-option-tile:hover {
+      transform: translateY(-4px) scale(1.05);
+      border-color: #b38842;
+      box-shadow: 0 8px 16px rgba(179, 136, 66, 0.2);
+    }
+
+    .char-option-tile:active {
+      transform: scale(0.95);
+    }
+
+    .char-option-tile.used {
+      opacity: 0.2;
+      pointer-events: none;
+      transform: scale(0.85);
+      border-style: dashed;
+    }
+
+    .char-option-tile .opt-pinyin {
+      font-size: 11px;
+      color: #95a5a6;
+      font-family: sans-serif;
+      margin-top: -2px;
+    }
+
+    .char-option-tile .opt-text {
+      font-size: 26px;
+      font-weight: 700;
+      color: #2c3e50;
+      line-height: 1;
+    }
+
+    /* 错选晃动反馈 */
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-anim {
+      animation: shakeError 0.4s ease-in-out;
+      border-color: #e74c3c !important;
+    }
+
+    /* 诗意释义卡片弹窗 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: #fdfaf4;
+      border: 2px solid #b38842;
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+      position: relative;
+      animation: popIn 0.3s ease-out;
+    }
+
+    .modal-stamp {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #c0392b;
+      margin-bottom: 12px;
+    }
+
+    .modal-meaning {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #4a5568;
+      background: rgba(245, 237, 224, 0.7);
+      padding: 14px 16px;
+      border-radius: 12px;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-next-poem {
+      background: linear-gradient(135deg, #c0392b, #962d22);
+      color: #fff;
+      border: none;
+      padding: 10px 26px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(192, 57, 43, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-next-poem:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(192, 57, 43, 0.4);
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 640px) {
+      .poem-title { font-size: 25px; }
+      .char-slot { width: 40px; height: 48px; }
+      .char-slot .char-text { font-size: 20px; }
+      .char-slot .pinyin { font-size: 9px; }
+      .char-option-tile { width: 44px; height: 50px; }
+      .char-option-tile .opt-text { font-size: 21px; }
+      .seal-decor { display: none; }
+      .poem-stage { padding: 14px 10px; }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/mobile.css" />
+</head>
+<body>
+
+  <!-- 顶部状态导航 -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <span>📜</span>
+      <span>点字成诗 · 诗词大闯关</span>
+      <span class="brand-badge">少儿国风启蒙</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-act active" id="btnFilterKinder" title="简短朗朗上口的幼儿园启蒙古诗">
+        <span>👶</span> 幼儿园专区
+      </button>
+      <button class="btn-act" id="btnFilterAll" title="包含全量经典诗词题库">
+        <span>🌟</span> 全部诗库
+      </button>
+      <button class="btn-act" id="btnReroll10" title="换一组随机抽取10首">
+        <span>🎲</span> 换一组(10首)
+      </button>
+      <button class="btn-act" id="btnTogglePinyin">
+        <span>🔤</span> 拼音: 开
+      </button>
+      <a href="../index.html" class="btn-act" title="返回乐园大厅">
+        <span>🏠</span> 乐园大厅
+      </a>
+    </div>
+  </header>
+
+  <!-- 主舞台卡片 -->
+  <main class="poem-stage">
+    <!-- 水墨古风装饰印章 -->
+    <div class="seal-decor">
+      <span>诗仙</span>
+      <span>启蒙</span>
+    </div>
+
+    <!-- 关卡前后切换 -->
+    <div class="level-controller">
+      <button class="level-btn" id="btnPrev" title="上一首">◀</button>
+      <div class="level-indicator" id="levelIndicator">第 1 / 15 首</div>
+      <button class="level-btn" id="btnNext" title="下一首">▶</button>
+    </div>
+
+    <!-- 诗词标题与作者 -->
+    <div class="poem-meta">
+      <h1 class="poem-title" id="poemTitle">咏鹅</h1>
+      <div class="poem-author" id="poemAuthor">[唐] 骆宾王</div>
+    </div>
+
+    <!-- 诗句槽位区 -->
+    <div class="poem-lines-container" id="poemLinesContainer">
+      <!-- 动态生成每句诗的字块槽 -->
+    </div>
+
+    <!-- 朗读与提示工具栏 -->
+    <div class="play-tools">
+      <button class="read-aloud-btn" id="btnReadAloud">
+        <span>🔊</span> 朗诵此诗
+      </button>
+      <button class="btn-act" id="btnResetCurrent" style="border-radius:20px;">
+        <span>🔄</span> 本首重玩
+      </button>
+    </div>
+
+    <!-- 乱序选字区 -->
+    <section class="char-picker-section">
+      <div class="picker-hint">💡 点击下方字块，按诗句顺序点字成诗：</div>
+      <div class="char-options-grid" id="charOptionsGrid">
+        <!-- 动态生成的洗牌字块 -->
+      </div>
+    </section>
+  </main>
+
+  <!-- 诗意赏析与通关弹窗 -->
+  <div class="modal-backdrop" id="modalReward">
+    <div class="modal-card">
+      <div class="modal-stamp">🎉</div>
+      <h2 class="modal-title">诗仙点赞 · 成功通关！</h2>
+      <div class="modal-meaning" id="modalMeaningText">
+        <!-- 诗词释义内容 -->
+      </div>
+      <div class="modal-actions">
+        <button class="read-aloud-btn" id="btnListenReward">
+          <span>🔊</span> 听诵全诗
+        </button>
+        <button class="btn-next-poem" id="btnModalNext">
+          挑战下一首 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Web Audio 音效系统 (完全免文件依赖)
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playNote(freq, type = 'sine', duration = 0.25, gain = 0.2) {
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          g.gain.setValueAtTime(gain, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+      playCorrect() {
+        this.playNote(523.25, 'triangle', 0.2, 0.2); // C5
+        setTimeout(() => this.playNote(659.25, 'sine', 0.3, 0.25), 90); // E5
+      }
+      playLineDone() {
+        // 编钟质感三音和弦
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+          setTimeout(() => this.playNote(f, 'sine', 0.45, 0.2), idx * 100);
+        });
+      }
+      playWrong() {
+        this.playNote(220, 'sawtooth', 0.25, 0.15);
+      }
+      playVictory() {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((f, i) => setTimeout(() => this.playNote(f, 'triangle', 0.5, 0.3), i * 140));
+      }
+    }
+
+    const sfx = new SoundFX();
+
+    // 精选小学生古诗文曲库 (共20首经典名篇)
+    const POEMS_DATABASE = [
+      {
+        title: "咏鹅",
+        author: "[唐] 骆宾王",
+        isKindergarten: true,
+        lines: [
+          { text: "鹅鹅鹅", pinyin: "é é é" },
+          { text: "曲项向天歌", pinyin: "qū xiàng xiàng tiān gē" },
+          { text: "白毛浮绿水", pinyin: "bái máo fú lǜ shuǐ" },
+          { text: "红掌拨清波", pinyin: "hóng zhǎng bō qīng bō" }
+        ],
+        meaning: "【诗意解说】大白鹅呀大白鹅，弯曲着美丽的脖颈朝天欢快鸣唱。洁白如雪的羽毛漂浮在碧绿清澈的水面上，红红的脚掌在水波中轻轻荡漾。"
+      },
+      {
+        title: "静夜思",
+        author: "[唐] 李白",
+        isKindergarten: true,
+        lines: [
+          { text: "床前明月光", pinyin: "chuáng qián míng yuè guāng" },
+          { text: "疑是地上霜", pinyin: "yí shì dì shàng shuāng" },
+          { text: "举头望明月", pinyin: "jǔ tóu wàng míng yuè" },
+          { text: "低头思故乡", pinyin: "dī tóu sī gù xiāng" }
+        ],
+        meaning: "【诗意解说】明亮皎洁的月光洒在床前，仿佛是地上凝结的一层白霜。诗人抬头仰望着夜空中的明月，不由得低下头深深思念起温馨的故乡。"
+      },
+      {
+        title: "春晓",
+        author: "[唐] 孟浩然",
+        isKindergarten: true,
+        lines: [
+          { text: "春眠不觉晓", pinyin: "chūn mián bù jué xiǎo" },
+          { text: "处处闻啼鸟", pinyin: "chù chù wén tí niǎo" },
+          { text: "夜来风雨声", pinyin: "yè lái fēng yǔ shēng" },
+          { text: "花落知多少", pinyin: "huā luò zhī duō shǎo" }
+        ],
+        meaning: "【诗意解说】春日里睡得香甜不知不觉天已大亮，到处都能听到清脆悦耳的鸟叫声。回想起昨夜刮风下雨的阵阵声音，不知娇嫩的花朵又飘落了多少呢。"
+      },
+      {
+        title: "悯农",
+        author: "[唐] 李绅",
+        isKindergarten: true,
+        lines: [
+          { text: "锄禾日当午", pinyin: "chú hé rì dāng wǔ" },
+          { text: "汗滴禾下土", pinyin: "hàn dī hé xià tǔ" },
+          { text: "谁知盘中餐", pinyin: "shéi zhī pán zhōng cān" },
+          { text: "粒粒皆辛苦", pinyin: "lì lì jiē xīn kǔ" }
+        ],
+        meaning: "【诗意解说】盛夏正午烈日炎炎，农民伯伯在田间辛勤锄草，汗水滴滴答答渗入禾苗下的泥土。又有谁知道我们餐盘里的每一口香甜米饭，粒粒都凝聚着艰辛的汗水！"
+      },
+      {
+        title: "登鹳雀楼",
+        author: "[唐] 王之涣",
+        lines: [
+          { text: "白日依山尽", pinyin: "bái rì yī shān jìn" },
+          { text: "黄河入海流", pinyin: "huáng hé rù hǎi liú" },
+          { text: "欲穷千里目", pinyin: "yù qióng qiān lǐ mù" },
+          { text: "更上一层楼", pinyin: "gèng shàng yì céng lóu" }
+        ],
+        meaning: "【诗意解说】夕阳依傍着远山缓缓下沉，壮阔的黄河奔腾着向大海流去。若想将千里之外辽阔壮丽的风光尽收眼底，就需要站得更高，登上更高一层的楼台！"
+      },
+      {
+        title: "小池",
+        author: "[宋] 杨万里",
+        lines: [
+          { text: "泉眼无声惜细流", pinyin: "quán yǎn wú shēng xī xì liú" },
+          { text: "树阴照水爱晴柔", pinyin: "shù yīn zhào shuǐ ài qíng róu" },
+          { text: "小荷才露尖尖角", pinyin: "xiǎo hé cái lù jiān jiān jiǎo" },
+          { text: "早有蜻蜓立上头", pinyin: "zǎo yǒu qīng tíng lì shàng tóu" }
+        ],
+        meaning: "【诗意解说】泉眼悄无声息地流淌着涓涓细流，岸边的树荫映照在水面上享受着晴日的柔美。娇嫩的小荷叶刚刚冒出尖尖的嫩角，早有一只灵动的小蜻蜓轻盈地立在上头。"
+      },
+      {
+        title: "江雪",
+        author: "[唐] 柳宗元",
+        lines: [
+          { text: "千山鸟飞绝", pinyin: "qiān shān niǎo fēi jué" },
+          { text: "万径人踪灭", pinyin: "wàn jìng rén zōng miè" },
+          { text: "孤舟蓑笠翁", pinyin: "gū zhōu suō lì wēng" },
+          { text: "独钓寒江雪", pinyin: "dú diào hán jiāng xuě" }
+        ],
+        meaning: "【诗意解说】连绵群山中再也看不见飞鸟的踪影，条条小径上所有的行人都已绝迹。只有一叶孤舟上披着蓑衣戴着斗笠的老翁，独自在大雪纷飞的寒江中静静垂钓。"
+      },
+      {
+        title: "寻隐者不遇",
+        author: "[唐] 贾岛",
+        lines: [
+          { text: "松下问童子", pinyin: "sōng xià wèn tóng zǐ" },
+          { text: "言师采药去", pinyin: "yán shī cǎi yào qù" },
+          { text: "只在此山中", pinyin: "zhǐ zài cǐ shān zhōng" },
+          { text: "云深不知处", pinyin: "yún shēn bù zhī chù" }
+        ],
+        meaning: "【诗意解说】在古松树下询问小童子，童子回答说师傅采草药去了。师傅就在这片青翠的大山里，只是云雾苍茫浓厚，不知道他具体在什么地方。"
+      },
+      {
+        title: "相思",
+        author: "[唐] 王维",
+        lines: [
+          { text: "红豆生南国", pinyin: "hóng dòu shēng nán guó" },
+          { text: "春来发几枝", pinyin: "chūn lái fā jǐ zhī" },
+          { text: "愿君多采撷", pinyin: "yuàn jūn duō cǎi xié" },
+          { text: "此物最相思", pinyin: "cǐ wù zuì xiāng sī" }
+        ],
+        meaning: "【诗意解说】晶莹剔透的红豆生长在温暖的南方，春天到来时不知萌发了多少新枝？希望朋友多采摘一些红豆寄托思念，因为它是最能象征真挚情谊的信物。"
+      },
+      {
+        title: "咏柳",
+        author: "[唐] 贺知章",
+        lines: [
+          { text: "碧玉妆成一树高", pinyin: "bì yù zhuāng chéng yí shù gāo" },
+          { text: "万条垂下绿丝绦", pinyin: "wàn tiáo chuí xià lǜ sī tāo" },
+          { text: "不知细叶谁裁出", pinyin: "bù zhī xì yè shuí cái chū" },
+          { text: "二月春风似剪刀", pinyin: "èr yuè chūn fēng sì jiǎn dāo" }
+        ],
+        meaning: "【诗意解说】高高的柳树宛如翠绿无暇的碧玉装扮而成，垂挂下的千万条柳丝宛如绿色丝带。不知这纤巧细致的柳叶是谁裁剪出来的？原来二月的春风就是一把神奇的巧剪刀！"
+      },
+      {
+        title: "青松",
+        author: "陈毅",
+        lines: [
+          { text: "大雪压青松", pinyin: "dà xuě yā qīng sōng" },
+          { text: "青松挺且直", pinyin: "qīng sōng tǐng qiě zhí" },
+          { text: "要知松高洁", pinyin: "yào zhī sōng gāo jié" },
+          { text: "待到雪化时", pinyin: "dài dào xuě huà shí" }
+        ],
+        meaning: "【诗意解说】厚厚的大雪沉沉地压在青松上，而青松依然傲然挺立、笔直挺拔。要想真正了解松树高尚纯洁的品格，且等到积雪消融的时刻便能见分晓！"
+      },
+      {
+        title: "题西林壁",
+        author: "[宋] 苏轼",
+        lines: [
+          { text: "横看成岭侧成峰", pinyin: "héng kàn chéng lǐng cè chéng fēng" },
+          { text: "远近高低各不同", pinyin: "yuǎn jìn gāo dī gè bù tóng" },
+          { text: "不识庐山真面目", pinyin: "bù shí lú shān zhēn miàn mù" },
+          { text: "只缘身在此山中", pinyin: "zhǐ yuán shēn zài cǐ shān zhōng" }
+        ],
+        meaning: "【诗意解说】从正面看庐山是绵延起伏的山岭，从侧面看是高耸峻拔的山峰。远看、近看、高处、低处，看到的景象各不相同。之所以认不清庐山真正的全貌，只因为自己正身处在庐山之中啊！"
+      },
+      {
+        title: "悯农（其一）",
+        author: "[唐] 李绅",
+        lines: [
+          { text: "春种一粒粟", pinyin: "chūn zhòng yí lì sù" },
+          { text: "秋收万颗子", pinyin: "qiū shōu wàn kē zǐ" },
+          { text: "四海无闲田", pinyin: "sì hǎi wú xián tián" },
+          { text: "农夫犹饿死", pinyin: "nóng fū yóu è sǐ" }
+        ],
+        meaning: "【诗意解说】春天播种下一粒小小的谷粟，秋天就能收获万颗沉甸甸的粮食。天底下没有闲置荒芜的田地，可是辛勤耕耘的农夫却依然有挨饿而死的。"
+      },
+      {
+        title: "出塞",
+        author: "[唐] 王昌龄",
+        lines: [
+          { text: "秦时明月汉时关", pinyin: "qín shí míng yuè hàn shí guān" },
+          { text: "万里长征人未还", pinyin: "wàn lǐ cháng zhēng rén wèi hái" },
+          { text: "但使龙城飞将在", pinyin: "dàn shǐ lóng chéng fēi jiàng zài" },
+          { text: "不教胡马度阴山", pinyin: "bù jiào hú mǎ dù yīn shān" }
+        ],
+        meaning: "【诗意解说】秦汉时的明月依然照耀着岁月的边关，万里远征的边防将士至今仍未归还。只要龙城的飞将军李广健在，绝不让敌人的战马跨过险要的阴山！"
+      },
+      {
+        title: "山居秋暝",
+        author: "[唐] 王维",
+        lines: [
+          { text: "空山新雨后", pinyin: "kōng shān xīn yǔ hòu" },
+          { text: "天气晚来秋", pinyin: "tiān qì wǎn lái qiū" },
+          { text: "明月松间照", pinyin: "míng yuè sōng jiān zhào" },
+          { text: "清泉石上流", pinyin: "qīng quán shí shàng liú" },
+          { text: "竹喧归浣女", pinyin: "zhú xuān guī huàn nǚ" },
+          { text: "莲动下渔舟", pinyin: "lián dòng xià yú zhōu" },
+          { text: "随意春芳歇", pinyin: "suí yì chūn fāng xiē" },
+          { text: "王孙自可留", pinyin: "wáng sūn zì kě liú" }
+        ],
+        meaning: "【诗意解说】空旷青翠的群山刚下一场清新的秋雨，傍晚的天气带来丝丝凉意。明月在松林间洒下柔和的光芒，清澈的泉水在山石上欢快流淌。竹林中传来洗衣姑娘们的欢声笑语，亭亭水莲摇曳划来归宿的渔舟。春日的芳草任凭它自然凋谢，这里秋日宁静的山景足以让人留恋难舍。"
+      },
+      {
+        title: "凉州词",
+        author: "[唐] 王翰",
+        lines: [
+          { text: "葡萄美酒夜光杯", pinyin: "pú tao měi jiǔ yè guāng bēi" },
+          { text: "欲饮琵琶马上催", pinyin: "yù yǐn pí pa mǎ shàng cuī" },
+          { text: "醉卧沙场君莫笑", pinyin: "zuì wò shā chǎng jūn mò xiào" },
+          { text: "古来征战几人回", pinyin: "gǔ lái zhēng zhàn jǐ rén huí" }
+        ],
+        meaning: "【诗意解说】精美的夜光杯中盛满了醇香甘甜的葡萄美酒，刚想痛快畅饮，战马上的琵琶声已急促催促着奔赴疆场。即使醉倒在沙场之上诸君也莫要见笑，自古以来奔赴沙场征战的人，又有几人能平安归来呢？"
+      },
+      {
+        title: "月下独酌",
+        author: "[唐] 李白",
+        lines: [
+          { text: "花间一壶酒", pinyin: "huā jiān yì hú jiǔ" },
+          { text: "独酌无相亲", pinyin: "dú zhuó wú xiāng qīn" },
+          { text: "举杯邀明月", pinyin: "jǔ bēi yāo míng yuè" },
+          { text: "对影成三人", pinyin: "duì yǐng chéng sān rén" }
+        ],
+        meaning: "【诗意解说】在盛开的繁花丛中摆上一壶清酒，独自一人饮酒没有相伴的亲友。高高举起酒杯热情邀请天上的明月，月亮、自己加上地上的倒影，便化作了三个人共度良宵！"
+      },
+      {
+        title: "枫桥夜泊",
+        author: "[唐] 张继",
+        lines: [
+          { text: "月落乌啼霜满天", pinyin: "yuè luò wū tí shuāng mǎn tiān" },
+          { text: "江枫渔火对愁眠", pinyin: "jiāng fēng yú huǒ duì chóu mián" },
+          { text: "姑苏城外寒山寺", pinyin: "gū sū chéng wài hán shān sì" },
+          { text: "夜半钟声到客船", pinyin: "yè bàn zhōng shēng dào kè chuán" }
+        ],
+        meaning: "【诗意解说】月亮已经西沉，乌鸦在寒夜中凄清啼叫，漫天弥漫着一层薄薄的白霜。伴着岸边的江枫与江中摇曳的点点渔火，游子带着缕缕乡愁难以入眠。江南姑苏城外著名的寒山寺，半夜悠扬深远的钟声缓缓飘送到了客船。"
+      },
+      {
+        title: "所见",
+        author: "[清] 袁枚",
+        isKindergarten: true,
+        lines: [
+          { text: "牧童骑黄牛", pinyin: "mù tóng qí huáng niú" },
+          { text: "歌声振林樾", pinyin: "gē shēng zhèn lín yuè" },
+          { text: "意欲捕鸣蝉", pinyin: "yì yù bǔ míng chán" },
+          { text: "忽然闭口立", pinyin: "hū rán bì kǒu lì" }
+        ],
+        meaning: "【诗意解说】天真活泼的小牧童悠闲地骑在高大的黄牛背上，响亮清脆的歌声在茂密的树林中欢快回荡。忽然想要捕捉树枝上欢鸣的知了，他立刻闭上嘴巴，屏息静气站在树旁。"
+      },
+      {
+        title: "小儿垂钓",
+        author: "[唐] 胡令能",
+        isKindergarten: true,
+        lines: [
+          { text: "蓬头稚子学垂纶", pinyin: "péng tóu zhì zǐ xué chuí lún" },
+          { text: "侧坐莓苔草映身", pinyin: "cè zuò méi tái cǎo yìng shēn" },
+          { text: "路人借问遥招手", pinyin: "lù rén jiè wèn yáo zhāo shǒu" },
+          { text: "怕得鱼惊不应人", pinyin: "pà de yú jīng bù yìng rén" }
+        ],
+        meaning: "【诗意解说】一个头发蓬松可爱的孩童正在聚精会神学着钓鱼，侧身斜坐在青苔上，茂密的草丛遮掩着小小的身躯。过路行人远远地向他打听道路，他急忙远远地摆手示意，生怕惊跑了水里的鱼儿不敢出声应答。"
+      },
+      {
+        title: "一去二三里",
+        author: "[宋] 邵雍",
+        isKindergarten: true,
+        lines: [
+          { text: "一去二三里", pinyin: "yí qù èr sān lǐ" },
+          { text: "烟村四五家", pinyin: "yān cūn sì wǔ jiā" },
+          { text: "亭台六七座", pinyin: "tíng tái liù qī zuò" },
+          { text: "八九十枝花", pinyin: "bā jiǔ shí zhī huā" }
+        ],
+        meaning: "【诗意解说】一眼望去有二三里路，袅袅炊烟的村庄里住着四五户人家。路旁错落着六七座精致的小亭台，枝头上盛开着八九十朵娇艳的花儿。"
+      },
+      {
+        title: "画",
+        author: "[唐] 王维",
+        isKindergarten: true,
+        lines: [
+          { text: "远看山有色", pinyin: "yuǎn kàn shān yǒu sè" },
+          { text: "近听水无声", pinyin: "jìn tīng shuǐ wú shēng" },
+          { text: "春去花还在", pinyin: "chūn qù huā hái zài" },
+          { text: "人来鸟不惊", pinyin: "rén lái niǎo bù jīng" }
+        ],
+        meaning: "【诗意解说】远远看去大山青翠秀美，走近细听泉水却悄无声息。春天过去花朵依然娇艳盛开，有人走来枝头的鸟儿却一点也不害怕——原来这是一幅美丽的画卷呀！"
+      },
+      {
+        title: "草",
+        author: "[唐] 白居易",
+        isKindergarten: true,
+        lines: [
+          { text: "离离原上草", pinyin: "lí lí yuán shàng cǎo" },
+          { text: "一岁一枯荣", pinyin: "yí suì yì kū róng" },
+          { text: "野火烧不尽", pinyin: "yě huǒ shāo bú jìn" },
+          { text: "春风吹又生", pinyin: "chūn fēng chuī yòu shēng" }
+        ],
+        meaning: "【诗意解说】辽阔的原野上生长着茂盛的小草，每一年都经历着秋冬的枯黄与春天的繁茂。无情的野火无法将地下的草根烧尽，只要温暖的春风吹来，顽强的小草又重新焕发生机！"
+      },
+      {
+        title: "古朗月行",
+        author: "[唐] 李白",
+        isKindergarten: true,
+        lines: [
+          { text: "小时不识月", pinyin: "xiǎo shí bù shí yuè" },
+          { text: "呼作白玉盘", pinyin: "hū zuò bái yù pán" },
+          { text: "又疑瑶台镜", pinyin: "yòu yí yáo tái jìng" },
+          { text: "飞在青云端", pinyin: "fēi zài qīng yún duān" }
+        ],
+        meaning: "【诗意解说】小的时候不认得夜空里的月亮，天真地把它叫做白玉盘子。又怀疑它是神仙梳妆用的神奇宝镜，高高地飞翔在蓝天白云之上！"
+      },
+      {
+        title: "池上",
+        author: "[唐] 白居易",
+        isKindergarten: true,
+        lines: [
+          { text: "小娃撑小艇", pinyin: "xiǎo wá chēng xiǎo tǐng" },
+          { text: "偷采白莲回", pinyin: "tōu cǎi bái lián huí" },
+          { text: "不解藏踪迹", pinyin: "bù jiě cáng zōng jì" },
+          { text: "浮萍一道开", pinyin: "fú píng yí dào kāi" }
+        ],
+        meaning: "【诗意解说】天真可爱的小孩童独自划着小船，悄悄采摘了白莲花满载而归。他不知道该如何掩藏自己的行踪，水面上的浮萍荡漾开来，留下了一道清晰笔直的船痕！"
+      },
+      {
+        title: "风",
+        author: "[唐] 李峤",
+        isKindergarten: true,
+        lines: [
+          { text: "解落三秋叶", pinyin: "jiě luò sān qiū yè" },
+          { text: "能开二月花", pinyin: "néng kāi èr yuè huā" },
+          { text: "过江千尺浪", pinyin: "guò jiāng qiān chǐ làng" },
+          { text: "入竹万竿斜", pinyin: "rù zhú wàn gān xié" }
+        ],
+        meaning: "【诗意解说】它能吹落深秋里枯黄的落叶，也能催开二月春天里万紫千红的花朵。掠过大江时能掀起千尺高的波涛，吹进竹林时能让成千上万根翠竹迎风倾斜！"
+      },
+      {
+        title: "梅花",
+        author: "[宋] 王安石",
+        isKindergarten: true,
+        lines: [
+          { text: "墙角数枝梅", pinyin: "qiáng jiǎo shù zhī méi" },
+          { text: "凌寒独自开", pinyin: "líng hán dú zì kāi" },
+          { text: "遥知不是雪", pinyin: "yáo zhī bú shì xuě" },
+          { text: "为有暗香来", pinyin: "wèi yǒu àn xiāng lái" }
+        ],
+        meaning: "【诗意解说】庭院墙角生长着几枝梅花，冒着严寒傲然独自盛开。远远望去就知道那不是洁白的雪花，因为空气中正有阵阵清幽怡人的香气隐隐飘来。"
+      },
+      {
+        title: "游子吟",
+        author: "[唐] 孟郊",
+        isKindergarten: true,
+        lines: [
+          { text: "慈母手中线", pinyin: "cí mǔ shǒu zhōng xiàn" },
+          { text: "游子身上衣", pinyin: "yóu zǐ shēn shàng yī" },
+          { text: "谁言寸草心", pinyin: "shuí yán cùn cǎo xīn" },
+          { text: "报得三春晖", pinyin: "bào dé sān chūn huī" }
+        ],
+        meaning: "【诗意解说】慈祥的母亲手中紧握着针线，细细缝制着远行孩子身上的衣裳。有谁能够说像小草那样微弱的寸草之心，能够报答得了母亲春天太阳般博大深沉的恩情呢！"
+      }
+    ];
+
+    class PoemGame {
+      constructor() {
+        this.currentMode = 'kindergarten'; // 默认进入最适合孩子的幼儿园启蒙模式
+        this.playlist = [];
+        this.currentPoemIndex = 0;
+        this.currentLineIndex = 0;
+        this.currentCharIndex = 0;
+        this.showPinyin = true;
+
+        this.initDOM();
+        this.bindEvents();
+        this.startRandomPlaylist(10);
+      }
+
+      initDOM() {
+        this.poemTitleEl = document.getElementById('poemTitle');
+        this.poemAuthorEl = document.getElementById('poemAuthor');
+        this.linesContainerEl = document.getElementById('poemLinesContainer');
+        this.optionsGridEl = document.getElementById('charOptionsGrid');
+        this.levelIndicatorEl = document.getElementById('levelIndicator');
+        this.btnPrevEl = document.getElementById('btnPrev');
+        this.btnNextEl = document.getElementById('btnNext');
+        this.btnReroll10 = document.getElementById('btnReroll10');
+        this.btnFilterKinder = document.getElementById('btnFilterKinder');
+        this.btnFilterAll = document.getElementById('btnFilterAll');
+        this.btnTogglePinyin = document.getElementById('btnTogglePinyin');
+        this.modalReward = document.getElementById('modalReward');
+        this.modalMeaningText = document.getElementById('modalMeaningText');
+        this.modalTitle = document.querySelector('.modal-title');
+        this.btnModalNext = document.getElementById('btnModalNext');
+      }
+
+      bindEvents() {
+        this.btnPrevEl.onclick = () => this.prevPoem();
+        this.btnNextEl.onclick = () => this.nextPoem();
+        
+        if (this.btnFilterKinder) {
+          this.btnFilterKinder.onclick = () => {
+            this.currentMode = 'kindergarten';
+            this.btnFilterKinder.classList.add('active');
+            if (this.btnFilterAll) this.btnFilterAll.classList.remove('active');
+            this.startRandomPlaylist(10);
+          };
+        }
+
+        if (this.btnFilterAll) {
+          this.btnFilterAll.onclick = () => {
+            this.currentMode = 'all';
+            this.btnFilterAll.classList.add('active');
+            if (this.btnFilterKinder) this.btnFilterKinder.classList.remove('active');
+            this.startRandomPlaylist(10);
+          };
+        }
+
+        if (this.btnReroll10) {
+          this.btnReroll10.onclick = () => {
+            this.startRandomPlaylist(10);
+          };
+        }
+
+        this.btnTogglePinyin.onclick = () => {
+          this.showPinyin = !this.showPinyin;
+          this.btnTogglePinyin.innerHTML = `<span>🔤</span> 拼音: ${this.showPinyin ? '开' : '关'}`;
+          this.updatePinyinVisibility();
+        };
+
+        document.getElementById('btnReadAloud').onclick = () => {
+          this.speakPoem();
+        };
+
+        document.getElementById('btnResetCurrent').onclick = () => {
+          this.loadPoem(this.currentPoemIndex);
+        };
+
+        this.btnModalNext.onclick = () => {
+          this.modalReward.style.display = 'none';
+          if (this.currentPoemIndex >= this.playlist.length - 1) {
+            this.startRandomPlaylist(10);
+          } else {
+            this.nextPoem();
+          }
+        };
+
+        document.getElementById('btnListenReward').onclick = () => {
+          this.speakPoem();
+        };
+      }
+
+      // 每次根据当前模式随机抽取10首诗词 (Fisher-Yates 洗牌)
+      startRandomPlaylist(count = 10) {
+        const pool = (this.currentMode === 'kindergarten')
+          ? POEMS_DATABASE.filter(p => p.isKindergarten)
+          : POEMS_DATABASE;
+        const shuffled = [...pool];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        this.playlist = shuffled.slice(0, Math.min(count, shuffled.length));
+        this.loadPoem(0);
+      }
+
+      loadPoem(index) {
+        if (index < 0 || index >= this.playlist.length) return;
+        this.currentPoemIndex = index;
+        this.currentLineIndex = 0;
+        this.currentCharIndex = 0;
+
+        const poem = this.playlist[index];
+        this.poemTitleEl.textContent = poem.title;
+        this.poemAuthorEl.textContent = poem.author;
+        const modeLabel = (this.currentMode === 'kindergarten') ? ' [👶 幼小篇]' : ' [🌟 全题库]';
+        this.levelIndicatorEl.textContent = `第 ${index + 1} / ${this.playlist.length} 首${modeLabel}`;
+
+        this.btnPrevEl.disabled = index === 0;
+        this.btnNextEl.disabled = index === this.playlist.length - 1;
+
+        // 构建诗句槽位
+        this.linesContainerEl.innerHTML = '';
+        poem.lines.forEach((line, lineIdx) => {
+          const lineEl = document.createElement('div');
+          lineEl.className = 'poem-line' + (lineIdx === 0 ? ' active' : '');
+          lineEl.dataset.lineIndex = lineIdx;
+
+          const pinyinList = line.pinyin.split(' ');
+          for (let c = 0; c < line.text.length; c++) {
+            const char = line.text[c];
+            const pinyin = pinyinList[c] || '';
+
+            const slot = document.createElement('div');
+            slot.className = 'char-slot';
+            slot.dataset.char = char;
+            slot.dataset.line = lineIdx;
+            slot.dataset.charIdx = c;
+
+            slot.innerHTML = `
+              <span class="pinyin">${pinyin}</span>
+              <span class="char-text">${char}</span>
+            `;
+            lineEl.appendChild(slot);
+          }
+          this.linesContainerEl.appendChild(lineEl);
+        });
+
+        this.updatePinyinVisibility();
+        this.buildOptionsForCurrentLine();
+      }
+
+      updatePinyinVisibility() {
+        const pinyins = document.querySelectorAll('.pinyin, .opt-pinyin');
+        pinyins.forEach(el => {
+          el.style.display = this.showPinyin ? 'block' : 'none';
+        });
+      }
+
+      buildOptionsForCurrentLine() {
+        const poem = this.playlist[this.currentPoemIndex];
+        const currentLine = poem.lines[this.currentLineIndex];
+        if (!currentLine) return;
+
+        const chars = currentLine.text.split('');
+        const pinyins = currentLine.pinyin.split(' ');
+
+        // 打乱当前诗句所有字
+        const items = chars.map((ch, idx) => ({ char: ch, pinyin: pinyins[idx] || '', originalIdx: idx }));
+        
+        // Fisher-Yates 洗牌算法打乱
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+
+        this.optionsGridEl.innerHTML = '';
+        items.forEach(item => {
+          const tile = document.createElement('div');
+          tile.className = 'char-option-tile';
+          tile.innerHTML = `
+            <span class="opt-pinyin">${item.pinyin}</span>
+            <span class="opt-text">${item.char}</span>
+          `;
+          tile.onclick = () => this.handleCharClick(tile, item.char);
+          this.optionsGridEl.appendChild(tile);
+        });
+
+        this.updatePinyinVisibility();
+      }
+
+      handleCharClick(tileEl, clickedChar) {
+        const poem = this.playlist[this.currentPoemIndex];
+        const currentLine = poem.lines[this.currentLineIndex];
+        const expectedChar = currentLine.text[this.currentCharIndex];
+
+        if (clickedChar === expectedChar) {
+          // 答对！
+          sfx.playCorrect();
+          tileEl.classList.add('used');
+
+          // 点亮对应槽位
+          const lineEl = this.linesContainerEl.children[this.currentLineIndex];
+          const slot = lineEl.children[this.currentCharIndex];
+          slot.classList.add('filled');
+
+          this.currentCharIndex++;
+
+          // 检查当前行是否拼完
+          if (this.currentCharIndex >= currentLine.text.length) {
+            lineEl.classList.remove('active');
+            lineEl.classList.add('completed');
+            sfx.playLineDone();
+
+            // 原生发音朗读刚拼好的这句诗
+            this.speakText(currentLine.text);
+
+            this.currentLineIndex++;
+            this.currentCharIndex = 0;
+
+            // 检查整首诗是否完成
+            if (this.currentLineIndex >= poem.lines.length) {
+              setTimeout(() => this.handlePoemCompleted(), 500);
+            } else {
+              // 进行下一行
+              const nextLineEl = this.linesContainerEl.children[this.currentLineIndex];
+              if (nextLineEl) nextLineEl.classList.add('active');
+              setTimeout(() => this.buildOptionsForCurrentLine(), 300);
+            }
+          }
+        } else {
+          // 答错反馈
+          sfx.playWrong();
+          tileEl.classList.add('shake-anim');
+          setTimeout(() => tileEl.classList.remove('shake-anim'), 400);
+        }
+      }
+
+      handlePoemCompleted() {
+        sfx.playVictory();
+        const poem = this.playlist[this.currentPoemIndex];
+        this.modalMeaningText.textContent = poem.meaning;
+
+        const isLastOfRound = (this.currentPoemIndex >= this.playlist.length - 1);
+        if (isLastOfRound) {
+          if (this.modalTitle) this.modalTitle.textContent = "🎉 挑战成功！10首古诗全部通关！";
+          if (this.btnModalNext) this.btnModalNext.textContent = "再来一组随机10首 🎲";
+        } else {
+          if (this.modalTitle) this.modalTitle.textContent = "诗仙点赞 · 成功通关！";
+          if (this.btnModalNext) this.btnModalNext.textContent = "挑战下一首 🚀";
+        }
+
+        this.modalReward.style.display = 'flex';
+      }
+
+      prevPoem() {
+        if (this.currentPoemIndex > 0) {
+          this.loadPoem(this.currentPoemIndex - 1);
+        }
+      }
+
+      nextPoem() {
+        if (this.currentPoemIndex < this.playlist.length - 1) {
+          this.loadPoem(this.currentPoemIndex + 1);
+        } else {
+          this.startRandomPlaylist(10);
+        }
+      }
+
+      speakText(text) {
+        if (!('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'zh-CN';
+          utterance.rate = 0.85; // 稍微放慢语速，适合孩子跟读
+          window.speechSynthesis.speak(utterance);
+        } catch(e) {}
+      }
+
+      speakPoem() {
+        const poem = this.playlist[this.currentPoemIndex];
+        const fullText = `${poem.title}。${poem.author}。` + poem.lines.map(l => l.text).join('，') + '。';
+        this.speakText(fullText);
+      }
+    }
+
+    // 初始化游戏
+    window.addEventListener('DOMContentLoaded', () => {
+      new PoemGame();
+    });
+  </script>
+</body>
+</html>

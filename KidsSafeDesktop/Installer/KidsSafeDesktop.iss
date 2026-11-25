@@ -96,6 +96,10 @@ chinesesimp.FinishedHeadingLabel=完成 [name] 的安装
 [Tasks]
 Name: "desktopicon"; Description: "在桌面创建快捷方式"; GroupDescription: "附加任务："; Flags: checkedonce
 Name: "desktopmenu";  Description: "在桌面空白处右键菜单中加入「{#AppName}」（Windows 11 需点「显示更多选项」）"; GroupDescription: "附加任务："; Flags: checkedonce
+; 开机自启默认勾选：这是家长控制类软件的基本预期（不装自启等于随时可以绕过）。
+; 注意写的是 --kiosk-guard 而不是裸 exe：守护模式会在主程序被结束后自动拉起，
+; 裸 exe 被任务管理器结束一次就永久失效。家长也可以在「家长设置 → 系统守护」里关。
+Name: "autostart";   Description: "开机自动进入{#AppName}（守护模式，被结束后自动重启）"; GroupDescription: "附加任务："; Flags: checkedonce
 
 [Files]
 ; 排除三样东西：
@@ -122,6 +126,13 @@ Root: HKCU; Subkey: "Software\Classes\DesktopBackground\Shell\KidsSafeDesktop"; 
     ValueType: string; ValueName: "Position"; ValueData: "Top"; Tasks: desktopmenu
 Root: HKCU; Subkey: "Software\Classes\DesktopBackground\Shell\KidsSafeDesktop\command"; \
     ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExeName}"""; Tasks: desktopmenu
+
+; 开机自启（守护模式）。卸载时必须删掉这个值，否则会留下一条指向空路径的启动项，
+; 每次登录 Windows 都会尝试启动一个不存在的程序。
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
+    ValueType: string; ValueName: "KidsSafeDesktop"; \
+    ValueData: """{app}\{#AppExeName}"" --kiosk-guard"; \
+    Flags: uninsdeletevalue; Tasks: autostart
 
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "立即启动{#AppName}"; \

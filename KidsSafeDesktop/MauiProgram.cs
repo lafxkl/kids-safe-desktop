@@ -9,6 +9,16 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+#if ANDROID
+		// 必须是第一句：在任何 KidsSafeShared 类型被触碰之前，把增量补丁预加载进来。
+		// 一旦前面先加载了 APK 里那份 dll，覆盖就再也换不掉了（详见 PatchBootstrapper 注释）。
+		PatchBootstrapper.Run();
+#endif
+
+		// 运行日志必须最先挂上：后面任何一步炸了，都得能在 runtime.log 里看到。
+		// 发布版同样开启（不加 #if DEBUG）—— 用户设备上出问题，这是他唯一能发给我们的现场。
+		KidsSafeDesktop.Helpers.AppLog.Install();
+
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
@@ -36,6 +46,11 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITextbookService, TextbookService>();
 		builder.Services.AddSingleton<IAccountService, AccountService>();
 		builder.Services.AddSingleton<IEyeCareService, EyeCareService>();
+		// 增量更新：只下变化的 dll，Windows 关机时落盘、Android 下次启动预加载
+		builder.Services.AddSingleton<KidsSafeDesktop.Updates.IUpdateService,
+									  KidsSafeDesktop.Updates.UpdateService>();
+		// 用户反馈：意见反馈 / 满意度 / 问卷，统一上报官网（断网先存本机，联网自动补传）
+		builder.Services.AddSingleton<IFeedbackService, FeedbackService>();
 
 		// 平台服务
 #if ANDROID
@@ -64,6 +79,8 @@ public static class MauiProgram
 		var app = builder.Build();
 
 		// 全局未处理异常记录：上架前排查闪退用（不阻断应用既有行为）
+		// AppLog.Install() 里已经挂了同样一件事（并会同时写 crash.log），这里保留是为了
+		// 兼容历史上就看 crash.log 的习惯，两处都写不冲突。
 		AppDomain.CurrentDomain.UnhandledException += (_, e) =>
 		{
 			try
@@ -72,6 +89,8 @@ public static class MauiProgram
 			}
 			catch { /* 忽略记录失败 */ }
 		};
+
+		KidsSafeDesktop.Helpers.AppLog.I("启动", "服务注册完成，MauiApp 已构建");
 
 		return app;
 	}

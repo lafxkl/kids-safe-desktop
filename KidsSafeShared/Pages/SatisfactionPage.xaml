@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.SatisfactionPage"
+             Title="满意度调查"
+             BackgroundColor="#FDF6EC">
+
+    <ContentPage.Resources>
+        <Style x:Key="ChipBorder" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="#EADFD3" />
+            <Setter Property="StrokeThickness" Value="1.5" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Border" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="BackgroundColor" Value="#FDEBDA" />
+                    <Setter Property="Stroke" Value="#E2603D" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ChipLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="TextColor" Value="#7C6353" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Label" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="TextColor" Value="#B4552F" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 星级：没选的灰、选了金 -->
+        <Style x:Key="StarLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="TextColor" Value="#E2D7C8" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Label" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="TextColor" Value="#F2A03D" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" BackgroundColor="#B3FFFFFF">
+            <Button Text="← 返回" TextColor="#5D4037" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="🌟 满意度调查" TextColor="#5D4037" FontSize="20"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="💛" FontSize="22" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,10,18,40">
+            <VerticalStackLayout Spacing="14">
+
+                <Label Text="一分钟，帮我们把下一版做得更合适。只有「整体满意度」是必填，其它都可以跳过。"
+                       FontSize="13.5" TextColor="#8D6E63" LineBreakMode="WordWrap" />
+
+                <!-- 整体满意度 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="整体满意度（必填）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <FlexLayout Direction="Row" BindableLayout.ItemsSource="{Binding Stars}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="Transparent" StrokeThickness="0" Padding="6,0">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOptionTap" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Text}" Style="{StaticResource StarLabel}" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                        <Label Text="{Binding RatingText}" FontSize="13" TextColor="#B4552F" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 分项 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="分项打分（可跳过）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding Dims}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <VerticalStackLayout Spacing="6">
+                                        <Label Text="{Binding Label}" FontSize="14" TextColor="#5D4037" />
+                                        <FlexLayout Direction="Row" Wrap="Wrap"
+                                                    BindableLayout.ItemsSource="{Binding Options}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource ChipBorder}" Margin="0,0,8,6">
+                                                        <Border.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="OnOptionTap" />
+                                                        </Border.GestureRecognizers>
+                                                        <Label Text="{Binding Text}" Style="{StaticResource ChipLabel}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </FlexLayout>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 推荐意愿 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="愿意推荐给别的家长吗？（可跳过）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <FlexLayout Direction="Row" Wrap="Wrap" BindableLayout.ItemsSource="{Binding NpsOptions}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ChipBorder}" Margin="0,0,8,8" Padding="0">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOptionTap" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Text}" Style="{StaticResource ChipLabel}"
+                                               WidthRequest="36" HeightRequest="36"
+                                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                        <Grid ColumnDefinitions="*,*">
+                            <Label Text="0 = 完全不会推荐" FontSize="11.5" TextColor="#A1887F" />
+                            <Label Grid.Column="1" Text="10 = 一定推荐" FontSize="11.5" TextColor="#A1887F"
+                                   HorizontalTextAlignment="End" />
+                        </Grid>
+                        <Label Text="{Binding NpsText}" FontSize="13" TextColor="#B4552F" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 喜欢哪一块 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="最喜欢哪一块？（可多选）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <FlexLayout Direction="Row" Wrap="Wrap" BindableLayout.ItemsSource="{Binding LikeOptions}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ChipBorder}" Margin="0,0,8,8">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOptionTap" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Text}" Style="{StaticResource ChipLabel}" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 建议 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="还有什么想说的？（选填）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <Editor Text="{Binding Content}" Placeholder="哪里最有用、哪里最想改，都可以写"
+                                FontSize="14" TextColor="#3A2B22" BackgroundColor="#FFFDF9"
+                                AutoSize="TextChanges" MinimumHeightRequest="110" MaxLength="2000" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 联系方式 + 公开 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="联系方式（选填）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <Entry Text="{Binding Contact}" Placeholder="想收到回复就留一个，不想就空着"
+                               FontSize="14" MaxLength="120" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="允许匿名展示在官网" FontSize="14.5" TextColor="#3A2B22" />
+                                <Label Text="只显示正文、星级和月份" FontSize="12" TextColor="#A1887F" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding AllowPublic}" OnColor="#E2603D"
+                                    ThumbColor="White" VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="提交" FontSize="16" FontAttributes="Bold" BackgroundColor="#E2603D"
+                        TextColor="White" CornerRadius="24" HeightRequest="52"
+                        IsEnabled="{Binding CanSubmit}" Clicked="OnSubmit" />
+
+                <Label Text="{Binding Status}" IsVisible="{Binding HasStatus}" FontSize="13.5"
+                       TextColor="#2E7D32" LineBreakMode="WordWrap" />
+                <Label Text="{Binding PendingText}" IsVisible="{Binding HasPending}" FontSize="12.5"
+                       TextColor="#B4552F" LineBreakMode="WordWrap" />
+
+                <Label Text="提交后立刻计入官网「反馈与问卷」页的公开统计（只有分数，没有你的信息）。"
+                       FontSize="11.5" TextColor="#A1887F" LineBreakMode="WordWrap" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

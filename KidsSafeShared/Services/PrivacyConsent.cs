@@ -15,7 +15,7 @@ namespace KidsSafeDesktop.Services;
 public static class PrivacyConsent
 {
     /// <summary>当前隐私政策版本。内容有实质修改时递增，用户会被要求重新同意。</summary>
-    public const string CurrentVersion = "1.0";
+    public const string CurrentVersion = "1.1";
 
     /// <summary>隐私政策生效日期（展示用）。</summary>
     public const string EffectiveDate = "2026-11-04";

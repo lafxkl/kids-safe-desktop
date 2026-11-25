@@ -1,0 +1,18 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: kidssafe
+Source: https://example.invalid/kidssafe
+
+Files: *
+Copyright: 2026 KidsSafe Desktop
+License: Proprietary
+ 本仓库未附开源许可证。仅限自用 / 内部交付；若要公开分发（应用商店、
+ PPA、第三方仓库），必须先选定许可证并在此处写清楚。
+Comment:
+ 打包本身不受此影响，但 `lintian` 会对没有许可证的包提 E 级提示，
+ 上传到公开源时会被拒绝。
+
+Files: src/nes/core/*
+Copyright: SimpleNes 作者
+License: MIT
+ 红白机核心原样引入自 SimpleNes（MIT）。完整许可证文本随上游仓库分发，
+ 这里只做说明：该部分可自由使用、修改、再分发，需保留版权声明。

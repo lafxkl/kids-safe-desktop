@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KidsSafeDesktop.Pages.FeedbackPage"
+             Title="意见反馈"
+             BackgroundColor="#FDF6EC">
+
+    <ContentPage.Resources>
+        <!-- 小方块：选中态靠 DataTrigger 换色，不用写 IValueConverter -->
+        <Style x:Key="ChipBorder" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="#EADFD3" />
+            <Setter Property="StrokeThickness" Value="1.5" />
+            <Setter Property="Padding" Value="13,7" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Border" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="BackgroundColor" Value="#FDEBDA" />
+                    <Setter Property="Stroke" Value="#E2603D" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ChipLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextColor" Value="#7C6353" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Label" Binding="{Binding IsOn}" Value="True">
+                    <Setter Property="TextColor" Value="#B4552F" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶部栏 -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" BackgroundColor="#B3FFFFFF">
+            <Button Text="← 返回" TextColor="#5D4037" BackgroundColor="Transparent" BorderWidth="0"
+                    FontSize="16" HorizontalOptions="Start" Clicked="OnBack" />
+            <Label Grid.Column="1" Text="💬 意见反馈" TextColor="#5D4037" FontSize="20"
+                   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="📮" FontSize="22" HorizontalOptions="End" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="18,10,18,40">
+            <VerticalStackLayout Spacing="14">
+
+                <Label Text="遇到问题、想要新功能、发现内容写错了，都可以直接说。不用注册，也不用填孩子的任何信息。"
+                       FontSize="13.5" TextColor="#8D6E63" LineBreakMode="WordWrap" />
+
+                <!-- 类型 + 正文 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="这是什么类型？" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <FlexLayout Direction="Row" Wrap="Wrap" BindableLayout.ItemsSource="{Binding CategoryOptions}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ChipBorder}" Margin="0,0,8,8">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnOptionTap" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Text}" Style="{StaticResource ChipLabel}" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+
+                        <Label Text="具体说说" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <Editor Text="{Binding Content}" Placeholder="例如：安卓平板上「宝宝听」播到一半切后台回来会从头开始。设备是荣耀 Pad 8，版本 1.20。"
+                                FontSize="14" TextColor="#3A2B22" BackgroundColor="#FFFDF9"
+                                AutoSize="TextChanges" MinimumHeightRequest="130" MaxLength="2000" />
+                        <Label Text="越具体越好修：在哪个页面、点了什么、期望是什么、实际发生了什么。"
+                               FontSize="12" TextColor="#A1887F" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- 联系方式 + 公开 -->
+                <Frame BackgroundColor="White" CornerRadius="18" Padding="16" HasShadow="False"
+                       BorderColor="#F4E5D3">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="联系方式（选填）" FontSize="15" FontAttributes="Bold" TextColor="#3A2B22" />
+                        <Entry Text="{Binding Contact}" Placeholder="邮箱 / 微信 / QQ，方便我们回你一句「已修复」"
+                               FontSize="14" MaxLength="120" />
+                        <Label Text="不填就是完全匿名——我们不会记录 IP、账号或设备标识。"
+                               FontSize="12" TextColor="#A1887F" />
+
+                        <BoxView HeightRequest="1" Color="#F4E9DC" Margin="0,4" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="允许匿名展示在官网" FontSize="14.5" TextColor="#3A2B22" />
+                                <Label Text="只显示正文、星级和月份，不带联系方式" FontSize="12" TextColor="#A1887F" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding AllowPublic}" OnColor="#E2603D"
+                                    ThumbColor="White" VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button Text="提交反馈" FontSize="16" FontAttributes="Bold" BackgroundColor="#E2603D"
+                        TextColor="White" CornerRadius="24" HeightRequest="52"
+                        IsEnabled="{Binding CanSubmit}" Clicked="OnSubmit" />
+
+                <Label Text="{Binding Status}" IsVisible="{Binding HasStatus}" FontSize="13.5"
+                       TextColor="#2E7D32" LineBreakMode="WordWrap" />
+                <Label Text="{Binding PendingText}" IsVisible="{Binding HasPending}" FontSize="12.5"
+                       TextColor="#B4552F" LineBreakMode="WordWrap" />
+
+                <Label Text="提交的内容会发到我们自己的服务器，只用于改进产品；需要删除时发邮件到 2279125469@qq.com 说明大概时间即可。详见官网「隐私政策」。"
+                       FontSize="11.5" TextColor="#A1887F" LineBreakMode="WordWrap" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

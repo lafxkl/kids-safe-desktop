@@ -2,7 +2,9 @@
 Type=Application
 Name=儿童安全桌面（X11）
 Comment=给小朋友的安全桌面环境
-Exec=kidssafe-session
+# Exec 里显式带上 PATH：显示管理器拉起会话时的 PATH 不一定含 /usr/local/bin，
+# 而本工程默认就装在那里（deepin 25 的 /usr 只读，装不进 /usr/bin）。
+Exec=env PATH=/usr/local/bin:/usr/bin:/bin kidssafe-session
 TryExec=kidssafe-session
 Icon=kidssafe
 Terminal=false

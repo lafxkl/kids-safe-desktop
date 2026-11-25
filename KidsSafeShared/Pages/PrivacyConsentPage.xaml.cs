@@ -38,6 +38,7 @@ public partial class PrivacyConsentPage : ContentPage
         AgreeBtn.IsEnabled = false;          // 防连点导致重复切根页面
 
         PrivacyConsent.Agree();
+        KidsSafeDesktop.Helpers.AppLog.I("隐私", $"已同意隐私政策 v{PrivacyConsent.CurrentVersion}");
         KidsSafeDesktop.Helpers.DiagLog.Append(KidsSafeDesktop.Helpers.NavFx.LogFileName,
             $"[隐私] 已同意隐私政策 v{PrivacyConsent.CurrentVersion}");
 
