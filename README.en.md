@@ -72,7 +72,7 @@ All five are real Android screenshots of v1.19 / v1.20 — no mockups. Tap to op
 
 <p align="center"><strong>Listen · Media · Care Center</strong> (more on the <a href="https://kids.siguangblog.cc/">website</a>)</p>
 
-> The website and this README share the same files in `KidsSafeDesktop/Website/assets/`; the header image `header.png` is stitched from the same three real screenshots.
+> The website and this README share the same files under `KidsSafeDesktop/` → `Website/assets/`; the header image `header.png` is stitched from the same three real screenshots.
 
 ## Features
 
@@ -103,24 +103,21 @@ Same parent console, different entry point: it launches straight into the parent
 
 ### Server (KidsSafeServer, optional)
 
-| Capability | Notes |
-|---|---|
-| Parent accounts | Username + password (PBKDF2-SHA256, 100k iterations, 16-byte salt), HMAC-signed tokens |
-| Device pairing | 6-digit code, valid for 10 minutes, single use; device tokens are **read-only** — writes return 403 |
-| Per-account isolation | One `data/profiles/{accountId}.json` per account, so one server can serve several families |
-| Live push | Long polling on `/api/watch`; a save on the parent side reaches the child device in about a second, without WebSockets or vendor push SDKs |
-| Content and releases | Changelog, installer listing, content manifests, story proxy (third-party keys stay server-side) |
+- **Parent accounts** — username + password (PBKDF2-SHA256, 100k iterations, 16-byte salt), HMAC-signed tokens
+- **Device pairing** — 6-digit code, valid for 10 minutes, single use; device tokens are **read-only**, writes return 403
+- **Per-account isolation** — one `data/profiles/<id>.json` per account, so one server can serve several families
+- **Live push** — long polling on `/api/watch`; a save on the parent side reaches the child device in about a second, without WebSockets or vendor push SDKs
+- **Content and releases** — changelog, installer listing, content manifests, story proxy (third-party keys stay server-side)
 
 ## Website and feedback
 
 The official site, <https://kids.siguangblog.cc/>, is just `KidsSafeDesktop/Website/` — plain static files that run on Nginx, GitHub Pages or an object store. Four of its pages talk to `/api/feedback/*` on the server:
 
-| Page | Purpose | Data source |
-|---|---|---|
-| `comments.html` | Public comment wall: post in place, filter by platform and rating, like, load more | 14 curated entries in `Website/data/comments.json` (edit the file, the page follows) merged with live server comments, de-duplicated by body text |
-| `feedback.html` | Feedback form, satisfaction survey and usage questionnaire in one page, with live public stats beside it | Same store; shows three featured quotes |
-| `feedback-admin.html` | Full listing and CSV export | Requires `Feedback:AdminKey` |
-| `care-sources.html` | Every source the care centre cites: 22 references, each one clickable | Maintained by hand |
+- **`comments.html`** — public comment wall: post in place, filter by platform and rating, like, load more.
+  14 curated entries in `data/comments.json` (edit the file, the page follows) merged with live server comments, de-duplicated by body text
+- **`feedback.html`** — feedback form, satisfaction survey and usage questionnaire in one page, with live public stats beside it; shows three featured quotes
+- **`feedback-admin.html`** — full listing and CSV export, requires `Feedback:AdminKey`
+- **`care-sources.html`** — every source the care centre cites: 22 references, each one clickable, maintained by hand
 
 Deliberate choices: nicknames are optional and **IPs are counted, never stored** (10 minutes / 12 posts, 24 hours / 60); **likes live only in the browser**, so no account system had to be invented for a counter; posting is optimistic — a successful POST is inserted immediately and marked "just posted", while offline posts queue in `localStorage`; curated entries always sort ahead of new ones.
 
@@ -159,12 +156,11 @@ All three client projects use the `KidsSafeDesktop.*` namespace. When the parent
 
 ### Requirements
 
-| Dependency | Version | Notes |
-|---|---|---|
-| .NET SDK | 10.0.100+ | Developed on `10.0.401` |
-| MAUI workloads | `maui` | Installs both Android and Windows; see the command below |
-| Android SDK | API 36 platform, API 21 minimum | Not needed if you only build for Windows |
-| Windows | 10 1809 (`10.0.17763`) or later | Required by the Windows App SDK |
+- **.NET SDK** 10.0.100+ — developed on `10.0.401`
+- **MAUI workloads** `maui` — installs both Android and Windows; see the command below
+- **Android SDK** API 36 platform, API 21 minimum — not needed if you only build for Windows
+- **Xcode** 16+ (iOS only) — must be macOS to produce a build; Windows can do a compile check
+- **Windows** 10 1809 (`10.0.17763`) or later — required by the Windows App SDK
 
 First-time workload install (use `maui-android` or `maui-windows` if you only need one platform):
 
@@ -237,14 +233,14 @@ Listens on `http://0.0.0.0:5180` (the port is set at the end of `Program.cs` and
 
 This repository contains **no real secrets**. The files below are excluded by `.gitignore` and must be created locally. Without them the projects still build and run; the related feature is simply unavailable. (The `KidsSafeDesktop/` prefix is dropped to keep the lines narrow.)
 
-- **`KidsSafeServer/appsettings.json`** — admin PIN, third-party story API key.
+- **`appsettings.json`** (in `KidsSafeServer/`) — admin PIN, third-party story API key.
   Copy from `appsettings.sample.json`; without it the story proxy stops working, everything else is fine.
 - **`Signing.props`** — Android keystore alias and passwords.
   Copy from `Signing.props.sample`; without it Android builds are unsigned.
 - **`Keys/kidssafe.keystore`** — Android signing certificate; create your own, command below.
-- **`Platforms/Android/Assets/mcs-services.json`** — Honor Push configuration.
+- **`mcs-services.json`** (in `Android/Assets/`) — Honor Push configuration.
   Delete it if you don't need push, and remove the matching `AndroidAsset` line from the csproj.
-- **`Platforms/Android/libs/*.aar`** — Honor Push Kit SDK.
+- **`*.aar`** (in `Android/libs/`) — Honor Push Kit SDK.
   Download from the [Honor developer portal](https://developer.honor.com/) yourself — **do not commit it**, the licence is not open source.
 
 Generate the templates and a signing certificate:
@@ -305,11 +301,11 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 
 These are real boundaries, not roadmap prose:
 
-- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account. Windows can only do a compile check: `dotnet build -f net10.0-ios` plus `-p:EnableIosTarget=true`.
+- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account. Windows can only do a compile check: `dotnet build`, `-f net10.0-ios` and `-p:EnableIosTarget=true`.
 - **Linux and HarmonyOS are separate front ends** (`KidsSafeDesktop/Linux/`, Qt 6 + Kirigami; `KidsSafeDesktop/Harmony/`, ArkTS + ArkUI). Neither reuses the XAML layer, their feature sets are not identical to the desktop app, and neither was regression-tested for this release — each folder's README lists the differences.
 - **The server has no TLS and no rate limiting of its own.** It binds to `127.0.0.1:5180`; public access must sit behind a TLS reverse proxy (the official site does exactly that, proxying `/api/*` and passing `X-Forwarded-For` through). **Do not port-forward 5180 to the internet.**
-- **The parent app has no icon or release script of its own yet**, and its `ApplicationId` is a placeholder (`com.companyname.kidssafeparent`) that must be changed before packaging.
-- **Textbook PDFs are not distributed with this repository.** The 130 textbooks under `KidsSafeServer/wwwroot/books/` are copyrighted by their publishers; only the catalogue metadata is kept. Without the files the shelf is empty.
+- **The parent app has no icon or release script of its own yet**, and its `ApplicationId` is still a placeholder (com.companyname.kidssafeparent) that must be changed before packaging.
+- **Textbook PDFs are not distributed with this repository.** The 130 textbooks under `KidsSafeServer/` → `wwwroot/books/` are copyrighted by their publishers; only the catalogue metadata is kept. Without the files the shelf is empty.
 - **Content licensing.** Nursery rhymes and white noise are synthesised in-project; stories and picture books are original or adapted from public-domain material; poetry is public domain. Check `Docs/第三方SDK清单.md` before any commercial use.
 - **AI stories are off by default** and require an OpenAI-compatible key (DeepSeek, Huawei Cloud MaaS, etc.). Enabling it means the child's input leaves the device.
 - **Mobile gestures and pairing-code entry were only verified in desktop browsers and at simulated viewport sizes**, not on physical devices.

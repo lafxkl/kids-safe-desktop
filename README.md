@@ -72,7 +72,7 @@
 
 <p align="center"><strong>听一听 · 媒体中心 · 关爱中心</strong>（更多界面见<a href="https://kids.siguangblog.cc/">官网</a>）</p>
 
-> 截图与官网共用同一批素材，都在 `KidsSafeDesktop/Website/assets/`，换图时两边自动同步。顶部头图 `header.png` 也用这三张真机截图拼成。
+> 截图与官网共用同一批素材，都在 `KidsSafeDesktop/` 下的 `Website/assets/`，换图时两边自动同步。顶部头图 `header.png` 也用这三张真机截图拼成。
 
 ## 功能一览
 
@@ -104,13 +104,11 @@
 
 ### 服务端（KidsSafeServer，可选）
 
-| 能力 | 说明 |
-|---|---|
-| 家长账号 | 用户名 + 密码（PBKDF2-SHA256，10 万次迭代、16 字节盐），HMAC 自签令牌 |
-| 设备配对 | 6 位配对码，10 分钟有效、一次性；设备令牌**只读**，改配置返回 403 |
-| 配置隔离 | 每个账号一份 `data/profiles/{accountId}.json`，一台服务器服务多个家庭 |
-| 实时下发 | 长轮询 `/api/watch`，家长一保存，孩子设备 1 秒内应用，不用 WebSocket / 厂商推送 |
-| 内容与版本 | 更新日志、安装包列表、内容清单、故事代理（第三方密钥只留服务端） |
+- **家长账号** —— 用户名 + 密码（PBKDF2-SHA256，10 万次迭代、16 字节盐），HMAC 自签令牌
+- **设备配对** —— 6 位配对码，10 分钟有效、一次性；设备令牌**只读**，改配置返回 403
+- **配置隔离** —— 每个账号一份 `data/profiles/<id>.json`，一台服务器服务多个家庭
+- **实时下发** —— 长轮询 `/api/watch`，家长一保存，孩子设备 1 秒内应用，不用 WebSocket / 厂商推送
+- **内容与版本** —— 更新日志、安装包列表、内容清单、故事代理（第三方密钥只留服务端）
 
 ## 官网与反馈
 
@@ -118,12 +116,11 @@
 
 对外有四个「能说话」的页面，接口都走 `KidsSafeServer` 的 `/api/feedback/*`：
 
-| 页面 | 作用 | 数据从哪来 |
-|---|---|---|
-| `comments.html` | 公开评论区：页内直接发表、按平台与星级筛选、点赞、加载更多 | `Website/data/comments.json`（14 条静态精选，改文件即改页面）+ 服务端实时留言，按正文去重后合并 |
-| `feedback.html` | 意见反馈 / 满意度调查 / 使用问卷三合一，右侧实时公开统计（份数、平均分、NPS、分项） | 同上，精选留言取 3 条 |
-| `feedback-admin.html` | 明细列表与 CSV 导出 | 需管理密钥（服务端 `Feedback:AdminKey`） |
-| `care-sources.html` | 关爱中心的内容来源与引用：22 条出处逐条可点开 | 静态维护 |
+- **`comments.html`** —— 公开评论区：页内直接发表、按平台与星级筛选、点赞、加载更多。
+  数据来自 `data/comments.json`（14 条静态精选，改文件即改页面）+ 服务端实时留言，按正文去重后合并
+- **`feedback.html`** —— 意见反馈 / 满意度调查 / 使用问卷三合一，右侧实时公开统计（份数、平均分、NPS、分项）。精选留言取 3 条
+- **`feedback-admin.html`** —— 明细列表与 CSV 导出，需管理密钥（服务端 `Feedback:AdminKey`）
+- **`care-sources.html`** —— 关爱中心的内容来源与引用，22 条出处逐条可点开，静态维护
 
 几条刻意的取舍：
 
@@ -167,13 +164,11 @@
 
 ### 环境要求
 
-| 依赖 | 版本 | 说明 |
-|---|---|---|
-| .NET SDK | 10.0.100+ | 本项目在 `10.0.401` 上开发 |
-| MAUI workload | `maui` | 一次装 Android 与 Windows 两套，命令见下 |
-| Android SDK | API 36 平台 + API 21 最低版本 | 只编译 Windows 时不需要 |
-| Xcode | 16+（仅 iOS） | 只能在 macOS 上出包；Windows 可做编译检查 |
-| Windows | 10 1809（`10.0.17763`）以上 | Windows App SDK 要求 |
+- **.NET SDK** 10.0.100+ —— 本项目在 `10.0.401` 上开发
+- **MAUI workload** `maui` —— 一次装 Android 与 Windows 两套，命令见下
+- **Android SDK** API 36 平台 + API 21 最低版本 —— 只编译 Windows 时不需要
+- **Xcode** 16+（仅 iOS）—— 只能在 macOS 上出包；Windows 可做编译检查
+- **Windows** 10 1809（`10.0.17763`）以上 —— Windows App SDK 要求
 
 首次装工作负载（只要其中一个平台，换成 `maui-android` 或 `maui-windows` 即可）：
 
@@ -223,7 +218,7 @@ iOS 的完整构建、签名与上架流程见 **[Docs/iOS上架说明.md](KidsS
 dotnet build KidsSafeDesktop/KidsSafeDesktop.csproj -f net10.0-ios -p:EnableIosTarget=true
 ```
 
-**macOS 上出包**（需要 Xcode 16+ 与 `dotnet workload install ios maui`）：
+**macOS 上出包**（需要 Xcode 16+，工作负载装 `ios` 与 `maui`）：
 
 ```bash
 bash KidsSafeDesktop/Scripts/build-ios.sh sim    # 模拟器
@@ -250,14 +245,14 @@ dotnet run
 
 仓库**不包含**任何真实密钥。下面这些文件被 `.gitignore` 排除，需要自己准备；缺了也能编译运行，只是对应功能不可用。（路径里的 `KidsSafeDesktop/` 前缀为节省宽度省略）
 
-- **`KidsSafeServer/appsettings.json`** —— 管理员 PIN、第三方故事 API 密钥。
+- **`appsettings.json`**（`KidsSafeServer/`）—— 管理员 PIN、第三方故事 API 密钥。
   从 `appsettings.sample.json` 复制；缺失时故事代理不可用，其余正常。
 - **`Signing.props`** —— Android keystore 别名与口令。
   从 `Signing.props.sample` 复制；缺失时 Android 包不签名。
 - **`Keys/kidssafe.keystore`** —— Android 签名证书，自签一个即可，命令见下。
-- **`Platforms/Android/Assets/mcs-services.json`** —— 荣耀推送配置。
+- **`mcs-services.json`**（`Android/Assets/`）—— 荣耀推送配置。
   不用荣耀推送可删除，同时删掉 csproj 里对应的 `AndroidAsset` 一行。
-- **`Platforms/Android/libs/*.aar`** —— 荣耀 Push Kit SDK。
+- **`*.aar`**（`Android/libs/`）—— 荣耀 Push Kit SDK。
   从[荣耀开发者平台](https://developer.honor.com/)自行下载，**不要提交到仓库**（非开源许可）。
 
 生成模板与自签证书：
@@ -324,8 +319,8 @@ keytool -genkeypair -alias kidssafe -keyalg RSA -keysize 2048 \
 - **iOS 是内容版，不是受控桌面**：替换桌面、应用白名单、读取其他 App 使用时长、强制锁机都依赖 iOS 不开放的系统权限，iOS 上这些入口会隐藏或提示「仅安卓支持」。
 - **Linux 与鸿蒙是另外两个独立前端**：`KidsSafeDesktop/Linux/`（Qt 6 + Kirigami，KDE Plasma 全屏儿童桌面）与 `KidsSafeDesktop/Harmony/`（ArkTS + ArkUI）。都不复用 XAML 层，功能与桌面端不完全对等，本次开源未做完整回归，差异写在各自目录的 README 里。
 - **服务端本身不做 HTTPS，也不自带限流**。它默认只监听 `127.0.0.1:5180`，公网访问必须挂一层带 HTTPS 的反向代理（官网就是这么做的：nginx 把 `/api/*` 转到 5180，并按 `X-Forwarded-For` 让服务端拿到真实 IP）。**不要直接把 5180 端口映射到公网**。
-- **家长端还没有自己的图标与发布脚本**，`ApplicationId` 是占位的 `com.companyname.kidssafeparent`，打包需手动改。
-- **教材 PDF 不随仓库分发**。`KidsSafeServer/wwwroot/books/` 下的 130 份教材版权归各出版社，仓库只留书目元数据；没有 PDF 时书架是空的。
+- **家长端还没有自己的图标与发布脚本**，`ApplicationId` 还是占位的 com.companyname.kidssafeparent，打包前要手动改。
+- **教材 PDF 不随仓库分发**。`KidsSafeServer/` 的 `wwwroot/books/` 下有 130 份教材，版权归各出版社，仓库只留书目元数据；没有 PDF 时书架是空的。
 - **内容版权**。儿歌、白噪音为项目内合成；故事与绘本为原创或在公有领域素材基础上改写；诗词为公有领域。若要商用请自行复核 `Docs/第三方SDK清单.md`。
 - **AI 故事默认关闭**，需要家长自备 OpenAI 兼容接口密钥（DeepSeek / 华为云 MaaS 等），开启意味着孩子的输入会发往第三方。
 - **移动端手势、配对码输入只在桌面浏览器和模拟尺寸下验证过**，真机手感未做完整回归。
