@@ -198,12 +198,98 @@ Item {
             }
         }
 
-        // ---- 天气 ----
+        // ---- 天气 / 电脑桌面入口 ----
         // 全宽一条，和 Windows 首页「时钟下面的天气条」位置对应。
-        // 没网、没缓存、家长关掉天气时自身 visible 为 false，ColumnLayout 会
-        // 整个跳过它，不会留一条空白。
-        WeatherCard {
+        // 没网、没缓存、家长关掉天气时自身 visible 为 false，RowLayout 会
+        // 跳过它，右边的「我的电脑」还在，不会留一条空白。
+        //
+        // 「我的电脑」和天气并排放而不是自己占一行：首页纵向已经很满
+        // （问候 + 天气 + 五个横幅 + 应用网格），再加一条 84px 会把应用区
+        // 压到只剩两行。并排之后零额外高度，位置又比藏在图标墙里显眼。
+        RowLayout {
             Layout.fillWidth: true
+            spacing: 16
+
+            WeatherCard {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 86
+            }
+
+            Rectangle {
+                id: desktopEntry
+
+                Layout.preferredWidth: 268
+                Layout.preferredHeight: 86
+                radius: 22
+
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#3D7BF7" }
+                    GradientStop { position: 1.0; color: "#5CA6FF" }
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 16
+                    spacing: 12
+
+                    Rectangle {
+                        Layout.preferredWidth: 52
+                        Layout.preferredHeight: 52
+                        radius: 16
+                        color: "#33FFFFFF"
+
+                        GlyphIcon {
+                            anchors.centerIn: parent
+                            name: "monitor"
+                            width: 28
+                            height: 28
+                            color: "white"
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "我的电脑"
+                            font.pixelSize: 18
+                            font.weight: Font.Bold
+                            color: "white"
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "文件 · 终端 · 任务管理器"
+                            font.pixelSize: 12
+                            color: "#D9E8FF"
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+
+                // 悬停提亮，给出「可以点」的反馈
+                HoverHandler {
+                    id: desktopHover
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    color: "#FFFFFF"
+                    opacity: desktopHover.hovered ? 0.10 : 0.0
+
+                    Behavior on opacity {
+                        NumberAnimation { duration: 120 }
+                    }
+                }
+
+                TapHandler {
+                    onTapped: page.navWin.pushPage(Qt.resolvedUrl("DesktopPage.qml"))
+                }
+            }
         }
 
         // ---- 内置内容入口 ----

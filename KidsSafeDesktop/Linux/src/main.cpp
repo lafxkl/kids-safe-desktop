@@ -3,6 +3,7 @@
 #include "core/codelab.h"
 #include "core/eyecare.h"
 #include "core/feedback.h"
+#include "core/filemodel.h"
 #include "core/hotkeyguard.h"
 #include "core/kiosk.h"
 #include "core/learnreport.h"
@@ -10,10 +11,12 @@
 #include "core/mediaplayer.h"
 #include "core/netplay.h"
 #include "core/playland.h"
+#include "core/proctree.h"
 #include "core/screentime.h"
 #include "core/settings.h"
 #include "core/startup.h"
 #include "core/speech.h"
+#include "core/terminal.h"
 #include "core/storyservice.h"
 #include "core/weather.h"
 #include "core/themeicon.h"
@@ -467,6 +470,11 @@ int main(int argc, char *argv[])
     // 联机对战：和同一个小伙伴开一局（华容道竞速 / 国际象棋）。
     // 只认 4 位房间号，没有公开匹配；家长两个开关都打开才会真的发请求。
     auto *netplay = new Netplay(settings, &app);
+    // 桌面上的三个工具。都做成单例：kiosk 里一次只可能开一个窗口，
+    // 每个页面各 new 一份会让「终端」在切页面时留下孤儿 shell 进程。
+    auto *files = new FileModel(&app);
+    auto *procs = new ProcModel(&app);
+    auto *term = new Terminal(&app);
     // 开机自启 / 崩溃自愈：只写用户目录（XDG autostart 或 systemd --user 单元）。
     auto *startup = new Startup(&app);
     // 系统快捷键抢占：X11 用 XGrabKey，Wayland 诚实降级为「会话裁剪」。
@@ -494,6 +502,9 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "CodeLab", codeLab);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Reports", reports);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Netplay", netplay);
+    qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Files", files);
+    qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Processes", procs);
+    qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Term", term);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Startup", startup);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "HotkeyGuard", hotkey);
 

@@ -79,6 +79,14 @@ set(KIDSSAFE_SOURCES
     src/core/netplay.h
     src/core/maker.cpp
     src/core/maker.h
+    # 桌面上的三个「真工具」：终端跑真的 PTY，任务管理器读 /proc，
+    # 文件管理器自己维护目录模型（删除按 freedesktop 规范进回收站）。
+    src/core/terminal.cpp
+    src/core/terminal.h
+    src/core/proctree.cpp
+    src/core/proctree.h
+    src/core/filemodel.cpp
+    src/core/filemodel.h
     src/nes/nesemulator.cpp
     src/nes/nesemulator.h
     src/nes/nesview.cpp
@@ -166,6 +174,15 @@ target_link_libraries(kidssafe PRIVATE
     kidssafe_nes_core
 )
 
+# forkpty() 是终端窗口用的。glibc 2.34（Ubuntu 22.04）起它并进了 libc，
+# 再往前的发行版放在 libutil 里 —— 不显式链上去，老系统会在链接期
+# 报 undefined reference to `forkpty`，而且报错位置在 terminal.cpp 之外，
+# 看起来像是别的地方坏了。
+find_library(UTIL_LIBRARY util)
+if(UTIL_LIBRARY)
+    target_link_libraries(kidssafe PRIVATE ${UTIL_LIBRARY})
+endif()
+
 # ---- 系统快捷键抢占（可选）----
 # kiosk 会话里想让孩子按 Alt+Tab / Ctrl+Shift+Esc 没反应，X11 下的办法是
 # XGrabKey 把组合键独占过来。Wayland 完全没这个能力（见 core/hotkeyguard.h 注释）。
@@ -246,6 +263,18 @@ qt_add_resources(kidssafe "qml"
         src/qml/HomeBanner.qml
         src/qml/WeatherCard.qml
         src/qml/GlyphIcon.qml
+        # 儿童桌面：窗口外壳 + 桌面图标 + 程序坞 + 三个内置工具
+        #
+        # 漏加任何一个的表现都是「点了图标什么都没出来」或整页白屏
+        # （报 XxxPage / DesktopWindow is not a type），编译期完全不报错 ——
+        # qrc 里没有这个文件，QML 引擎只能在运行时才说找不到。
+        src/qml/DesktopPage.qml
+        src/qml/DesktopWindow.qml
+        src/qml/DesktopIcon.qml
+        src/qml/DockButton.qml
+        src/qml/FileManagerPage.qml
+        src/qml/TerminalPage.qml
+        src/qml/TaskManagerPage.qml
         src/qml/SplashPage.qml
         src/qml/OnboardingPage.qml
         src/qml/ParentGatePage.qml

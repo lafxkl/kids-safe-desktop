@@ -42,6 +42,10 @@ Linux/
 │   │   ├── vnengine.*           # 吉里吉里游戏启动桥（外部进程，不链核心）
 │   │   ├── mediaplayer.*        # 媒体中心：内容表 + QtMultimedia 播放（可选依赖）
 │   │   ├── codelab.*            # 小小程序员：积木 → C 源码 → gcc 编译 + 判题
+│   │   ├── filemodel.*          # 文件管理器：目录模型 + 回收站 + 系统目录守卫
+│   │   ├── terminal.*           # 终端：forkpty + ANSI 解析 + 危险命令拦截
+│   │   ├── proctree.*           # 任务管理器：读 /proc，CPU 两次采样、结束进程
+│   │   ├── netplay.*            # 联机：房间 + 1.5 秒轮询
 │   │   └── speech.*             # ← Helpers/Tts.cs
 │   ├── nes/                     # 红白机（SimpleNes，MIT）
 │   │   ├── core/                # 上游核心原样存放（纯 C++17，零 Qt 依赖）
@@ -79,6 +83,13 @@ Linux/
 │       ├── ChessPiece.qml        # 棋子：Canvas 手绘，不依赖字体
 │       ├── ChessEngine.js        # 走子规则 + 评估 + 搜索（纯函数，可用 node 跑 perft）
 │       ├── NetplayPanel.qml      # 联机面板（开房 / 输 4 位号码 / 等人 / 掉线）
+│       ├── DesktopPage.qml       # 儿童桌面：壁纸 + 图标 + 程序坞 + 窗口管理
+│       ├── DesktopWindow.qml     # 一扇窗口（拖动 / 最大化 / 关闭）
+│       ├── DesktopIcon.qml       # 桌面图标（单击打开）
+│       ├── DockButton.qml        # 程序坞按钮（带运行指示点）
+│       ├── FileManagerPage.qml   # 文件管理器（预览 / 回收站 / 系统目录只读）
+│       ├── TerminalPage.qml      # 终端（真 PTY，常用命令快捷键）
+│       ├── TaskManagerPage.qml   # 任务管理器（/proc，结束进程两步确认）
 │       └── *GamePage.qml         # 数一数 / 拼图配对 / 找颜色 / 算术乐园 / 打地鼠
 ├── server/                      # 故事服务端（Python 3，零依赖）
 │   ├── kidssafe_story_server.py # story / learn / game 三组接口 + 家长后台网页
@@ -517,6 +528,22 @@ cd server
 自带 19 篇示例故事、7 个分类。加内容有两种方式：改 `data/stories.json`，
 或往 `data/stories/<分类名>/` 里丢 txt，然后在家长后台点「重新载入内容」。
 完整说明（接口表、排障、卸载）见 [`server/README.md`](server/README.md)。
+
+**已经部署好的一台**（项目自用，家长也可以照这个路子自建）：
+
+```
+https://kids.siguangblog.cc/story/          # 家长后台网页
+https://kids.siguangblog.cc/story/api/health
+```
+
+它是 nginx 反代到 `127.0.0.1:8000` 上的 systemd 服务，站点配置单独放在
+`/www/server/panel/vhost/nginx/extension/kids.siguangblog.cc/story.conf` ——
+不动主配置，出问题删掉这个文件 `nginx -s reload` 就回滚了。要填进家长后台的
+「服务器地址」就是 `https://kids.siguangblog.cc/story`（客户端会在后面拼 `/api/...`）。
+
+部署那台机器是 CentOS 7 + Python 3.6，所以服务端代码里有两处兼容垫片
+（`ThreadingHTTPServer` 在 3.6 不存在、没有 `from __future__ import annotations`），
+改回来只需删掉 `kidssafe_story_server.py` 开头那段 `try/except ImportError`。
 
 ---
 
@@ -1030,6 +1057,96 @@ Item {
 - 白方连走两步、假 token、房间结束后再走，都要被挡住；
 - 华容道的倒计时、先完成者获胜、「两个人都交完才算结束」。
 
+### 儿童桌面（文件管理器 / 终端 / 任务管理器）
+
+首页天气条右边的「我的电脑」进去就是这一块。它是这个项目里第一处**像桌面**
+而不是像「一个大应用」的东西：一张壁纸、四个桌面图标、一个程序坞，以及
+三扇能同时开着、能拖动、能最大化的窗口。
+
+```
+src/qml/DesktopPage.qml        # 壁纸 + 图标 + 程序坞 + 窗口管理
+src/qml/DesktopWindow.qml      # 一扇窗口：标题栏拖动 / 最大化 / 关闭
+src/qml/DesktopIcon.qml        # 桌面图标（单击打开）
+src/qml/DockButton.qml         # 程序坞按钮（带运行指示点）
+src/qml/FileManagerPage.qml    # 文件管理器
+src/qml/TerminalPage.qml       # 终端
+src/qml/TaskManagerPage.qml    # 任务管理器
+src/core/filemodel.{h,cpp}     # 目录模型 + 回收站
+src/core/terminal.{h,cpp}      # PTY + ANSI 解析 + 危险命令拦截
+src/core/proctree.{h,cpp}      # /proc 进程模型
+```
+
+**为什么不真开顶层窗口**：kiosk 会话里不启 plasmashell / kwin，没有窗口管理器。
+真开第二个顶层窗口，没人执行 `_NET_WM_STATE_FULLSCREEN`，也拖不动 —— 结果就是
+「盖满整个屏幕、位置还改不了」。所以这三个工具的「窗口」都是画在 `DesktopPage`
+里的卡片，拖动、层叠、最大化、z 序全部自己管。代价是它们出不了这块屏，
+好处是不依赖任何窗口管理器，在 deepin 25 / Ubuntu 24.04 的裸会话下都一样。
+
+**文件管理器**（`FileModel`）
+
+- 单击文件夹进去，单击文件就地预览（文本 / 图片）。**不做双击** ——
+  七八岁的手速下双击丢事件概率很高，孩子只会觉得「点了没反应」。
+- 删除进回收站，不是 `rm`：按 freedesktop 规范写到 `~/.local/share/Trash`
+  （`files/` 放本体、`info/` 放 `.trashinfo` 记原始路径），所以在这里删掉的东西，
+  在系统的回收站里也能看到、也能还原 —— 不是自造的私有垃圾桶。
+- 系统目录（`/usr` `/etc` `/boot` …）只读：能进去看，但改名 / 删除 / 新建
+  一律拒绝并给一句「这里是系统自己的地方，只能看不能改」。判断在
+  `FileModel::isProtected()`，界面只是把按钮灰掉。
+- 搜索只匹配文件名，不做全文检索。儿童机上「在所有文件里搜某个字符串」
+  既慢，又容易搜出不该看的东西。
+- `QFileSystemWatcher` 只盯当前目录。盯整棵树会耗尽 inotify 配额
+  （默认 8192，家目录大一点就爆），而我们需要知道的只是「这一层变了没」。
+  连续触发（`cp` 一批文件进来）合并成 60ms 一次重扫。
+
+**终端**（`Terminal`）
+
+底下是真的 PTY（`forkpty`），不是「把命令丢给 QProcess 收输出」：
+后者做不出 Tab 补全、`cd`、管道、`python3` 交互，而那些恰好是孩子最想玩的部分。
+屏幕上显示的是把 ANSI 转义序列翻成富文本之后的结果，不自己维护光标坐标 ——
+完整终端仿真（`vim` / `top` 那种全屏重绘）是另一个量级的工作量，孩子用不到。
+
+安全策略只有两级，写在 `looksDangerous()` 里：
+
+| 级别 | 内容 | 处理 |
+|---|---|---|
+| 硬拦 | `rm -rf /`、`mkfs`、`dd of=/dev/sda`、fork 炸弹、关机重启 | 不发给 PTY，浮一条提示 |
+| 拦 sudo | 任何 `sudo` / `su` | 告诉他「这个要先问家长」 |
+
+**这不是沙箱。** 真把终端交到孩子手里，就得承认它能做的和成人终端一样多；
+这里只挡住「手滑一次就报废整台机器」的那几个动作。另外 `HISTFILE=/dev/null`，
+不留历史：孩子敲过的命令不该被家长一按上箭头全看到。
+
+**任务管理器**（`ProcModel`）
+
+- 直接读 `/proc`，不 fork `ps`。每 2 秒刷一次，一天下来是四万多次进程创建，
+  低配机器上会把界面拖卡。
+- CPU 占用要**两次采样**做差。所以第一次打开时所有进程都显示 0%，
+  第二拍（2 秒后）才有数 —— 这不是 bug。
+- 结束分两步：先 `SIGTERM`（请它自己退出，有机会存盘），再 `SIGKILL`。
+  孩子可能正在写作业，直接强杀会把文档留成半截。
+- 保护名单：`pid 1`、桌面自己、会话脚本、`Xorg` / `Xwayland` 一律不给按钮
+  （不是灰掉，是根本不画 —— 灰按钮仍然会被点）。孩子想「看看会发生什么」
+  是本能，点错一次就黑屏的代价太高；真要停桌面，家长有正规的「退出儿童桌面」。
+- 普通用户只能给自己名下的进程发信号，`EPERM` 会被翻译成
+  「这个进程是系统管理的，需要有管理员权限」，而不是把 `Operation not permitted`
+  甩给孩子看。
+
+**构建注意**
+
+`forkpty` 自 glibc 2.34（Ubuntu 22.04）起并进了 libc，更早的发行版在 `libutil`
+里。CMake 里 `find_library(UTIL_LIBRARY util)` 找到了就链上去 —— 不链的表现是
+链接期 `undefined reference to 'forkpty'`，而且报错位置不在 `terminal.cpp`，
+看着像是别的地方坏了。
+
+**已知限制**
+
+- 没有窗口缩放（只有最大化 / 还原）。拖边框改大小要做命中测试和八向光标，
+  对这三扇窗口不值。
+- 窗口出不了桌面这一层，也不能拖到屏幕外再接回来。
+- 终端里跑全屏 TUI 程序（`vim`、`top`、`htop`）会花屏 —— 见上面「不做完整仿真」。
+- 文件管理器的删除走回收站，但**不提供「还原」按钮**：还原去系统回收站，
+  这里只保证删掉的东西在那边找得到。
+
 ### 小游戏工坊（内置网页编辑器）
 
 家长不写代码做小游戏的地方。编辑器本体是**四端共用的一份单文件 H5**
@@ -1180,6 +1297,12 @@ X11 抢占只是**锦上添花**，Wayland 下它会诚实地报告「不可用�
 - [x] 启动页 / 首次引导（昵称、家长密码、应用白名单）
 - [x] 家长验证（数字键盘，带错误抖动）
 - [x] 儿童桌面（内置内容入口 + 应用磁贴网格、剩余时间、外部应用遮罩）
+- [x] **电脑桌面（Windows 意义上的桌面）**：壁纸 + 桌面图标 + 程序坞 + 可拖动/最大化的
+  浮动窗口，首页天气条右边「我的电脑」进入。三个内置工具：
+  **文件管理器**（单击即进 / 就地预览 / 删进回收站 / 系统目录只读）、
+  **终端**（真 PTY，Tab 补全与 python3 交互可用，硬拦 `rm -rf /` 这类命令）、
+  **任务管理器**（读 `/proc`，CPU 两次采样、结束进程先 SIGTERM 再 SIGKILL，
+  桌面自己和 Xorg 不给按钮）
 - [x] 超时锁屏 + 家长延长
 - [x] 家长后台（时长、临时加时、白名单、服务器地址与连接测试、护眼、
   小小程序员学习情况、退出）
@@ -1218,7 +1341,8 @@ X11 抢占只是**锦上添花**，Wayland 下它会诚实地报告「不可用�
   猫 / 兔 / 熊猫）。Windows 那边是彩色 emoji 贴纸，deepin 上没有 emoji 字体，
   所以按同一套配色手绘；设置里填其它 emoji 时仍退回文本显示
 - [x] **护眼模式**：常开 / 定时（支持跨零点）/ 强度调节，首页有生效徽章
-- [x] **故事服务端**：Python 3 零依赖实现，含家长后台页面、systemd 用户服务、16 项自测
+- [x] **故事服务端**：Python 3 零依赖实现，含家长后台页面、systemd 用户服务、67 项自测
+  （故事 / 学习情况上报 / 联机房间三组接口）；已部署在 `kids.siguangblog.cc/story`
 - [x] 7 个平台服务 + 无界面自检（`--self-test`）
 
 待移植（按优先级）：

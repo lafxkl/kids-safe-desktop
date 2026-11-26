@@ -243,7 +243,7 @@ def main():
             with urllib.request.urlopen(base + "/", timeout=5) as response:
                 html = response.read().decode("utf-8")
             check("家长后台页面可打开", "故事服务端" in html and response.status == 200)
-            check("页面上有学习情况", "学习情况" in html and "/api/learn/summary" in html)
+            check("页面上有学习情况", "学习情况" in html and "api/learn/summary" in html)
         except Exception as error:
             check("家长后台页面可打开", False, str(error))
 

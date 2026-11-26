@@ -93,6 +93,27 @@ Item {
         case "laptop":    paintLaptop(ctx); break;
         case "guard":     paintGuard(ctx); break;
         case "phone":     paintPhone(ctx); break;
+        // ---- 桌面环境用的界面符号 ----
+        case "close":     paintClose(ctx); break;
+        case "maximize":  paintMaximize(ctx); break;
+        case "restore":   paintRestore(ctx); break;
+        case "folder":    paintFolder(ctx); break;
+        case "terminal":  paintTerminal(ctx); break;
+        case "chip":      paintChip(ctx); break;
+        case "back":      paintBack(ctx); break;
+        case "forward":   paintForward(ctx); break;
+        case "up":        paintUp(ctx); break;
+        case "search":    paintSearch(ctx); break;
+        case "trash":     paintTrash(ctx); break;
+        case "plus":      paintPlus(ctx); break;
+        case "refresh":   paintRefresh(ctx); break;
+        case "doc":       paintDoc(ctx); break;
+        case "picture":   paintPicture(ctx); break;
+        case "arrow":     paintArrow(ctx); break;
+        case "home":      paintHome(ctx); break;
+        case "monitor":   paintMonitor(ctx); break;
+        case "download":  paintDownload(ctx); break;
+        case "disk":      paintDisk(ctx); break;
         case "bear":      paintBear(ctx); break;
         case "tiger":     paintTiger(ctx); break;
         case "dog":       paintDog(ctx); break;
@@ -1237,5 +1258,383 @@ Item {
         ctx.beginPath(); ctx.arc(21, 11.6, 11, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(-21, 11.6, 11, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
+    }
+
+    // ======================================================================
+    // 桌面环境（文件管理器 / 终端 / 任务管理器）用的界面符号
+    //
+    // 这批图标比前面的功能图标画得「细」一些：它们出现在窗口标题栏、
+    // 工具条按钮上，尺寸只有 13～18px，线宽必须比 38px 的大图标薄，
+    // 否则缩小后几个笔画会糊成一团。所以统一用 lineWidth 7 打底、
+    // 需要更细的地方局部改 5 或 6。
+    // ======================================================================
+
+    function paintClose(ctx) {
+        // 两条对角线。端点各缩进 22，让 X 的四个尖不顶到边框。
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(24, 24);
+        ctx.lineTo(76, 76);
+        ctx.moveTo(76, 24);
+        ctx.lineTo(24, 76);
+        ctx.stroke();
+    }
+
+    function paintMaximize(ctx) {
+        // 空心方框：右下角留一点缺口，缩小后仍然看得出是「一个框」
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.roundedRect(19, 19, 62, 62, 10, 10);
+        ctx.stroke();
+    }
+
+    function paintRestore(ctx) {
+        // 还原：后面一个框 + 前面一个框，错开 16。
+        // 后框先画、只画右下一半，避免两条边叠在一起变粗。
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(58, 18);
+        ctx.lineTo(82, 18);
+        ctx.lineTo(82, 42);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(82, 58);
+        ctx.lineTo(82, 82);
+        ctx.lineTo(58, 82);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.roundedRect(18, 18, 46, 46, 8, 8);
+        ctx.stroke();
+    }
+
+    function paintFolder(ctx) {
+        // 文件夹：上面一个梯形小舌（tab）+ 下面的圆角主体。
+        // 主体从 y=32 开始，tab 从 18 起，两者要有重叠，否则中间会断一条缝。
+        ctx.beginPath();
+        ctx.moveTo(10, 30);
+        ctx.lineTo(10, 24);
+        ctx.quadraticCurveTo(10, 18, 18, 18);
+        ctx.lineTo(38, 18);
+        ctx.quadraticCurveTo(44, 18, 47, 25);
+        ctx.lineTo(50, 32);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.roundedRect(10, 30, 80, 52, 10, 10);
+        ctx.stroke();
+
+        // 中间一道横线当作「里面装了东西」的暗示，纯装饰但很有辨识度
+        ctx.lineWidth = 5;
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        ctx.moveTo(24, 52);
+        ctx.lineTo(60, 52);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+
+    function paintTerminal(ctx) {
+        // 终端：一个圆角框 + 里面一个 "›_" 提示符。
+        // 提示符是这个图标唯一有辨识度的部分，所以画得比框粗。
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.roundedRect(9, 16, 82, 68, 12, 12);
+        ctx.stroke();
+
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(28, 38);
+        ctx.lineTo(43, 50);
+        ctx.lineTo(28, 62);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(52, 62);
+        ctx.lineTo(70, 62);
+        ctx.stroke();
+    }
+
+    function paintChip(ctx) {
+        // 任务管理器：一颗 CPU 芯片 —— 中间方块 + 四边各两根引脚。
+        // 引脚要短（从 30 到 14），太长会在 14px 下连成一片。
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.roundedRect(28, 28, 44, 44, 9, 9);
+        ctx.stroke();
+
+        ctx.lineWidth = 8;
+        const pins = [
+            [38, 30, 38, 13], [62, 30, 62, 13],
+            [38, 70, 38, 87], [62, 70, 62, 87],
+            [30, 38, 13, 38], [30, 62, 13, 62],
+            [70, 38, 87, 38], [70, 62, 87, 62]
+        ];
+        ctx.beginPath();
+        for (let i = 0; i < pins.length; i++) {
+            ctx.moveTo(pins[i][0], pins[i][1]);
+            ctx.lineTo(pins[i][2], pins[i][3]);
+        }
+        ctx.stroke();
+
+        // 芯片正中的小方块：缩小后仍有「有内核」的层次感
+        ctx.beginPath();
+        ctx.roundedRect(42, 42, 16, 16, 4, 4);
+        ctx.fill();
+    }
+
+    function paintBack(ctx) {
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(60, 20);
+        ctx.lineTo(32, 50);
+        ctx.lineTo(60, 80);
+        ctx.stroke();
+    }
+
+    function paintForward(ctx) {
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(40, 20);
+        ctx.lineTo(68, 50);
+        ctx.lineTo(40, 80);
+        ctx.stroke();
+    }
+
+    function paintUp(ctx) {
+        // 向上一级：竖杆 + 箭头，比单纯一个尖角好认（那个太小像三角）
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(50, 18);
+        ctx.lineTo(50, 82);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(24, 44);
+        ctx.lineTo(50, 18);
+        ctx.lineTo(76, 44);
+        ctx.stroke();
+    }
+
+    function paintSearch(ctx) {
+        // 放大镜：圆 + 斜柄。半径 26 让圆和柄的比例接近常见图标。
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.arc(43, 43, 25, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(62, 62);
+        ctx.lineTo(84, 84);
+        ctx.stroke();
+    }
+
+    function paintTrash(ctx) {
+        // 垃圾桶：盖子 + 桶身 + 两道竖纹。
+        // 盖子画成一根粗横线而不是梯形 —— 梯形在 14px 下会变成一个点。
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(16, 28);
+        ctx.lineTo(84, 28);
+        ctx.stroke();
+
+        // 提手
+        ctx.beginPath();
+        ctx.moveTo(38, 28);
+        ctx.lineTo(38, 18);
+        ctx.lineTo(62, 18);
+        ctx.lineTo(62, 28);
+        ctx.stroke();
+
+        // 桶身
+        ctx.beginPath();
+        ctx.moveTo(24, 28);
+        ctx.lineTo(30, 84);
+        ctx.quadraticCurveTo(31, 88, 36, 88);
+        ctx.lineTo(64, 88);
+        ctx.quadraticCurveTo(69, 88, 70, 84);
+        ctx.lineTo(76, 28);
+        ctx.stroke();
+
+        // 两道竖纹
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(43, 42);
+        ctx.lineTo(45, 74);
+        ctx.moveTo(57, 42);
+        ctx.lineTo(55, 74);
+        ctx.stroke();
+    }
+
+    function paintPlus(ctx) {
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(50, 20);
+        ctx.lineTo(50, 80);
+        ctx.moveTo(20, 50);
+        ctx.lineTo(80, 50);
+        ctx.stroke();
+    }
+
+    function paintRefresh(ctx) {
+        // 刷新：一个缺口圆 + 缺口处的箭头。
+        // 圆用 arc 画 300°，剩下 60° 的空当正好放箭头。
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.arc(50, 50, 30, Math.PI * 0.62, Math.PI * 2.28);
+        ctx.stroke();
+
+        // 箭头三角，落在圆右上方的缺口里
+        ctx.save();
+        ctx.translate(72, 34);
+        ctx.rotate(Math.PI * 0.18);
+        ctx.beginPath();
+        ctx.moveTo(0, -12);
+        ctx.lineTo(12, 6);
+        ctx.lineTo(-12, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function paintDoc(ctx) {
+        // 文件：右上角折角的纸 + 三条横线。折角是「这是文件」的关键特征。
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(24, 12);
+        ctx.lineTo(60, 12);
+        ctx.lineTo(80, 32);
+        ctx.lineTo(80, 88);
+        ctx.lineTo(24, 88);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(60, 12);
+        ctx.lineTo(60, 32);
+        ctx.lineTo(80, 32);
+        ctx.stroke();
+
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(36, 50);
+        ctx.lineTo(68, 50);
+        ctx.moveTo(36, 64);
+        ctx.lineTo(68, 64);
+        ctx.stroke();
+    }
+
+    function paintPicture(ctx) {
+        // 图片：相框 + 里面一座小山 + 一个太阳。
+        // 剪影比「画个风景」在小尺寸下更稳 —— 只要看得出有山有太阳就够。
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.roundedRect(12, 20, 76, 60, 9, 9);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(34, 40, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(16, 74);
+        ctx.lineTo(40, 50);
+        ctx.lineTo(56, 66);
+        ctx.lineTo(68, 56);
+        ctx.lineTo(84, 74);
+        ctx.stroke();
+    }
+
+    function paintArrow(ctx) {
+        // 实心右箭头，用在「前往」这类按钮上
+        ctx.beginPath();
+        ctx.moveTo(26, 22);
+        ctx.lineTo(78, 50);
+        ctx.lineTo(26, 78);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function paintHome(ctx) {
+        // 房子：屋顶两个斜边 + 一个方形屋身 + 中间的门。
+        // 门画成实心小方块而不是描边，14px 下才看得见。
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(14, 48);
+        ctx.lineTo(50, 16);
+        ctx.lineTo(86, 48);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(24, 44);
+        ctx.lineTo(24, 86);
+        ctx.lineTo(76, 86);
+        ctx.lineTo(76, 44);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.roundedRect(42, 60, 16, 26, 3, 3);
+        ctx.fill();
+    }
+
+    function paintMonitor(ctx) {
+        // 显示器：屏幕 + 支架 + 底座
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.roundedRect(10, 14, 80, 54, 8, 8);
+        ctx.stroke();
+
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(50, 68);
+        ctx.lineTo(50, 82);
+        ctx.moveTo(30, 86);
+        ctx.lineTo(70, 86);
+        ctx.stroke();
+    }
+
+    function paintDownload(ctx) {
+        // 下载：向下的箭头落进一个敞口的托盘
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(50, 14);
+        ctx.lineTo(50, 60);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(30, 42);
+        ctx.lineTo(50, 62);
+        ctx.lineTo(70, 42);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(16, 66);
+        ctx.lineTo(16, 84);
+        ctx.lineTo(84, 84);
+        ctx.lineTo(84, 66);
+        ctx.stroke();
+    }
+
+    function paintDisk(ctx) {
+        // 硬盘：一个带指示灯的长方盒，右上角一条斜切边
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.roundedRect(8, 26, 84, 48, 9, 9);
+        ctx.stroke();
+
+        // 指示灯
+        ctx.beginPath();
+        ctx.arc(76, 50, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 左侧两条散热纹
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(24, 42);
+        ctx.lineTo(52, 42);
+        ctx.moveTo(24, 58);
+        ctx.lineTo(52, 58);
+        ctx.stroke();
     }
 }

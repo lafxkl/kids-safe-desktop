@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- 接口走相对路径：这页既能在根目录（/）访问，也能挂在子路径（/story/）下。 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -225,7 +226,7 @@
   }
 
   function loadHealth() {
-    api("/api/health").then(function (data) {
+    api("api/health").then(function (data) {
       var el = $("health");
       el.className = "pill ok";
       el.textContent = "服务运行中 · v" + data.version;
@@ -289,7 +290,7 @@
 
   function loadLearn() {
     var box = $("learn");
-    api("/api/learn/summary").then(function (data) {
+    api("api/learn/summary").then(function (data) {
       box.innerHTML = "";
       var meta = $("learnMeta");
       var children = data.children || [];
@@ -357,7 +358,7 @@
       if (!window.confirm("清空「" + who + "」的学习记录？孩子端下次上报会重新建立。")) {
         return;
       }
-      fetch("/api/learn/reset", {
+      fetch("api/learn/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ child: who })
@@ -455,9 +456,9 @@
   function loadList(append) {
     var path;
     if (state.keyword) {
-      path = "/api/story/search?keyword=" + encodeURIComponent(state.keyword) + "&page=" + state.page;
+      path = "api/story/search?keyword=" + encodeURIComponent(state.keyword) + "&page=" + state.page;
     } else {
-      path = "/api/story/list?typeId=" + state.typeId + "&page=" + state.page;
+      path = "api/story/list?typeId=" + state.typeId + "&page=" + state.page;
     }
     api(path).then(function (data) {
       state.hasMore = data.hasMore;
@@ -500,7 +501,7 @@
   }
 
   function openDetail(id) {
-    api("/api/story/detail?storyId=" + id).then(function (data) {
+    api("api/story/detail?storyId=" + id).then(function (data) {
       $("detailCard").style.display = "block";
       $("detailTitle").textContent = data.title;
       $("detailMeta").textContent = data.type + " · " + data.length + " 字 · " + data.readTime;
@@ -532,7 +533,7 @@
 
   $("reload").onclick = function () {
     $("reload").disabled = true;
-    fetch("/api/reload", { method: "POST" }).then(function (res) {
+    fetch("api/reload", { method: "POST" }).then(function (res) {
       return res.json();
     }).then(function () {
       toast("内容已重新载入");

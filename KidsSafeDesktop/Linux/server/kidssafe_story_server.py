@@ -55,8 +55,20 @@ import socket
 import sys
 import threading
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 from urllib.parse import parse_qs, unquote, urlparse
+
+try:
+    # Python 3.7 起才有 ThreadingHTTPServer。CentOS 7 自带的是 3.6.8，
+    # 直接 import 会在启动第一行就 ImportError，所以退回到自己拼一个 ——
+    # 效果完全一样（每请求一个线程），只是多写了四行。
+    from http.server import ThreadingHTTPServer
+except ImportError:
+
+    class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+        daemon_threads = True
+        allow_reuse_address = True
 
 VERSION = "1.2.0"
 PAGE_SIZE = 20

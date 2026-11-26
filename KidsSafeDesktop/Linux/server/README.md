@@ -60,6 +60,61 @@ PORT=9000 ./install-server.sh
 
 ---
 
+## 一·补、部署到一台有公网域名的机器（项目自己就是这么跑的）
+
+家里局域网自建用上面那套就够了。如果想让两台不在同一网络的机器也能联机下棋，
+服务端就得有公网地址。项目自己用的是 **CentOS 7 + 宝塔 + nginx + Python 3.6**，
+没有 root 之外的额外依赖，步骤只有三步：
+
+```sh
+# 1. 传代码（不需要装任何 Python 包）
+rsync -a kidssafe_story_server.py data/ web/ root@<服务器>:/www/wwwroot/kidssafe-story/
+
+# 2. 装成系统服务，只监听 127.0.0.1
+#    （用户级服务也行，但 CentOS 7 上系统级更省事；记得建一个 nologin 用户）
+cat > /etc/systemd/system/kidssafe-story.service <<'EOF'
+[Unit]
+Description=KidsSafe Story Netplay Server
+After=network.target
+
+[Service]
+Type=simple
+User=kidssafe
+WorkingDirectory=/www/wwwroot/kidssafe-story
+ExecStart=/usr/bin/python3 /www/wwwroot/kidssafe-story/kidssafe_story_server.py --host 127.0.0.1 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable --now kidssafe-story
+
+# 3. nginx 反代，单独放一个文件，出问题删掉 reload 就回滚
+cat > /etc/nginx/conf.d/story.conf <<'EOF'
+location = /story { return 301 /story/; }
+location ^~ /story/ {
+    proxy_pass http://127.0.0.1:8000/;   # 末尾斜杠会吃掉 /story/ 前缀
+    proxy_set_header Host $host;
+    add_header Cache-Control "no-store" always;   # 联机轮询不能被缓存
+}
+EOF
+nginx -t && nginx -s reload
+```
+
+客户端里填的地址是 `https://<域名>/story`（不带 `/api`），客户端自己拼后缀。
+
+**Python 3.6 要注意**：`http.server.ThreadingHTTPServer` 是 3.7 才有的，
+3.6 上会 `ImportError`。程序开头有一段兼容垫片，用 `socketserver.ThreadingMixIn`
+临时拼一个同名类；3.7+ 上这段不生效，删掉也不影响。
+
+**家长后台网页用的是相对路径**（`api/health` 而不是 `/api/health`），
+所以同一份 `web/index.html` 挂在根目录（`/`）和子路径（`/story/`）下都能用 ——
+改回绝对路径的话，挂在子路径下会全部 404。
+
+项目自己在跑的那台：`https://kids.siguangblog.cc/story/`。
+
+---
+
 ## 二、让客户端连上
 
 1. 家长在儿童桌面上点右上角「家长」→ 输密码；
