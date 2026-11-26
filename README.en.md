@@ -1,7 +1,7 @@
 # Kids Safe Desktop
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/header.png" alt="Kids Safe Desktop">
+  <img src="KidsSafeDesktop/Website/assets/header.webp" alt="Kids Safe Desktop">
 </p>
 
 <p align="center">
@@ -72,7 +72,7 @@ All five are real Android screenshots of v1.19 / v1.20 — no mockups. Tap to op
 
 <p align="center"><strong>Listen · Media · Care Center</strong> (more on the <a href="https://kids.siguangblog.cc/">website</a>)</p>
 
-> The website and this README share the same files under `KidsSafeDesktop/` → `Website/assets/`; the header image `header.png` is stitched from the same three real screenshots.
+> The website and this README share the same files under `KidsSafeDesktop/` → `Website/assets/`; the header image `header.webp` (the site's share card uses the same image as `header.png`) is stitched from the same three real screenshots.
 
 ## Features
 

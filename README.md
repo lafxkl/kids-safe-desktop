@@ -1,7 +1,7 @@
 # 儿童安全桌面 · KidsSafeDesktop
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/header.png" alt="儿童安全桌面">
+  <img src="KidsSafeDesktop/Website/assets/header.webp" alt="儿童安全桌面">
 </p>
 
 <p align="center">
@@ -72,7 +72,7 @@
 
 <p align="center"><strong>听一听 · 媒体中心 · 关爱中心</strong>（更多界面见<a href="https://kids.siguangblog.cc/">官网</a>）</p>
 
-> 截图与官网共用同一批素材，都在 `KidsSafeDesktop/` 下的 `Website/assets/`，换图时两边自动同步。顶部头图 `header.png` 也用这三张真机截图拼成。
+> 截图与官网共用同一批素材，都在 `KidsSafeDesktop/` 下的 `Website/assets/`，换图时两边自动同步。顶部头图 `header.webp`（官网分享卡片用同名 `header.png`）也用这三张真机截图拼成。
 
 ## 功能一览
 
