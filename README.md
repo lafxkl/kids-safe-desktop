@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet">
-  <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows%20%7C%20iOS-512BD4">
-  <img alt="平台" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20iOS%2015%2B-informational">
-  <img alt="Linux 与鸿蒙" src="https://img.shields.io/badge/platform-Linux%20%7C%20HarmonyOS-informational">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <img alt=".NET 10" src="https://kids.siguangblog.cc/assets/badges/dotnet-10.svg">
+  <img alt=".NET MAUI" src="https://kids.siguangblog.cc/assets/badges/maui.svg">
+  <img alt="平台" src="https://kids.siguangblog.cc/assets/badges/platform.svg">
+  <img alt="Linux 与鸿蒙" src="https://kids.siguangblog.cc/assets/badges/platform-alt.svg">
+  <img alt="License" src="https://kids.siguangblog.cc/assets/badges/license-mit.svg">
 </p>
 
 <p align="center">
@@ -58,21 +58,33 @@
 五张均为 Android 真机截图（v1.19 / v1.20 界面），没有用示意图代替。手机上可直接点开看原图：
 
 <p align="center">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_home.png" alt="桌面式首页">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_games.png" alt="游戏乐园">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_learn.png" alt="学习天地">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_home.png" alt="桌面式首页"><br>
+  <strong>桌面式首页</strong>
 </p>
-
-<p align="center"><strong>桌面式首页 · 游戏乐园 · 学习天地</strong></p>
 
 <p align="center">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_player.png" alt="听一听 · 媒体中心">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_care.png" alt="关爱中心">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_games.png" alt="游戏乐园"><br>
+  <strong>游戏乐园</strong>
 </p>
 
-<p align="center"><strong>听一听 · 媒体中心 · 关爱中心</strong>（更多界面见<a href="https://kids.siguangblog.cc/">官网</a>）</p>
+<p align="center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_learn.png" alt="学习天地"><br>
+  <strong>学习天地</strong>
+</p>
 
-> 图片直接引用官网域名（`kids.siguangblog.cc`）上的文件，不走仓库相对路径——Gitee 手机端对大图的相对路径支持不稳，容易显示成裂图。源文件仍在仓库的 `KidsSafeDesktop/` → `Website/assets/`，换图时先改仓库、再上传到服务器同名文件即可。顶部头图用的 `header-readme.png` 是 `header.png` 缩到 1000px 宽、256 色后的版本（534K → 173K），官网分享卡片仍用原始 `header.png`。
+<p align="center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_player.png" alt="听一听 · 媒体中心"><br>
+  <strong>听一听 · 媒体中心</strong>
+</p>
+
+<p align="center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_care.png" alt="关爱中心"><br>
+  <strong>关爱中心</strong>
+</p>
+
+<p align="center">更多界面见<a href="https://kids.siguangblog.cc/">官网</a></p>
+
+> 图片直接引用官网域名（`kids.siguangblog.cc`）上的文件，不走仓库相对路径——Gitee 手机端对大图的相对路径支持不稳，容易显示成裂图。源文件仍在仓库的 `KidsSafeDesktop/` → `Website/assets/`，换图时先改仓库、再上传到服务器同名文件即可。顶部头图用的 `header-readme.png` 是 `header.png` 缩到 1000px 宽、256 色后的版本（534K → 173K），官网分享卡片仍用原始 `header.png`。顶部徽章也是自绘 SVG（`assets/badges/`，源文件在仓库同路径），不依赖 shields.io，国内网络下不会再出现裂图或加载慢。
 
 ## 功能一览
 

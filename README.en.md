@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet">
-  <img alt=".NET MAUI" src="https://img.shields.io/badge/MAUI-Android%20%7C%20Windows%20%7C%20iOS-512BD4">
-  <img alt="Platforms" src="https://img.shields.io/badge/platform-Android%205.0%2B%20%7C%20Windows%2010%2B%20%7C%20iOS%2015%2B-informational">
-  <img alt="Linux and HarmonyOS" src="https://img.shields.io/badge/platform-Linux%20%7C%20HarmonyOS-informational">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <img alt=".NET 10" src="https://kids.siguangblog.cc/assets/badges/dotnet-10.svg">
+  <img alt=".NET MAUI" src="https://kids.siguangblog.cc/assets/badges/maui.svg">
+  <img alt="Platforms" src="https://kids.siguangblog.cc/assets/badges/platform.svg">
+  <img alt="Linux and HarmonyOS" src="https://kids.siguangblog.cc/assets/badges/platform-alt.svg">
+  <img alt="License" src="https://kids.siguangblog.cc/assets/badges/license-mit.svg">
 </p>
 
 <p align="center">
@@ -58,21 +58,33 @@ Handing a device to a child is rarely a question of "is there a kids mode". The 
 All five are real Android screenshots of v1.19 / v1.20 — no mockups. Tap to open the full image on mobile:
 
 <p align="center">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_home.png" alt="Home">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_games.png" alt="Games">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_learn.png" alt="Study">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_home.png" alt="Home"><br>
+  <strong>Home</strong>
 </p>
-
-<p align="center"><strong>Home · Games · Study</strong></p>
 
 <p align="center">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_player.png" alt="Listen · Media">
-  <img src="https://kids.siguangblog.cc/assets/screenshot_care.png" alt="Care Center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_games.png" alt="Games"><br>
+  <strong>Games</strong>
 </p>
 
-<p align="center"><strong>Listen · Media · Care Center</strong> (more on the <a href="https://kids.siguangblog.cc/">website</a>)</p>
+<p align="center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_learn.png" alt="Study"><br>
+  <strong>Study</strong>
+</p>
 
-> Images are linked straight from the project site (`kids.siguangblog.cc`) rather than through repository-relative paths — Gitee's mobile view is unreliable with large relative images and tends to show them broken. The source files still live in the repo under `KidsSafeDesktop/` → `Website/assets/`; when you change one, commit it and upload the same filename to the server. The header uses `header-readme.png`, a 1000 px wide, 256-colour derivative of `header.png` (534K → 173K); the site's share card keeps the original `header.png`.
+<p align="center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_player.png" alt="Listen · Media"><br>
+  <strong>Listen · Media</strong>
+</p>
+
+<p align="center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_care.png" alt="Care Center"><br>
+  <strong>Care Center</strong>
+</p>
+
+<p align="center">More screens on the <a href="https://kids.siguangblog.cc/">website</a></p>
+
+> Images are linked straight from the project site (`kids.siguangblog.cc`) rather than through repository-relative paths — Gitee's mobile view is unreliable with large relative images and tends to show them broken. The source files still live in the repo under `KidsSafeDesktop/` → `Website/assets/`; when you change one, commit it and upload the same filename to the server. The header uses `header-readme.png`, a 1000 px wide, 256-colour derivative of `header.png` (534K → 173K); the site's share card keeps the original `header.png`. The badges are hand-built SVGs under `assets/badges/` (sources kept in the repo at the same path), so there is no dependency on shields.io and no broken images on slow networks.
 
 ## Features
 
