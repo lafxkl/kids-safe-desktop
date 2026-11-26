@@ -12,8 +12,8 @@ import QtQuick
 Item {
     id: game
 
-    readonly property int W: 720
-    readonly property int H: 420
+    readonly property int w: 720
+    readonly property int h: 420
 
     property real enemySpeed: 90
     property real spawnEvery: 1.1
@@ -66,8 +66,8 @@ Item {
     ].join("\n")
 
     // ---- 运行时状态 ----
-    property real planeX: W / 2
-    readonly property real planeY: H - 54
+    property real planeX: w / 2
+    readonly property real planeY: h - 54
     property var bullets: []
     property var enemies: []
     property int score: 0
@@ -88,7 +88,7 @@ Item {
         game.score = 0
         game.lives = 3
         game.over = false
-        game.planeX = game.W / 2
+        game.planeX = game.w / 2
         game.clock = 0
         game.spawnClock = 0
         game.fireClock = 0
@@ -99,7 +99,7 @@ Item {
 
     function spawnEnemy() {
         game.enemies.push({
-            x: 30 + Math.random() * (game.W - 60),
+            x: 30 + Math.random() * (game.w - 60),
             y: -24,
             vy: game.enemySpeed * (0.8 + Math.random() * 0.6)
         })
@@ -120,7 +120,7 @@ Item {
         if (game.dragX >= 0) {
             game.planeX += (game.dragX - game.planeX) * Math.min(1, dt * 14)
         }
-        game.planeX = Math.max(26, Math.min(game.W - 26, game.planeX))
+        game.planeX = Math.max(26, Math.min(game.w - 26, game.planeX))
 
         game.fireClock += dt
         if (game.fireClock >= 0.28) {
@@ -150,7 +150,7 @@ Item {
             e.y += e.vy * dt
             // 左右轻轻摇摆：sin 是一直上下摆的曲线，乘个小数字就是晃
             e.x += Math.sin((game.clock + i) * 2.2) * 14 * dt
-            if (e.y < game.H + 34) {
+            if (e.y < game.h + 34) {
                 aliveEnemies.push(e)
             }
         }
@@ -212,9 +212,9 @@ Item {
             anchors.fill: parent
 
             // 等比缩放：留黑边，不把飞机拉扁
-            readonly property real s: Math.min(width / game.W, height / game.H)
-            readonly property real ox: (width - game.W * s) / 2
-            readonly property real oy: (height - game.H * s) / 2
+            readonly property real s: Math.min(width / game.w, height / game.h)
+            readonly property real ox: (width - game.w * s) / 2
+            readonly property real oy: (height - game.h * s) / 2
 
             onWidthChanged: requestPaint()
             onHeightChanged: requestPaint()
@@ -227,16 +227,16 @@ Item {
                 ctx.scale(s, s)
 
                 // 夜空
-                const sky = ctx.createLinearGradient(0, 0, 0, game.H)
+                const sky = ctx.createLinearGradient(0, 0, 0, game.h)
                 sky.addColorStop(0, "#12203F")
                 sky.addColorStop(1, "#05070F")
                 ctx.fillStyle = sky
-                ctx.fillRect(0, 0, game.W, game.H)
+                ctx.fillRect(0, 0, game.w, game.h)
 
                 // 星星：位置是算出来的，不存数组 —— 它们只是背景
                 for (let i = 0; i < 70; ++i) {
-                    const sx = (i * 97) % game.W
-                    const sy = ((i * 53) + game.clock * (12 + (i % 5) * 9)) % game.H
+                    const sx = (i * 97) % game.w
+                    const sy = ((i * 53) + game.clock * (12 + (i % 5) * 9)) % game.h
                     ctx.fillStyle = i % 3 === 0 ? "#4A5C8C" : "#212A47"
                     ctx.fillRect(sx, sy, 2, 2)
                 }

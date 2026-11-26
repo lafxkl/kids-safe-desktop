@@ -441,15 +441,30 @@ GameShell {
     Item {
         anchors.fill: page.contentArea
 
-        RowLayout {
-            anchors.centerIn: parent
-            spacing: 32
+        /*
+         * 棋盘和右侧面板各自算位置，不用 RowLayout（华容道那边同一个坑：
+         * 给布局子项直接写 width/height，布局一赋值就把绑定顶掉，Item 宽度
+         * 变 0，而棋盘里是绝对坐标画出来的，就从 0 宽的父项里溢出来 —— 面板
+         * 便压在棋盘右半边上了）。
+         */
+        Item {
+            id: stage
+
+            anchors.fill: parent
+
+            readonly property int gap: 32
+            readonly property int panelW: 300
+            readonly property real boardSide: page.cell * 8 + 30
+
+            readonly property int boardX: Math.max(0, Math.round((width - panelW - gap - boardSide) / 2))
+            readonly property int boardY: Math.max(0, Math.round((height - boardSide) / 2))
 
             // 棋盘（外框 + 坐标 + 64 格）
             Item {
-                Layout.alignment: Qt.AlignVCenter
-                width: page.cell * 8 + 30
-                height: page.cell * 8 + 30
+                x: stage.boardX
+                y: stage.boardY
+                width: stage.boardSide
+                height: stage.boardSide
 
                 Rectangle {
                     x: 22
@@ -568,8 +583,10 @@ GameShell {
 
             // 右侧：状态 + 操作
             ColumnLayout {
-                Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 300
+                x: Math.max(0, stage.width - stage.panelW)
+                y: Math.max(0, Math.round((stage.height - height) / 2))
+                width: stage.panelW
+                height: implicitHeight
                 spacing: 16
 
                 Rectangle {

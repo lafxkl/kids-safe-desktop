@@ -488,7 +488,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: "桌面"
-                                    font.pixelSize: 9.5
+                                    font.pixelSize: 10
                                     color: "#2E7D32"
                                 }
                             }
@@ -504,7 +504,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: "别动"
-                                    font.pixelSize: 9.5
+                                    font.pixelSize: 10
                                     color: "#9AA8B7"
                                 }
                             }
@@ -516,7 +516,7 @@ Item {
                         height: parent.height
                         verticalAlignment: Text.AlignVCenter
                         text: procRow.pid
-                        font.pixelSize: 12.5
+                        font.pixelSize: 12
                         font.family: "monospace"
                         color: "#93A1B0"
                     }
@@ -526,7 +526,7 @@ Item {
                         height: parent.height
                         verticalAlignment: Text.AlignVCenter
                         text: procRow.user
-                        font.pixelSize: 12.5
+                        font.pixelSize: 12
                         color: "#93A1B0"
                         elide: Text.ElideRight
                     }
@@ -536,7 +536,7 @@ Item {
                         height: parent.height
                         verticalAlignment: Text.AlignVCenter
                         text: root.cpuText(procRow.cpu)
-                        font.pixelSize: 12.5
+                        font.pixelSize: 12
                         color: procRow.cpu > 50 ? "#D05252" : "#5B6B7C"
                     }
 
@@ -545,7 +545,7 @@ Item {
                         height: parent.height
                         verticalAlignment: Text.AlignVCenter
                         text: procRow.mem.toFixed(1) + "%"
-                        font.pixelSize: 12.5
+                        font.pixelSize: 12
                         color: "#5B6B7C"
                     }
 
@@ -576,7 +576,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "结束"
-                        font.pixelSize: 11.5
+                        font.pixelSize: 12
                         color: "#D05252"
                     }
 
@@ -653,7 +653,7 @@ Item {
                     const info = Processes.at(root.selectedPid);
                     return info && info.cmd !== undefined ? info.cmd : "";
                 }
-                font.pixelSize: 11.5
+                font.pixelSize: 12
                 font.family: "monospace"
                 color: "#9AA8B7"
                 elide: Text.ElideRight
@@ -695,7 +695,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     text: "要结束「" + root.confirmName + "」吗？"
-                    font.pixelSize: 15.5
+                    font.pixelSize: 16
                     font.weight: Font.DemiBold
                     color: "#3D4A57"
                     elide: Text.ElideRight
@@ -704,7 +704,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     text: "先点「请它退出」，它会自己收拾好再走。\n要是没反应，再强制结束。"
-                    font.pixelSize: 12.5
+                    font.pixelSize: 12
                     lineHeight: 1.4
                     color: "#93A1B0"
                 }

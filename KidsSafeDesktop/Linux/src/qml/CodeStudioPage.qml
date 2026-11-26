@@ -1281,23 +1281,13 @@ GameShell {
                             color: "#90A4AE"
                         }
 
-                        ScrollView {
+                        CodeView {
                             anchors.fill: parent
                             anchors.margins: 6
                             anchors.topMargin: 30
-                            clip: true
-                            background: null
-
-                            TextArea {
-                                readOnly: true
-                                selectByMouse: true
-                                text: CodeLab.code
-                                font.family: "monospace"
-                                font.pixelSize: 11
-                                color: "#E0F2F1"
-                                wrapMode: TextArea.NoWrap
-                                background: null
-                            }
+                            text: CodeLab.code
+                            fontSize: 11
+                            textColor: "#E0F2F1"
                         }
                     }
 
@@ -1318,23 +1308,14 @@ GameShell {
                             color: "#9B8574"
                         }
 
-                        ScrollView {
+                        CodeView {
                             anchors.fill: parent
                             anchors.margins: 6
                             anchors.topMargin: 30
-                            clip: true
-                            background: null
-
-                            TextArea {
-                                readOnly: true
-                                selectByMouse: true
-                                text: CodeLab.output
-                                font.family: "monospace"
-                                font.pixelSize: 12
-                                color: "#4E342E"
-                                wrapMode: TextArea.Wrap
-                                background: null
-                            }
+                            text: CodeLab.output
+                            fontSize: 12
+                            textColor: "#4E342E"
+                            wrap: true
                         }
                     }
                 }

@@ -104,419 +104,430 @@ GameShell {
     Component.onCompleted: page.openProject(0)
 
     Item {
+        id: stage
+
         anchors.fill: page.contentArea
 
-        RowLayout {
-            anchors.fill: parent
-            spacing: 12
+        /*
+         * 三列宽度在这里一次算清，不再交给 RowLayout 分配。
+         *
+         * 原来外面套了一个 `RowLayout { anchors.fill: parent }`，左边
+         * Layout.preferredWidth: 172、右边 246、中间 fillWidth。实测（Qt 6）
+         * 结果是左边被撑到约 400、右边约 560，中间只剩 0 —— 也就是中间那列
+         * 「游戏 + 代码」整块消失，右边说明卡铺满右侧，而中间的错误提示卡
+         * 又溢出来压在左边的项目卡上。布局管理器在这个场景里按子项的隐式
+         * 尺寸重新分配了宽度，压过了 preferredWidth。
+         *
+         * 现在改成三列各自给 x / width，中间那列 = 总宽 - 左右 - 间距，
+         * 最小值兜底，窗口再窄也不会被挤没。
+         */
+        readonly property int gap: 12
+        readonly property int leftW: Math.max(180, Math.min(230, Math.round(width * 0.2)))
+        readonly property int rightW: Math.max(240, Math.min(300, Math.round(width * 0.26)))
+        readonly property int midW: Math.max(220, width - leftW - rightW - gap * 2)
 
-            // ---- 左：项目列表 ----
-            ColumnLayout {
-                Layout.preferredWidth: 172
-                Layout.fillHeight: true
-                spacing: 8
+        // ---- 左：项目列表 ----
+        ColumnLayout {
+            x: 0
+            y: 0
+            width: stage.leftW
+            height: stage.height
+            spacing: 8
 
-                Text {
-                    text: "内置项目"
-                    font.pixelSize: 14
-                    font.bold: true
-                    color: "#8D6E63"
-                }
+            Text {
+                text: "内置项目"
+                font.pixelSize: 14
+                font.bold: true
+                color: "#8D6E63"
+            }
 
-                Repeater {
-                    model: projects
+            Repeater {
+                model: projects
+
+                Rectangle {
+                    id: card
+
+                    required property int index
+                    required property string name
+                    required property string badge
+                    required property string desc
+                    required property var accent
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 84
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.width: page.projectIndex === index ? 3 : 0
+                    border.color: card.accent
 
                     Rectangle {
-                        id: card
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 8
+                        width: 5
+                        radius: 3
+                        color: card.accent
+                    }
 
-                        required property int index
-                        required property string name
-                        required property string badge
-                        required property string desc
-                        required property var accent
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 20
+                        anchors.right: parent.right
+                        anchors.rightMargin: 8
+                        spacing: 3
 
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 84
-                        radius: 16
-                        color: "#FFFFFF"
-                        border.width: page.projectIndex === index ? 3 : 0
-                        border.color: card.accent
+                        Row {
+                            spacing: 6
 
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.margins: 8
-                            width: 5
-                            radius: 3
-                            color: card.accent
-                        }
+                            Text {
+                                text: card.name
+                                font.pixelSize: 15
+                                font.bold: true
+                                color: "#5D4037"
+                            }
 
-                        Column {
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: parent.left
-                            anchors.leftMargin: 20
-                            anchors.right: parent.right
-                            anchors.rightMargin: 8
-                            spacing: 3
-
-                            Row {
-                                spacing: 6
+                            Rectangle {
+                                width: badgeText.implicitWidth + 12
+                                height: 18
+                                radius: 9
+                                color: card.badge === "进阶" ? "#FFF3E0" : "#EDE7F6"
 
                                 Text {
-                                    text: card.name
-                                    font.pixelSize: 15
+                                    id: badgeText
+                                    anchors.centerIn: parent
+                                    text: card.badge
+                                    font.pixelSize: 10
                                     font.bold: true
-                                    color: "#5D4037"
-                                }
-
-                                Rectangle {
-                                    width: badgeText.implicitWidth + 12
-                                    height: 18
-                                    radius: 9
-                                    color: card.badge === "进阶" ? "#FFF3E0" : "#EDE7F6"
-
-                                    Text {
-                                        id: badgeText
-                                        anchors.centerIn: parent
-                                        text: card.badge
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                        color: card.badge === "进阶" ? "#E65100" : "#5E35B1"
-                                    }
+                                    color: card.badge === "进阶" ? "#E65100" : "#5E35B1"
                                 }
                             }
-
-                            Text {
-                                width: parent.width
-                                text: card.desc
-                                font.pixelSize: 11
-                                color: "#9B8574"
-                                elide: Text.ElideRight
-                            }
                         }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: page.openProject(card.index)
-                        }
-                    }
-                }
-
-                Item {
-                    Layout.fillHeight: true
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: "这些都是现成的作品，先玩，再看它怎么写。"
-                    font.pixelSize: 11
-                    color: "#B8A492"
-                    wrapMode: Text.WordWrap
-                }
-            }
-
-            // ---- 中：游戏 + 代码 ----
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 10
-
-                // 包一层 Item：Loader 出错时它自己什么都不画，中间会留一块
-                // 白板，孩子只会以为「卡住了」。这里补一张说明卡。
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    Loader {
-                        id: loader
-
-                        anchors.fill: parent
-
-                        onLoaded: page.rebuildKnobs()
-                        onStatusChanged: {
-                            if (status === Loader.Error) {
-                                console.warn("[lab] 项目加载失败：", source)
-                                page.rebuildKnobs()
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        visible: loader.status === Loader.Error
-                        radius: 16
-                        color: "#FFF3E0"
-
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: 8
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: "这一款没打开"
-                                font.pixelSize: 18
-                                font.bold: true
-                                color: "#E65100"
-                            }
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: 320
-                                horizontalAlignment: Text.AlignHCenter
-                                text: "点右边的「重新开始」再试一次，或者换左边另一款。"
-                                font.pixelSize: 12
-                                color: "#A1887F"
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: page.codeOpen ? 186 : 44
-                    radius: 16
-                    color: "#263238"
-                    clip: true
-
-                    RowLayout {
-                        id: codeHeader
-
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        height: 44
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 8
-                        spacing: 8
 
                         Text {
-                            Layout.fillWidth: true
-                            text: "关键代码 · 它是怎么动起来的"
-                            font.pixelSize: 12
-                            font.bold: true
-                            color: "#B0BEC5"
+                            width: parent.width
+                            text: card.desc
+                            font.pixelSize: 11
+                            color: "#9B8574"
                             elide: Text.ElideRight
                         }
-
-                        Rectangle {
-                            Layout.preferredWidth: 84
-                            Layout.preferredHeight: 28
-                            radius: 14
-                            color: toggleArea.pressed ? "#37474F" : "#37474F00"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: page.codeOpen ? "收起" : "看代码"
-                                font.pixelSize: 12
-                                font.bold: true
-                                color: "#80CBC4"
-                            }
-
-                            MouseArea {
-                                id: toggleArea
-                                anchors.fill: parent
-                                onClicked: page.codeOpen = !page.codeOpen
-                            }
-                        }
                     }
 
-                    ScrollView {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: codeHeader.bottom
-                        anchors.bottom: parent.bottom
-                        anchors.margins: 10
-                        clip: true
-                        visible: page.codeOpen
-                        background: null
-
-                        TextArea {
-                            readOnly: true
-                            selectByMouse: true
-                            text: loader.item && loader.item.codeSample ? loader.item.codeSample : ""
-                            font.family: "monospace"
-                            font.pixelSize: 11
-                            color: "#CFD8DC"
-                            wrapMode: TextArea.NoWrap
-                            background: null
-                        }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: page.openProject(card.index)
                     }
                 }
             }
 
-            // ---- 右：说明 + 改一改 ----
-            ColumnLayout {
-                Layout.preferredWidth: 246
+            Item {
                 Layout.fillHeight: true
-                spacing: 10
+            }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    radius: 18
-                    color: "#FFFFFF"
+            Text {
+                Layout.fillWidth: true
+                text: "这些都是现成的作品，先玩，再看它怎么写。"
+                font.pixelSize: 11
+                color: "#B8A492"
+                wrapMode: Text.WordWrap
+            }
+        }
 
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 14
-                        spacing: 8
+        // ---- 中：游戏 + 代码 ----
+        ColumnLayout {
+            x: stage.leftW + stage.gap
+            y: 0
+            width: stage.midW
+            height: stage.height
+            spacing: 10
 
-                        Text {
-                            text: "怎么玩"
-                            font.pixelSize: 13
-                            font.bold: true
-                            color: "#8D6E63"
-                        }
+            // 包一层 Item：Loader 出错时它自己什么都不画，中间会留一块
+            // 白板，孩子只会以为「卡住了」。这里补一张说明卡。
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                        Text {
-                            Layout.fillWidth: true
-                            text: loader.item && loader.item.howTo ? loader.item.howTo : ""
-                            font.pixelSize: 12
-                            color: "#5D4037"
-                            wrapMode: Text.WordWrap
-                            lineHeight: 1.25
-                        }
+                Loader {
+                    id: loader
 
-                        Text {
-                            Layout.topMargin: 4
-                            text: "在教什么"
-                            font.pixelSize: 13
-                            font.bold: true
-                            color: "#8D6E63"
-                        }
+                    anchors.fill: parent
 
-                        Text {
-                            Layout.fillWidth: true
-                            text: loader.item && loader.item.teaches ? loader.item.teaches : ""
-                            font.pixelSize: 12
-                            color: "#6D4C41"
-                            wrapMode: Text.WordWrap
-                            lineHeight: 1.25
-                        }
-
-                        Item {
-                            Layout.fillHeight: true
+                    onLoaded: page.rebuildKnobs()
+                    onStatusChanged: {
+                        if (status === Loader.Error) {
+                            console.warn("[lab] 项目加载失败：", source)
+                            page.rebuildKnobs()
                         }
                     }
                 }
 
                 Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: knobColumn.implicitHeight + 28
-                    radius: 18
-                    color: "#FFF8F0"
+                    anchors.fill: parent
+                    visible: loader.status === Loader.Error
+                    radius: 16
+                    color: "#FFF3E0"
 
-                    ColumnLayout {
-                        id: knobColumn
-
-                        anchors.fill: parent
-                        anchors.margins: 14
-                        spacing: 4
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 8
 
                         Text {
-                            text: "改一改，看变化"
-                            font.pixelSize: 13
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "这一款没打开"
+                            font.pixelSize: 18
                             font.bold: true
-                            color: "#8D6E63"
-                        }
-
-                        Repeater {
-                            model: knobsModel
-
-                            ColumnLayout {
-                                id: knobRow
-
-                                required property int index
-                                required property string key
-                                required property string label
-                                required property real minV
-                                required property real maxV
-                                required property real stepV
-                                required property real val
-
-                                Layout.fillWidth: true
-                                spacing: 0
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: knobRow.label
-                                        font.pixelSize: 11
-                                        color: "#8D6E63"
-                                    }
-
-                                    Text {
-                                        text: page.knobText(knobRow.stepV, knobRow.val)
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                        color: "#E65100"
-                                    }
-                                }
-
-                                Slider {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 26
-                                    from: knobRow.minV
-                                    to: knobRow.maxV
-                                    stepSize: knobRow.stepV
-                                    value: knobRow.val
-
-                                    onMoved: {
-                                        knobsModel.setProperty(knobRow.index, "val", value)
-                                        if (loader.item && loader.item.setKnob) {
-                                            loader.item.setKnob(knobRow.key, value)
-                                        }
-                                    }
-                                }
-                            }
+                            color: "#E65100"
                         }
 
                         Text {
-                            Layout.fillWidth: true
-                            visible: knobsModel.count === 0
-                            text: "这一款没有滑块参数 —— 想改就去改代码里的地图（levels 里的字符）。"
-                            font.pixelSize: 11
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: 320
+                            horizontalAlignment: Text.AlignHCenter
+                            text: "点右边的「重新开始」再试一次，或者换左边另一款。"
+                            font.pixelSize: 12
                             color: "#A1887F"
                             wrapMode: Text.WordWrap
                         }
                     }
                 }
+            }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 46
-                    radius: 23
-                    color: restartArea.pressed ? "#E65100" : "#EF6C00"
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: page.codeOpen ? 186 : 44
+                radius: 16
+                color: "#263238"
+                clip: true
+
+                RowLayout {
+                    id: codeHeader
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    height: 44
+                    anchors.leftMargin: 14
+                    anchors.rightMargin: 8
+                    spacing: 8
 
                     Text {
-                        anchors.centerIn: parent
-                        text: "重新开始"
-                        font.pixelSize: 14
+                        Layout.fillWidth: true
+                        text: "关键代码 · 它是怎么动起来的"
+                        font.pixelSize: 12
                         font.bold: true
-                        color: "#FFFFFF"
+                        color: "#B0BEC5"
+                        elide: Text.ElideRight
                     }
 
-                    MouseArea {
-                        id: restartArea
-                        anchors.fill: parent
-                        onClicked: {
-                            // 加载失败时这个按钮兼作「重试」：Loader 的 source
-                            // 没变就不会重新加载，得先清空再给回去。
-                            if (loader.status === Loader.Error) {
-                                const src = loader.source
-                                loader.source = ""
-                                loader.source = src
-                                Qt.callLater(page.grabFocus)
-                                return
+                    Rectangle {
+                        Layout.preferredWidth: 84
+                        Layout.preferredHeight: 28
+                        radius: 14
+                        color: toggleArea.pressed ? "#37474F" : "#37474F00"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: page.codeOpen ? "收起" : "看代码"
+                            font.pixelSize: 12
+                            font.bold: true
+                            color: "#80CBC4"
+                        }
+
+                        MouseArea {
+                            id: toggleArea
+                            anchors.fill: parent
+                            onClicked: page.codeOpen = !page.codeOpen
+                        }
+                    }
+                }
+
+                CodeView {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: codeHeader.bottom
+                    anchors.bottom: parent.bottom
+                    anchors.margins: 10
+                    visible: page.codeOpen
+                    text: loader.item && loader.item.codeSample ? loader.item.codeSample : ""
+                    textColor: "#CFD8DC"
+                    fontSize: 11
+                }
+            }
+        }
+
+        // ---- 右：说明 + 改一改 ----
+        ColumnLayout {
+            x: stage.leftW + stage.gap + stage.midW + stage.gap
+            y: 0
+            width: stage.rightW
+            height: stage.height
+            spacing: 10
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: 18
+                color: "#FFFFFF"
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 14
+                    spacing: 8
+
+                    Text {
+                        text: "怎么玩"
+                        font.pixelSize: 13
+                        font.bold: true
+                        color: "#8D6E63"
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: loader.item && loader.item.howTo ? loader.item.howTo : ""
+                        font.pixelSize: 12
+                        color: "#5D4037"
+                        wrapMode: Text.WordWrap
+                        lineHeight: 1.25
+                    }
+
+                    Text {
+                        Layout.topMargin: 4
+                        text: "在教什么"
+                        font.pixelSize: 13
+                        font.bold: true
+                        color: "#8D6E63"
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: loader.item && loader.item.teaches ? loader.item.teaches : ""
+                        font.pixelSize: 12
+                        color: "#6D4C41"
+                        wrapMode: Text.WordWrap
+                        lineHeight: 1.25
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: knobColumn.implicitHeight + 28
+                radius: 18
+                color: "#FFF8F0"
+
+                ColumnLayout {
+                    id: knobColumn
+
+                    anchors.fill: parent
+                    anchors.margins: 14
+                    spacing: 4
+
+                    Text {
+                        text: "改一改，看变化"
+                        font.pixelSize: 13
+                        font.bold: true
+                        color: "#8D6E63"
+                    }
+
+                    Repeater {
+                        model: knobsModel
+
+                        ColumnLayout {
+                            id: knobRow
+
+                            required property int index
+                            required property string key
+                            required property string label
+                            required property real minV
+                            required property real maxV
+                            required property real stepV
+                            required property real val
+
+                            Layout.fillWidth: true
+                            spacing: 0
+
+                            RowLayout {
+                                Layout.fillWidth: true
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: knobRow.label
+                                    font.pixelSize: 11
+                                    color: "#8D6E63"
+                                }
+
+                                Text {
+                                    text: page.knobText(knobRow.stepV, knobRow.val)
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                    color: "#E65100"
+                                }
                             }
-                            if (loader.item && loader.item.restart) {
-                                loader.item.restart()
-                                loader.item.forceActiveFocus()
+
+                            Slider {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 26
+                                from: knobRow.minV
+                                to: knobRow.maxV
+                                stepSize: knobRow.stepV
+                                value: knobRow.val
+
+                                onMoved: {
+                                    knobsModel.setProperty(knobRow.index, "val", value)
+                                    if (loader.item && loader.item.setKnob) {
+                                        loader.item.setKnob(knobRow.key, value)
+                                    }
+                                }
                             }
+                        }
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        visible: knobsModel.count === 0
+                        text: "这一款没有滑块参数 —— 想改就去改代码里的地图（levels 里的字符）。"
+                        font.pixelSize: 11
+                        color: "#A1887F"
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 46
+                radius: 23
+                color: restartArea.pressed ? "#E65100" : "#EF6C00"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "重新开始"
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#FFFFFF"
+                }
+
+                MouseArea {
+                    id: restartArea
+                    anchors.fill: parent
+                    onClicked: {
+                        // 加载失败时这个按钮兼作「重试」：Loader 的 source
+                        // 没变就不会重新加载，得先清空再给回去。
+                        if (loader.status === Loader.Error) {
+                            const src = loader.source
+                            loader.source = ""
+                            loader.source = src
+                            Qt.callLater(page.grabFocus)
+                            return
+                        }
+                        if (loader.item && loader.item.restart) {
+                            loader.item.restart()
+                            loader.item.forceActiveFocus()
                         }
                     }
                 }

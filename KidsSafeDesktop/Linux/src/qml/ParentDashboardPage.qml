@@ -326,6 +326,10 @@ Item {
                             delegate: Rectangle {
                                 required property string appId
                                 required property string name
+                                // 委托一旦用了 required property，旧式的上下文属性注入
+                                // 就关了，index 不再是能直接读的变量；不声明它，下面的
+                                // onToggled 会抛 ReferenceError，开关点了等于没点。
+                                required property int index
 
                                 width: allowList.width
                                 height: 54
@@ -350,7 +354,12 @@ Item {
                                         checked: Settings.isAllowed(appId)
                                         onToggled: {
                                             if (checked) {
-                                                Settings.addApp(AppCatalog.get(index));
+                                                const item = AppCatalog.get(index);
+                                                if (item && item.id) {
+                                                    Settings.addApp(item);
+                                                } else {
+                                                    console.warn("[parent] 取不到应用信息，行号", index);
+                                                }
                                             } else {
                                                 Settings.removeApp(appId);
                                             }

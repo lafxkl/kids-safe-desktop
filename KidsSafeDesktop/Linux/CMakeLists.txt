@@ -263,6 +263,10 @@ qt_add_resources(kidssafe "qml"
         src/qml/HomeBanner.qml
         src/qml/WeatherCard.qml
         src/qml/GlyphIcon.qml
+        # 只读代码框：Breeze 样式的 TextArea 在 Qt 6 上有 bug（实例化即报
+        # Unable to assign TextArea_QMLTYPE to QQuickTextInput，内容区空），
+        # 项目工坊的「看代码」和小小程序员的代码/运行结果都改用它。
+        src/qml/CodeView.qml
         # 儿童桌面：窗口外壳 + 桌面图标 + 程序坞 + 三个内置工具
         #
         # 漏加任何一个的表现都是「点了图标什么都没出来」或整页白屏

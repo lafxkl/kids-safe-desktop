@@ -389,15 +389,38 @@ GameShell {
     Item {
         anchors.fill: page.contentArea
 
-        RowLayout {
-            anchors.centerIn: parent
-            spacing: 36
+        /*
+         * 棋盘和右侧面板各自算位置，不再用 RowLayout。
+         *
+         * 原来这里是 RowLayout + 一个 `width: cell*4+32` 的 Item。布局管理器
+         * 会按「尺寸提示」重新给子项分配宽度，而给一个 Item 直接写 width 只
+         * 是普通绑定：布局一赋值就把绑定顶掉了，Item 的实际宽度变成 0。盘面
+         * 里的 Grid 用的是绝对坐标，于是从 0 宽度的父项里溢出来照画不误，
+         * 右边面板则贴着「宽度为 0 的棋盘」摆过来 —— 看上去就是面板压在盘面
+         * 上，而棋盘整体偏到右边去了。
+         *
+         * 现在宽度全部写死在这里算：棋盘在「扣掉面板」之后的空白里居中，
+         * 面板贴右边。cell 本来就是按 contentArea 算出来的，两者不会打架。
+         */
+        Item {
+            id: stage
+
+            anchors.fill: parent
+
+            readonly property int gap: 36
+            readonly property int panelW: 320
+            readonly property real boardW: page.cell * page.cols + page.pad * 2
+            readonly property real boardH: page.cell * page.rows + page.pad * 2 + 26
+
+            readonly property int boardX: Math.max(0, Math.round((width - panelW - gap - boardW) / 2))
+            readonly property int boardY: Math.max(0, Math.round((height - boardH) / 2))
 
             // 棋盘
             Item {
-                Layout.alignment: Qt.AlignVCenter
-                width: page.cell * page.cols + page.pad * 2
-                height: page.cell * page.rows + page.pad * 2 + 26
+                x: stage.boardX
+                y: stage.boardY
+                width: stage.boardW
+                height: stage.boardH
 
                 Rectangle {
                     x: 0
@@ -567,8 +590,10 @@ GameShell {
 
             // 右侧：步数 / 方向键 / 按钮
             ColumnLayout {
-                Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 320
+                x: Math.max(0, stage.width - stage.panelW)
+                y: Math.max(0, Math.round((stage.height - height) / 2))
+                width: stage.panelW
+                height: implicitHeight
                 spacing: 16
 
                 Rectangle {

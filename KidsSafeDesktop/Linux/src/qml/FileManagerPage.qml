@@ -554,7 +554,7 @@ Item {
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: fileRow.name
-                                        font.pixelSize: 13.5
+                                        font.pixelSize: 14
                                         color: "#3D4A57"
                                         elide: Text.ElideMiddle
                                         width: Math.min(implicitWidth, parent.width - 30)
@@ -567,7 +567,7 @@ Item {
                                 height: parent.height
                                 verticalAlignment: Text.AlignVCenter
                                 text: fileRow.size
-                                font.pixelSize: 12.5
+                                font.pixelSize: 12
                                 color: "#93A1B0"
                             }
 
@@ -576,7 +576,7 @@ Item {
                                 height: parent.height
                                 verticalAlignment: Text.AlignVCenter
                                 text: fileRow.mtime
-                                font.pixelSize: 12.5
+                                font.pixelSize: 12
                                 color: "#93A1B0"
                             }
                         }
@@ -704,7 +704,7 @@ Item {
                             Text {
                                 Layout.fillWidth: true
                                 text: root.previewName
-                                font.pixelSize: 13.5
+                                font.pixelSize: 14
                                 font.weight: Font.DemiBold
                                 color: "#3D4A57"
                                 elide: Text.ElideMiddle
@@ -932,7 +932,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "取消"
-                            font.pixelSize: 13.5
+                            font.pixelSize: 14
                             color: "#5B6B7C"
                         }
 
@@ -975,7 +975,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "确定"
-                            font.pixelSize: 13.5
+                            font.pixelSize: 14
                             font.weight: Font.DemiBold
                             color: "white"
                         }
@@ -1028,7 +1028,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     text: "放进回收站还能找回来，不用怕。"
-                    font.pixelSize: 12.5
+                    font.pixelSize: 12
                     color: "#93A1B0"
                 }
 
@@ -1051,7 +1051,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "不删了"
-                            font.pixelSize: 13.5
+                            font.pixelSize: 14
                             color: "#5B6B7C"
                         }
 
@@ -1071,7 +1071,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "放回收站"
-                            font.pixelSize: 13.5
+                            font.pixelSize: 14
                             font.weight: Font.DemiBold
                             color: "white"
                         }

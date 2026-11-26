@@ -84,7 +84,10 @@ Item {
     property int levelIndex: 0
     property var grid: []
     property var boxes: []
-    property var player: { x: 1, y: 1 }
+    // 属性值里的对象字面量必须用括号包起来。
+    // 不包的话 QML 会把 `{` 当成「一组属性赋值」来解析，直接报
+    // `Expected token ','`，整个项目加载失败 —— 界面上就是右侧一片空白。
+    property var player: ({ x: 1, y: 1 })
     property var history: []
     property int moves: 0
     property int pushes: 0

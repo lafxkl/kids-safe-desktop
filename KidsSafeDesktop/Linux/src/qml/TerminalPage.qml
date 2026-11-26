@@ -109,7 +109,7 @@ Item {
 
                 Text {
                     text: Term.running ? "正在和电脑说话" : "终端停下来了"
-                    font.pixelSize: 12.5
+                    font.pixelSize: 12
                     color: "#8B97A6"
                 }
 
@@ -202,7 +202,7 @@ Item {
                     textFormat: Text.RichText
                     wrapMode: Text.WrapAnywhere
                     font.family: "monospace"
-                    font.pixelSize: 13.5
+                    font.pixelSize: 14
                     lineHeight: 1.3
                 }
             }
@@ -303,7 +303,7 @@ Item {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "终端关掉了，点右边重新打开"
-                        font.pixelSize: 12.5
+                        font.pixelSize: 12
                         color: "white"
                     }
 
@@ -430,7 +430,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: Math.min(implicitWidth, root.width - 130)
                 text: root.blockedText
-                font.pixelSize: 12.5
+                font.pixelSize: 12
                 color: "white"
                 wrapMode: Text.WordWrap
             }

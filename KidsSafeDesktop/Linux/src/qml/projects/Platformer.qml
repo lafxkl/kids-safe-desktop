@@ -12,8 +12,8 @@ import QtQuick
 Item {
     id: game
 
-    readonly property int W: 720          // 视野宽（逻辑像素）
-    readonly property int H: 420          // 世界高
+    readonly property int w: 720          // 视野宽（逻辑像素）
+    readonly property int h: 420          // 世界高
     readonly property int worldW: 2480    // 世界总宽
 
     property real gravity: 1400
@@ -62,7 +62,7 @@ Item {
         "  }",
         "",
         "  // 4. 摄像机：让人一直在屏幕偏左的位置",
-        "  camX = clamp(player.x - 300, 0, worldW - W)",
+        "  camX = clamp(player.x - 300, 0, worldW - w)",
         "}"
     ].join("\n")
 
@@ -193,7 +193,7 @@ Item {
         }
 
         // 掉进坑里：回到最后站过的地面，不清空金币
-        if (p.y > game.H + 80) {
+        if (p.y > game.h + 80) {
             p.x = game.safe.x
             p.y = game.safe.y - 40
             p.vx = 0
@@ -215,7 +215,7 @@ Item {
             game.won = true
         }
 
-        game.camX = Math.max(0, Math.min(game.worldW - game.W, p.x - game.W * 0.42))
+        game.camX = Math.max(0, Math.min(game.worldW - game.w, p.x - game.w * 0.42))
     }
 
     // ---- 画面 ----
@@ -233,9 +233,9 @@ Item {
 
             anchors.fill: parent
 
-            readonly property real s: Math.min(width / game.W, height / game.H)
-            readonly property real ox: (width - game.W * s) / 2
-            readonly property real oy: (height - game.H * s) / 2
+            readonly property real s: Math.min(width / game.w, height / game.h)
+            readonly property real ox: (width - game.w * s) / 2
+            readonly property real oy: (height - game.h * s) / 2
 
             onWidthChanged: requestPaint()
             onHeightChanged: requestPaint()
@@ -248,11 +248,11 @@ Item {
                 ctx.scale(s, s)
 
                 // 天空
-                const sky = ctx.createLinearGradient(0, 0, 0, game.H)
+                const sky = ctx.createLinearGradient(0, 0, 0, game.h)
                 sky.addColorStop(0, "#7FC8F0")
                 sky.addColorStop(1, "#DFF3FF")
                 ctx.fillStyle = sky
-                ctx.fillRect(0, 0, game.W, game.H)
+                ctx.fillRect(0, 0, game.w, game.h)
 
                 // 远山：随摄像机慢速移动，看起来就有了远近
                 const far = (game.camX * 0.25) % 480
@@ -260,15 +260,15 @@ Item {
                 for (let i = -1; i < 3; ++i) {
                     const bx = i * 480 - far
                     ctx.beginPath()
-                    ctx.moveTo(bx, game.H)
+                    ctx.moveTo(bx, game.h)
                     ctx.lineTo(bx + 140, 190)
-                    ctx.lineTo(bx + 280, game.H)
+                    ctx.lineTo(bx + 280, game.h)
                     ctx.closePath()
                     ctx.fill()
                     ctx.beginPath()
-                    ctx.moveTo(bx + 200, game.H)
+                    ctx.moveTo(bx + 200, game.h)
                     ctx.lineTo(bx + 330, 230)
-                    ctx.lineTo(bx + 460, game.H)
+                    ctx.lineTo(bx + 460, game.h)
                     ctx.closePath()
                     ctx.fill()
                 }
