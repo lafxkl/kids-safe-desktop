@@ -108,6 +108,7 @@ Same parent console, different entry point: it launches straight into the parent
 
 - Daily time limits and allowed hours; app allowlist (enumerates installed applications)
 - Per-game switches, theme, eye-care mode (strength and schedule), master switch for online content
+- Game workshop: a built-in web editor that builds catch / dodge / tap games from three templates and six sets of built-in emoji, or from your own images — playable in place and exportable as `.json` to open on another device (Windows, Android, Linux and HarmonyOS)
 - Growth guide, parent lessons, guides for special-needs training
 - Connect to the parent server: enter an address plus account credentials or a 6-digit pairing code to push settings remotely
 
@@ -129,7 +130,12 @@ The official site, <https://kids.siguangblog.cc/>, is just `KidsSafeDesktop/Webs
 - **`feedback-admin.html`** — full listing and CSV export, requires `Feedback:AdminKey`
 - **`care-sources.html`** — every source the care centre cites: 22 references, each one clickable, maintained by hand
 
-Deliberate choices: nicknames are optional and **IPs are counted, never stored** (10 minutes / 12 posts, 24 hours / 60); **likes live only in the browser**, so no account system had to be invented for a counter; posting is optimistic — a successful POST is inserted immediately and marked "just posted", while offline posts queue in `localStorage`; curated entries always sort ahead of new ones.
+Deliberate choices:
+
+- **Nicknames are optional and IPs are never stored** — rate limiting reads the real IP from `X-Forwarded-For` and keeps only a counter (12 posts per 10 minutes, 60 per 24 hours), never writing it into the record
+- **Likes live only in the browser** — no server-side counter, because a single number is not worth inventing an account system for
+- **Posting is optimistic** — a successful POST is inserted into the list and marked "just posted"; offline posts queue in `localStorage` and flush when the page comes back
+- **Curated entries sort first** — entries in `data/comments.json` stay ahead of new server comments by `sortKey`, and the same entry on both sides is de-duplicated by the first 40 characters of its body
 
 See **[Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md)** for the client entry points and API contract, and **[Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md)** for the two Nginx proxy blocks (`/api/`, `/patches/`).
 
@@ -300,9 +306,12 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 | [Docs/设计文档.md](KidsSafeDesktop/Docs/设计文档.md) | Product positioning, user scenarios, design trade-offs behind 25 capabilities |
 | [Docs/技术文档.md](KidsSafeDesktop/Docs/技术文档.md) | Stack and key implementations (weather and geolocation, blue-light filter, TTS, screen-time guard) |
 | [Docs/工程结构-家长端拆分.md](KidsSafeDesktop/Docs/工程结构-家长端拆分.md) | Conventions and pitfalls of the three-project split |
+| [Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md) | iOS content-edition boundaries, build and signing, App Store review notes and self-check list (Chinese) |
 | [Docs/账号体系.md](KidsSafeDesktop/Docs/账号体系.md) | Accounts, pairing codes, tokens and the migration path |
 | [Docs/实时下发通道.md](KidsSafeDesktop/Docs/实时下发通道.md) | Long-polling version numbers and reconnect strategy |
 | [Docs/更新记录.md](KidsSafeDesktop/Docs/更新记录.md) | Version-by-version changelog (client and server) |
+| [Docs/小游戏工坊.md](KidsSafeDesktop/Docs/小游戏工坊.md) | The shared web editor for mini-games: API, where games are stored, how to sync (Chinese) |
+| [Docs/星星奖励与关爱中心.md](KidsSafeDesktop/Docs/星星奖励与关爱中心.md) | Star and badge rules, care-centre sections, picture-book storage and copyright red lines (Chinese) |
 | [Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md) | Feedback pages, API contract, offline queue, privacy boundaries, acceptance steps |
 | [Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md) | Post-launch operations: Nginx proxying, caching, backups |
 | [Docs/README图片托管说明.md](KidsSafeDesktop/Docs/README图片托管说明.md) | Why this page's images and badges are served from the project site, and how to replace them (Chinese) |
@@ -312,7 +321,8 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 
 These are real boundaries, not roadmap prose:
 
-- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account. Windows can only do a compile check: `dotnet build`, `-f net10.0-ios` and `-p:EnableIosTarget=true`.
+- **Android and Windows are the primary targets** (one MAUI codebase). **iOS is wired up and compiles cleanly** (`net10.0-ios`, including native audio playback, sound effects, the eye-care overlay and the privacy manifest), but it has **not yet been run on a device or simulator** — signing and App Store submission need a Mac plus an Apple Developer account; the steps are in [Docs/iOS上架说明.md](KidsSafeDesktop/Docs/iOS上架说明.md), and Windows can only do a compile check (see [Build for iOS](#build-for-ios)).
+- **iOS is a content edition, not a managed desktop**: launcher replacement, the app allowlist, reading other apps' screen time and forced lock-down all depend on system capabilities iOS does not expose, so those entries hide themselves or say "Android only".
 - **Linux and HarmonyOS are separate front ends** (`KidsSafeDesktop/Linux/`, Qt 6 + Kirigami; `KidsSafeDesktop/Harmony/`, ArkTS + ArkUI). Neither reuses the XAML layer, their feature sets are not identical to the desktop app, and neither was regression-tested for this release — each folder's README lists the differences.
 - **The server has no TLS and no rate limiting of its own.** It binds to `127.0.0.1:5180`; public access must sit behind a TLS reverse proxy (the official site does exactly that, proxying `/api/*` and passing `X-Forwarded-For` through). **Do not port-forward 5180 to the internet.**
 - **The parent app has no icon or release script of its own yet**, and its `ApplicationId` is still a placeholder (com.companyname.kidssafeparent) that must be changed before packaging.
@@ -329,6 +339,7 @@ These are real boundaries, not roadmap prose:
 - [ ] Multiple child profiles per account, each with its own time limits and content
 - [ ] Replace textbook PDFs with openly licensed material to remove the copyright dependency
 - [ ] iOS device/simulator regression, signing and App Store submission (the project itself is done); screen-time APIs (FamilyControls) and Singular attribution on iOS come later
+- [ ] iOS build of the parent app (the shared library already supports it — just add a `net10.0-ios` target)
 - [ ] Server: password recovery, audit log, optional self-signed HTTPS mode
 
 ## Contributing
