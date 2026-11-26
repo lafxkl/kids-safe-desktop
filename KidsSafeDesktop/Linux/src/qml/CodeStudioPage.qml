@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import KidsSafe 1.0
+// 通关数的算法（教学关不算分母）与家长后台共用一份
+import "LessonStats.js" as LessonStats
 
 /*
  * 小小程序员：搭积木 → 生成 C 语言 → 用系统 GCC 编译运行。
@@ -21,17 +23,35 @@ GameShell {
     glyph: "laptop"
     accent: "#5C6BC0"
     prompt: "挑一关 · 点积木搭程序 · 运行看结果"
-    scoreText: page.passedCount + " / " + page.lessons.length
+    // 分母只数要判题的关卡（task / project）。教学关没有「过关」这一步，
+    // 算进去就成了「最多只能到 26/32」，孩子永远收不满。算法与家长后台共用。
+    scoreText: page.stats.done + " / " + page.stats.total
 
     // ---------- 状态 ----------
     readonly property var lessons: CodeLab.lessons
     property int lessonIndex: -1
     property var lesson: (lessonIndex >= 0 && lessonIndex < lessons.length)
                          ? lessons[lessonIndex] : null
-    readonly property int passedCount: CodeLab.passedIds.length
+    readonly property var stats: LessonStats.stats(page.lessons, CodeLab.passedIds)
+    // 顶部那个「x / y」只数判题关，所以这里不能再直接用 passedIds.length
+    readonly property int passedCount: page.stats.done
 
     property int selected: -1
     property int rev: 0          // 每次改动 +1，让依赖它的绑定重新求值
+
+    // 「猜一猜」：教学关先让孩子预测运行结果，选了才允许运行。
+    // -1 = 还没猜；每次换关都重置（见 loadLesson）。
+    property int guess: -1
+    // 作品卡关掉以后不再弹，直到换下一关。
+    property bool celebrateClosed: false
+
+    // 这两条把「关卡里可能没有这个字段」的情况收在一处，
+    // 免得每个绑定都写一遍 page.lesson !== null && ...
+    readonly property var quiz: (lesson !== null && lesson.interactive !== undefined
+                                 && lesson.interactive.options !== undefined)
+                                ? lesson.interactive : null
+    readonly property var prize: (lesson !== null && lesson.project !== undefined)
+                                 ? lesson.project : null
 
     readonly property int leftWidth: 178
     readonly property int rightWidth: Math.min(380, Math.max(272, page.width * 0.29))
@@ -258,6 +278,8 @@ GameShell {
         program.clear()
         page.selected = -1
         page.lessonIndex = index
+        page.guess = -1
+        page.celebrateClosed = false
 
         const blocks = (index >= 0 && lessons[index] && lessons[index].starter)
                        ? lessons[index].starter : []
@@ -275,9 +297,13 @@ GameShell {
         }
 
         page.normalize()
-        // 教学关不判题：这一关是「看演示」，随便改随便试
-        CodeLab.setTask((index >= 0 && lessons[index] && lessons[index].type === "task")
-                        ? lessons[index] : ({}))
+        // 教学关不判题：这一关是「看演示」，随便改随便试。
+        // task 和 project 都要交给 C++ 判 —— 漏掉 project 的后果是作品关永远
+        // 判不出「过关」，作品卡（page.prize）也就永远不会弹，孩子做完什么反馈都没有。
+        const target = (index >= 0 && lessons[index]) ? lessons[index] : null
+        CodeLab.setTask((target !== null
+                         && (target.type === "task" || target.type === "project"))
+                        ? target : ({}))
         CodeLab.clearOutput()
         page.push()
     }
@@ -297,6 +323,8 @@ GameShell {
         program.clear()
         page.selected = -1
         page.lessonIndex = -1
+        page.guess = -1
+        page.celebrateClosed = false
         CodeLab.setTask({})
         CodeLab.clearOutput()
         page.push()
@@ -369,7 +397,7 @@ GameShell {
                     // 右边给「项目工坊」留位：那个按钮不参与横向滚动，
                     // 否则关卡一多就被挤出去，孩子找不到。
                     anchors.margins: 8
-                    anchors.rightMargin: labButton.width + 16
+                    anchors.rightMargin: labButton.width + hwButton.width + 24
                     contentWidth: chips.width
                     contentHeight: height
                     clip: true
@@ -416,8 +444,8 @@ GameShell {
                                 readonly property var item: page.lessons[index]
                                 readonly property bool active: page.lessonIndex === index
                                 readonly property bool passed: CodeLab.passedIds.indexOf(item.id) >= 0
-                                readonly property color tint: item.type === "task"
-                                                              ? "#FB8C00" : "#5C6BC0"
+                                readonly property color tint: item.type === "project" ? "#2E7D32"
+                                                              : (item.type === "task" ? "#FB8C00" : "#5C6BC0")
 
                                 width: chipText.implicitWidth + (passed ? 58 : 34)
                                 height: 46
@@ -439,7 +467,7 @@ GameShell {
                                     id: chipText
                                     anchors.centerIn: parent
                                     anchors.horizontalCenterOffset: chip.passed ? 8 : 0
-                                    text: chip.item.title
+                                    text: (chip.item.type === "project" ? "🏆 " : "") + chip.item.title
                                     font.pixelSize: 15
                                     font.weight: Font.DemiBold
                                     color: chip.active ? "#FFFFFF" : "#7A6759"
@@ -481,6 +509,35 @@ GameShell {
                         id: labTap
                         anchors.fill: parent
                         onClicked: page.navWin.pushPage(Qt.resolvedUrl("ProjectLabPage.qml"))
+                    }
+                }
+
+                // 「编程作业」入口。作业是纸面题（选择 / 填空 / 排顺序），
+                // 不需要编译器，所以和「项目工坊」并列放在关卡条右端。
+                Rectangle {
+                    id: hwButton
+
+                    anchors.right: labButton.left
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: hwText.implicitWidth + 30
+                    height: 46
+                    radius: 23
+                    color: hwTap.pressed ? "#00695C" : "#00897B"
+
+                    Text {
+                        id: hwText
+                        anchors.centerIn: parent
+                        text: "编程作业"
+                        font.pixelSize: 15
+                        font.weight: Font.DemiBold
+                        color: "#FFFFFF"
+                    }
+
+                    MouseArea {
+                        id: hwTap
+                        anchors.fill: parent
+                        onClicked: page.navWin.pushPage(Qt.resolvedUrl("HomeworkPage.qml"))
                     }
                 }
             }
@@ -671,6 +728,88 @@ GameShell {
                                     color: "#9B8574"
                                     wrapMode: Text.WordWrap
                                     maximumLineCount: 1
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+
+                        // ---- 「猜一猜」：教学关先预测，再运行验证 ----
+                        //
+                        // 只给教学关用（lessons.json 里的 interactive）。为什么要拦一道：
+                        // 直接点「运行」是「看结果」，先猜再跑才是「想结果」——
+                        // 猜错的那一下，比看十遍输出都记得牢。
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: visible ? (page.guess < 0 ? 132 : 62) : 0
+                            visible: page.quiz !== null
+                            radius: 14
+                            color: page.guess < 0 ? "#FFF8E1"
+                                   : ((page.quiz !== null && page.guess === page.quiz.answer)
+                                      ? "#E8F5E9" : "#FFEBEE")
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 10
+                                spacing: 7
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: page.quiz ? ("🤔 先猜一猜：" + page.quiz.question) : ""
+                                    font.pixelSize: 13
+                                    font.weight: Font.DemiBold
+                                    color: "#5D4037"
+                                    wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
+                                    elide: Text.ElideRight
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    visible: page.guess < 0
+                                    spacing: 6
+
+                                    Repeater {
+                                        model: page.quiz ? page.quiz.options : []
+
+                                        Rectangle {
+                                            Layout.preferredWidth: optionLabel.implicitWidth + 24
+                                            Layout.preferredHeight: 34
+                                            radius: 17
+                                            color: pickArea.pressed ? "#FFE0B2" : "#FFFFFF"
+                                            border.width: 1
+                                            border.color: "#FFCC80"
+
+                                            Text {
+                                                id: optionLabel
+                                                anchors.centerIn: parent
+                                                text: modelData
+                                                font.pixelSize: 12
+                                                color: "#6D4C41"
+                                            }
+
+                                            MouseArea {
+                                                id: pickArea
+                                                anchors.fill: parent
+                                                onClicked: page.guess = index
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    visible: page.guess >= 0
+                                    text: page.quiz
+                                          ? ((page.guess === page.quiz.answer
+                                              ? "✓ 猜对了！"
+                                              : "✗ 答案是「" + page.quiz.options[page.quiz.answer] + "」。")
+                                             + (page.quiz.why ? " " + page.quiz.why : ""))
+                                          : ""
+                                    font.pixelSize: 12
+                                    color: (page.quiz !== null && page.guess === page.quiz.answer)
+                                           ? "#2E7D32" : "#C62828"
+                                    wrapMode: Text.WordWrap
+                                    maximumLineCount: 2
                                     elide: Text.ElideRight
                                 }
                             }
@@ -1195,6 +1334,120 @@ GameShell {
                                 color: "#4E342E"
                                 wrapMode: TextArea.Wrap
                                 background: null
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ---- 关底作品卡 ----
+        //
+        // 每章最后一关是「小项目」：判过关后弹这张卡，把孩子刚做出来的东西
+        // 起个名字、给个徽章。没有这一步的话，「过关」只是右边一条绿色提示条，
+        // 孩子并不知道自己做出了什么。
+        Rectangle {
+            anchors.fill: parent
+            visible: page.prize !== null && CodeLab.verdict === "pass" && !page.celebrateClosed
+            color: "#664A3B32"
+
+            MouseArea {
+                anchors.fill: parent      // 只挡点击；关不关由孩子自己按按钮
+            }
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: 440
+                height: done.height + 44
+                radius: 26
+                color: "#FFFFFF"
+                border.width: 1
+                border.color: "#F2E1CD"
+
+                Column {
+                    id: done
+
+                    x: 22
+                    y: 22
+                    width: parent.width - 44
+                    spacing: 10
+
+                    Text {
+                        width: parent.width
+                        text: page.prize ? page.prize.badge : "🏆"
+                        font.pixelSize: 54
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: "作品完成！"
+                        font.pixelSize: 26
+                        font.weight: Font.Bold
+                        color: "#4A3B32"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: page.prize ? page.prize.name : ""
+                        font.pixelSize: 20
+                        font.weight: Font.Bold
+                        color: "#2E7D32"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: page.prize ? page.prize.pitch : ""
+                        font.pixelSize: 13
+                        color: "#7A6759"
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 10
+
+                        Rectangle {
+                            width: 104
+                            height: 42
+                            radius: 21
+                            color: stayArea.pressed ? "#EFE1D0" : "#F5EDE3"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "再改改"
+                                font.pixelSize: 14
+                                color: "#7A6759"
+                            }
+
+                            MouseArea {
+                                id: stayArea
+                                anchors.fill: parent
+                                onClicked: page.celebrateClosed = true
+                            }
+                        }
+
+                        Rectangle {
+                            width: 104
+                            height: 42
+                            radius: 21
+                            color: nextArea2.pressed ? "#1B5E20" : "#2E7D32"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "下一关 →"
+                                font.pixelSize: 14
+                                font.bold: true
+                                color: "#FFFFFF"
+                            }
+
+                            MouseArea {
+                                id: nextArea2
+                                anchors.fill: parent
+                                onClicked: page.nextLesson()
                             }
                         }
                     }

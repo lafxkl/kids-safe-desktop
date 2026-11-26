@@ -88,6 +88,7 @@ Linux/
 │   ├── kidssafe-session         # 启动 + 崩溃守护
 │   └── kidssafe-wayland-session # 合成器 + 启动
 └── scripts/
+    ├── install-deps.sh          # 装构建依赖（Debian / Ubuntu）
     ├── install.sh
     └── check-host.sh            # 环境与会话检查（只读）
 ```
@@ -97,13 +98,18 @@ Linux/
 ## 三、构建
 
 ```sh
-# Debian / Ubuntu
+# Debian / Ubuntu（一条命令装齐，见 scripts/install-deps.sh）
+sh scripts/install-deps.sh
+
+# 等价的手工命令（下面这张表是 Debian 系真实包名，别抄 Fedora 的写法）：
 sudo apt install build-essential cmake extra-cmake-modules \
      qt6-base-dev qt6-declarative-dev \
-     libkf6config-dev libkf6coreaddons-dev libkf6service-dev \
-     libkf6kirigami-dev libkf6i18n-dev \
-     qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts \
-     qqc2-breeze-style
+     libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
+     libkirigami-dev qml6-module-org-kde-kirigami \
+     qml6-module-qtquick qml6-module-qtquick-window \
+     qml6-module-qtquick-controls qml6-module-qtquick-layouts \
+     qml6-module-qtquick-templates qml6-module-qtqml-workerscript \
+     qml6-module-org-kde-breeze
 
 # Fedora
 sudo dnf install cmake gcc-c++ extra-cmake-modules \
@@ -152,9 +158,14 @@ sudo apt install qt6-multimedia-dev
    同一路径下的 `beige` 套件也存在（HTTP 200，apt 不会报错），但里面**没有 KF6**、
    Qt 也停在旧版，选错会连续报"无法定位软件包"和"破坏软件包间的依赖关系"。
    `VERSION_CODENAME` 在 deepin 25 上恰好是 `beige`，极容易照抄错。
-2. **kirigami 开发包叫 `libkirigami-dev`**，不是 Ubuntu 的 `libkf6kirigami-dev`；
-   Debian 系给 KF6 保留了不带 `kf6` 前缀的历史名。
-3. **没有 `qqc2-breeze-style`**（deepin 用自家 DTK 风格）。这一条踩错会直接黑屏：
+2. **kirigami 开发包叫 `libkirigami-dev`**（Ubuntu 24.04 起也是这个名字），
+   不是 `libkf6kirigami-dev`。KF6 那一堆框架都带 `kf6` 前缀
+   （`libkf6config-dev`、`libkf6i18n-dev` …），只有 Kirigami 例外——上游库名
+   本来就叫 `Kirigami`。写错的后果不是「少装一个包」：apt 一遇上
+   「无法定位软件包」就整条命令中止，同一条命令里其它包也不会装。
+3. **没有 `qqc2-breeze-style`**（那是 Fedora / Arch 的名字）。Ubuntu 上是
+   `qml6-module-org-kde-breeze`，deepin 干脆没有（它用自家 DTK 风格）。
+   这一条踩错会直接黑屏：
    `QQuickStyle::setStyle("org.kde.breeze")` 指向不存在的样式模块时，Qt **不会**
    悄悄退回默认样式，而是让第一个 `import QtQuick.Controls` 的文件报
    `module "org.kde.breeze" is not installed`，整个界面加载失败。`main.cpp`
@@ -491,6 +502,10 @@ cd server
 启动后终端会打印两行地址：家长后台（本机打开）和「孩子端可填」（局域网地址）。
 把后者填进家长后台的「服务器地址」，打开「在线故事与内容」开关，回桌面进故事屋即可。
 
+同一个地址还负责**收学习情况**：孩子过一关、交一次作业，客户端就会 POST
+`/api/learn/report` 上报进度与成绩，家长在服务器网页的「学习情况」里能看到
+章节进度条和每套作业的最高分。没填地址时一个请求都不发，成绩只留在本机。
+
 自带 19 篇示例故事、7 个分类。加内容有两种方式：改 `data/stories.json`，
 或往 `data/stories/<分类名>/` 里丢 txt，然后在家长后台点「重新载入内容」。
 完整说明（接口表、排障、卸载）见 [`server/README.md`](server/README.md)。
@@ -677,14 +692,15 @@ cp -r ~/下载/某游戏 ~/.local/share/kidssafe/games/
 「结束」，孩子永远见不到落单的花括号。要取消循环就删循环块本身，口袋里的内容
 会留在原地。想跳出循环继续往外搭，点一下那根「结束重复」横条即可。
 
-#### 关卡：6 章 14 关
+#### 关卡：6 章 32 关（每章都以一个关底作品收尾）
 
 关卡表在 `assets/codelab/lessons.json`，**改它就能加题、改讲解，不用重编译**：
 
 ```jsonc
 {
   "id": "q-loop-1",
-  "type": "task",                       // teach = 看演示；task = 自己搭并判题
+  "type": "task",                       // teach = 看演示；task = 自己搭并判题；
+                                        // project = 每章关底的小项目（判题同 task）
   "chapter": "第二章 · 重复",
   "title": "开满花",
   "goal": "用「重复」积木打印 4 行「花花花」",
@@ -695,7 +711,32 @@ cp -r ~/下载/某游戏 ~/.local/share/kidssafe/games/
 }
 ```
 
+教学关还可以带一段 `interactive`，孩子在点「运行」之前先猜结果：
+
+```jsonc
+"interactive": {
+  "question": "口袋里装了一行「我爱编程」，重复 3 次，屏幕上会出现几行？",
+  "options": ["1 行", "3 行", "4 行"],
+  "answer": 1,                           // options 里的下标
+  "why": "重复几次就把口袋里的积木做几遍，所以是 3 行。"
+}
+```
+
+先猜再跑，和直接点「运行」是两件事：前者要想，后者只是看。猜错的那一下，
+比看十遍输出记得都牢。
+
+关底作品（`type: "project"`）除了判题字段，还多一个 `project`：过关后弹一张
+作品卡，把刚做出来的东西起个名字、给个徽章。没有这一步，「过关」只是右边一条
+绿色提示条，孩子并不知道自己做出了什么。
+
+```jsonc
+"project": { "name": "存钱罐", "badge": "🐷", "pitch": "每存一次就报一次余额" }
+```
+
 现有章节：顺序 → 重复 → 变量 → 判断 → 队列（先进先出）→ 栈（后进先出）。
+每章走法固定：**教学（看 + 猜）→ 练习（自己搭）→ 关底作品（做个小东西）**。
+练习共 20 个：重复、变量两章各 4 个，其余四章各 3 个。一节教学只配一个练习太急，
+孩子还没认全积木就进了作品关，最后往往是照着答案摆一遍。
 数据结构那两章刻意不引入数组：孩子用「打印的顺序」就能看出队列和栈的区别，
 `盘子3 → 盘子2 → 盘子1` 比任何图示都清楚。
 
@@ -728,8 +769,45 @@ cp -r ~/下载/某游戏 ~/.local/share/kidssafe/games/
 启动日志里有一行可以直接确认：
 
 ```
-[app] 小小程序员： gcc | 关卡 14 个
+[app] 小小程序员： gcc | 关卡 32 个
 ```
+
+### 编程作业（选择 / 填空 / 排顺序）
+
+关卡是「动手搭，编译器判」；作业是「纸面题，当场判」。入口在小小程序员关卡条
+右端的「编程作业」按钮，题库在 `src/qml/HomeworkData.js`，改题目不用重编译。
+
+| 题型 | 怎么答 | 怎么判 |
+| --- | --- | --- |
+| 选择题 | 点一个选项 | 立刻判对错，并亮出「为什么」 |
+| 填空题 | 输入框 + 「确定」 | 抹掉空格、标点、大小写后比对；`alt` 里的写法也算对 |
+| 排序题 | 点候选卡片按顺序排（可撤销） | 和 `items` 逐项比对，没排完不让交 |
+
+三个取舍：
+
+- **选择题点一下就判**，不等交卷。等五道题交完再告诉孩子错在哪，他早忘了当时怎么想的。
+- **判题只认「抹平之后」的答案**（`normalize()`）：孩子在平板上打个中文逗号就判错，
+  只会让人不想再做题。全角数字 `５` 也算对。
+- **排序题点选而不是拖拽**：1280×800 上拖拽命中率低；点错了用「撤销」退一格。
+  候选顺序是打乱过的，而且**刻意转不满一圈** —— 转满一圈就等于把答案原样摆出来了。
+
+成绩按套记录，存 `~/.config/kidssafe/codelab.conf` 的 `homework` 组，同一套反复做
+保留最高分（`best`），交卷时由 `CodeLab.saveHomeworkScore()` 写入。三套作业分别对应
+顺序与重复、变量与判断、队列与栈，孩子在哪一章卡住就抽哪一套复查。
+
+成绩在**家长后台的「小小程序员 · 学习情况」卡片**里能看到：每一章的过关数
+（`3/4` 加一条进度条）、每套作业的最高分和最近一次交卷时间。分母只数要判题的
+关卡（练习 + 作品关），教学关没有「过关」这一步，算进去只会让进度永远差几格。
+卡片右下角可以清空作业成绩（重置复习记录），关卡进度不受影响 —— 两者是两条
+独立的线：进度是「学到了哪」，成绩是「掌握得怎么样」。
+
+如果填了「在线故事与内容」里的服务器地址、并且那个开关是打开的，同一份数据
+还会上报给自建服务端（`POST /api/learn/report`，攒 1.5 秒再发，连过三关只发最后
+一次），家长在外面用浏览器打开服务器网页也能看。上报走同一个开关是有意的：
+把孩子的数据送出这台机器，得跟在线内容一样需要家长明确打开，不能偷偷发。
+上报失败不影响孩子做题：成绩本来就已写进本机，客户端记一行「上报失败」并在
+下次改动时重试。卡片底部那行小字就是它的状态，旁边还有「立即上报」，
+家长刚填完地址不用等孩子再做一题。
 
 ### 项目工坊（拆现成的作品）
 
@@ -937,7 +1015,8 @@ X11 抢占只是**锦上添花**，Wayland 下它会诚实地报告「不可用�
 - [x] 家长验证（数字键盘，带错误抖动）
 - [x] 儿童桌面（内置内容入口 + 应用磁贴网格、剩余时间、外部应用遮罩）
 - [x] 超时锁屏 + 家长延长
-- [x] 家长后台（时长、临时加时、白名单、服务器地址与连接测试、护眼、退出）
+- [x] 家长后台（时长、临时加时、白名单、服务器地址与连接测试、护眼、
+  小小程序员学习情况、退出）
 - [x] 故事屋：分类浏览 / 搜索 / 分页 / 正文阅读 / 朗读
 - [x] **安全学堂**：10 个主题 52 条贴士 + 40 道安全问答（完全离线，与三端同源）
 - [x] **游戏乐园**：难度三档 + 6 个原生小游戏（数一数 / 拼图配对 / 找颜色 / 算术乐园 /
@@ -956,7 +1035,8 @@ X11 抢占只是**锦上添花**，Wayland 下它会诚实地报告「不可用�
   唐诗/三字经用 TTS 朗读；内容表 `assets/audio/library.json` 可改不需重编译
 - [x] **启动语言选择（简体中文 / English）**：首次引导第一步选语言，家长后台可改；
   简体中文模式不显示「故事剧场」入口（内容合规），英文模式不限制
-- [x] **小小程序员（积木 → C 语言）**：6 章 14 关（含队列 / 栈两章数据结构），
+- [x] **小小程序员（积木 → C 语言）**：6 章 32 关（含队列 / 栈两章数据结构、
+  20 个练习、6 个关底作品、「猜一猜」互动与编程作业），
   积木生成真实 C 源码交给系统 gcc 编译运行，按输出判题；关卡表
   `assets/codelab/lessons.json` 可改不需重编译，没装 gcc 时降级为只读
 - [x] **项目工坊（内置项目素材）**：飞机大战 / 推箱子 / 横板冒险三个写完的作品，

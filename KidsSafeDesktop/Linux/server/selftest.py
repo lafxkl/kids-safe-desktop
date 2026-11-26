@@ -12,15 +12,25 @@
     search  → 同样的结构，且确实缩小了结果
     detail  → id / title / content
 
+以及学习情况上报（src/core/learnreport.cpp 用的那三个接口）：
+    report  → 进度 / 作业都能落盘，最高分不被低分覆盖，full=true 能删空
+    summary → children[].child / progress / homework / updatedAt
+    reset   → 清空后 children 为空
+
+测试会在临时目录里复制一份 data/ 再跑，不会污染仓库里的内容：
+上报会产生 learn.json，那是运行时数据，不该跟着代码提交。
+
 注意这不是单元测试框架，只是一个「改完内容或接口后三十秒能确认没弄坏」的脚本。
 不依赖任何第三方包，和服务器本体保持一致。
 """
 
 import json
 import os
+import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -59,13 +69,34 @@ def get(base, path, expect=200):
         return error.code, None
 
 
+def post(base, path, payload=None, raw=None):
+    body = raw if raw is not None else json.dumps(payload or {}).encode("utf-8")
+    request = urllib.request.Request(
+        base + path, data=body, headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return response.status, json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        try:
+            return error.code, json.loads(error.read().decode("utf-8"))
+        except ValueError:
+            return error.code, None
+
+
 def main():
     port = free_port()
     base = "http://127.0.0.1:%d" % port
 
-    print("启动临时实例：%s" % base)
+    # 复制一份内容目录再跑：自测会往 data/ 里写 learn.json，
+    # 不能污染仓库里那份（家长可能正拿它当真实数据）。
+    temp_root = tempfile.mkdtemp(prefix="kidssafe-selftest-")
+    work_dir = os.path.join(temp_root, "data")
+    shutil.copytree(os.path.join(HERE, "data"), work_dir)
+
+    print("启动临时实例：%s（数据目录 %s）" % (base, work_dir))
     process = subprocess.Popen(
-        [sys.executable, SERVER, "--host", "127.0.0.1", "--port", str(port)],
+        [sys.executable, SERVER, "--host", "127.0.0.1", "--port", str(port),
+         "--data", work_dir],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
@@ -142,11 +173,77 @@ def main():
         status, page2 = get(base, "/api/story/list?typeId=0&page=2")
         check("第二页可访问", status == 200 and (page2 or {}).get("page") == 2)
 
+        # 学习情况上报（客户端 core/learnreport.cpp 的接口）
+        print("\n学习情况上报：")
+
+        status, summary = get(base, "/api/learn/summary")
+        check("初始没有记录", status == 200 and summary.get("children") == [])
+
+        report = {
+            "child": "默认",
+            "source": "linux",
+            "device": "selftest",
+            "progress": {
+                "done": 3, "total": 26,
+                "passed": ["q-order-1", "q-order-2", "q-order-3"],
+                "chapters": [{"name": "第一章 · 顺序", "done": 3, "total": 4},
+                             {"name": "第二章 · 重复", "done": 0, "total": 5}],
+            },
+            "homework": {"hw-order": {"score": 4, "total": 5, "best": 4,
+                                      "title": "第 1 课 · 顺序与重复",
+                                      "at": "2026-11-26T13:40:30"}},
+        }
+        status, result = post(base, "/api/learn/report", report)
+        check("上报成功", status == 200 and (result or {}).get("ok") is True, str(result))
+        check("返回孩子名", (result or {}).get("child") == "默认")
+
+        status, summary = get(base, "/api/learn/summary")
+        kid = ((summary or {}).get("children") or [{}])[0]
+        progress = kid.get("progress") or {}
+        check("汇总里有进度", progress.get("done") == 3 and progress.get("total") == 26)
+        check("章节进度完整",
+              all("name" in c and "done" in c and "total" in c
+                  for c in (progress.get("chapters") or [])))
+        check("汇总里有作业", (kid.get("homework") or {}).get("hw-order", {}).get("best") == 4)
+
+        # 再交一次、分数更低：最高分要留住，最近一次分数要更新
+        post(base, "/api/learn/report",
+             {"homework": {"hw-order": {"score": 2, "total": 5, "title": "第 1 课 · 顺序与重复"}}})
+        status, summary = get(base, "/api/learn/summary")
+        item = ((summary or {}).get("children") or [{}])[0].get("homework", {}).get("hw-order", {})
+        check("最高分保留", item.get("best") == 4 and item.get("score") == 2, str(item))
+
+        status, _ = post(base, "/api/learn/report", raw=b"{oops")
+        check("坏 JSON 返回 400", status == 400)
+
+        # 家长在孩子端点「清空成绩」后，客户端会用 full=true 再报一次空表
+        post(base, "/api/learn/report", {"full": True, "homework": {}})
+        status, summary = get(base, "/api/learn/summary")
+        check("full=true 能删掉已清空的作业",
+              "hw-order" not in (((summary or {}).get("children") or [{}])[0]
+                                 .get("homework") or {}))
+
+        status, result = post(base, "/api/learn/report",
+                              {"homework": {"bad": {"score": 9, "total": 0}}})
+        check("total=0 的作业被忽略", status == 200 and (result or {}).get("ok") is True)
+        status, summary = get(base, "/api/learn/summary")
+        check("坏作业没进记录",
+              "bad" not in (((summary or {}).get("children") or [{}])[0].get("homework") or {}))
+
+        status, health = get(base, "/api/health")
+        check("health 带学习上报数", isinstance((health or {}).get("learnChildren"), int))
+
+        status, result = post(base, "/api/learn/reset", {"child": "默认"})
+        check("清空成功", status == 200 and (result or {}).get("children") == 0)
+        status, summary = get(base, "/api/learn/summary")
+        check("清空后没有记录", (summary or {}).get("children") == [])
+
         # 家长后台页面
         try:
             with urllib.request.urlopen(base + "/", timeout=5) as response:
                 html = response.read().decode("utf-8")
             check("家长后台页面可打开", "故事服务端" in html and response.status == 200)
+            check("页面上有学习情况", "学习情况" in html and "/api/learn/summary" in html)
         except Exception as error:
             check("家长后台页面可打开", False, str(error))
 
@@ -156,6 +253,7 @@ def main():
             process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             process.kill()
+        shutil.rmtree(temp_root, ignore_errors=True)
 
     print("\n%d 项通过，%d 项失败" % (passed, failed))
     return 0 if failed == 0 else 1

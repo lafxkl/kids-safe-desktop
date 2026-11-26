@@ -156,6 +156,7 @@ CodeLab::CodeLab(QObject *parent)
 
     m_lessons = loadLessons();
     readProgress();
+    readHomework();
 
     // 上次被强杀（kiosk 会话断电、看门狗重启）时 run-XXXXXX 会留下来，
     // 清掉一天以前的；只动本应用自己建的目录，名字不对的一概不碰。
@@ -262,6 +263,57 @@ void CodeLab::resetProgress()
     saveProgress();
     setVerdict(QString(), QString());
     emit progressChanged();
+}
+
+/*
+ * 作业成绩。题库和判题都在 QML 侧（src/qml/HomeworkData.js），C++ 只管
+ * 「交了卷就记一笔」：同一套作业反复做时保留最高分，家长后台和下次打开
+ * 都能看到这次的结果。和关卡进度共用一个 ini 文件，少一个配置路径要维护。
+ */
+void CodeLab::readHomework()
+{
+    QSettings store(QSettings::IniFormat, QSettings::UserScope,
+                    QStringLiteral("kidssafe"), QStringLiteral("codelab"));
+    m_homework = store.value(QStringLiteral("homework")).toMap();
+}
+
+void CodeLab::saveHomeworkFile()
+{
+    QSettings store(QSettings::IniFormat, QSettings::UserScope,
+                    QStringLiteral("kidssafe"), QStringLiteral("codelab"));
+    store.setValue(QStringLiteral("homework"), m_homework);
+    store.sync();
+}
+
+void CodeLab::saveHomeworkScore(const QString &id, int score, int total, const QString &title)
+{
+    // total 为 0 的作业是坏数据，记下来只会让统计出现「0/0 满分」这种怪结果。
+    if (id.isEmpty() || total <= 0) {
+        return;
+    }
+    QVariantMap record = m_homework.value(id).toMap();
+    const int best = record.value(QStringLiteral("best"), -1).toInt();
+    record.insert(QStringLiteral("score"), score);
+    record.insert(QStringLiteral("total"), total);
+    record.insert(QStringLiteral("best"), qMax(best, score));
+    record.insert(QStringLiteral("at"), QDateTime::currentDateTime().toString(Qt::ISODate));
+    if (!title.isEmpty()) {
+        // 标题一起存：家长后台的网页只知道 id，没有标题就只能显示 hw-order
+        record.insert(QStringLiteral("title"), title);
+    }
+    m_homework.insert(id, record);
+    saveHomeworkFile();
+    emit homeworkChanged();
+}
+
+void CodeLab::resetHomeworkScores()
+{
+    if (m_homework.isEmpty()) {
+        return;
+    }
+    m_homework.clear();
+    saveHomeworkFile();
+    emit homeworkChanged();
 }
 
 void CodeLab::setTask(const QVariantMap &task)

@@ -50,6 +50,11 @@ class CodeLab : public QObject
     Q_PROPERTY(QString verdictText READ verdictText NOTIFY verdictChanged)
     Q_PROPERTY(QStringList passedIds READ passedIds NOTIFY progressChanged)
 
+    // 编程作业的成绩：作业 id → { score, total, best, at }。
+    // 作业题库在 src/qml/HomeworkData.js（QML 侧的数据 + 判题），这里只负责
+    // 「做完一套就记一笔」，成绩和家长后台、下次打开对得上。
+    Q_PROPERTY(QVariantMap homeworkScores READ homeworkScores NOTIFY homeworkChanged)
+
 public:
     explicit CodeLab(QObject *parent = nullptr);
     ~CodeLab() override;
@@ -66,6 +71,7 @@ public:
     QString verdict() const { return m_verdict; }
     QString verdictText() const { return m_verdictText; }
     QStringList passedIds() const { return m_passed; }
+    QVariantMap homeworkScores() const { return m_homework; }
 
     // 界面每次改完积木调用它：重新生成源码，但不编译。
     Q_INVOKABLE void setProgram(const QVariantList &blocks);
@@ -73,6 +79,11 @@ public:
     Q_INVOKABLE void setTask(const QVariantMap &task);
     Q_INVOKABLE bool isPassed(const QString &id) const;
     Q_INVOKABLE void resetProgress();
+    // 作业交卷时调用：记下本次成绩，并保留历史最高。
+    // title 只是给家长后台看的（题库改版后 id 没变、名字可能变），可以不传。
+    Q_INVOKABLE void saveHomeworkScore(const QString &id, int score, int total,
+                                       const QString &title = QString());
+    Q_INVOKABLE void resetHomeworkScores();
     // 用当前源码编译 + 运行。异步，结果通过 output/status 通知。
     Q_INVOKABLE void run();
     Q_INVOKABLE void stop();
@@ -87,6 +98,7 @@ signals:
     void lessonsChanged();
     void verdictChanged();
     void progressChanged();
+    void homeworkChanged();
 
 private:
     enum Stage {
@@ -101,6 +113,8 @@ private:
     QVariantList loadLessons();
     void readProgress();
     void saveProgress();
+    void readHomework();
+    void saveHomeworkFile();
     bool judge(const QVariantMap &task, QString *why) const;
     void evaluateTask();
     void setVerdict(const QString &verdict, const QString &text);
@@ -131,6 +145,7 @@ private:
     QString m_verdict;           // "" / "pass" / "fail"
     QString m_verdictText;
     QStringList m_passed;
+    QVariantMap m_homework;      // 作业 id → { score, total, best, at }
 
     QString m_progPath;          // 本次编译出的可执行文件，启动失败时要拿它做诊断
 

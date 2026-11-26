@@ -57,6 +57,8 @@ Item {
         }
 
         Rectangle {
+            id: card
+
             Layout.fillWidth: true
             Layout.preferredHeight: content.implicitHeight + 72
             radius: 32
@@ -64,15 +66,25 @@ Item {
             border.color: "#F2E1CD"
             border.width: 1
 
+            /*
+             * 内层尺寸用显式绑定，不用 anchors 撑。
+             *
+             * 这里原来写的是 anchors.left + anchors.right + anchors.top +
+             * anchors.margins: 36。实测（Ubuntu 24.04 桌面、Qt 6.x）right 那条
+             * 没起作用：卡片量出来 720 宽，内层只有 319 宽 —— 正好是它自己的
+             * implicitWidth（最长的那行提示文字 / 密码盘 312 宽），于是标题、
+             * 提示、键盘全挤在卡片左边，右边空出一大片。
+             *
+             * 高度仍旧不写，交给 ColumnLayout 用 implicitHeight，否则和外层
+             * Rectangle 的 preferredHeight 形成绑定环；宽度直接绑到卡片上，
+             * 一定会跟着卡片走。内容和卡片之间仍然留 36 的内边距。
+             */
             ColumnLayout {
                 id: content
 
-                // 只贴左/右/上，不贴底：高度交给 implicitHeight，
-                // 否则会和外层 Rectangle 的 preferredHeight 形成绑定环。
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 36
+                x: 36
+                y: 36
+                width: card.width - 72
                 spacing: 20
 
                 // ---- 第 1 步：选语言 ----
@@ -248,19 +260,23 @@ Item {
                     spacing: 16
 
                     Text {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
                         text: page.firstPin === "" ? Settings.t("onboard.setPin")
                                                    : Settings.t("onboard.confirmPin")
                         font.pixelSize: 30
                         font.weight: Font.Bold
                         color: "#4A3B32"
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
                     }
 
                     Text {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
                         text: page.tipText.length > 0 ? page.tipText : Settings.t("onboard.pinHint")
                         font.pixelSize: 16
                         color: page.tipText.length > 0 ? "#D85A30" : "#9B8574"
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
                     }
 
                     PinPad {

@@ -3,6 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import KidsSafe 1.0
+// 作业的标题和题数都在题库里，这里只读、不判题；成绩来自 CodeLab.homeworkScores。
+import "HomeworkData.js" as HW
+// 通关数与每章进度的算法和「小小程序员」页共用一份（教学关不算分母）。
+import "LessonStats.js" as LessonStats
 
 /*
  * 家长后台。对应 C# 的 ParentDashboardPage，但只保留了 Linux MVP 需要的部分：
@@ -18,7 +22,67 @@ Item {
     readonly property var navWin: Window.window
 
     property bool confirmingExit: false
+    property bool confirmingResetHw: false
     property string serverHint: ""
+
+    /*
+     * 学习情况的两个数据源：
+     *   关卡 —— CodeLab.lessons + CodeLab.passedIds，算法在 LessonStats.js
+     *           （和小小程序员页顶的「x / y」共用，教学关不算分母）；
+     *   作业 —— HomeworkData.js 里的题库顺序 + CodeLab.homeworkScores（best/total/at）。
+     *
+     * 都做成 readonly property 而不是在绑定里直接调函数：这个页面有几十个绑定，
+     * 每次重算一遍关卡表没必要。属性依赖 lessons / passedIds / homeworkScores，
+     * C++ 那边一 emit 就会重算。
+     */
+    readonly property var lessonStats: LessonStats.stats(CodeLab.lessons, CodeLab.passedIds)
+    readonly property var homeworkRows: page.buildHomeworkRows()
+
+    function buildHomeworkRows() {
+        const scores = CodeLab.homeworkScores
+        const rows = []
+        for (let i = 0; i < HW.homeworks.length; ++i) {
+            const set = HW.homeworks[i]
+            const record = scores ? scores[set.id] : null
+            rows.push({
+                title: set.title,
+                // total 取作业记录里的（题库改过题数时以实际交卷为准），没做过就用题库题数
+                total: record ? record.total : set.questions.length,
+                best: record ? record.best : 0,
+                at: record ? String(record.at) : "",
+                done: !!record
+            })
+        }
+        return rows
+    }
+
+    // "2026-11-26T13:40:30" → "11/26 13:40"；解析不了就原样显示，宁可难看也别空着
+    function whenText(iso) {
+        if (!iso || iso.length < 16) {
+            return ""
+        }
+        return iso.substr(5, 2) + "/" + iso.substr(8, 2) + " " + iso.substr(11, 5)
+    }
+
+    /*
+     * 上报状态说人话。四个状态分别对应「没配地址 / 发了 / 正在发 / 失败」。
+     * 失败时一定要带上「成绩仍在本机」——不写这句，家长第一反应是「成绩丢了」，
+     * 然后去翻配置文件，而其实孩子什么都没丢。
+     */
+    function syncText() {
+        switch (Reports.state) {
+        case "ok":
+            return Reports.detail + "，家长后台网页已经能看到"
+        case "sending":
+            return "正在上报到家长后台…"
+        case "error":
+            return Reports.detail
+        case "disabled":
+            return Reports.detail
+        default:
+            return "成绩只存在本机；过一关或交一次作业后会自动上报"
+        }
+    }
 
     function minutesText(seconds) {
         const m = Math.floor(seconds / 60);
@@ -291,6 +355,257 @@ Item {
                                                 Settings.removeApp(appId);
                                             }
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ---- 小小程序员：学习情况 ----
+                // 关卡进度和作业成绩本来只在孩子那两页里，家长不进那两页就永远看不到。
+                // 这里只读、不提供「替他做题」之类的入口：家长要的是「学到哪了」，
+                // 不是替孩子操作。
+                // 高度不写死：作业套数、章节数都是从数据里来的，写死会在加关卡后顶出去。
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: learnCol.implicitHeight + 44
+                    radius: 24
+                    color: "#FFFFFF"
+                    border.color: "#F2E1CD"
+                    border.width: 1
+
+                    ColumnLayout {
+                        id: learnCol
+
+                        x: 22
+                        y: 22
+                        width: parent.width - 44
+                        spacing: 12
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 14
+
+                            ColumnLayout {
+                                // 这行说明比其它卡片的副标题长，必须让它自己撑开并换行：
+                                // 不给 fillWidth 时它的 implicitWidth 会把右边的徽章挤出去。
+                                Layout.fillWidth: true
+                                spacing: 3
+
+                                Text {
+                                    text: "小小程序员 · 学习情况"
+                                    font.pixelSize: 17
+                                    font.weight: Font.DemiBold
+                                    color: "#4A3B32"
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "孩子过了第几关、编程作业做了几套，交完就自动记在这里"
+                                    font.pixelSize: 13
+                                    color: "#B8A492"
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.preferredWidth: passBadge.width + 30
+                                Layout.preferredHeight: 36
+                                radius: 18
+                                color: page.lessonStats.total > 0
+                                       && page.lessonStats.done === page.lessonStats.total
+                                       ? "#E8F7EF" : "#FFF3E6"
+                                border.width: 1
+                                border.color: page.lessonStats.total > 0
+                                             && page.lessonStats.done === page.lessonStats.total
+                                             ? "#B7E4CB" : "#F6D9BE"
+
+                                Text {
+                                    id: passBadge
+
+                                    anchors.centerIn: parent
+                                    text: "通关 " + page.lessonStats.done + " / " + page.lessonStats.total
+                                    font.pixelSize: 14
+                                    font.weight: Font.DemiBold
+                                    color: page.lessonStats.total > 0
+                                           && page.lessonStats.done === page.lessonStats.total
+                                           ? "#1D9E75" : "#B4552F"
+                                }
+                            }
+                        }
+
+                        // 每章一条细进度条：家长一眼看出「卡在判断那一章」
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Repeater {
+                                model: page.lessonStats.chapters
+
+                                Rectangle {
+                                    required property var modelData
+
+                                    readonly property bool full: modelData.total > 0
+                                                                 && modelData.done === modelData.total
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 64
+                                    radius: 16
+                                    color: full ? "#E8F7EF" : "#FFF8F0"
+                                    border.width: 1
+                                    border.color: full ? "#B7E4CB" : "#F2E1CD"
+
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 5
+
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 6
+
+                                            Text {
+                                                Layout.fillWidth: true
+                                                text: LessonStats.shortChapter(modelData.name)
+                                                font.pixelSize: 13
+                                                color: full ? "#1D9E75" : "#7A6759"
+                                                elide: Text.ElideRight
+                                            }
+
+                                            Text {
+                                                text: modelData.done + "/" + modelData.total
+                                                font.pixelSize: 13
+                                                font.weight: Font.DemiBold
+                                                color: full ? "#1D9E75" : "#B4552F"
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 6
+                                            radius: 3
+                                            color: "#F1E4D4"
+
+                                            Rectangle {
+                                                anchors.left: parent.left
+                                                anchors.top: parent.top
+                                                anchors.bottom: parent.bottom
+                                                // total 为 0 时不能除，宁可画一条空槽
+                                                width: parent.width
+                                                       * (modelData.total > 0
+                                                          ? modelData.done / modelData.total : 0)
+                                                radius: 3
+                                                color: full ? "#1D9E75" : "#FF8A5C"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "编程作业"
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                            color: "#7A6759"
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            Repeater {
+                                model: page.homeworkRows
+
+                                Rectangle {
+                                    required property var modelData
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 46
+                                    radius: 12
+                                    color: modelData.done ? "#FBF7F1" : "#FDFBF8"
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 14
+                                        anchors.rightMargin: 14
+                                        spacing: 10
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: modelData.title
+                                            font.pixelSize: 14
+                                            color: modelData.done ? "#4A3B32" : "#9B8574"
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            text: modelData.done
+                                                  ? ("最高 " + modelData.best + "/" + modelData.total)
+                                                  : "还没做"
+                                            font.pixelSize: 14
+                                            font.weight: modelData.done ? Font.DemiBold : Font.Normal
+                                            color: modelData.done
+                                                   ? (modelData.best === modelData.total ? "#1D9E75" : "#B4552F")
+                                                   : "#B8A492"
+                                        }
+
+                                        Text {
+                                            Layout.preferredWidth: 84
+                                            horizontalAlignment: Text.AlignRight
+                                            visible: modelData.done
+                                            text: page.whenText(modelData.at)
+                                            font.pixelSize: 12
+                                            color: "#B8A492"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: page.confirmingResetHw
+                                      ? "再点一次就清空全部作业成绩（关卡进度不受影响）"
+                                      : page.syncText()
+                                font.pixelSize: 12
+                                color: page.confirmingResetHw
+                                       ? "#C0392B"
+                                       : (Reports.state === "error" ? "#C0392B" : "#C4AE99")
+                                wrapMode: Text.Wrap
+                            }
+
+                            // 手动补一次：家长刚填完服务器地址，不用等孩子再做一题。
+                            // 地址没填时按钮是灰的 —— 那时候点它只会得到一句「没填地址」。
+                            LargeButton {
+                                Layout.preferredWidth: 108
+                                Layout.preferredHeight: 44
+                                text: Reports.state === "sending" ? "上报中…" : "立即上报"
+                                accentColor: "#EFE1D0"
+                                labelColor: "#7A6759"
+                                enabled: Reports.state !== "disabled"
+                                         && Reports.state !== "sending"
+                                onClicked: Reports.send()
+                            }
+
+                            LargeButton {
+                                Layout.preferredWidth: 130
+                                Layout.preferredHeight: 44
+                                text: page.confirmingResetHw ? "确认清空" : "清空成绩"
+                                accentColor: page.confirmingResetHw ? "#E0544B" : "#EFE1D0"
+                                labelColor: page.confirmingResetHw ? "white" : "#7A6759"
+                                onClicked: {
+                                    if (page.confirmingResetHw) {
+                                        CodeLab.resetHomeworkScores();
+                                        page.confirmingResetHw = false;
+                                    } else {
+                                        page.confirmingResetHw = true;
                                     }
                                 }
                             }
@@ -1098,5 +1413,6 @@ Item {
     Component.onCompleted: {
         AppCatalog.refresh();
         page.confirmingExit = false;
+        page.confirmingResetHw = false;
     }
 }

@@ -5,6 +5,7 @@
 #include "core/feedback.h"
 #include "core/hotkeyguard.h"
 #include "core/kiosk.h"
+#include "core/learnreport.h"
 #include "core/maker.h"
 #include "core/mediaplayer.h"
 #include "core/playland.h"
@@ -459,6 +460,9 @@ int main(int argc, char *argv[])
     // 小小程序员：积木 → C 源码 → 系统 GCC 编译运行。编译器是可选依赖，
     // 没有 gcc 时页面照样能看代码，只是点「运行」会提示怎么装。
     auto *codeLab = new CodeLab(&app);
+    // 学习情况上报：关卡进度 + 作业成绩 → 家长后台（自己的故事服务端）。
+    // 没填服务器地址时不发任何请求，也不影响孩子做题。
+    auto *reports = new LearnReport(settings, codeLab, &app);
     // 开机自启 / 崩溃自愈：只写用户目录（XDG autostart 或 systemd --user 单元）。
     auto *startup = new Startup(&app);
     // 系统快捷键抢占：X11 用 XGrabKey，Wayland 诚实降级为「会话裁剪」。
@@ -484,6 +488,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Feedback", feedback);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Media", media);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "CodeLab", codeLab);
+    qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Reports", reports);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Startup", startup);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "HotkeyGuard", hotkey);
 

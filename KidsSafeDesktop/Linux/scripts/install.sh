@@ -2,13 +2,17 @@
 #
 # 构建 + 安装 Linux 版儿童安全桌面。
 #
-# 依赖（Debian/Ubuntu 系）：
+# 依赖（Debian/Ubuntu 系）：直接跑 ./scripts/install-deps.sh，别手抄包名。
+# 手工装的话是这些（Debian 系真实名字，`libkf6kirigami-dev` 与
+# `qqc2-breeze-style` 在 Ubuntu 源里不存在，抄错会让整条 apt 命令中止）：
 #   sudo apt install build-essential cmake extra-cmake-modules \
 #        qt6-base-dev qt6-declarative-dev \
-#        libkf6config-dev libkf6coreaddons-dev libkf6service-dev \
-#        libkf6kirigami-dev libkf6i18n-dev \
-#        qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts \
-#        qqc2-breeze-style
+#        libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
+#        libkirigami-dev qml6-module-org-kde-kirigami \
+#        qml6-module-qtquick qml6-module-qtquick-window \
+#        qml6-module-qtquick-controls qml6-module-qtquick-layouts \
+#        qml6-module-qtquick-templates qml6-module-qtqml-workerscript \
+#        qml6-module-org-kde-breeze
 #
 # Fedora 系：dnf install cmake gcc-c++ extra-cmake-modules \
 #        qt6-qtbase-devel qt6-qtdeclarative-devel \

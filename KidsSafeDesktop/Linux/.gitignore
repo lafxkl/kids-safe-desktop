@@ -14,3 +14,9 @@ debian/files
 debian/*.substvars
 debian/kidssafe/
 *_*.buildinfo
+
+# ---- 故事服务端的运行时数据 ----
+# 在源码树里直接跑 server/kidssafe_story_server.py 时会生成 learn.json
+# （孩子端上报的学习情况）。那是运行时数据，不该跟着代码提交。
+server/data/learn.json
+server/data/learn.json.tmp

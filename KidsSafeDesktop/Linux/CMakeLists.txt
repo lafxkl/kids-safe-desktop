@@ -71,6 +71,10 @@ set(KIDSSAFE_SOURCES
     src/core/mediaplayer.h
     src/core/codelab.cpp
     src/core/codelab.h
+    # 把学习情况（关卡进度 + 作业成绩）上报到家长后台：复用故事服务器地址，
+    # 没填地址时整个模块静默待命。
+    src/core/learnreport.cpp
+    src/core/learnreport.h
     src/core/maker.cpp
     src/core/maker.h
     src/nes/nesemulator.cpp
@@ -271,6 +275,14 @@ qt_add_resources(kidssafe "qml"
         src/qml/MediaHubPage.qml
         # 小小程序员：积木 → C 源码 → 系统 GCC 编译（见 core/codelab.h）
         src/qml/CodeStudioPage.qml
+        # 编程作业：纸面题（选择 / 填空 / 排顺序），判题在 JS 里，不需要编译器。
+        # 漏加 HomeworkData.js 的表现是打开作业页就报
+        # 「HomeworkData is not defined」，编译期不报错。
+        src/qml/HomeworkPage.qml
+        src/qml/HomeworkData.js
+        # 关卡统计（通关数 / 每章进度）：小小程序员页顶的「x / y」和家长后台的
+        # 学习情况卡共用，避免两处各算一遍、口径不一样。
+        src/qml/LessonStats.js
         # 项目工坊：三份「现成的作品」给孩子拆（飞机大战 / 推箱子 / 横板冒险）。
         # 子目录的 alias 相对 BASE 生成，所以 Loader.source 写 "projects/Xxx.qml"
         # 正好落在 qrc:/qml/projects/Xxx.qml —— 漏加这四个文件的表现是

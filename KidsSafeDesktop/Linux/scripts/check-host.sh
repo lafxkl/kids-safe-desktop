@@ -64,7 +64,7 @@ QMLDIR="$(qtpaths6 --query QT_INSTALL_QML 2>/dev/null || qtpaths --query QT_INST
 if [ -d "$QMLDIR/org/kde/kirigami" ]; then
     ok "Kirigami QML 模块：$QMLDIR/org/kde/kirigami"
 else
-    bad "缺少 Kirigami QML 模块（libkf6kirigami-dev / kf6-kirigami）"
+    bad "缺少 Kirigami QML 模块（Ubuntu: qml6-module-org-kde-kirigami）"
 fi
 
 if [ -d "$QMLDIR/QtQuick/Controls" ] || [ -d "$QMLDIR/QtQuick/Controls/Basic" ]; then
@@ -78,7 +78,7 @@ fi
 if [ -d "$QMLDIR/org/kde/breeze" ]; then
     ok "Breeze 控件样式：$QMLDIR/org/kde/breeze"
 else
-    warn "没有 org.kde.breeze 控件样式（qqc2-breeze-style），程序会自动回退到内置样式"
+    warn "没有 org.kde.breeze 控件样式（Ubuntu: qml6-module-org-kde-breeze），程序会自动回退到内置样式"
 fi
 
 # 应用清单自己遍历 XDG 目录读 .desktop，不再依赖 KService / kbuildsycoca6。
