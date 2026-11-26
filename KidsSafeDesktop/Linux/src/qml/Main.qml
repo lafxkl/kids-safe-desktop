@@ -26,7 +26,7 @@ import KidsSafe 1.0
  * 元素时，replace() 走的是 replaceEnter/replaceExit 过渡分支，而本文件
  * 只配了 push/pop 过渡，实测点「开始使用」界面一点变化都没有。
  * 现在引导只是一层 Loader，结束条件写在配置里（Settings.onboardingDone），
- * 由下面那段 Connections 把盖层卸掉，完全不碰导航栈。
+ * 由下面那段 Connections 把盖层收起来（隐藏，不销毁），完全不碰导航栈。
  */
 
 ApplicationWindow {
@@ -253,7 +253,7 @@ ApplicationWindow {
 
     // ---- 第二层：首次引导 ----
     // 用 source 显式赋值而不是绑定 Settings.onboardingDone：绑定会在按钮
-    // 回调里同步求值，等于在那个按钮的处理器执行到一半时把整页销毁。
+    // 回调里同步求值，等于在那个按钮的处理器执行到一半时把盖层收走。
     Loader {
         id: onboarding
 
@@ -267,20 +267,36 @@ ApplicationWindow {
         }
     }
 
-    // 引导页只负责把 onboardingDone 写进配置，卸盖层的事在这里做。
-    // Qt.callLater 把销毁延到本次事件处理结束之后，避免「在自己的回调里
-    // 销毁自己」。
+    // 引导页只负责把 onboardingDone 写进配置，收盖层的事在这里做。
+    //
+    // 这里原来是 Qt.callLater(() => onboarding.source = "")：延到本次事件处理
+    // 之后再销毁页面，理论上最干净，不会「在自己的回调里销毁自己」。
+    // 实测（Qt 6.x）点「开始使用」的那一下整个窗口直接消失 —— 进程没了，
+    // 日志里连一行 QML 报错都没有。销毁一整个引导页要收尾场景图、焦点、
+    // 输入抓取（鼠标此刻正压在那颗按钮上）三处，怀疑是从里面某一处在
+    // Qt 内部炸掉的，从应用侧看不到任何线索。
+    //
+    // 改成「藏起来，不销毁」：视觉上和销毁一样（盖层消失、桌面立刻能点），
+    // 但那颗按钮、那个 ListView 都还活着，不走任何析构路径。代价只是这一次
+    // 运行里多留一个页面；下次启动时 Loader 的 source 本来就是空的，
+    // 老用户不会再加载它。
     Connections {
         target: Settings
 
         function onChanged() {
-            // item 为 null 说明盖层本来就没加载（老用户直接进桌面）。
-            if (!Settings.onboardingDone || onboarding.item === null) {
+            if (!Settings.onboardingDone) {
                 return;
             }
-            Qt.callLater(function () {
-                onboarding.source = "";
-            });
+            // item 为 null 说明盖层本来就没加载（老用户直接进桌面），
+            // 那种情况下 ScreenTime 已经在 HomePage 里起过了。
+            if (onboarding.item === null) {
+                return;
+            }
+            if (onboarding.visible) {
+                console.log("[onboard] 引导完成，收起盖层（隐藏，不销毁）");
+                onboarding.visible = false;
+                onboarding.item.enabled = false;
+            }
             ScreenTime.start();
         }
     }

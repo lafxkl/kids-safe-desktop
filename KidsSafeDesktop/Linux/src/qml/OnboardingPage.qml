@@ -20,6 +20,23 @@ Item {
     property string firstPin: ""
     property string tipText: ""
 
+    /*
+     * 卡片宽度只在 page 上算一次，卡片和内层内容都用这个数。
+     *
+     * 原来内层写的是 `width: card.width - 72`（再往前是 anchors），两种写法
+     * 在实测里都出过同一类故障：第 2 步「起名字」的内层 ColumnLayout 只有
+     * 360 宽 —— 正好是 TextField 的 implicitWidth —— 标题、输入框、按钮
+     * 全挤在卡片左边，右边空一大片；可第 4 步「挑应用」因为有 ListView
+     * 反而铺满了。同一份 `Layout.fillWidth`，时灵时不灵，说明靠布局链
+     * 一层层把宽度传下去不可靠（外层布局给 card 赋值、card 再反推给内层，
+     * 中间任何一次尺寸缓存没失效，内层就停在 implicitWidth 上）。
+     *
+     * 现在宽度是纯算术：页面宽度 → 卡片宽度 → 内层宽度，中间不经过任何
+     * 布局结果。四个步骤容器都显式拿 innerWidth，不再指望 fillWidth 传下来。
+     */
+    readonly property real cardWidth: Math.max(280, Math.min(width - 80, 720))
+    readonly property real innerWidth: Math.max(0, cardWidth - 72)
+
     Backdrop {
         anchors.fill: parent
     }
@@ -35,7 +52,7 @@ Item {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: Math.min(parent.width - 80, 720)
+        width: page.cardWidth
         spacing: 24
 
         // 步骤指示
@@ -60,6 +77,7 @@ Item {
             id: card
 
             Layout.fillWidth: true
+            Layout.preferredWidth: page.cardWidth
             Layout.preferredHeight: content.implicitHeight + 72
             radius: 32
             color: "#FFFFFF"
@@ -67,30 +85,33 @@ Item {
             border.width: 1
 
             /*
-             * 内层尺寸用显式绑定，不用 anchors 撑。
+             * 内层尺寸用 page 上的计算结果，不用 anchors、也不从 card 反推。
              *
-             * 这里原来写的是 anchors.left + anchors.right + anchors.top +
-             * anchors.margins: 36。实测（Ubuntu 24.04 桌面、Qt 6.x）right 那条
-             * 没起作用：卡片量出来 720 宽，内层只有 319 宽 —— 正好是它自己的
-             * implicitWidth（最长的那行提示文字 / 密码盘 312 宽），于是标题、
-             * 提示、键盘全挤在卡片左边，右边空出一大片。
+             * 这里踩过两次：先是 anchors.left + right + margins: 36，实测
+             * right 那条没起作用，内层只有 319 宽（密码盘的隐式宽度），
+             * 内容全挤在左边；改成 `width: card.width - 72` 之后，第 2 步
+             * 仍然只有 360 宽（TextField 的隐式宽度）。两次都是内层停在
+             * implicitWidth 上，见文件顶部 page.cardWidth 的注释。
              *
-             * 高度仍旧不写，交给 ColumnLayout 用 implicitHeight，否则和外层
-             * Rectangle 的 preferredHeight 形成绑定环；宽度直接绑到卡片上，
-             * 一定会跟着卡片走。内容和卡片之间仍然留 36 的内边距。
+             * 高度仍不写，交给 ColumnLayout 用 implicitHeight，否则和外层
+             * Rectangle 的 preferredHeight 形成绑定环；宽度直接取 innerWidth，
+             * 内容和卡片之间仍然留 36 的内边距。
              */
             ColumnLayout {
                 id: content
 
                 x: 36
                 y: 36
-                width: card.width - 72
+                width: page.innerWidth
                 spacing: 20
 
                 // ---- 第 1 步：选语言 ----
                 ColumnLayout {
                     visible: page.step === 0
                     Layout.fillWidth: true
+                    // fillWidth 只是「有富余就给我」，真正保证宽度的是这行：
+                    // 父布局一定按 preferredWidth 赋值，不经过隐式宽度推断。
+                    Layout.preferredWidth: page.innerWidth
                     spacing: 18
 
                     Text {
@@ -191,6 +212,7 @@ Item {
                 ColumnLayout {
                     visible: page.step === 1
                     Layout.fillWidth: true
+                    Layout.preferredWidth: page.innerWidth
                     spacing: 18
 
                     Text {
@@ -257,6 +279,7 @@ Item {
                 ColumnLayout {
                     visible: page.step === 2
                     Layout.fillWidth: true
+                    Layout.preferredWidth: page.innerWidth
                     spacing: 16
 
                     Text {
@@ -308,6 +331,7 @@ Item {
                 ColumnLayout {
                     visible: page.step === 3
                     Layout.fillWidth: true
+                    Layout.preferredWidth: page.innerWidth
                     spacing: 14
 
                     Text {
@@ -337,6 +361,18 @@ Item {
                         delegate: Rectangle {
                             required property string appId
                             required property string name
+                            /*
+                             * 必须显式声明 index。
+                             *
+                             * 委托里用了 `required property appId/name` 之后，
+                             * 旧式的上下文属性注入就关了 —— `index` 不再是
+                             * 自动可见的变量。开关的 onToggled 里读 index 时
+                             * 就抛 `ReferenceError: index is not defined`，
+                             * 于是「勾上应用」这一步永远写不进配置：孩子点五下，
+                             * 日志五行警告，桌面永远是空的。
+                             * 声明成 required 之后由视图注入，和角色属性一样可靠。
+                             */
+                            required property int index
 
                             width: picker.width
                             height: 62
@@ -377,7 +413,15 @@ Item {
                                     checked: Settings.isAllowed(appId)
                                     onToggled: {
                                         if (checked) {
-                                            Settings.addApp(AppCatalog.get(index));
+                                            // 用行号回查清单，而不是自己拼 map：
+                                            // 磁贴底色（accent）是 AppCatalog 按 id
+                                            // 算出来的，自己拼会丢掉这个字段。
+                                            const item = AppCatalog.get(index);
+                                            if (item && item.id) {
+                                                Settings.addApp(item);
+                                            } else {
+                                                console.warn("[onboard] 取不到应用信息，行号", index);
+                                            }
                                         } else {
                                             Settings.removeApp(appId);
                                         }
@@ -394,7 +438,12 @@ Item {
                         onClicked: {
                             // 只写配置。盖层由 Main.qml 监听 Settings.changed
                             // 卸掉——这里不碰 StackView（见 Main.qml 顶部注释）。
+                            //
+                            // 两行日志是为了排障：这一步一旦出问题，日志停在
+                            // 哪一行就能分清「写配置炸了」还是「卸盖层炸了」。
+                            console.log("[onboard] 点「开始使用」，写入 onboardingDone");
                             Settings.onboardingDone = true;
+                            console.log("[onboard] 配置已写入，等 Main.qml 收盖层");
                         }
                     }
                 }
