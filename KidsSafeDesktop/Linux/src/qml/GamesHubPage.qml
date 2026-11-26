@@ -9,7 +9,7 @@ import KidsSafe 1.0
  * 两层内容：
  *   1. 网页游戏 —— 15 款 HTML5，与 Windows / Android 端同一份资源，
  *      由 WebGamePage 用 QtWebEngine 打开（没编译 WebEngine 时降级提示）；
- *   2. 原生小游戏 —— 用 QML 重写的五款，好处是完全离线、启动快、
+ *   2. 原生小游戏 —— 用 QML 重写的七款，好处是完全离线、启动快、
  *      画画/音效都走 Canvas，不依赖网页运行时。
  *
  * 难度是全局选择（三档），点进原生游戏时通过 StackView 的属性传过去；
@@ -69,6 +69,20 @@ Item {
             accent: "#3949AB"
             desc: "4×4 儿童版，每行每列不重复"
             pageUrl: "SudokuGamePage.qml"
+        }
+        ListElement {
+            name: "华容道"
+            glyph: "blocks"
+            accent: "#8D6E63"
+            desc: "挪开棋子，把曹操送出关口"
+            pageUrl: "KlotskiGamePage.qml"
+        }
+        ListElement {
+            name: "国际象棋"
+            glyph: "chess"
+            accent: "#7B5E48"
+            desc: "和电脑下一盘，走错了能悔棋"
+            pageUrl: "ChessGamePage.qml"
         }
         // 红白机与故事剧场都不在这里的 ListModel 里？红白机在下面单独一张卡
         // （它要显示「有没有 ROM」）；故事剧场走这张：游戏本体由家长放，

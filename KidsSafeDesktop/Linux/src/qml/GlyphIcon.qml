@@ -68,6 +68,8 @@ Item {
         case "palette":   paintPalette(ctx); break;
         case "grid":      paintGrid(ctx); break;
         case "sudoku":    paintSudoku(ctx); break;
+        case "chess":     paintChess(ctx); break;
+        case "blocks":    paintBlocks(ctx); break;
         case "hammer":    paintHammer(ctx); break;
         case "rocket":    paintRocket(ctx); break;
         case "moon":      paintMoon(ctx); break;
@@ -397,6 +399,60 @@ Item {
         ctx.beginPath();
         ctx.roundedRect(20, 20, 26, 26, 7, 7);
         ctx.fill();
+    }
+
+    function paintChess(ctx) {
+        // 骑士：马头剪影，和小游戏棋盘上的棋子同一套轮廓
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(22, 74);
+        ctx.quadraticCurveTo(24, 58, 40, 50);
+        ctx.lineTo(34, 38);
+        ctx.lineTo(24, 40);
+        ctx.lineTo(32, 20);
+        ctx.lineTo(41, 31);
+        ctx.quadraticCurveTo(62, 24, 70, 44);
+        ctx.quadraticCurveTo(78, 60, 74, 74);
+        ctx.closePath();
+        ctx.globalAlpha = 0.26;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+
+        // 底座
+        ctx.beginPath();
+        ctx.moveTo(18, 74);
+        ctx.lineTo(80, 74);
+        ctx.lineTo(80, 86);
+        ctx.lineTo(18, 86);
+        ctx.closePath();
+        ctx.globalAlpha = 0.26;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+    }
+
+    function paintBlocks(ctx) {
+        // 华容道：4×5 的盘 + 左上角那块 2×2 的「曹操」 + 下面的出口刻度
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.roundedRect(16, 10, 68, 72, 12, 12);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.roundedRect(20, 14, 30, 28, 8, 8);
+        ctx.globalAlpha = 0.55;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(42, 82);
+        ctx.lineTo(42, 92);
+        ctx.moveTo(58, 82);
+        ctx.lineTo(58, 92);
+        ctx.stroke();
     }
 
     function paintHammer(ctx) {

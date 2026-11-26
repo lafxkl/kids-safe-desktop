@@ -257,7 +257,7 @@ qt_add_resources(kidssafe "qml"
         src/qml/SafetyWorldPage.qml
         src/qml/SafetyTopicPage.qml
         src/qml/SafetyQuizPage.qml
-        # 小游戏：外壳 + 结算 + 大厅 + 五个游戏页
+        # 小游戏：外壳 + 结算 + 大厅 + 七个游戏页
         src/qml/GameShell.qml
         src/qml/GameResultOverlay.qml
         src/qml/GamesHubPage.qml
@@ -267,6 +267,14 @@ qt_add_resources(kidssafe "qml"
         src/qml/ArithmeticGamePage.qml
         src/qml/WhackMoleGamePage.qml
         src/qml/SudokuGamePage.qml
+        # 华容道：棋子拖动 / 方向键两种操作，三套布局都验过可解
+        src/qml/KlotskiGamePage.qml
+        # 国际象棋：走子规则全在 ChessEngine.js 里（可用 node 跑 perft 校验），
+        # 页面只负责点击与绘制；漏加这两个文件的表现是打开就白屏 + 报
+        # 「Chess is not defined」/「ChessPiece is not a type」，编译期不报错。
+        src/qml/ChessGamePage.qml
+        src/qml/ChessPiece.qml
+        src/qml/ChessEngine.js
         src/qml/EyeExercisePage.qml
         src/qml/NesPage.qml
         # 故事剧场：起外部吉里吉里引擎，不链核心（见 core/vnengine.h）
