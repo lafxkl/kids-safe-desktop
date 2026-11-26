@@ -76,6 +76,16 @@ Terminal::Terminal(QObject *parent)
         m_html = buildHtml();
         Q_EMIT outputChanged();
     });
+
+    // 光标闪烁。530ms 是 xterm 的默认节奏，孩子盯一会儿就能看出「它活着」。
+    // 只改一个 bool 再重建一次富文本，比在 QML 里叠一个矩形去算坐标稳得多——
+    // 折行以后光标该落在第几个像素，自己算是算不准的。
+    m_caret.setInterval(530);
+    connect(&m_caret, &QTimer::timeout, this, [this]() {
+        m_caretOn = !m_caretOn;
+        m_html = buildHtml();
+        Q_EMIT outputChanged();
+    });
 }
 
 Terminal::~Terminal()
@@ -100,6 +110,8 @@ void Terminal::start()
     m_fg = kDefaultFg;
     m_bold = false;
     m_html.clear();
+    m_crPending = false;
+    m_caretOn = true;
 
     struct winsize ws = {};
     ws.ws_row = 40;
@@ -159,12 +171,18 @@ void Terminal::start()
     m_notifier = new QSocketNotifier(m_master, QSocketNotifier::Read, this);
     connect(m_notifier, &QSocketNotifier::activated, this, &Terminal::onReadable);
 
+    m_caret.start();
+    // 清完屏立刻刷一次：屏幕上只剩一个光标，孩子一眼就知道「可以打字了」。
+    // 不刷的话会一直显示上一次 shell 的旧内容，直到新输出到达。
+    m_html = buildHtml();
+    Q_EMIT outputChanged();
     Q_EMIT runningChanged();
 #endif
 }
 
 void Terminal::stop()
 {
+    m_caret.stop();
 #ifdef Q_OS_LINUX
     if (m_notifier) {
         m_notifier->setEnabled(false);
@@ -209,6 +227,7 @@ void Terminal::onReadable()
             ::close(m_master);
             m_master = -1;
             m_exited = true;
+            m_caret.stop();
             appendText(QStringLiteral("\n[终端已结束]"));
             newLine();
             markOutput();
@@ -228,6 +247,7 @@ void Terminal::onReadable()
         ::close(m_master);
         m_master = -1;
         m_exited = true;
+        m_caret.stop();
         Q_EMIT runningChanged();
         return;
     }
@@ -325,8 +345,19 @@ void Terminal::handleAscii(char c)
         newLine();
         break;
     case '\r':
-        // readline 重绘一整行就是靠「回到行首再重打」
-        m_current.clear();
+        /*
+         * 回车 = 回到行首，**不是**「把这一行擦掉」。
+         *
+         * PTY 的输出会把每个 \n 翻成 \r\n（ONLCR），所以正常的一行输出是
+         * 「文字 + \r + \n」。原来这里一看到 \r 就 m_current.clear()，于是
+         * 每一行文字在换行前都被自己抹掉，屏幕上只剩一串空行 —— 孩子敲完
+         * 命令按回车，那一行立刻变成空白，看起来就是「打字不显示」。
+         *
+         * 现在只记一个「下次写字要回到行首」的标记：
+         *   · `\r\n` ：\n 直接把这一行收走，标记在 newLine 里清掉；
+         *   · `\r` + 文字（readline 重绘一整行）：写字前才把旧内容丢掉。
+         */
+        m_crPending = true;
         break;
     case '\b':
         backspace();
@@ -430,6 +461,12 @@ void Terminal::appendText(const QString &text)
     if (text.isEmpty()) {
         return;
     }
+    if (m_crPending) {
+        // 上一个字符是 \r：这次写字从行首开始，旧内容（readline 重绘前的
+        // 那一版）整段丢掉
+        m_current.clear();
+        m_crPending = false;
+    }
     if (!m_current.isEmpty()) {
         Span &last = m_current.last();
         if (last.color == m_fg && last.bold == m_bold) {
@@ -446,6 +483,7 @@ void Terminal::appendText(const QString &text)
 
 void Terminal::newLine()
 {
+    m_crPending = false;
     Line line;
     line.spans = m_current;
     m_lines.append(line);
@@ -515,14 +553,51 @@ QString Terminal::buildHtml() const
         emitSpans(line.spans);
         out += QStringLiteral("<br/>");
     }
-    if (!m_current.isEmpty()) {
+
+    /*
+     * 最后一行还没换行，光标就落在这行的末尾。
+     *
+     * 光标用实心方块字符（U+2588）而不是「带背景色的 span」：QML 的富文本
+     * 子集对 bgcolor 的支持随版本变，而这个字符在 Linux 上常见的等宽字体
+     * （DejaVu / Noto / Liberation）里都有。它是一段文本，所以折行以后
+     * 自动跟着走，不用自己算坐标。
+     */
+    if (m_current.isEmpty()) {
+        if (caretOn()) {
+            out += caretHtml();
+        } else {
+            // 空行也要撑出行高，否则光标那一行会被压扁
+            out += QStringLiteral("&nbsp;");
+        }
+    } else {
         emitSpans(m_current);
+        if (caretOn()) {
+            out += caretHtml();
+        }
     }
     return out;
 }
 
+QString Terminal::caretHtml() const
+{
+    // 用正文色，和真实终端一致：光标是「文字所在的位置」，不是第二种颜色
+    return QStringLiteral("<span style=\"color:%1\">%2</span>")
+        .arg(kDefaultFg.name(), QString(QChar(0x2588)));
+}
+
+bool Terminal::caretOn() const
+{
+    return m_caretOn && m_master >= 0;
+}
+
 void Terminal::markOutput()
 {
+    // 有新内容就先把光标点亮（真实终端也是这样：一有动静就不再处于「暗」的
+    // 半周期）。顺便重置相位，别让光标刚好在换行的一瞬间闪掉。
+    m_caretOn = true;
+    if (m_master >= 0 && m_caret.isActive()) {
+        m_caret.start();
+    }
     if (!m_coalesce.isActive()) {
         m_coalesce.start();
     }
@@ -629,8 +704,25 @@ void Terminal::clear()
     clearScreen();
     m_html = buildHtml();
     Q_EMIT outputChanged();
-    // 真的清屏：发给 PTY 的 clear 序列，让 bash 那边也知道
-    writeBytes(QStringLiteral("\x1b[2J\x1b[H").toUtf8());
+    /*
+     * 清屏不要往 PTY 里塞 "\x1b[2J\x1b[H"：那是**输出**序列，写进 PTY 等于
+     * 把它当键盘输入交给 readline，bash 会把 ESC 当成 meta 前缀，命令行里
+     * 留下一堆乱字符。Ctrl+L 才是「请清屏」的输入约定，readline 收到后会
+     * 自己发清屏序列并重画提示符。
+     */
+    writeBytes(QByteArray(1, '\x0c'));
+}
+
+void Terminal::killLine()
+{
+    if (m_master < 0) {
+        return;
+    }
+    // Ctrl+U：把已经敲进 readline 的这一行丢掉。快捷命令按钮靠它「先清空
+    // 再输入」，否则孩子已经打了一半的命令会和按钮的命令拼在一起。
+    writeBytes(QByteArray(1, '\x15'));
+    m_typing.clear();
+    m_typingTrusted = true;
 }
 
 void Terminal::writeBytes(const QByteArray &data)

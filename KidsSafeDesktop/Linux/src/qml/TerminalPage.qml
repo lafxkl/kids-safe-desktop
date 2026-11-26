@@ -32,12 +32,29 @@ Item {
         flick.contentY = Math.max(0, flick.contentHeight - flick.height);
     }
 
+    // 把「屏幕能放几列 × 几行」告诉 PTY。
+    //
+    // 不告诉它的话，bash 一直以为窗口是 120 列：长命令在它那边先折一次，到
+    // 我们这边再按真实宽度折一次，屏幕上就会出现莫名其妙的断行和错位。
+    // 列宽按实际字宽量（等宽字体下 10 个数字的宽度除以 10），别写死 8。
+    function syncTermSize() {
+        const charWidth = charRuler.implicitWidth / 10;
+        if (charWidth <= 0 || flick.width <= 0 || flick.height <= 0) {
+            return;
+        }
+        const cols = Math.max(20, Math.floor(flick.width / charWidth));
+        const rows = Math.max(5, Math.floor(flick.height / (screen.font.pixelSize * 1.3)));
+        Term.resize(cols, rows);
+    }
+
     function runQuick(cmd) {
         keyCatcher.forceActiveFocus();
         if (cmd === "clear") {
             Term.clear();
             return;
         }
+        // 先把已经敲了一半的那行丢掉，否则按钮的命令会和它拼在一起
+        Term.killLine();
         Term.type(cmd);
         Term.enter();
     }
@@ -46,7 +63,22 @@ Item {
         if (!Term.running) {
             Term.start();
         }
-        keyCatcher.forceActiveFocus();
+        Qt.callLater(root.syncTermSize);
+        // 用 callLater 而不是当场调用：窗口刚创建、还没显示出来的时候
+        // forceActiveFocus() 是空操作（Qt 只对可见、且窗口已激活的项生效），
+        // 之后敲键盘就全没反应 —— 孩子看到的就是「终端不理我」。
+        Qt.callLater(function () {
+            keyCatcher.forceActiveFocus();
+        });
+    }
+
+    // 窗口第一次显示、或者从别的窗口切回来时，把焦点拿回来
+    onVisibleChanged: {
+        if (visible) {
+            Qt.callLater(function () {
+                keyCatcher.forceActiveFocus();
+            });
+        }
     }
 
     // 窗口关掉时把 shell 一起收掉。
@@ -162,6 +194,7 @@ Item {
                             Term.stop();
                             Term.start();
                             root.follow = true;
+                            Qt.callLater(root.syncTermSize);
                             keyCatcher.forceActiveFocus();
                         }
                     }
@@ -193,6 +226,9 @@ Item {
                     root.follow = (contentY + height >= contentHeight - 36);
                 }
 
+                onWidthChanged: Qt.callLater(root.syncTermSize)
+                onHeightChanged: Qt.callLater(root.syncTermSize)
+
                 Text {
                     id: screen
 
@@ -205,6 +241,17 @@ Item {
                     font.pixelSize: 14
                     lineHeight: 1.3
                 }
+            }
+
+            // 量字宽用的尺子：10 个数字的宽度 / 10 就是一个字符占的像素。
+            // 不显示，只用来算列数。
+            Text {
+                id: charRuler
+
+                visible: false
+                text: "0123456789"
+                font.family: screen.font.family
+                font.pixelSize: screen.font.pixelSize
             }
 
             // 键盘接收器。铺满整块屏幕但完全透明 —— 它唯一的职责是拿焦点，
@@ -326,6 +373,7 @@ Item {
                             onTapped: {
                                 Term.start();
                                 root.follow = true;
+                                Qt.callLater(root.syncTermSize);
                                 keyCatcher.forceActiveFocus();
                             }
                         }

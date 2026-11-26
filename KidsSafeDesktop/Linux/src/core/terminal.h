@@ -64,6 +64,9 @@ public:
     /// 敲进来的一段可见文字（可能一次多个字符，输入法提交中文时就是这样）。
     Q_INVOKABLE void type(const QString &text);
 
+    /// 丢掉已经敲进 shell 的这一行（Ctrl+U）。快捷命令按钮用。
+    Q_INVOKABLE void killLine();
+
     /// 控制键：8 退格、9 Tab、13 回车、27 Esc、3 Ctrl+C、4 Ctrl+D。
     Q_INVOKABLE void key(int code);
 
@@ -107,6 +110,9 @@ private:
     void writeBytes(const QByteArray &data);
     void markOutput();
     QString buildHtml() const;
+    /// 屏幕末尾那个方块光标（是否可见由 caretOn() 决定）
+    QString caretHtml() const;
+    bool caretOn() const;
     bool looksDangerous(const QString &line, QString *why) const;
 
     int m_master = -1;
@@ -123,6 +129,9 @@ private:
     State m_state = Normal;
     QString m_seq;          ///< CSI / OSC 累积的参数
     QByteArray m_pending;   ///< 没凑齐的 UTF-8 多字节序列
+    /// 上一个字符是 \r（回到行首）。真正「抹掉这一行」要等到后面跟着可见
+    /// 字符时才做 —— PTY 把 \n 翻成 \r\n，一见 \r 就清行会把整屏文字抹光。
+    bool m_crPending = false;
 
     // 输入镜像（用来在回车前检查命令）
     QString m_typing;
@@ -134,4 +143,6 @@ private:
     bool m_exited = false;
 
     QTimer m_coalesce;             ///< 把一串输出合并成一次界面刷新
+    QTimer m_caret;                ///< 光标闪烁
+    bool m_caretOn = true;
 };
