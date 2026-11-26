@@ -1,7 +1,7 @@
 # Kids Safe Desktop
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/header.webp" alt="Kids Safe Desktop">
+  <img src="https://kids.siguangblog.cc/assets/header-readme.png" alt="Kids Safe Desktop">
 </p>
 
 <p align="center">
@@ -58,21 +58,21 @@ Handing a device to a child is rarely a question of "is there a kids mode". The 
 All five are real Android screenshots of v1.19 / v1.20 — no mockups. Tap to open the full image on mobile:
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" alt="Home">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" alt="Games">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" alt="Study">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_home.png" alt="Home">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_games.png" alt="Games">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_learn.png" alt="Study">
 </p>
 
 <p align="center"><strong>Home · Games · Study</strong></p>
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" alt="Listen · Media">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_care.png" alt="Care Center">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_player.png" alt="Listen · Media">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_care.png" alt="Care Center">
 </p>
 
 <p align="center"><strong>Listen · Media · Care Center</strong> (more on the <a href="https://kids.siguangblog.cc/">website</a>)</p>
 
-> The website and this README share the same files under `KidsSafeDesktop/` → `Website/assets/`; the header image `header.webp` (the site's share card uses the same image as `header.png`) is stitched from the same three real screenshots.
+> Images are linked straight from the project site (`kids.siguangblog.cc`) rather than through repository-relative paths — Gitee's mobile view is unreliable with large relative images and tends to show them broken. The source files still live in the repo under `KidsSafeDesktop/` → `Website/assets/`; when you change one, commit it and upload the same filename to the server. The header uses `header-readme.png`, a 1000 px wide, 256-colour derivative of `header.png` (534K → 173K); the site's share card keeps the original `header.png`.
 
 ## Features
 

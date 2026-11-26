@@ -1,7 +1,7 @@
 # 儿童安全桌面 · KidsSafeDesktop
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/header.webp" alt="儿童安全桌面">
+  <img src="https://kids.siguangblog.cc/assets/header-readme.png" alt="儿童安全桌面">
 </p>
 
 <p align="center">
@@ -58,21 +58,21 @@
 五张均为 Android 真机截图（v1.19 / v1.20 界面），没有用示意图代替。手机上可直接点开看原图：
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_home.png" alt="桌面式首页">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_games.png" alt="游戏乐园">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_learn.png" alt="学习天地">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_home.png" alt="桌面式首页">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_games.png" alt="游戏乐园">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_learn.png" alt="学习天地">
 </p>
 
 <p align="center"><strong>桌面式首页 · 游戏乐园 · 学习天地</strong></p>
 
 <p align="center">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_player.png" alt="听一听 · 媒体中心">
-  <img src="KidsSafeDesktop/Website/assets/screenshot_care.png" alt="关爱中心">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_player.png" alt="听一听 · 媒体中心">
+  <img src="https://kids.siguangblog.cc/assets/screenshot_care.png" alt="关爱中心">
 </p>
 
 <p align="center"><strong>听一听 · 媒体中心 · 关爱中心</strong>（更多界面见<a href="https://kids.siguangblog.cc/">官网</a>）</p>
 
-> 截图与官网共用同一批素材，都在 `KidsSafeDesktop/` 下的 `Website/assets/`，换图时两边自动同步。顶部头图 `header.webp`（官网分享卡片用同名 `header.png`）也用这三张真机截图拼成。
+> 图片直接引用官网域名（`kids.siguangblog.cc`）上的文件，不走仓库相对路径——Gitee 手机端对大图的相对路径支持不稳，容易显示成裂图。源文件仍在仓库的 `KidsSafeDesktop/` → `Website/assets/`，换图时先改仓库、再上传到服务器同名文件即可。顶部头图用的 `header-readme.png` 是 `header.png` 缩到 1000px 宽、256 色后的版本（534K → 173K），官网分享卡片仍用原始 `header.png`。
 
 ## 功能一览
 
