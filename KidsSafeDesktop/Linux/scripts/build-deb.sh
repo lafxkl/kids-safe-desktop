@@ -9,12 +9,15 @@
 # 前置依赖（只在构建机需要，用户机不需要）：
 #   sudo apt install debhelper cmake extra-cmake-modules \
 #        qt6-base-dev qt6-declarative-dev libxkbcommon-dev \
+#        qt6-webengine-dev qt6-multimedia-dev \
 #        libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
 #        libkf6kirigami-dev        # deepin 25 上叫 libkirigami-dev
 #
-# 关于网页小游戏：构建机上装了 qt6-webengine-dev，打出来的包就会通过
-# shlibs 硬依赖 libqt6webenginequick6；没装就不含这部分，包更小。
-# 想要「小包 + 可选网页游戏」，在干净环境（pbuilder / sbuild / 容器）里构建。
+# 关于网页小游戏：这不是「构建机有就带上」的可选功能。构建机上没有
+# qt6-webengine-dev，编出来的二进制里就没有 WebEngine 的初始化代码，用户
+# 事后装 qml6-module-qtwebengine 也打不开 —— 只能重新编译。所以 CMake 默认
+# 缺了就失败，这个脚本也会先检查一遍，避免在 dpkg-buildpackage 的几百行输出
+# 里去找那一行原因。真要精简包，加 -DKIDSSAFE_MINIMAL=ON 显式关掉。
 
 set -eu
 
@@ -27,6 +30,28 @@ for tool in dpkg-buildpackage dpkg-parsechangelog; do
         exit 1
     fi
 done
+
+# ---- 构建依赖预检 ----
+# 见文件头：网页小游戏和音频默认是必编进包里的，缺了 -dev 包不是「少个功能」，
+# 而是打出来的包装什么都补不回来。这里先拦一道，省得在几百行 dpkg 输出里找原因。
+MISSING_DEV=""
+for pkg in qt6-webengine-dev qt6-multimedia-dev; do
+    if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+        MISSING_DEV="$MISSING_DEV $pkg"
+    fi
+done
+if [ -n "$MISSING_DEV" ]; then
+    cat >&2 <<EOF
+缺少构建依赖：$MISSING_DEV
+
+  这两个包不是可选项：网页小游戏和音频要编进二进制才生效，用户拿到包以后
+  再装 QML 模块是补不回来的（只能重新编译整个应用）。
+
+  先装：  sudo apt install$MISSING_DEV
+  或者：  cmake -DKIDSSAFE_MINIMAL=ON   # 明确要一个不含这些功能的小包
+EOF
+    exit 1
+fi
 
 if [ ! -x debian/rules ]; then
     echo "==> debian/rules 没有执行位，补一下（从 Windows 拷过来会丢）"

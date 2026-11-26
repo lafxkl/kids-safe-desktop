@@ -66,6 +66,11 @@ PKGS_QT="qt6-base-dev qt6-declarative-dev"
 
 PKGS_KF6="libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev libkirigami-dev"
 
+# 网页小游戏 + 音频。这两样**不是可选项**：CMake 找不到 WebEngineQuick 会
+# 直接失败，因为「编出来的包缺功能」用户那边补不回来（装上 QML 模块也没用，
+# 二进制里没有那段初始化代码）。所以放在构建依赖里，跟 Qt 基础库一起装。
+PKGS_WEB="qt6-webengine-dev qt6-multimedia-dev"
+
 # QML 运行时模块。缺 Controls / Layouts 的话窗口能起、界面是空的。
 PKGS_QML="
 qml6-module-qtquick
@@ -124,6 +129,11 @@ install_set "编译工具" $PKGS_BUILD
 install_set "Qt 6"     $PKGS_QT
 install_set "KF6 框架" $PKGS_KF6
 install_set "QML 模块" $PKGS_QML
+install_set "网页小游戏 / 音频（必需）" $PKGS_WEB
+
+# 运行期 QML 模块：不打 .deb、直接从 build 目录跑的时候也必须有，
+# 否则打开网页页会报 module "QtWebEngine" is not installed。
+install_set "网页小游戏运行期模块" qml6-module-qtwebengine
 install_set "Breeze 样式（可选）" $PKGS_STYLE
 
 # ── 校验 ────────────────────────────────────────────────────────
@@ -157,6 +167,9 @@ FAIL=0
 check_module "org/kde/kirigami" "Kirigami QML 模块" || FAIL=1
 check_module "QtQuick/Controls" "QtQuick.Controls" || FAIL=1
 check_module "QtQuick/Layouts"  "QtQuick.Layouts"  || FAIL=1
+# 这两项缺失时 CMake 根本过不去，但报错在「find_package」那一行，
+# 不如在这里直接说清楚少了什么。
+check_module "QtWebEngine"      "QtWebEngine（网页小游戏）" || FAIL=1
 
 # 样式只提示，不算失败。
 if [ -f "$QMLDIR/org/kde/breeze/qmldir" ]; then

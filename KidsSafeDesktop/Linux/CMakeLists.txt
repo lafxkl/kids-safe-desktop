@@ -10,11 +10,42 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 Network
              OPTIONAL_COMPONENTS WebEngineQuick Multimedia)
 
+# ── 网页小游戏 / 声音：默认是「必须有」，不是「有就带上」 ────────────────
+#
+# 以前这里是纯可选的：构建机上没装 qt6-webengine-dev，编出来的包就不含网页
+# 小游戏。问题在于这件事**用户那边补不回来** —— 他就算自己装上了
+# qml6-module-qtwebengine，二进制里根本没有那段初始化代码，界面只会显示一行
+# 「本次构建未包含 QtWebEngine」。等于把「装个包」的活推给了最没能力处理的人。
+#
+# 所以默认改成硬性要求：缺了就在 configure 阶段失败，并直接给出该装的包名。
+# 真要做精简镜像（救援盘、极小系统）再显式关掉，见 KIDSSAFE_MINIMAL。
+option(KIDSSAFE_MINIMAL "不带网页小游戏与音频播放的精简构建（功能残缺，用户补不回来）" OFF)
+
+if(KIDSSAFE_MINIMAL)
+    message(WARNING
+        "KIDSSAFE_MINIMAL=ON：网页小游戏和音频播放会被编掉。"
+        "这不是一个「可选功能」——用户拿到包以后装任何东西都无法恢复，"
+        "只能重新编译。只应做救援镜像/极小系统时使用。")
+elseif(NOT TARGET Qt6::WebEngineQuick)
+    message(FATAL_ERROR
+        "缺少 QtWebEngine —— 网页小游戏（15 款 HTML5）要靠它内嵌。\n"
+        "  Debian / Ubuntu / deepin:  sudo apt install qt6-webengine-dev qml6-module-qtwebengine\n"
+        "  Fedora:                    sudo dnf install qt6-qtwebengine-devel qt6-qtwebengine\n"
+        "  Arch:                      sudo pacman -S qt6-webengine\n"
+        "装完重新跑 cmake 即可（不用删 build 目录）。\n"
+        "确实要打一个不含网页小游戏的精简包，加 -DKIDSSAFE_MINIMAL=ON 显式关掉。")
+elseif(NOT TARGET Qt6::Multimedia)
+    message(FATAL_ERROR
+        "缺少 QtMultimedia —— 红白机声音、媒体中心（听一听）要靠它。\n"
+        "  Debian / Ubuntu / deepin:  sudo apt install qt6-multimedia-dev\n"
+        "  Fedora:                    sudo dnf install qt6-qtmultimedia-devel\n"
+        "  Arch:                      sudo pacman -S qt6-multimedia\n"
+        "装完重新跑 cmake 即可。只想先编过就加 -DKIDSSAFE_MINIMAL=ON。")
+endif()
+
 # 网页小游戏（15 款 HTML5）靠 QtWebEngine 原样内嵌，与 Windows / Android 用同一份资源。
-# 但 WebEngine 不是每个发行版都装（deepin 25 要单独装 qt6-webengine-dev，
-# 而且版本必须和 Qt 基础库一致），所以列为 OPTIONAL：
-#   找到 → 游戏乐园多一个「网页游戏乐园」入口，15 款全齐；
-#   没找到 → 只保留原生小游戏，其余功能完全不受影响，configure 也不会失败。
+# 这里用 OPTIONAL_COMPONENTS 只是为了能给出上面那种「缺什么装什么」的报错，
+# 而不是让 configure 静默通过 —— 真正的取舍在 KIDSSAFE_MINIMAL 里。
 # Config 存配置，Kirigami 提供 QML 组件与主题，I18n 提供 i18n() 与 KLocalizedString。
 # 刻意不依赖 KF6Service：它的 KApplicationTrader 要靠 ksycoca 缓存与
 # kbuildsycoca6 进程，在没有完整会话总线的环境（kiosk / 容器 / 精简系统）里
@@ -201,9 +232,9 @@ else()
                    "（Debian/deepin: sudo apt install libx11-dev 可启用）")
 endif()
 
-# ---- 红白机声音（可选）----
-# 44100Hz 单声道 16 位直通 QAudioSink。没装 qt6-multimedia-dev 也能编译，
-# 只是游戏静音 —— 界面会提示「没有声音」，不隐藏入口。
+# ---- 红白机声音 / 媒体中心 ----
+# 44100Hz 单声道 16 位直通 QAudioSink。默认必须有（缺了上面那段已经报错了），
+# 只有 -DKIDSSAFE_MINIMAL=ON 时才会走到 else 分支，编出来的包是静音的。
 if(TARGET Qt6::Multimedia)
     message(STATUS "QtMultimedia 可用：红白机有声，媒体中心可播放")
     target_link_libraries(kidssafe PRIVATE Qt6::Multimedia)
@@ -213,8 +244,7 @@ if(TARGET Qt6::Multimedia)
         # 只是音频卡片点下去会提示「这个版本放不了音频」。
         KIDSSAFE_MEDIA=1)
 else()
-    message(STATUS "未找到 QtMultimedia：红白机静音、媒体中心不能播放"
-                   "（deepin 上执行 sudo apt install qt6-multimedia-dev 可启用）")
+    message(WARNING "精简构建：红白机静音、媒体中心不能播放（用户装包也补不回来）")
 endif()
 
 # 媒体中心的内容目录：从 build 目录直接跑二进制时，不用先 install 也能找到
@@ -227,8 +257,9 @@ target_compile_definitions(kidssafe PRIVATE
 target_compile_definitions(kidssafe PRIVATE
     KIDSSAFE_CODELAB_SRC="${CMAKE_CURRENT_SOURCE_DIR}/assets/codelab")
 
-# ---- 网页小游戏（可选）----
-# 只有 WebEngineQuick 找到时才编进 WebGamePage.qml 与 Playland 的探测逻辑。
+# ---- 网页小游戏 ----
+# 默认必须有（缺了 configure 就失败，见文件顶部），所以这里不再有「编不带」
+# 的正常路径：只要 not KIDSSAFE_MINIMAL，TARGET Qt6::WebEngineQuick 一定存在。
 # KIDSSAFE_PLAYLAND_SRC 是源码树里的资源目录：从 build 目录直接跑二进制时，
 # 不用先 make install 也能打开网页大厅。
 # 判据用 TARGET 而不是 Qt6WebEngineQuick_FOUND：只要组件真的找到了，
@@ -244,8 +275,7 @@ if(TARGET Qt6::WebEngineQuick)
                          src/qml/MakerPage.qml
                          src/qml/MakerFilePicker.qml)
 else()
-    message(STATUS "未找到 QtWebEngine：网页小游戏不可用"
-                   "（deepin 上执行 sudo apt install qt6-webengine-dev 可启用）")
+    message(WARNING "精简构建：网页小游戏不可用（用户装包也补不回来）")
     set(KIDSSAFE_QML_WEB "")
 endif()
 

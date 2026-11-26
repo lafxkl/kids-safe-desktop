@@ -7,8 +7,10 @@
 # `qqc2-breeze-style` 在 Ubuntu 源里不存在，抄错会让整条 apt 命令中止）：
 #   sudo apt install build-essential cmake extra-cmake-modules \
 #        qt6-base-dev qt6-declarative-dev \
+#        qt6-webengine-dev qt6-multimedia-dev \
 #        libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
 #        libkirigami-dev qml6-module-org-kde-kirigami \
+#        qml6-module-qtwebengine \
 #        qml6-module-qtquick qml6-module-qtquick-window \
 #        qml6-module-qtquick-controls qml6-module-qtquick-layouts \
 #        qml6-module-qtquick-templates qml6-module-qtqml-workerscript \
@@ -16,11 +18,16 @@
 #
 # Fedora 系：dnf install cmake gcc-c++ extra-cmake-modules \
 #        qt6-qtbase-devel qt6-qtdeclarative-devel \
+#        qt6-qtwebengine-devel qt6-qtmultimedia-devel \
 #        kf6-kconfig-devel kf6-kcoreaddons-devel kf6-kservice-devel \
 #        kf6-kirigami-devel kf6-ki18n-devel
 #
 # Arch：pacman -S base-devel cmake extra-cmake-modules qt6-base qt6-declarative \
+#        qt6-webengine qt6-multimedia \
 #        kconfig kcoreaddons kservice kirigami ki18n breeze
+#
+# qt6-webengine-dev / qt6-multimedia-dev 是必需的：网页小游戏和音频要编进
+# 二进制才算数，构建机缺了它，用户装任何东西都补不回来（见 README 第二节）。
 
 set -eu
 

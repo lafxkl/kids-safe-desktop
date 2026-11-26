@@ -151,18 +151,25 @@ sudo apt install build-essential cmake extra-cmake-modules \
 # 可选：语音朗读（缺了只降级成静默，不阻断）
 sudo apt install speech-dispatcher
 
-# 可选：网页小游戏（15 款 HTML5，用 QtWebEngine 原样内嵌）
-# 不装也能编译，只是游戏乐园里没有「网页游戏乐园」入口，会显示一行安装提示
-# 注意两个包都要装：-dev 是编译期头文件，qml6-module-qtwebengine 是运行期 QML 模块，
-# 只装前者能编过，一打开网页页就报 module "QtWebEngine" is not installed
-sudo apt install qt6-webengine-dev qml6-module-qtwebengine
+# 必需：网页小游戏（15 款 HTML5）与声音
+# 这两个**不是可选项**，缺了 cmake 会直接失败。原因不是「少个功能」这么简单：
+# 网页小游戏要靠 QtWebEngine 在编译期把初始化和 QML 宿主页编进二进制，
+# 构建机上没有 -dev 包，打出来的包就永远不含这部分 —— 用户事后自己装
+# qml6-module-qtwebengine 也没用，只会看到一句「本次构建未包含」。
+# 也就是说「装个包」这件事被推给了最没办法处理它的人。
+sudo apt install qt6-webengine-dev qt6-multimedia-dev
+sudo apt install qml6-module-qtwebengine     # 运行期 QML 模块（从 build 目录直接跑时需要）
 
-# 可选：红白机声音（缺了能玩，只是静音，页面会提示「没有声音」）
-# 只影响红白机，其它功能完全不受影响
-sudo apt install qt6-multimedia-dev
+# 真要打一个不含网页小游戏/声音的极小包（救援镜像之类），显式关掉：
+#   cmake -B build -DKIDSSAFE_MINIMAL=ON
 
 ./scripts/install.sh
 ```
+
+**给最终用户**：上面这一堆都不用管。装的是 `.deb` 时，运行期需要的东西
+（`qml6-module-qtwebengine`、音频解码插件等）已经写在 `debian/control` 的
+`Depends` 里，`apt install ./kidssafe_*.deb` 会一起装上；不需要单独装什么
+「网页组件」，也不需要重新编译。
 
 装到 `/usr/local` 就是自己用。要做成能发给别人的发行包（`.deb`），见第七节。
 
@@ -1168,11 +1175,15 @@ Qt 端只加宿主才做得到的三件事：调 `FileDialog` 选图、读 `.jso
 `share/kidssafe/maker/`，用 `file://` 打开，origin 才稳定。
 同理，**这个目录不能改名**：一改等于换 origin，所有作品一起消失。
 
-**两个可选依赖**，缺了都只是降级：
+依赖分两类：**编译期必须有**的和**运行期可缺**的。
 
-- `qml6-module-qtwebengine`（Qt6::WebEngineQuick）：没有它整个入口不可用，
-  构建时 CMake 会打印提示；
-- `qml6-module-qtquick-dialogs`：`QtQuick.Dialogs` 在精简安装里是单独的包。
+- `qt6-webengine-dev`（Qt6::WebEngineQuick）：编译期必需。缺了 CMake 直接失败，
+  因为这个入口要靠它把初始化代码和 `WebGamePage.qml` 编进二进制；构建机上没有
+  就意味着打出来的包永远不含这部分，用户装什么 QML 模块都补不回来。
+- `qml6-module-qtwebengine`：运行期必需，已写进 `debian/control` 的 `Depends`，
+  用户不用自己装。缺失时（比如有人用 `--no-install-recommends` 硬装）页面会显示
+  一行安装提示，而不是白屏。
+- `qml6-module-qtquick-dialogs`：可缺。`QtQuick.Dialogs` 在精简安装里是单独的包，
   缺了页面照常开、能画能试玩能导出，只有「导入素材 / 打开作品」点了会提示。
   `MakerFilePicker.qml` 因此单独拆成一个文件经 `Loader` 加载，加载失败也不影响主页。
 
@@ -1315,14 +1326,14 @@ X11 抢占只是**锦上添花**，Wayland 下它会诚实地报告「不可用�
 - [x] **网页游戏乐园**：15 款 HTML5 游戏（雷霆战机 / 五子棋 / 贪吃蛇 / 宝石消消乐 /
   斗兽棋 / 中国象棋 / 打企鹅 / 凑十 / 算术小飞行员 / 点字成诗 / 汉字合体 / 打气球 /
   象形字 / 小汽车 / 光线宝石），与 Windows、Android 端**同一份资源**，用 QtWebEngine
-  原样运行；WebEngine 是可选依赖，没装时自动降级成一行安装提示
+  原样运行；WebEngine 在编译期必需（见第二节），运行期模块随 .deb 自动安装
 - [x] **眼保健操**：六节分步引导（放松 / 睛明穴 / 四白穴 / 太阳穴刮眼眶 / 转眼球 /
   远眺），倒计时环 + 语音口诀 + 暂停 / 下一节 / 重听
 - [x] **红白机（NES）**：SimpleNes 核心静态链入，ROM 目录自管、键盘映射、
-  暂停/重来、整机快照存档，声音走 QtMultimedia（可选依赖，缺了静音运行）
+  暂停/重来、整机快照存档，声音走 QtMultimedia（编译期必需，装包时随依赖带上）
 - [x] **故事剧场（吉里吉里）**：不链核心（GPLv2 + Win32 双重不合适），做启动器：
   自动挑 krkrsdl2 / wine / 自定义命令，游戏目录自管，退出后自动把窗口收回来
-- [x] **媒体中心（听一听）**：8 首儿歌 + 3 段环境音随包播放（QtMultimedia 可选依赖），
+- [x] **媒体中心（听一听）**：8 首儿歌 + 3 段环境音随包播放（QtMultimedia），
   唐诗/三字经用 TTS 朗读；内容表 `assets/audio/library.json` 可改不需重编译
 - [x] **启动语言选择（简体中文 / English）**：首次引导第一步选语言，家长后台可改；
   简体中文模式不显示「故事剧场」入口（内容合规），英文模式不限制

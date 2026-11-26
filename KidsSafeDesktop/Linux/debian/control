@@ -11,11 +11,17 @@ Maintainer: KidsSafe Desktop <kidssafe@localhost>
 # （core/hotkeyguard）。代码里是 #ifdef KIDSSAFE_X11：没有它也能编过，但打包出来的
 # 二进制会静默失去「屏蔽快捷键」这一项。qt6-base-dev 本身就依赖 libx11-dev，
 # 写在这里只是把这件事说明白，不会额外增加构建机负担。
+# qt6-webengine-dev / qt6-multimedia-dev 是**必须**的：网页小游戏（15 款
+# HTML5）和音频播放都靠它们。以前这两个是可选的，构建机上缺了就编出一个
+# 「没有网页小游戏」的包 —— 而用户那边装任何东西都补不回来（二进制里没有
+# 那段初始化），只能重新编译。现在 CMake 默认硬性要求，缺了直接失败。
 Build-Depends: debhelper-compat (= 13),
                cmake (>= 3.20),
                extra-cmake-modules,
                qt6-base-dev,
                qt6-declarative-dev,
+               qt6-webengine-dev,
+               qt6-multimedia-dev,
                libx11-dev,
                libkf6config-dev,
                libkf6coreaddons-dev,
@@ -27,6 +33,14 @@ Homepage: https://example.invalid/kidssafe
 
 Package: kidssafe
 Architecture: any
+# qml6-module-qtwebengine 放 Depends，不放 Recommends：apt install
+# --no-install-recommends（不少精简/离线安装流程默认这么干）会把 Recommends
+# 全部跳过，孩子点开「网页游戏乐园」只看到一句「模块未安装」—— 那时候家长
+# 既不知道该装什么，也不知道装完要不要重启应用。
+# 底层的 libqt6webenginequick6 / libqt6multimedia6 由 ${shlibs:Depends}
+# 自动带上（二进制直接链接了它们），不用手写。音频那边不需要
+# qml6-module-qtmultimedia：播放器是 C++ 的 QMediaPlayer，QML 里没有
+# import QtMultimedia（解码后端见下面的 Recommends）。
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          qml6-module-qtquick,
@@ -34,11 +48,10 @@ Depends: ${shlibs:Depends},
          qml6-module-qtquick-controls,
          qml6-module-qtquick-templates,
          qml6-module-qtquick-layouts,
-         qml6-module-qtqml-workerscript
-Recommends: qml6-module-qtwebengine,
-            # 小游戏工坊「导入素材 / 打开作品」用 FileDialog。缺这个包时页面照常打开、
-            # 编辑器照常能画能试玩，只是点了导入会说「文件选择器不可用」——
-            # 所以放 Recommends，不拿它卡安装。
+         qml6-module-qtqml-workerscript,
+         qml6-module-qtwebengine
+Recommends: # 小游戏工坊「导入素材 / 打开作品」用 FileDialog。缺这个包时页面照常打开、
+            # 编辑器照常能画能试玩，只是点了导入会说「文件选择器不可用」。
             qml6-module-qtquick-dialogs,
             speech-dispatcher,
             # 媒体中心的音频解码后端。QtMultimedia 自己是框架，真正解码的是
