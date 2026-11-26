@@ -84,8 +84,6 @@ All five are real Android screenshots of v1.19 / v1.20 — no mockups. Tap to op
 
 <p align="center">More screens on the <a href="https://kids.siguangblog.cc/">website</a></p>
 
-> Images are linked straight from the project site (`kids.siguangblog.cc`) rather than through repository-relative paths — Gitee's mobile view is unreliable with large relative images and tends to show them broken. The source files still live in the repo under `KidsSafeDesktop/` → `Website/assets/`; when you change one, commit it and upload the same filename to the server. The header uses `header-readme.png`, a 1000 px wide, 256-colour derivative of `header.png` (534K → 173K); the site's share card keeps the original `header.png`. The badges are hand-built SVGs under `assets/badges/` (sources kept in the repo at the same path), so there is no dependency on shields.io and no broken images on slow networks.
-
 ## Features
 
 ### Kids' app (KidsSafeDesktop)

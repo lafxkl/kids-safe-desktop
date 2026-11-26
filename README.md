@@ -84,8 +84,6 @@
 
 <p align="center">更多界面见<a href="https://kids.siguangblog.cc/">官网</a></p>
 
-> 图片直接引用官网域名（`kids.siguangblog.cc`）上的文件，不走仓库相对路径——Gitee 手机端对大图的相对路径支持不稳，容易显示成裂图。源文件仍在仓库的 `KidsSafeDesktop/` → `Website/assets/`，换图时先改仓库、再上传到服务器同名文件即可。顶部头图用的 `header-readme.png` 是 `header.png` 缩到 1000px 宽、256 色后的版本（534K → 173K），官网分享卡片仍用原始 `header.png`。顶部徽章也是自绘 SVG（`assets/badges/`，源文件在仓库同路径），不依赖 shields.io，国内网络下不会再出现裂图或加载慢。
-
 ## 功能一览
 
 ### 孩子端（KidsSafeDesktop）
