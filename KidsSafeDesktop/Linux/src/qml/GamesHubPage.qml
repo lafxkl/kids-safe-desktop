@@ -9,8 +9,9 @@ import KidsSafe 1.0
  * 两层内容：
  *   1. 网页游戏 —— 15 款 HTML5，与 Windows / Android 端同一份资源，
  *      由 WebGamePage 用 QtWebEngine 打开（没编译 WebEngine 时降级提示）；
- *   2. 原生小游戏 —— 用 QML 重写的七款，好处是完全离线、启动快、
- *      画画/音效都走 Canvas，不依赖网页运行时。
+ *   2. 原生小游戏 —— 用 QML 重写的八款，好处是完全离线、启动快、
+ *      画画/音效都走 Canvas，不依赖网页运行时。其中国际象棋和华容道
+ *      支持「和小朋友联机」（4 位房间号，家长开关打开后才出现）。
  *
  * 难度是全局选择（三档），点进原生游戏时通过 StackView 的属性传过去；
  * 网页游戏自带三档难度，不需要这里传。
@@ -384,6 +385,29 @@ Item {
 
                         HoverHandler {
                             id: tileHover
+                        }
+
+                        // 能联机的两个游戏打个标。家长开关没打开时不显示 ——
+                        // 点进去也只会看到「家长还没打开联机」。
+                        Rectangle {
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 12
+                            width: 56
+                            height: 26
+                            radius: 13
+                            visible: Netplay.enabled
+                                     && (pageUrl === "ChessGamePage.qml"
+                                         || pageUrl === "KlotskiGamePage.qml")
+                            color: "#E3F0E6"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "可联机"
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                                color: "#2E6B3A"
+                            }
                         }
 
                         TapHandler {

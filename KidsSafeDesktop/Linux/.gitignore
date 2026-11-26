@@ -20,3 +20,7 @@ debian/kidssafe/
 # （孩子端上报的学习情况）。那是运行时数据，不该跟着代码提交。
 server/data/learn.json
 server/data/learn.json.tmp
+
+# python 的字节码缓存：跑 selftest / py_compile 就会生成
+__pycache__/
+*.pyc

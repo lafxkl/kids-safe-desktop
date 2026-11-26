@@ -388,6 +388,25 @@ function legalMovesFrom(state, from) {
 
 // ---- 执行走子 ----
 
+/*
+ * 按 (from, to, promo) 找回一个合法着法对象，联机重放时用。
+ *
+ * 网络上只需要传这三个字段：piece / cap / castle / ep 都能从当前局面推出来，
+ * 传全了反而多一处能对不上的地方。重放时在这里换回完整对象，applyMove
+ * 才能正确维护易位权和吃过路兵标记。
+ * 找不到返回 null，调用方应当把整盘按服务器序列重放一遍。
+ */
+function findMove(state, from, to, promo) {
+    var list = legalMoves(state);
+    var want = promo || "";
+    for (var i = 0; i < list.length; i++) {
+        if (list[i].from === from && list[i].to === to && list[i].promo === want) {
+            return list[i];
+        }
+    }
+    return null;
+}
+
 function applyMove(state, m) {
     var b = state.board.slice();
     var castle = {

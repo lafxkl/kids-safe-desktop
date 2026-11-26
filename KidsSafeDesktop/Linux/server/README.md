@@ -150,6 +150,39 @@ data/stories/
 | `GET /api/learn/summary` | 家长后台网页读的汇总，`children[].child / progress / homework / updatedAt` |
 | `POST /api/learn/reset` | 清空记录；请求体 `{"child":"默认"}` 只清一个，不传就全清 |
 
+联机对战（客户端 `src/core/netplay.cpp`）：
+
+| 方法与路径 | 说明 |
+|---|---|
+| `POST /api/game/create` | 建房，`{"game":"chess","level":2}`，返回 `room`（含 4 位 `code` 和自己的 `token`） |
+| `POST /api/game/join` | 进房，`{"code":"4821"}`；带上自己的 `token` 表示重连回原座位 |
+| `GET /api/game/state?code=&token=` | 轮询整个房间，客户端 1.5 秒一次 |
+| `POST /api/game/move` | 走一步，`{"code","token","from","to","promo"}`；不是你的回合返回 409 |
+| `POST /api/game/finish` | 象棋 `{"result":"a"｜"b"｜"draw"}`；华容道 `{"steps":27}` |
+| `POST /api/game/leave` | 退房；房主退房整个房间删除，客人退房把房间标成结束 |
+
+房间只存内存（服务重启就没了，本来也没人在等），30 分钟没有任何请求自动回收。
+身份用建/进房时返回的随机 token，不用座位号 —— 座位号是自报家门的协议，
+知道对方是 a 还是 b 就能替对面落子。
+
+`room` 的字段：
+
+| 字段 | 说明 |
+|---|---|
+| `code` / `game` / `level` | 房间号 / `chess` 或 `klotski` / 华容道用哪一档布局 |
+| `status` | `waiting` 等人 / `playing` 对局中 / `done` 结束 |
+| `seat` / `opponent` | 自己的座位（`a` 房主 / `b` 来客）、对手到了没有 |
+| `turn` | 轮到谁走（象棋） |
+| `moves` | `[{"f":52,"t":44,"p":""}]`，从开局到现在每一步 |
+| `startAt` / `now` | 华容道什么时候开始（服务器时间轴），客户端用它换算本地倒计时 |
+| `results` | 华容道成绩 `[{"seat","ms","steps"}]`，`ms` 由服务端算，不信客户端报的 |
+| `winner` / `reason` | 谁赢了 / `finish` 正常下完、`leave` 对手退出 |
+| `version` | 每次改动加一，客户端用它丢弃迟到的旧响应 |
+
+**服务端不校验走子是否合规**，只校验「轮到你了吗」。与其在 Python 里维护第二份
+走子规则（两份迟早不一致），不如接受「孩子能改客户端走假棋」这点代价 ——
+赢一盘棋的收益远小于「必须先注册账号」把他挡在门外的代价。
+
 ### 上报格式
 
 ```json

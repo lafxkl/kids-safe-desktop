@@ -21,6 +21,19 @@
     GET  /api/learn/summary                   → 家长后台网页读汇总
     POST /api/learn/reset                     → 清空某个（或全部）孩子的记录
 
+联机对战（客户端 src/core/netplay.{h,cpp}）：
+
+    POST /api/game/create   {game, level}     → 建房，回 4 位房间号 + 自己的 token
+    POST /api/game/join     {code, token?}    → 进房；带上自己的 token 就是重连
+    GET  /api/game/state?code=&token=         → 轮询整个房间（1.5 秒一次）
+    POST /api/game/move     {code, token, from, to, promo}
+    POST /api/game/finish   {code, token, result}  国际象棋：报结果 a/b/draw
+                            {code, token, steps}   华容道：报「我解出来了」
+    POST /api/game/leave    {code, token}     → 退房
+
+    没有公开匹配、没有房间列表、没有聊天：只能凭 4 位房间号进熟人开的房间。
+    这是有意的 —— 孩子不该在这台机器上遇到陌生人。
+
 额外还带一个只读的家长后台网页（`/`）：看分类、搜故事、读正文、确认服务在跑，
 以及看孩子端上报上来的学习情况。
 
@@ -37,6 +50,7 @@ import argparse
 import json
 import os
 import re
+import secrets
 import socket
 import sys
 import threading
@@ -44,7 +58,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 PAGE_SIZE = 20
 CHARS_PER_MINUTE = 300
 
@@ -544,6 +558,299 @@ class LearnStore(object):
                     "count": len(children), "error": self.error}
 
 
+# ── 联机对战 ─────────────────────────────────────────────────────
+
+# 房间只活在内存里：对战是实时状态，服务重启后旧棋局已经没人在等，落盘只会
+# 让下次启动读到一堆僵尸房间。30 分钟没请求就回收，够孩子中途去吃顿饭。
+ROOM_TTL_SEC = 30 * 60
+ROOM_MAX = 64
+GAME_KINDS = ("chess", "klotski")
+GAME_COUNTDOWN_SEC = 3.0   # 华容道：两人到齐后留 3 秒看清棋盘
+GAME_MAX_MOVES = 600       # 一盘棋理论上不会超过 300 多步，留点余量
+
+
+class RoomError(Exception):
+    """业务错误，路由层直接翻成 {"ok": false, "error": ...} + 状态码。"""
+
+    def __init__(self, message, status=400):
+        Exception.__init__(self, message)
+        self.status = status
+
+
+class RoomStore(object):
+    """两个孩子对战的房间表。
+
+    为什么房间存的是「一串走法」而不是「当前棋盘快照」：
+      * 快照要求双方对「当前局面」达成一致，一旦有一方的包晚到或重发，
+        两边就会各走各的，而且没有权威版本来纠正；
+      * 走法序列天然可重放：两个客户端各自从开局走一遍，局面必然一致，
+        谁落后了只要补上缺的那几步就行（客户端就是按 moves 长度做增量的）；
+      * 客户端本来就有 ChessEngine.legalMoves / applyMove，重放不需要新代码。
+
+    服务端**不校验走子是否合规**，只校验「轮到你了吗」。原因：在 Python 里
+    再实现一套走子规则等于维护两份规则，两份迟早不一致，而这一版服务端没有
+    可复用的引擎。代价是孩子理论上能改客户端走假棋 —— 这个风险可以接受：
+    赢一盘棋的收益，远小于「必须先注册账号才能玩」把他挡在门外的代价。
+    真要防，正确做法是把 ChessEngine.js 原样搬到服务端用 node 跑（同一份
+    规则），而不是重写一遍。
+
+    身份用随机 token 而不是座位号：座位号是自报家门的协议，两个孩子互相知道
+    对方是 a 还是 b，随手就能冒充对面落子。
+
+    刻意没有聊天：孩子之间不需要、家长也不想要一个能发任意文字给陌生人的框。
+    房间里只传走法、步数和时间，一个字都传不了。
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self.rooms = {}
+
+    # -- 工具 ----------------------------------------------------
+
+    @staticmethod
+    def _make_code(rooms):
+        """4 位数字：孩子要能照着念给电话那头的人听。"""
+        for _ in range(200):
+            code = str(secrets.randbelow(9000) + 1000)
+            if code not in rooms:
+                return code
+        raise RoomError("这台服务器上的房间满了，等一会儿再试", 503)
+
+    def _sweep(self, now):
+        """回收空闲房间。挂在每次进房前做，省一个后台线程。"""
+        for code in [key for key, room in self.rooms.items()
+                     if now - room["touched"] > ROOM_TTL_SEC]:
+            del self.rooms[code]
+
+    def _seat(self, code, token, now):
+        """按 token 找回自己的座位；找不到就是「这台机器不属于这个房间」。"""
+        room = self.rooms.get(code)
+        if room is None:
+            raise RoomError("房间已经关闭了，重新开一个吧", 404)
+        for seat in ("a", "b"):
+            if room["seats"].get(seat) and room["seats"][seat] == token:
+                room["touched"] = now
+                return room, seat
+        raise RoomError("这个房间不认识这台机器", 403)
+
+    def _view(self, room, seat, now, token=""):
+        """发给客户端的房间视图。
+
+        只回「自己」的 token，绝不下发对手的 —— 拿到它就能替对方落子。
+        `now` 和 `startAt` 一起给，是为了让客户端算自己的开始时刻：
+        两台机器的系统时钟不可能一样准，只能以服务器的时间轴为准。
+        """
+        other = "b" if seat == "a" else "a"
+        view = {
+            "code": room["code"],
+            "game": room["game"],
+            "level": room["level"],
+            "status": room["status"],
+            "seat": seat,
+            "turn": room["turn"],
+            "moves": room["moves"],
+            "opponent": bool(room["seats"].get(other)),
+            "startAt": room["startAt"],
+            "results": room["results"],
+            "winner": room["winner"],
+            "reason": room.get("reason", ""),
+            "version": room["version"],
+            "now": now,
+        }
+        if token:
+            view["token"] = token
+        return view
+
+    # -- 建房 / 进房 ---------------------------------------------
+
+    def create(self, game, level):
+        now = time.time()
+        if game not in GAME_KINDS:
+            raise RoomError("不认识的游戏")
+        with self._lock:
+            self._sweep(now)
+            if len(self.rooms) >= ROOM_MAX:
+                raise RoomError("这台服务器上的房间满了，等一会儿再试", 503)
+            try:
+                level = int(level)
+            except (TypeError, ValueError):
+                level = 2
+            level = max(1, min(3, level))
+            code = self._make_code(self.rooms)
+            token = secrets.token_hex(8)
+            room = {
+                "code": code,
+                "game": game,
+                "level": level,
+                "status": "waiting",
+                "created": now,
+                "touched": now,
+                "seats": {"a": token, "b": ""},
+                "turn": "a",
+                "moves": [],
+                "startAt": 0.0,
+                "results": [],
+                "winner": "",
+                # 结束原因："finish" 正常下完 / "leave" 对手退出。
+                # 客户端要分得清这两种：同样是「你赢了」，一个值得高兴，
+                # 另一个其实是对面走开了，说成「小伙伴离开了」才诚实。
+                "reason": "",
+                "version": 1,
+            }
+            self.rooms[code] = room
+            return self._view(room, "a", now, token=token)
+
+    def join(self, code, token=""):
+        """进房。带自己的 token 就是「回到原来的座位」，用来处理断线重连。"""
+        now = time.time()
+        code = (code or "").strip()
+        if not code:
+            raise RoomError("房间号没填")
+        with self._lock:
+            self._sweep(now)
+            room = self.rooms.get(code)
+            if room is None:
+                raise RoomError("房间不存在，检查一下号码", 404)
+
+            for seat in ("a", "b"):
+                if token and room["seats"].get(seat) == token:
+                    return self._view(room, seat, now, token=token)
+
+            if room["seats"].get("b"):
+                raise RoomError("房间里已经有两个小朋友了", 409)
+            token = secrets.token_hex(8)
+            room["seats"]["b"] = token
+            room["status"] = "playing"
+            room["turn"] = "a"
+            if room["game"] == "klotski":
+                # 两个人到齐才开始计时：否则先到的人可以慢慢看题
+                room["startAt"] = now + GAME_COUNTDOWN_SEC
+            room["touched"] = now
+            room["version"] += 1
+            return self._view(room, "b", now, token=token)
+
+    # -- 对局中 --------------------------------------------------
+
+    def state(self, code, token):
+        now = time.time()
+        with self._lock:
+            self._sweep(now)
+            room, seat = self._seat((code or "").strip(), token, now)
+            return self._view(room, seat, now)
+
+    def move(self, code, token, frm, to, promo):
+        now = time.time()
+        with self._lock:
+            self._sweep(now)
+            room, seat = self._seat((code or "").strip(), token, now)
+            if room["game"] != "chess":
+                raise RoomError("这个房间不是国际象棋", 409)
+            if not room["seats"].get("b"):
+                raise RoomError("对手还没进来", 409)
+            if room["status"] == "done":
+                raise RoomError("这局已经结束了", 409)
+            if room["status"] != "playing":
+                raise RoomError("棋盘还没摆好", 409)
+            if room["turn"] != seat:
+                raise RoomError("还没轮到你走", 409)
+
+            try:
+                frm = int(frm)
+                to = int(to)
+            except (TypeError, ValueError):
+                raise RoomError("走法格式不对")
+            if not (0 <= frm < 64 and 0 <= to < 64) or frm == to:
+                raise RoomError("走法格式不对")
+            promo = str(promo or "").upper()
+            if promo not in ("", "Q", "R", "B", "N"):
+                raise RoomError("升变只能选后、车、象、马")
+            if len(room["moves"]) >= GAME_MAX_MOVES:
+                raise RoomError("这盘棋太长了，重新开一局吧", 409)
+
+            room["moves"].append({"f": frm, "t": to, "p": promo})
+            room["turn"] = "b" if seat == "a" else "a"
+            room["touched"] = now
+            room["version"] += 1
+            return self._view(room, seat, now)
+
+    def finish(self, code, token, payload):
+        """国际象棋：报结果（a / b / draw）；华容道：报「我解出来了」+ 步数。"""
+        now = time.time()
+        with self._lock:
+            self._sweep(now)
+            room, seat = self._seat((code or "").strip(), token, now)
+
+            if room["game"] == "chess":
+                result = str(payload.get("result") or "")
+                if result not in ("a", "b", "draw"):
+                    raise RoomError("结果只能是 a / b / draw")
+                room["winner"] = result
+                room["status"] = "done"
+                room["reason"] = "finish"
+            else:
+                if not room["startAt"] or now < room["startAt"]:
+                    raise RoomError("比赛还没开始", 409)
+                # 先查「是不是你自己又交了一遍」：同一人重复提交要给出准确提示，
+                # 而不是笼统地说房间满了
+                if any(item["seat"] == seat for item in room["results"]):
+                    raise RoomError("你已经交过成绩了", 409)
+                if len(room["results"]) >= 2:
+                    raise RoomError("两个人都交过成绩了", 409)
+                try:
+                    steps = int(payload.get("steps") or 0)
+                except (TypeError, ValueError):
+                    steps = 0
+                # 耗时用服务端时间算，不信客户端报的毫秒数：两台机器的计时器
+                # 精度和开始时刻都不一样，只有服务器这条时间轴是共同的。
+                elapsed_ms = int(max(0.0, now - room["startAt"]) * 1000)
+                room["results"].append({
+                    "seat": seat,
+                    "ms": elapsed_ms,
+                    "steps": max(0, min(9999, steps)),
+                })
+                if not room["winner"]:
+                    room["winner"] = seat
+                if len(room["results"]) >= 2:
+                    # 两个人都解完了才算这一局结束：先解出来的人还要留在
+                    # 房间里等对方，不然他看不到「对手用了多久」。
+                    room["status"] = "done"
+                    room["reason"] = "finish"
+
+            room["touched"] = now
+            room["version"] += 1
+            return self._view(room, seat, now)
+
+    def leave(self, code, token):
+        now = time.time()
+        with self._lock:
+            room = self.rooms.get((code or "").strip())
+            if room is None:
+                return {"ok": True}
+            for seat in ("a", "b"):
+                if token and room["seats"].get(seat) == token:
+                    room["seats"][seat] = ""
+                    room["touched"] = now
+                    if seat == "a":
+                        # 房主走了，房间跟着拆：留着也没人能再进来开局
+                        del self.rooms[code]
+                    else:
+                        # 对手退了就算弃权，让留在房间里的人看到「对方离开了」
+                        room["status"] = "done"
+                        room["winner"] = "a"
+                        room["reason"] = "leave"
+                        room["version"] += 1
+                    break
+            return {"ok": True}
+
+    def stats(self):
+        now = time.time()
+        with self._lock:
+            self._sweep(now)
+            playing = sum(1 for room in self.rooms.values()
+                          if room["status"] == "playing")
+            return {"count": len(self.rooms), "playing": playing}
+
+
 # ── HTTP 层 ─────────────────────────────────────────────────────
 
 
@@ -553,6 +860,7 @@ class Handler(BaseHTTPRequestHandler):
 
     library = None
     learn = None
+    rooms = None
     web_dir = None
 
     # 让 Ctrl+C 时终端干净一点，不要把每条请求都打出来
@@ -640,11 +948,24 @@ class Handler(BaseHTTPRequestHandler):
                 payload = lib.stats()
                 # 家长后台首页顺带显示「有没有收到孩子端的上报」
                 payload["learnChildren"] = len(self.learn.children)
+                payload["rooms"] = self.rooms.stats() if self.rooms else {"count": 0, "playing": 0}
                 self._json(payload)
                 return
 
             if path == "/api/learn/summary":
                 self._json(self.learn.summary())
+                return
+
+            if path == "/api/game/state":
+                if self.rooms is None:
+                    self._json({"ok": False, "error": "联机功能没开"}, 503)
+                    return
+                code = (query.get("code", [""])[0] or "").strip()
+                token = (query.get("token", [""])[0] or "").strip()
+                try:
+                    self._json({"ok": True, "room": self.rooms.state(code, token)})
+                except RoomError as error:
+                    self._json({"ok": False, "error": str(error)}, error.status)
                 return
 
             if path == "/api/story/types":
@@ -706,8 +1027,53 @@ class Handler(BaseHTTPRequestHandler):
             self._json(self.learn.reset(child))
             return
 
+        if path.startswith("/api/game/"):
+            self._game_route(path[len("/api/game/"):])
+            return
+
         self._drain()
         self._json({"ok": False, "error": "unknown path"}, 404)
+
+    # -- 联机对战 -------------------------------------------------
+
+    def _game_route(self, action):
+        """房间相关的 POST：建 / 进 / 走一步 / 交成绩 / 退出。
+
+        统一回 {"ok": true, "room": {...}}，和轮询拿到的结构一模一样：
+        客户端只需要一套「把 room 套到界面上」的代码，不用为每个接口
+        各写一份解析。
+        """
+        store = self.rooms
+        if store is None:
+            self._drain()
+            self._json({"ok": False, "error": "联机功能没开"}, 503)
+            return
+
+        try:
+            payload, error = self._body_json()
+            if error:
+                raise RoomError(error)
+            code = str(payload.get("code") or "")
+            token = str(payload.get("token") or "")
+
+            if action == "create":
+                room = store.create(payload.get("game"), payload.get("level"))
+            elif action == "join":
+                room = store.join(code, token)
+            elif action == "move":
+                room = store.move(code, token, payload.get("from"),
+                                  payload.get("to"), payload.get("promo"))
+            elif action == "finish":
+                room = store.finish(code, token, payload)
+            elif action == "leave":
+                self._json(store.leave(code, token))
+                return
+            else:
+                self._json({"ok": False, "error": "unknown path"}, 404)
+                return
+            self._json({"ok": True, "room": room})
+        except RoomError as error:
+            self._json({"ok": False, "error": str(error)}, error.status)
 
 
 def local_ips():
@@ -761,8 +1127,10 @@ def main(argv=None):
 
     library = Library(data_dir)
     learn = LearnStore(data_dir)
+    rooms = RoomStore()
     Handler.library = library
     Handler.learn = learn
+    Handler.rooms = rooms
     Handler.web_dir = web_dir
 
     try:
@@ -777,6 +1145,8 @@ def main(argv=None):
     print("儿童安全桌面 · 故事服务端 v%s" % VERSION)
     print("内容：%d 篇 / %d 类" % (len(library.stories), len(library.categories)))
     print("学习情况：已收到 %d 个孩子的上报" % len(learn.children))
+    print("联机对战：房间表就绪（最多 %d 个房间，%d 分钟没动静回收）"
+          % (ROOM_MAX, ROOM_TTL_SEC // 60))
     for error in library.source_errors:
         print("  注意：%s" % error)
     if learn.error:

@@ -45,6 +45,7 @@ void Settings::load()
 
     m_serverUrl = group.readEntry("ServerUrl", QString());
     m_onlineContentEnabled = group.readEntry("OnlineContentEnabled", false);
+    m_netplayEnabled = group.readEntry("NetplayEnabled", false);
 
     m_weatherEnabled = group.readEntry("WeatherEnabled", true);
     m_weatherCity = group.readEntry("WeatherCity", QStringLiteral("auto"));
@@ -80,6 +81,7 @@ void Settings::save()
 
     group.writeEntry("ServerUrl", m_serverUrl);
     group.writeEntry("OnlineContentEnabled", m_onlineContentEnabled);
+    group.writeEntry("NetplayEnabled", m_netplayEnabled);
     group.writeEntry("WeatherEnabled", m_weatherEnabled);
     group.writeEntry("WeatherCity", m_weatherCity);
 
@@ -241,6 +243,15 @@ void Settings::setOnlineContentEnabled(bool value)
         return;
     }
     m_onlineContentEnabled = value;
+    save();
+}
+
+void Settings::setNetplayEnabled(bool value)
+{
+    if (m_netplayEnabled == value) {
+        return;
+    }
+    m_netplayEnabled = value;
     save();
 }
 

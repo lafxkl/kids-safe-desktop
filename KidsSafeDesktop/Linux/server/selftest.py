@@ -247,6 +247,125 @@ def main():
         except Exception as error:
             check("家长后台页面可打开", False, str(error))
 
+        # ── 联机对战 ──────────────────────────────────────────
+        # 两个「人」用两套 token 打同一个房间，顺序和孩子端 Netplay 完全一致。
+        print("\n联机对战：")
+
+        status, result = post(base, "/api/game/create", {"game": "chess", "level": 1})
+        room = (result or {}).get("room") or {}
+        code = room.get("code") or ""
+        a_token = room.get("token") or ""
+        check("建房成功", status == 200 and (result or {}).get("ok") is True)
+        check("房间号是 4 位数字", len(code) == 4 and code.isdigit())
+        check("房主坐 a 座、等人中", room.get("seat") == "a" and room.get("status") == "waiting")
+        check("房主拿到 token", len(a_token) >= 16)
+        check("房间视图里不含座位表", "seats" not in room)
+
+        status, _ = post(base, "/api/game/move",
+                         {"code": code, "token": a_token, "from": 52, "to": 44, "promo": ""})
+        check("对手没进来不能走子", status == 409)
+
+        status, _ = post(base, "/api/game/join", {"code": "0000"})
+        check("不存在的房间进不去", status == 404)
+
+        status, result = post(base, "/api/game/join", {"code": code})
+        joined = (result or {}).get("room") or {}
+        b_token = joined.get("token") or ""
+        check("对手进房坐 b 座", joined.get("seat") == "b" and len(b_token) >= 16)
+        check("两个人 token 不同", b_token != a_token)
+        check("两人到齐自动开局", joined.get("status") == "playing")
+        check("能看到对手已经到了", joined.get("opponent") is True)
+
+        status, _ = post(base, "/api/game/join", {"code": code})
+        check("第三个人进不去", status == 409)
+
+        status, result = post(base, "/api/game/move",
+                              {"code": code, "token": a_token, "from": 52, "to": 44, "promo": ""})
+        check("轮到白方就能走", status == 200)
+        check("走完轮到黑方", ((result or {}).get("room") or {}).get("turn") == "b")
+
+        status, _ = post(base, "/api/game/move",
+                         {"code": code, "token": a_token, "from": 62, "to": 45, "promo": "N"})
+        check("不能连走两步", status == 409)
+
+        status, _ = get(base, "/api/game/state?code=%s&token=deadbeef" % code)
+        check("假 token 读不到房间", status == 403)
+
+        status, _ = post(base, "/api/game/move",
+                         {"code": code, "token": b_token, "from": 5, "to": 5, "promo": ""})
+        check("不能原地不动", status == 400)
+
+        status, _ = post(base, "/api/game/move",
+                         {"code": code, "token": b_token, "from": 12, "to": 28, "promo": "K"})
+        check("乱填升变被挡住", status == 400)
+
+        status, result = post(base, "/api/game/move",
+                              {"code": code, "token": b_token, "from": 12, "to": 28, "promo": ""})
+        check("黑方走子成功",
+              status == 200 and len(((result or {}).get("room") or {}).get("moves") or []) == 2)
+
+        status, result = get(base, "/api/game/state?code=%s&token=%s" % (code, b_token))
+        room = (result or {}).get("room") or {}
+        check("轮询拿到完整走法", len(room.get("moves") or []) == 2)
+        check("轮询回的是自己的座位", room.get("seat") == "b" and room.get("turn") == "a")
+
+        status, result = post(base, "/api/game/finish",
+                              {"code": code, "token": a_token, "result": "a"})
+        room = (result or {}).get("room") or {}
+        check("象棋报结果", room.get("winner") == "a" and room.get("status") == "done")
+
+        status, _ = post(base, "/api/game/move",
+                         {"code": code, "token": a_token, "from": 51, "to": 35, "promo": ""})
+        check("结束后不能再走", status == 409)
+
+        # 华容道：同一道题、同一时刻开始、比谁先解出来
+        status, result = post(base, "/api/game/create", {"game": "klotski", "level": 3})
+        room = (result or {}).get("room") or {}
+        k_code = room.get("code") or ""
+        ka_token = room.get("token") or ""
+        check("华容道建房带难度", room.get("game") == "klotski" and room.get("level") == 3)
+
+        status, result = post(base, "/api/game/join", {"code": k_code})
+        kb_token = ((result or {}).get("room") or {}).get("token") or ""
+        check("华容道两人到齐", ((result or {}).get("room") or {}).get("status") == "playing")
+
+        status, _ = post(base, "/api/game/move",
+                         {"code": k_code, "token": ka_token, "from": 1, "to": 2, "promo": ""})
+        check("华容道房间不接受走子", status == 409)
+
+        status, _ = post(base, "/api/game/finish",
+                         {"code": k_code, "token": ka_token, "steps": 20})
+        check("倒计时没结束不能交成绩", status == 409)
+
+        time.sleep(3.3)
+        status, result = post(base, "/api/game/finish",
+                              {"code": k_code, "token": ka_token, "steps": 27})
+        room = (result or {}).get("room") or {}
+        first = (room.get("results") or [{}])[0]
+        check("先解出的人获胜", room.get("winner") == "a")
+        check("成绩里记了步数", first.get("steps") == 27)
+        # 等了 3.3 秒，但其中 3 秒是倒计时，只有多出来的那点算进成绩：
+        # 断言「小于 2 秒」正好证明计时起点是服务器的 startAt，不是请求到达时刻
+        check("耗时从倒计时结束时开始算", 0 <= first.get("ms", -1) < 2000)
+
+        status, result = post(base, "/api/game/finish",
+                              {"code": k_code, "token": kb_token, "steps": 40})
+        room = (result or {}).get("room") or {}
+        check("后到的人也能交成绩", len(room.get("results") or []) == 2)
+        check("冠军不会被后来者顶掉", room.get("winner") == "a")
+
+        status, _ = post(base, "/api/game/finish",
+                         {"code": k_code, "token": kb_token, "steps": 40})
+        check("同一个人不能重复交", status == 409)
+
+        status, _ = post(base, "/api/game/leave", {"code": k_code, "token": ka_token})
+        check("房主退房", status == 200)
+        status, _ = get(base, "/api/game/state?code=%s&token=%s" % (k_code, kb_token))
+        check("房主走了房间就拆掉", status == 404)
+
+        status, health = get(base, "/api/health")
+        check("health 带房间数", isinstance((health or {}).get("rooms"), dict))
+
     finally:
         process.terminate()
         try:

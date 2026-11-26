@@ -16,6 +16,10 @@ Rectangle {
     // 不按「答对几 / 共几」计分的游戏（打地鼠是计时的）自己传一句文案
     property string summary: ""
 
+    // 主按钮的文案。联机对局结束时「再来一局」是做不到的（对面可能已经走了），
+    // 那时候传「离开房间」，按下去就是退房回大厅。
+    property string replayText: "再来一局"
+
     signal replay()
     signal exit()
 
@@ -78,7 +82,7 @@ Rectangle {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "再来一局"
+                    text: overlay.replayText
                     font.pixelSize: 19
                     font.weight: Font.Bold
                     color: "white"

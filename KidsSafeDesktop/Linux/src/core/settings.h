@@ -31,6 +31,15 @@ class Settings : public QObject
     /// 是否允许从家长服务器拉取在线内容（故事 / 补充教材）。
     Q_PROPERTY(bool onlineContentEnabled READ onlineContentEnabled WRITE setOnlineContentEnabled NOTIFY changed)
 
+    // ── 联机对战 ───────────────────────────────────────────────
+    /// 允许孩子和小伙伴对联机（华容道竞速 / 国际象棋）。
+    ///
+    /// 默认关，而且必须配合「在线故事与内容」一起打开 —— 这两道门是叠加的：
+    /// 前者决定「能不能连服务器」，后者决定「能不能和别人一起玩」。分开是
+    /// 因为家长可能想让孩子看故事，但不想让他和外面的人下棋。
+    /// 打开后孩子还需要知道对方的 4 位房间号，没有公开匹配大厅。
+    Q_PROPERTY(bool netplayEnabled READ netplayEnabled WRITE setNetplayEnabled NOTIFY changed)
+
     // ── 天气 ───────────────────────────────────────────────────
     // 天气数据来自 Open-Meteo（免密钥、免注册），与家长服务器无关，
     // 所以单独给一个开关：不想要任何外部请求的家庭可以整块关掉。
@@ -86,6 +95,9 @@ public:
 
     bool onlineContentEnabled() const { return m_onlineContentEnabled; }
     void setOnlineContentEnabled(bool value);
+
+    bool netplayEnabled() const { return m_netplayEnabled; }
+    void setNetplayEnabled(bool value);
 
     bool weatherEnabled() const { return m_weatherEnabled; }
     void setWeatherEnabled(bool value);
@@ -153,6 +165,7 @@ private:
     QVariantList m_allowedApps;
     QString m_serverUrl;
     bool m_onlineContentEnabled = false;
+    bool m_netplayEnabled = false;
     bool m_weatherEnabled = true;
     QString m_weatherCity = QStringLiteral("auto");
 

@@ -8,6 +8,7 @@
 #include "core/learnreport.h"
 #include "core/maker.h"
 #include "core/mediaplayer.h"
+#include "core/netplay.h"
 #include "core/playland.h"
 #include "core/screentime.h"
 #include "core/settings.h"
@@ -463,6 +464,9 @@ int main(int argc, char *argv[])
     // 学习情况上报：关卡进度 + 作业成绩 → 家长后台（自己的故事服务端）。
     // 没填服务器地址时不发任何请求，也不影响孩子做题。
     auto *reports = new LearnReport(settings, codeLab, &app);
+    // 联机对战：和同一个小伙伴开一局（华容道竞速 / 国际象棋）。
+    // 只认 4 位房间号，没有公开匹配；家长两个开关都打开才会真的发请求。
+    auto *netplay = new Netplay(settings, &app);
     // 开机自启 / 崩溃自愈：只写用户目录（XDG autostart 或 systemd --user 单元）。
     auto *startup = new Startup(&app);
     // 系统快捷键抢占：X11 用 XGrabKey，Wayland 诚实降级为「会话裁剪」。
@@ -489,6 +493,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Media", media);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "CodeLab", codeLab);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Reports", reports);
+    qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Netplay", netplay);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "Startup", startup);
     qmlRegisterSingletonInstance("KidsSafe", 1, 0, "HotkeyGuard", hotkey);
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import KidsSafe 1.0
 
 /*
  * 华容道（4×5 棋盘，三个布局）。
@@ -15,6 +16,16 @@ import QtQuick.Layouts
  *   简单 6 个棋子（14 步）、中等 8 个（27 步）、困难 9 个（51 步）。
  * 困难这局比经典「横刀立马」少三个兵 —— 经典要 116 步，对 8 岁的孩子太长，
  * 51 步已经够他琢磨一阵了。
+ *
+ * ---- 联机为什么是「竞速」而不是「一人一步」----
+ *
+ * 华容道是单人解谜，两个人在同一副棋子上轮流挪，只会互相拆台：你挪开的
+ * 空位对方立刻就堵上了，玩下来既不像合作也不像对战。所以联机做成竞速：
+ * 两边拿同一道题、同一时刻开始，谁先解出来谁赢。规则公平（同一道题）、
+ * 同步量极小（只需要开始时刻和完成时间）、输了也知道输在哪（慢了）。
+ *
+ * 对手先解出来时不打断还在解的孩子：他这一盘可以继续解完，只是顶部会
+ * 多一句「小伙伴 1 分 20 秒就解出来了」。这个年纪，被强行打断比输更难受。
  */
 GameShell {
     id: page
@@ -22,9 +33,10 @@ GameShell {
     title: "华容道"
     glyph: "blocks"
     accent: "#8D6E63"
-    prompt: page.finished ? "曹操出去了，厉害！"
-                          : "拖住棋子往空处挪，把「曹操」送到最下面的出口"
-    scoreText: page.steps + " 步"
+    prompt: page.hintText
+    scoreText: page.online && page.raceStarted
+               ? page.steps + " 步 · " + page.clockText
+               : page.steps + " 步"
 
     readonly property int cols: 4
     readonly property int rows: 5
@@ -38,8 +50,158 @@ GameShell {
     property int dragIndex: -1
     property var dragStart: ({ "x": 0, "y": 0 })
 
-    readonly property int level: Math.max(1, Math.min(3, page.difficulty))
+    // ---- 联机竞速 ----
+    readonly property bool online: Netplay.state === "playing" || Netplay.state === "done"
+    // 本地时间轴上的开始时刻（毫秒）。两台机器的系统时钟不可能一样准，
+    // 所以只能用「服务器说还有几秒」换算成自己这边的时间点。
+    property double startAtMs: 0
+    property bool raceStarted: false
+    property int countdownLeft: 0
+    property int elapsedMs: 0
+    property bool reported: false
+
+    // 联机时难度用房主定的那一档：两个人必须解同一道题，否则「谁快」没有意义
+    readonly property int level: {
+        if (page.online) {
+            const lv = Netplay.room.level;
+            return (lv === 1 || lv === 2 || lv === 3) ? lv : 2;
+        }
+        return Math.max(1, Math.min(3, page.difficulty));
+    }
     readonly property int bestSteps: page.level === 1 ? 14 : (page.level === 2 ? 27 : 51)
+
+    readonly property string clockText: page.fmtMs(page.elapsedMs)
+
+    readonly property var myResult: {
+        const list = (page.online && Netplay.room.results) ? Netplay.room.results : [];
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].seat === Netplay.seat) {
+                return list[i];
+            }
+        }
+        return null;
+    }
+
+    readonly property var rivalResult: {
+        const list = (page.online && Netplay.room.results) ? Netplay.room.results : [];
+        const seat = Netplay.seat === "a" ? "b" : "a";
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].seat === seat) {
+                return list[i];
+            }
+        }
+        return null;
+    }
+
+    readonly property string hintText: {
+        if (!page.online) {
+            return page.finished ? "曹操出去了，厉害！"
+                                 : "拖住棋子往空处挪，把「曹操」送到最下面的出口";
+        }
+        if (!page.raceStarted) {
+            return page.countdownLeft > 0 ? "准备… " + page.countdownLeft : "马上开始";
+        }
+        if (page.finished) {
+            return "你解出来了！";
+        }
+        if (page.rivalResult !== null) {
+            return "小伙伴 " + page.fmtMs(page.rivalResult.ms) + " 就解出来了，加油追！";
+        }
+        return "同一道题，谁先把曹操送出去谁赢";
+    }
+
+    // 结算区的一句话：两边成绩都到齐才比较，先到的只说「等小伙伴」
+    readonly property string onlineSummary: {
+        const mine = page.myResult;
+        const rival = page.rivalResult;
+        if (mine === null) {
+            return "正在结算…";
+        }
+        const mineText = page.fmtMs(mine.ms) + " · " + mine.steps + " 步";
+        if (rival === null) {
+            return "你用了 " + mineText + "，小伙伴还在解";
+        }
+        if (mine.ms <= rival.ms) {
+            return "你先解出来！你 " + mineText + "，小伙伴 " + page.fmtMs(rival.ms);
+        }
+        return "小伙伴快一点：他 " + page.fmtMs(rival.ms) + "，你 " + mineText;
+    }
+
+    onOnlineChanged: {
+        page.resetRace();
+        page.restart();
+        if (page.online) {
+            page.syncRace();
+        }
+    }
+
+    Connections {
+        target: Netplay
+
+        function onRoomChanged() {
+            if (page.online) {
+                page.syncRace();
+            }
+        }
+    }
+
+    function fmtMs(ms) {
+        const total = Math.max(0, Math.round(ms / 1000));
+        const m = Math.floor(total / 60);
+        const s = total % 60;
+        return m > 0 ? (m + " 分 " + s + " 秒") : (s + " 秒");
+    }
+
+    function resetRace() {
+        page.startAtMs = 0;
+        page.raceStarted = false;
+        page.countdownLeft = 0;
+        page.elapsedMs = 0;
+        page.reported = false;
+    }
+
+    // 服务端给了「什么时候开始」，换算成本地的时间点。只算一次：
+    // 每次轮询都重算会让倒计时来回抖，已经开跑之后也不该再被网络延迟拉扯。
+    function syncRace() {
+        if (!page.online) {
+            return;
+        }
+        const room = Netplay.room;
+        if (!room.startAt || room.startAt <= 0) {
+            return;
+        }
+        if (page.startAtMs === 0) {
+            page.startAtMs = Date.now() + (room.startAt - room.now) * 1000;
+        }
+        page.tickClock();
+    }
+
+    function tickClock() {
+        if (!page.online || page.startAtMs <= 0) {
+            return;
+        }
+        const left = page.startAtMs - Date.now();
+        page.countdownLeft = Math.max(0, Math.ceil(left / 1000));
+        page.raceStarted = left <= 0;
+        if (page.raceStarted) {
+            page.elapsedMs = Date.now() - page.startAtMs;
+        }
+    }
+
+    // 能不能动手：人机看「解完没」，联机还要等倒计时结束
+    function canPlayNow() {
+        if (page.finished) {
+            return false;
+        }
+        return page.online ? page.raceStarted : true;
+    }
+
+    Timer {
+        interval: 200
+        repeat: true
+        running: page.online && page.startAtMs > 0 && !page.finished
+        onTriggered: page.tickClock()
+    }
 
     readonly property real cell: {
         const byHeight = (page.contentArea.height - 70) / 5;
@@ -149,7 +311,7 @@ GameShell {
     }
 
     function beginDrag(i) {
-        if (page.finished) {
+        if (!page.canPlayNow()) {
             return;
         }
         page.dragIndex = i;
@@ -159,7 +321,7 @@ GameShell {
 
     function dragBy(dx, dy) {
         const i = page.dragIndex;
-        if (i < 0 || page.finished) {
+        if (i < 0 || !page.canPlayNow()) {
             return;
         }
         const cx = Math.round(dx / page.cell);
@@ -173,7 +335,7 @@ GameShell {
     }
 
     function nudge(dx, dy) {
-        if (page.finished || page.selected < 0) {
+        if (!page.canPlayNow() || page.selected < 0) {
             return;
         }
         const p = page.pieces[page.selected];
@@ -190,6 +352,12 @@ GameShell {
         if (cao !== undefined && cao.x === 1 && cao.y === 3) {
             page.finished = true;
             page.dragIndex = -1;
+            if (page.online && !page.reported) {
+                page.reported = true;
+                // 只报步数：耗时由服务端按它记的开始时刻算，不信客户端报的
+                // 毫秒数（两台机器的计时器精度和起点都不一样）。
+                Netplay.reportKlotskiFinish(page.steps);
+            }
         }
     }
 
@@ -367,6 +535,34 @@ GameShell {
                         }
                     }
                 }
+
+                // 联机倒计时：盖住棋盘，3 → 2 → 1，开始后自己消失
+                Rectangle {
+                    anchors.fill: parent
+                    visible: page.online && !page.raceStarted
+                    radius: 22
+                    color: "#F2FBF4EA"
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 6
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: page.countdownLeft > 0 ? page.countdownLeft : "开始"
+                            font.pixelSize: 84
+                            font.weight: Font.Bold
+                            color: "#C62828"
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "同一道题，谁先送出去谁赢"
+                            font.pixelSize: 15
+                            color: "#8A7568"
+                        }
+                    }
+                }
             }
 
             // 右侧：步数 / 方向键 / 按钮
@@ -399,6 +595,42 @@ GameShell {
                             text: "最少 " + page.bestSteps + " 步可以送出去"
                             font.pixelSize: 14
                             color: "#9B8574"
+                        }
+                    }
+                }
+
+                // 联机时才出现的对战卡：自己的用时 + 对方解完没有
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 88
+                    radius: 22
+                    visible: page.online
+                    color: "#FFFFFF"
+                    border.color: "#F2E1CD"
+                    border.width: 1
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 4
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: page.raceStarted ? page.clockText : "准备开始"
+                            font.pixelSize: 24
+                            font.weight: Font.Bold
+                            color: "#2E6B3A"
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: page.rivalResult !== null
+                                  ? ("小伙伴已完成：" + page.rivalResult.steps + " 步 · "
+                                     + page.fmtMs(page.rivalResult.ms))
+                                  : "小伙伴还在解"
+                            font.pixelSize: 13
+                            color: "#8A7568"
+                            wrapMode: Text.Wrap
                         }
                     }
                 }
@@ -554,7 +786,7 @@ GameShell {
                         color: undoArea.active ? "#EFE7DE" : "#FFFFFF"
                         border.color: "#EADBC8"
                         border.width: 1
-                        opacity: page.history.length === 0 ? 0.45 : 1
+                        opacity: (page.history.length === 0 && !page.online) ? 0.45 : 1
 
                         Text {
                             anchors.centerIn: parent
@@ -578,15 +810,47 @@ GameShell {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "重新摆"
+                            // 联机时不能「重新摆」：重来一次等于把这一局作废，
+                            // 对面还在解同一道题，这就不算比赛了
+                            text: page.online ? "离开房间" : "重新摆"
                             font.pixelSize: 17
                             font.weight: Font.Bold
                             color: "white"
                         }
 
                         TapHandler {
-                            onTapped: page.restart()
+                            onTapped: {
+                                if (page.online) {
+                                    Netplay.leave();
+                                } else {
+                                    page.restart();
+                                }
+                            }
                         }
+                    }
+                }
+
+                // 联机入口：家长把「在线内容」和「联机对战」都打开才出现
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 56
+                    radius: 20
+                    visible: !page.online && Netplay.enabled
+                    color: netArea.active ? "#DCEFE1" : "#EEF7EF"
+                    border.color: "#B7D8BE"
+                    border.width: 1
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "和小伙伴比快"
+                        font.pixelSize: 17
+                        font.weight: Font.DemiBold
+                        color: "#2E6B3A"
+                    }
+
+                    TapHandler {
+                        id: netArea
+                        onTapped: netPanel.visible = true
                     }
                 }
             }
@@ -595,9 +859,26 @@ GameShell {
         GameResultOverlay {
             anchors.fill: parent
             visible: page.finished
-            summary: "曹操送出去了！用了 " + page.steps + " 步（最少 " + page.bestSteps + " 步）"
+            summary: page.online
+                     ? page.onlineSummary
+                     : ("曹操送出去了！用了 " + page.steps + " 步（最少 " + page.bestSteps + " 步）")
+            replayText: page.online ? "离开房间" : "再来一局"
             onReplay: page.restart()
-            onExit: page.navWin.popPage()
+            onExit: {
+                if (page.online) {
+                    Netplay.leave();
+                }
+                page.navWin.popPage();
+            }
         }
+    }
+
+    // 联机面板盖满整页（连顶部栏一起）
+    NetplayPanel {
+        id: netPanel
+
+        anchors.fill: parent
+        game: "klotski"
+        level: page.level
     }
 }

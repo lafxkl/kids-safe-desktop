@@ -75,6 +75,8 @@ set(KIDSSAFE_SOURCES
     # 没填地址时整个模块静默待命。
     src/core/learnreport.cpp
     src/core/learnreport.h
+    src/core/netplay.cpp
+    src/core/netplay.h
     src/core/maker.cpp
     src/core/maker.h
     src/nes/nesemulator.cpp
@@ -257,9 +259,12 @@ qt_add_resources(kidssafe "qml"
         src/qml/SafetyWorldPage.qml
         src/qml/SafetyTopicPage.qml
         src/qml/SafetyQuizPage.qml
-        # 小游戏：外壳 + 结算 + 大厅 + 七个游戏页
+        # 小游戏：外壳 + 结算 + 联机面板 + 大厅 + 八个游戏页
         src/qml/GameShell.qml
         src/qml/GameResultOverlay.qml
+        # 联机面板：象棋和华容道共用。漏加的表现同样是打开游戏就白屏
+        # （「NetplayPanel is not a type」），编译期不报错。
+        src/qml/NetplayPanel.qml
         src/qml/GamesHubPage.qml
         src/qml/CountingGamePage.qml
         src/qml/MatchingGamePage.qml

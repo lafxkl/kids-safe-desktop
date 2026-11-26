@@ -616,7 +616,7 @@ Item {
                 // ---- 在线内容（故事屋 / 补充教材的来源）----
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 236
+                    Layout.preferredHeight: 316
                     radius: 24
                     color: "#FFFFFF"
                     border.color: "#F2E1CD"
@@ -713,6 +713,46 @@ Item {
                             color: (Stories.testResult.indexOf("连接成功") === 0
                                     || page.serverHint.indexOf("已启用") === 0) ? "#1D9E75" : "#B8A492"
                             wrapMode: Text.Wrap
+                        }
+
+                        // ---- 联机对战 ----
+                        // 单独一个开关，不跟「在线故事」合并：家长可能想让孩子
+                        // 看故事，但不想让他和别的小朋友下棋。两个开关是叠加关系，
+                        // 都打开才真的能连。
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: "#F2E1CD"
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 12
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+
+                                Text {
+                                    text: "允许联机对战"
+                                    font.pixelSize: 15
+                                    font.weight: Font.DemiBold
+                                    color: "#4A3B32"
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "华容道和国际象棋可以和同一个小伙伴一起玩。要先打开上面的开关；只认 4 位房间号，没有公开匹配，也没有聊天。"
+                                    font.pixelSize: 12
+                                    color: "#B8A492"
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+
+                            Switch {
+                                checked: Settings.netplayEnabled
+                                onToggled: Settings.netplayEnabled = checked
+                            }
                         }
                     }
                 }
