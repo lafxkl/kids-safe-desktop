@@ -305,6 +305,7 @@ The docs are written in Chinese; the two engineering notes below are the ones wo
 | [Docs/更新记录.md](KidsSafeDesktop/Docs/更新记录.md) | Version-by-version changelog (client and server) |
 | [Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md) | Feedback pages, API contract, offline queue, privacy boundaries, acceptance steps |
 | [Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md) | Post-launch operations: Nginx proxying, caching, backups |
+| [Docs/README图片托管说明.md](KidsSafeDesktop/Docs/README图片托管说明.md) | Why this page's images and badges are served from the project site, and how to replace them (Chinese) |
 | [KidsSafeServer/wwwroot/docs.html](KidsSafeServer/wwwroot/docs.html) | Deployment and troubleshooting guide for parents |
 
 ## Known limitations

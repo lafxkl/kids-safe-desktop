@@ -319,6 +319,7 @@ keytool -genkeypair -alias kidssafe -keyalg RSA -keysize 2048 \
 | [Docs/星星奖励与关爱中心.md](KidsSafeDesktop/Docs/星星奖励与关爱中心.md) | 星星与勋章规则、关爱中心各栏目、绘本来源的存储方案与版权红线 |
 | [Docs/用户反馈与问卷.md](KidsSafeDesktop/Docs/用户反馈与问卷.md) | 官网三页 + 四端入口、接口契约、离线队列、隐私边界、验收步骤 |
 | [Docs/官网运维清单.md](KidsSafeDesktop/Docs/官网运维清单.md) | 官网与接口上线后的运维动作：Nginx 反代、缓存、备份 |
+| [Docs/README图片托管说明.md](KidsSafeDesktop/Docs/README图片托管说明.md) | 本页图片与徽章为什么走官网绝对地址、换图与重绘流程 |
 | [KidsSafeServer/wwwroot/docs.html](KidsSafeServer/wwwroot/docs.html) | 面向家长的部署与排障手册 |
 
 ## 已知限制
