@@ -135,7 +135,11 @@ void Terminal::start()
         const QString home = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
         if (!home.isEmpty()) {
             if (chdir(home.toLocal8Bit().constData()) != 0) {
-                chdir("/");
+                // 家目录进不去就退到根目录；根目录也不行就留在继承来的目录里。
+                // 初始工作目录不对而已，不该因此拦住 shell 启动。
+                if (chdir("/") != 0) {
+                    /* 两个都失败，忽略即可 */
+                }
             }
         }
 
