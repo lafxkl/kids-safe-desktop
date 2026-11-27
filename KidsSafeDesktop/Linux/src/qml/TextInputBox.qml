@@ -41,6 +41,14 @@ Item {
 
     implicitHeight: multiline ? 110 : 48
 
+    /*
+     * 外部改值（例如提交成功后清空）要能落进编辑区。TextEdit 上那条
+     * text: box.text 的绑定在用户敲字后不一定还活着，所以这里再补一次
+     * 显式同步——值相同时不动，不会把光标弹回开头。
+     */
+    onTextChanged: if (edit.text !== text) edit.text = text
+    Component.onCompleted: if (edit.text !== text) edit.text = text
+
     Rectangle {
         anchors.fill: parent
         radius: box.multiline ? 16 : 14
