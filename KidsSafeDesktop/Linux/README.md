@@ -120,6 +120,10 @@ Linux/
 
 ## 三、构建
 
+> **只想装来用**：不用编译，直接装 `dist/` 里的 `.deb`，`apt` 会把运行期依赖一起装上。
+> **要装哪些包、每个包干什么、缺了会报什么错**：见 [`../wiki/09-依赖清单.md`](../wiki/09-依赖清单.md)，
+> 那一份是照着「用户视角」写的，下面这里是同一批包的命令行版本。
+
 ```sh
 # Debian / Ubuntu（一条命令装齐，见 scripts/install-deps.sh）
 sh scripts/install-deps.sh
@@ -127,43 +131,45 @@ sh scripts/install-deps.sh
 # 等价的手工命令（下面这张表是 Debian 系真实包名，别抄 Fedora 的写法）：
 sudo apt install build-essential cmake extra-cmake-modules \
      qt6-base-dev qt6-declarative-dev \
+     qt6-webengine-dev qt6-multimedia-dev libx11-dev \
      libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
      libkirigami-dev qml6-module-org-kde-kirigami \
      qml6-module-qtquick qml6-module-qtquick-window \
      qml6-module-qtquick-controls qml6-module-qtquick-layouts \
      qml6-module-qtquick-templates qml6-module-qtqml-workerscript \
-     qml6-module-org-kde-breeze
+     qml6-module-qtwebengine qml6-module-org-kde-breeze
 
 # Fedora
 sudo dnf install cmake gcc-c++ extra-cmake-modules \
      qt6-qtbase-devel qt6-qtdeclarative-devel \
-     kf6-kconfig-devel kf6-kcoreaddons-devel kf6-kservice-devel \
+     qt6-qtwebengine-devel qt6-qtmultimedia-devel \
+     kf6-kconfig-devel kf6-kcoreaddons-devel \
      kf6-kirigami-devel kf6-ki18n-devel
 
 # deepin 25（注意与 Debian/Ubuntu 的四处差异，见下）
 sudo apt install build-essential cmake extra-cmake-modules \
      qt6-base-dev qt6-declarative-dev \
+     qt6-webengine-dev qt6-multimedia-dev libx11-dev \
      libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
      libkirigami-dev qml6-module-org-kde-kirigami \
      qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts \
-     qml6-module-qtquick-templates qml6-module-qtqml-workerscript
+     qml6-module-qtquick-templates qml6-module-qtqml-workerscript \
+     qml6-module-qtwebengine
 
 # libxkbcommon-dev / libxkbcommon-x11-dev 不是本工程的依赖（代码里一行都没用），
 # 只有 cmake 报 XKB 相关错误时才需要临时装一下：deepin 25 的源里这两包不一定有，
 # 写进 debian/control 会让 dpkg-checkbuilddeps 直接拒绝打包。
+# libx11-dev 是 X11 下抢 Alt+Tab / Ctrl+Shift+Esc 用的，缺了能编过，但会静默失去
+# 「屏蔽快捷键」这一项。
 
 # 可选：语音朗读（缺了只降级成静默，不阻断）
 sudo apt install speech-dispatcher
 
-# 必需：网页小游戏（15 款 HTML5）与声音
-# 这两个**不是可选项**，缺了 cmake 会直接失败。原因不是「少个功能」这么简单：
-# 网页小游戏要靠 QtWebEngine 在编译期把初始化和 QML 宿主页编进二进制，
-# 构建机上没有 -dev 包，打出来的包就永远不含这部分 —— 用户事后自己装
-# qml6-module-qtwebengine 也没用，只会看到一句「本次构建未包含」。
+# qt6-webengine-dev / qt6-multimedia-dev 是**必需**的（上面已经装上了）。
+# 原因不是「少个功能」这么简单：网页小游戏要靠 QtWebEngine 在编译期把初始化和
+# QML 宿主页编进二进制，构建机上没有 -dev 包，打出来的包就永远不含这部分 ——
+# 用户事后自己装 qml6-module-qtwebengine 也没用，只会看到一句「本次构建未包含」。
 # 也就是说「装个包」这件事被推给了最没办法处理它的人。
-sudo apt install qt6-webengine-dev qt6-multimedia-dev
-sudo apt install qml6-module-qtwebengine     # 运行期 QML 模块（从 build 目录直接跑时需要）
-
 # 真要打一个不含网页小游戏/声音的极小包（救援镜像之类），显式关掉：
 #   cmake -B build -DKIDSSAFE_MINIMAL=ON
 

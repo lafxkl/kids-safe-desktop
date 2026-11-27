@@ -33,12 +33,18 @@ if ! command -v apt-get >/dev/null 2>&1; then
   Fedora：
     sudo dnf install cmake gcc-c++ extra-cmake-modules \
          qt6-qtbase-devel qt6-qtdeclarative-devel \
+         qt6-qtwebengine-devel qt6-qtmultimedia-devel \
          kf6-kconfig-devel kf6-kcoreaddons-devel kf6-ki18n-devel \
          kf6-kirigami-devel
 
   Arch：
     sudo pacman -S base-devel cmake extra-cmake-modules \
-         qt6-base qt6-declarative kconfig kcoreaddons ki18n kirigami breeze
+         qt6-base qt6-declarative qt6-webengine qt6-multimedia \
+         kconfig kcoreaddons ki18n kirigami breeze
+
+  （qt6-webengine / qt6-multimedia 不是可选项：网页小游戏和音频要编进二进制
+    才算数，构建机上缺了，用户装任何东西都补不回来。完整清单见
+    ../wiki/09-依赖清单.md）
 EOF
     exit 1
 fi
