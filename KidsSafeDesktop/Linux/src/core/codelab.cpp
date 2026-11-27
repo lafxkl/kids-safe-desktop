@@ -200,6 +200,14 @@ QVariantList CodeLab::loadLessons()
 #ifdef KIDSSAFE_CODELAB_SRC
     dirs << QStringLiteral(KIDSSAFE_CODELAB_SRC);
 #endif
+    // 自带包（scripts/bundle-runtime.sh）把内容放在 <appdir>/../share/kidssafe/，
+    // 和 playland / maker / audio 保持一致。没有这一条时，自带包里的「小小程序员」
+    // 会因为找不到 lessons.json 而显示 0 关 —— 编译期写死的源码树路径在用户机器上
+    // 当然不存在，而 /usr/share 下也没有这份文件。
+    const QString appDir = QCoreApplication::applicationDirPath();
+    if (!appDir.isEmpty()) {
+        dirs << QDir::cleanPath(appDir + QStringLiteral("/../share/kidssafe/codelab"));
+    }
     const QString installed = QStandardPaths::locate(
         QStandardPaths::GenericDataLocation,
         QStringLiteral("kidssafe/codelab/lessons.json"));

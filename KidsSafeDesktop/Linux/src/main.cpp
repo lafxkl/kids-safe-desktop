@@ -374,6 +374,28 @@ int main(int argc, char *argv[])
         }
     }
 
+    // 自带运行时（scripts/bundle-runtime.sh 打出来的包）通过环境变量告诉
+    // WebEngine 去哪儿找 helper 进程、ICU 与 pak 资源。这三个值只要有一个是
+    // 空的或者指错地方，表现都一样：网页区域整块白，日志里只有一句
+    // "Could not find QtWebEngineProcess"，看不出到底缺哪个。
+    // 启动时先把实际生效的路径打出来，缺了就标 ✗ —— 用户把日志发过来时，
+    // 一眼能分清是「包里没带」还是「带了但启动器没设」。
+    {
+        const QString helper = qEnvironmentVariable("QTWEBENGINEPROCESS_PATH");
+        const QString res = qEnvironmentVariable("QTWEBENGINE_RESOURCES_PATH");
+        if (!helper.isEmpty() || !res.isEmpty()) {
+            qInfo().noquote()
+                << "[webengine] 自带运行时 · helper:" << helper
+                << (QFileInfo::exists(helper) ? "✓" : "✗ 不存在")
+                << "· resources:" << res
+                << (QFileInfo::exists(res + QStringLiteral("/icudtl.dat")) ? "✓" : "✗ 缺 icudtl.dat");
+        } else {
+            // 系统包路径：资源在 Qt 的 Data 目录下（发行版通常是 /usr/share/qt6）。
+            qInfo().noquote() << "[webengine] 使用系统 QtWebEngine · 资源目录:"
+                              << QLibraryInfo::path(QLibraryInfo::DataPath);
+        }
+    }
+
     // 必须在 QGuiApplication 之前：它会设置 ShareOpenGLContexts 等属性，
     // 晚了 Chromium 起不来（日志里是 "Qt WebEngine seems to be initialized
     // from a plugin, which is not supported"）。

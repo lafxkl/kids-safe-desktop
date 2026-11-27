@@ -19,6 +19,12 @@
 # 缺了就失败，这个脚本也会先检查一遍，避免在 dpkg-buildpackage 的几百行输出
 # 里去找那一行原因。真要精简包，加 -DKIDSSAFE_MINIMAL=ON 显式关掉。
 
+# 想要「用户机器什么都不用装」的包（Qt / KF6 / QtWebEngine 全带走），用：
+#   ./scripts/bundle-runtime.sh --deb
+# 它产出 kidssafe-bundled_<ver>_<arch>.deb（约 120MB），会话入口、图标、
+# 守护脚本和本脚本打出来的薄包一模一样，区别只在依赖从哪来。
+# 两种包 Conflicts，不要同时装。细节见 ../wiki/05-打包与分发.md。
+
 set -eu
 
 SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)"

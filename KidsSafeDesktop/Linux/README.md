@@ -3,6 +3,10 @@
 Windows + Android 工程之外的第三个前端，技术栈为 **Qt 6 + KF6 Kirigami**，
 目标运行环境是 KDE Plasma 桌面。
 
+> 本文是最完整的一份实现说明。要按「想干什么」快速查，看
+> [`../wiki/`](../wiki/Home.md)：构建、架构、打包、排障各有独立一页。
+> 两边说法不一致时以本文为准。
+
 ---
 
 ## 一、为什么不是「给 MAUI 加个 Linux 目标」
@@ -1408,12 +1412,47 @@ X11 抢占只是**锦上添花**，Wayland 下它会诚实地报告「不可用�
 
 | 形式 | 能不能用 | 说明 |
 | --- | --- | --- |
-| **deb**（主推） | ✅ | deepin / UOS / Debian / Ubuntu 全都 apt。要往 `/usr/share/xsessions` 写会话、往 `/usr/bin` 放启动脚本，只有包管理器干得了 |
+| **deb · 薄包**（进仓库用） | ✅ | deepin / UOS / Debian / Ubuntu 全都 apt。要往 `/usr/share/xsessions` 写会话、往 `/usr/bin` 放启动脚本，只有包管理器干得了。依赖系统的 Qt，~3 MB |
+| **deb · 自带包**（发给家长用） | ✅ | 同上，但 Qt / KF6 / QtWebEngine 全塞在 `/opt/kidssafe` 里，目标机器**一个 qt6-* 都不用装**。~120 MB，见下文「两种 deb」 |
 | 源码 + `scripts/install.sh` | ✅ 开发机 | 装到 `/usr/local`，升级靠 `git pull` + 重装，适合自己用 |
-| AppImage | ⚠️ 只能试用 | 单文件很香，但**没有安装步骤**：写不进 xsessions，登录界面里选不到「儿童安全桌面」，而且 QtWebEngine 的沙箱还要 `--no-sandbox`，和「锁死」的目标相反 |
+| 绿色包 `.tar.gz` | ⚠️ 只能试用 | `bundle-runtime.sh --tgz` 出来的自包含目录，解压即跑。但**没有安装步骤**，写不进 xsessions，登录界面里选不到 |
+| AppImage | ⚠️ 只能试用 | 单文件很香，但同上：没有安装步骤，而且 QtWebEngine 的沙箱还要 `--no-sandbox`，和「锁死」的目标相反 |
 | Flatpak / Snap | ❌ | 沙箱里不能替换会话、不能拉起用户选的应用、写不了 `/usr`。kiosk 和沙箱本质冲突 |
 
-一句话：这个程序装的是**一个登录会话**，不是普通应用，所以必须是系统级安装。
+一句话：这个程序装的是**一个登录会话**，不是普通应用，所以必须是系统级安装；
+「自带运行时」解决的是**依赖**问题，不是安装形态问题 —— 会话入口仍然只能由
+`.deb` 写。
+
+### 两种 deb：薄包与自带包
+
+| | 薄包 `kidssafe` | 自带包 `kidssafe-bundled` |
+| --- | --- | --- |
+| 构建 | `./scripts/build-deb.sh` | `./scripts/bundle-runtime.sh --deb` |
+| Qt 从哪来 | 系统的（`Depends: qml6-module-qtwebengine` 等） | 包里的 `/opt/kidssafe` |
+| 体积 | ~3 MB | ~120 MB |
+| 适合 | 进发行版仓库、自己机器、系统 Qt 齐全 | 发给家长、离线机器、源里没有 qt6-webengine 的系统 |
+| 沙箱 | 系统包的 setuid 沙箱可用 | 关闭（见下） |
+
+**为什么需要自带包**：网页小游戏靠 `QtWebEngineQuick::initialize()`，这行代码
+在编译期决定编不编进二进制。构建机上没有 `qt6-webengine-dev`，打出来的包就
+永远不含网页小游戏 —— 用户事后装 `qml6-module-qtwebengine` 也补不回来。
+而 deepin 25 / UOS 的源里，这个包可能没有，或者版本和 Qt 基础库对不上。
+自带包把整条链搬进包里，用户那边彻底不用管 Qt。
+
+**代价（写清楚）**：
+
+- Chromium 的 setuid 沙箱要求 `chrome-sandbox` 属主 root 且 4755，装在用户可写
+  或可移动的目录里做不到，所以只能用 `QTWEBENGINE_DISABLE_SANDBOX=1`。缓解
+  事实：网页内容是随包带的本地 HTML，不加载外部站点。但这是真实降级。
+- 只带 zh-CN / zh-TW / en-US 三种 Chromium 语言包。
+- glibc / libstdc++ / 显卡驱动**不打包**，仍要求 glibc ≥ 2.34。
+
+脚本做的事（细节见 `wiki/05-打包与分发.md`）：从 `bin/kidssafe` 出发用 `ldd`
+广度优先抄走全部依赖 → 抄 Qt 插件与 QML 模块 → 单独搬 `QtWebEngineProcess`、
+`icudtl.dat` + `*.pak`、语言包 → `patchelf --force-rpath` 改 RPATH
+（必须是 `DT_RPATH`，`DT_RUNPATH` 不传递给依赖的依赖）→ 生成启动器 →
+用 `patchelf --print-needed` 查漏抄 → 真跑一次 `--self-test`。
+
 
 ### 打一个包
 
