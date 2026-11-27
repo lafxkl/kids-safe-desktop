@@ -297,6 +297,9 @@ qt_add_resources(kidssafe "qml"
         # Unable to assign TextArea_QMLTYPE to QQuickTextInput，内容区空），
         # 项目工坊的「看代码」和小小程序员的代码/运行结果都改用它。
         src/qml/CodeView.qml
+        # 意见反馈页的输入框：同一个 TextArea 的坑，反馈页用它做单行/多行输入。
+        # 漏加这行不会报错，只在打开反馈页时白屏——改完 QML 记得重跑 cmake。
+        src/qml/TextInputBox.qml
         # 儿童桌面：窗口外壳 + 桌面图标 + 程序坞 + 三个内置工具
         #
         # 漏加任何一个的表现都是「点了图标什么都没出来」或整页白屏

@@ -10,6 +10,11 @@ import KidsSafe 1.0
  * 数据直接进官网（Feedback 单例 → POST /api/feedback/submit），
  * 与 Windows / 安卓 / 鸿蒙同一套接口、同一份后台数据。
  * 断网时 Feedback 会先写本机队列，联网后自动补传，页面只需显示状态。
+ *
+ * 配色说明：本页背景是 Backdrop 的暖米色（#FFF9F0 → #FFE3C4），
+ * 全文用和 HomePage / ParentDashboardPage 同一套深棕字：
+ *   #4A3B32 主文字 / #7A6759 正文 / #9B8574 次要 / #A9947F 占位
+ * 白色只留给有色块（橙色按钮、选中项）上的字，别再往背景上直接压白字。
  */
 Item {
     id: page
@@ -18,6 +23,14 @@ Item {
 
     // 0 = 满意度，1 = 问卷，2 = 意见反馈
     property int tab: 0
+
+    // 浅色主题下反复用到的几个颜色，集中在这里改一处就够
+    readonly property color ink: "#4A3B32"
+    readonly property color body: "#7A6759"
+    readonly property color mute: "#9B8574"
+    readonly property color line: "#E8D8C6"
+    readonly property color accent: "#E2603D"
+    readonly property color chipBg: "#FFFFFF"
 
     // ---- 满意度 ----
     property int rating: 0
@@ -119,13 +132,15 @@ Item {
             Layout.preferredWidth: backLabel.implicitWidth + 34
             Layout.preferredHeight: 46
             radius: 23
-            color: backArea.containsMouse ? "#22FFFFFF" : "#14FFFFFF"
+            color: backArea.containsMouse ? "#FFF3E6" : "#FFFFFF"
+            border.width: 1
+            border.color: page.line
             Text {
                 id: backLabel
                 anchors.centerIn: parent
                 text: "← " + (Settings.english ? "Back" : "返回")
                 font.pixelSize: 17
-                color: "#FFFFFF"
+                color: page.body
             }
             MouseArea {
                 id: backArea
@@ -141,13 +156,13 @@ Item {
             text: "💬 " + (Settings.english ? "Feedback" : "意见反馈与问卷")
             font.pixelSize: 26
             font.bold: true
-            color: "#FFFFFF"
+            color: page.ink
         }
 
         Text {
             text: Feedback.pending > 0 ? (Settings.english ? Feedback.pending + " pending" : "待发 " + Feedback.pending + " 条") : ""
             font.pixelSize: 14
-            color: "#FFE0B2"
+            color: "#B4552F"
         }
     }
 
@@ -179,13 +194,15 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 44
                         radius: 14
-                        color: page.tab === index ? "#E2603D" : "#33FFFFFF"
+                        color: page.tab === index ? page.accent : page.chipBg
+                        border.width: 1
+                        border.color: page.tab === index ? page.accent : page.line
                         Text {
                             anchors.centerIn: parent
                             text: modelData
                             font.pixelSize: 15
                             font.bold: true
-                            color: "#FFFFFF"
+                            color: page.tab === index ? "#FFFFFF" : page.body
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -200,7 +217,7 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 font.pixelSize: 14
-                color: "#EADFD3"
+                color: page.body
                 text: page.tab === 0
                       ? "一分钟，帮我们把下一版做得更合适。只有整体满意度必填，其它可以跳过。"
                       : page.tab === 1
@@ -214,7 +231,7 @@ Item {
                 spacing: 10
                 visible: page.tab === 0
 
-                Text { text: "整体满意度（必填）"; font.pixelSize: 16; font.bold: true; color: "#FFFFFF" }
+                Text { text: "整体满意度（必填）"; font.pixelSize: 16; font.bold: true; color: page.ink }
                 Row {
                     spacing: 4
                     Repeater {
@@ -222,7 +239,7 @@ Item {
                         Text {
                             text: "★"
                             font.pixelSize: 36
-                            color: page.rating >= index + 1 ? "#F2A03D" : "#55FFFFFF"
+                            color: page.rating >= index + 1 ? "#F2A03D" : "#E3D0BB"
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
@@ -232,7 +249,7 @@ Item {
                     }
                 }
 
-                Text { text: "分项打分（可跳过）"; font.pixelSize: 16; font.bold: true; color: "#FFFFFF" }
+                Text { text: "分项打分（可跳过）"; font.pixelSize: 16; font.bold: true; color: page.ink }
                 Repeater {
                     model: page.dims
                     ColumnLayout {
@@ -242,7 +259,7 @@ Item {
 
                         Layout.fillWidth: true
                         spacing: 4
-                        Text { text: dim.label; font.pixelSize: 14; color: "#EADFD3" }
+                        Text { text: dim.label; font.pixelSize: 14; color: page.mute }
                         Row {
                             spacing: 6
                             Repeater {
@@ -251,12 +268,14 @@ Item {
                                     width: 54
                                     height: 34
                                     radius: 10
-                                    color: page.dimScores[dim.key] === index + 1 ? "#E2603D" : "#22FFFFFF"
+                                    color: page.dimScores[dim.key] === index + 1 ? page.accent : page.chipBg
+                                    border.width: 1
+                                    border.color: page.dimScores[dim.key] === index + 1 ? page.accent : page.line
                                     Text {
                                         anchors.centerIn: parent
                                         text: (index + 1) + " 分"
                                         font.pixelSize: 13
-                                        color: "#FFFFFF"
+                                        color: page.dimScores[dim.key] === index + 1 ? "#FFFFFF" : page.body
                                     }
                                     MouseArea {
                                         anchors.fill: parent
@@ -273,7 +292,7 @@ Item {
                     }
                 }
 
-                Text { text: "愿意推荐给别的家长吗？（可跳过，0 = 完全不会，10 = 一定推荐）"; font.pixelSize: 16; font.bold: true; color: "#FFFFFF" }
+                Text { text: "愿意推荐给别的家长吗？（可跳过，0 = 完全不会，10 = 一定推荐）"; font.pixelSize: 16; font.bold: true; color: page.ink }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 6
@@ -283,13 +302,15 @@ Item {
                             width: 40
                             height: 36
                             radius: 10
-                            color: page.nps === index ? "#E2603D" : "#22FFFFFF"
+                            color: page.nps === index ? page.accent : page.chipBg
+                            border.width: 1
+                            border.color: page.nps === index ? page.accent : page.line
                             Text {
                                 anchors.centerIn: parent
                                 text: index
                                 font.pixelSize: 14
                                 font.bold: true
-                                color: "#FFFFFF"
+                                color: page.nps === index ? "#FFFFFF" : page.body
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -300,7 +321,7 @@ Item {
                     }
                 }
 
-                Text { text: "最喜欢哪一块？（可多选）"; font.pixelSize: 16; font.bold: true; color: "#FFFFFF" }
+                Text { text: "最喜欢哪一块？（可多选）"; font.pixelSize: 16; font.bold: true; color: page.ink }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 8
@@ -310,13 +331,15 @@ Item {
                             height: 34
                             width: chipText.implicitWidth + 26
                             radius: 12
-                            color: page.pickedTags[modelData] ? "#E2603D" : "#22FFFFFF"
+                            color: page.pickedTags[modelData] ? page.accent : page.chipBg
+                            border.width: 1
+                            border.color: page.pickedTags[modelData] ? page.accent : page.line
                             Text {
                                 id: chipText
                                 anchors.centerIn: parent
                                 text: modelData
                                 font.pixelSize: 13
-                                color: "#FFFFFF"
+                                color: page.pickedTags[modelData] ? "#FFFFFF" : page.body
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -331,13 +354,13 @@ Item {
                     }
                 }
 
-                TextArea {
+                TextInputBox {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 110
-                    placeholderText: "还有什么想说的？（选填）"
+                    multiline: true
+                    placeholder: "还有什么想说的？（选填）"
                     text: page.satText
-                    wrapMode: TextArea.Wrap
-                    onTextChanged: page.satText = text
+                    onEdited: page.satText = content
                 }
             }
 
@@ -351,7 +374,7 @@ Item {
                     text: "已答 " + page.answeredCount() + " / " + page.surveyQs.length + " 题（至少 3 题）"
                     font.pixelSize: 14
                     font.bold: true
-                    color: "#FFE0B2"
+                    color: "#B4552F"
                 }
 
                 Repeater {
@@ -362,7 +385,7 @@ Item {
 
                         Layout.fillWidth: true
                         spacing: 6
-                        Text { text: q.title; font.pixelSize: 16; font.bold: true; color: "#FFFFFF" }
+                        Text { text: q.title; font.pixelSize: 16; font.bold: true; color: page.ink }
                         Flow {
                             Layout.fillWidth: true
                             spacing: 8
@@ -372,13 +395,15 @@ Item {
                                     height: 34
                                     width: optText.implicitWidth + 26
                                     radius: 12
-                                    color: page.surveyAnswers[q.id] === modelData ? "#E2603D" : "#22FFFFFF"
+                                    color: page.surveyAnswers[q.id] === modelData ? page.accent : page.chipBg
+                                    border.width: 1
+                                    border.color: page.surveyAnswers[q.id] === modelData ? page.accent : page.line
                                     Text {
                                         id: optText
                                         anchors.centerIn: parent
                                         text: modelData
                                         font.pixelSize: 13
-                                        color: "#FFFFFF"
+                                        color: page.surveyAnswers[q.id] === modelData ? "#FFFFFF" : page.body
                                     }
                                     MouseArea {
                                         anchors.fill: parent
@@ -395,13 +420,13 @@ Item {
                     }
                 }
 
-                TextArea {
+                TextInputBox {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 100
-                    placeholderText: "其他想补充的（选填）"
+                    multiline: true
+                    placeholder: "其他想补充的（选填）"
                     text: page.surveyText
-                    wrapMode: TextArea.Wrap
-                    onTextChanged: page.surveyText = text
+                    onEdited: page.surveyText = content
                 }
             }
 
@@ -411,7 +436,7 @@ Item {
                 spacing: 10
                 visible: page.tab === 2
 
-                Text { text: "这是什么类型？"; font.pixelSize: 16; font.bold: true; color: "#FFFFFF" }
+                Text { text: "这是什么类型？"; font.pixelSize: 16; font.bold: true; color: page.ink }
                 Flow {
                     Layout.fillWidth: true
                     spacing: 8
@@ -421,13 +446,15 @@ Item {
                             height: 34
                             width: fbText.implicitWidth + 26
                             radius: 12
-                            color: page.fbCat === modelData ? "#E2603D" : "#22FFFFFF"
+                            color: page.fbCat === modelData ? page.accent : page.chipBg
+                            border.width: 1
+                            border.color: page.fbCat === modelData ? page.accent : page.line
                             Text {
                                 id: fbText
                                 anchors.centerIn: parent
                                 text: modelData
                                 font.pixelSize: 13
-                                color: "#FFFFFF"
+                                color: page.fbCat === modelData ? "#FFFFFF" : page.body
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -438,22 +465,23 @@ Item {
                     }
                 }
 
-                TextArea {
+                TextInputBox {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 150
-                    placeholderText: "例如：安卓平板上「宝宝听」播到一半切后台回来会从头开始。设备是荣耀 Pad 8，版本 1.20。"
+                    multiline: true
+                    placeholder: "例如：安卓平板上「宝宝听」播到一半切后台回来会从头开始。设备是荣耀 Pad 8，版本 1.20。"
                     text: page.fbText
-                    wrapMode: TextArea.Wrap
-                    onTextChanged: page.fbText = text
+                    onEdited: page.fbText = content
                 }
             }
 
             // ===== 公共字段 =====
-            TextField {
+            TextInputBox {
                 Layout.fillWidth: true
-                placeholderText: "联系方式（选填，只有开发者能看到）"
+                Layout.preferredHeight: 48
+                placeholder: "联系方式（选填，只有开发者能看到）"
                 text: page.contact
-                onTextChanged: page.contact = text
+                onEdited: page.contact = content
             }
 
             RowLayout {
@@ -464,11 +492,34 @@ Item {
                     wrapMode: Text.WordWrap
                     text: "允许匿名展示在官网（只显示正文、星级和月份）"
                     font.pixelSize: 13
-                    color: "#EADFD3"
+                    color: page.body
                 }
-                Switch {
-                    checked: page.allowPublic
-                    onToggled: page.allowPublic = checked
+
+                // 自制开关：不依赖 Controls 样式，配色和页面一致
+                Rectangle {
+                    id: publicSwitch
+
+                    Layout.preferredWidth: 46
+                    Layout.preferredHeight: 26
+                    radius: 13
+                    color: page.allowPublic ? page.accent : "#EADFD0"
+
+                    Rectangle {
+                        width: 20
+                        height: 20
+                        radius: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: page.allowPublic ? parent.width - width - 3 : 3
+                        color: "#FFFFFF"
+
+                        Behavior on x { NumberAnimation { duration: 120 } }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: page.allowPublic = !page.allowPublic
+                    }
                 }
             }
 
@@ -476,7 +527,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 52
                 radius: 26
-                color: Feedback.busy ? "#88E2603D" : "#E2603D"
+                color: Feedback.busy ? "#F0A088" : page.accent
                 Text {
                     anchors.centerIn: parent
                     text: Feedback.busy ? "提交中…"
@@ -498,16 +549,47 @@ Item {
                 visible: Feedback.status.length > 0
                 text: Feedback.status
                 font.pixelSize: 14
-                color: "#C8E6C9"
+                color: "#2E7D32"
             }
 
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 font.pixelSize: 12
-                color: "#B0BEC5"
+                color: "#A08B76"
                 text: "提交后立刻计入官网「反馈与问卷」页的公开统计；不收集身份信息，需要删除时发邮件到 2279125469@qq.com。"
             }
+        }
+    }
+
+    /*
+     * 校验提示 / 提交结果。浮在页面底部，不在滚动内容里，
+     * 用户点了提交就能看到，不用往回滚。浅底深字，配白卡底才读得出来。
+     */
+    Rectangle {
+        id: toastLabel
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 18
+        z: 10
+
+        visible: page.toastText.length > 0
+        width: toastText.implicitWidth + 36
+        height: 40
+        radius: 20
+        color: page.toastBad ? "#FFF1EC" : "#EDF7EE"
+        border.width: 1
+        border.color: page.toastBad ? "#F0BFAF" : "#BFDCC3"
+
+        Text {
+            id: toastText
+
+            anchors.centerIn: parent
+            text: page.toastText
+            font.pixelSize: 14
+            font.bold: true
+            color: page.toastBad ? "#B73B2A" : "#2E6B3A"
         }
     }
 }
