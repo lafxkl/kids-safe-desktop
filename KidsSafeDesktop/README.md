@@ -4,6 +4,9 @@
 
 > 为什么页面不在这里：孩子端和家长端（`../KidsSafeParent`）共用同一套 87 个页面。拆成独立工程时把 `Pages / ViewModels / Services / Models / Helpers / Controls / Converters` 整体搬到了 `KidsSafeShared`，命名空间仍是 `KidsSafeDesktop.*`，所以这里的 `using` 看起来像在引用自己，其实是引用共享库。
 
+> **文档入口**：所有文档已整理成 wiki，从 [`wiki/Home.md`](wiki/Home.md) 进。
+> 想快速定位「哪个功能在哪、怎么打包、报错了怎么查」，看 wiki 比翻 `Docs/` 快。
+
 ## 目录
 
 | 路径 | 作用 |
