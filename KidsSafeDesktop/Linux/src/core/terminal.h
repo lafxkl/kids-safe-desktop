@@ -97,6 +97,8 @@ private:
     void onReadable();
     void feed(const QByteArray &bytes);
     void flushPending();
+    /// 吃进一个 >=0x80 的字节，凑满一个 UTF-8 字符再交给 appendText
+    void pushUtf8(unsigned char uc);
     void handleAscii(char c);
     void handleCsi(char final);
     void applySgr(const QString &params);
@@ -129,6 +131,7 @@ private:
     State m_state = Normal;
     QString m_seq;          ///< CSI / OSC 累积的参数
     QByteArray m_pending;   ///< 没凑齐的 UTF-8 多字节序列
+    int m_need = 0;         ///< 当前这个字符共占几字节（由首字节决定）
     /// 上一个字符是 \r（回到行首）。真正「抹掉这一行」要等到后面跟着可见
     /// 字符时才做 —— PTY 把 \n 翻成 \r\n，一见 \r 就清行会把整屏文字抹光。
     bool m_crPending = false;

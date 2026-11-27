@@ -61,6 +61,31 @@ QColor xterm256(int n)
     return QColor(gray, gray, gray);
 }
 
+/*
+ * 由 UTF-8 的首字节推出这个字符共占几个字节；不是合法首字节返回 -1。
+ *
+ * 终端里**必须**按首字节判断要等几个字节，不能「攒够 4 个就试解一次」。
+ * 中文是 3 字节，`ls` 连着输出两个中文名时，第 4 个字节正好是第二个字的
+ * 首字节，凑成 4 字节送进 fromUtf8 就变成「一个字 + 一个替换符」—— 屏幕上
+ * 每个中文名后面都跟着几个小方块。
+ */
+int utf8Need(unsigned char lead)
+{
+    if (lead < 0x80) {
+        return 1;
+    }
+    if ((lead & 0xE0) == 0xC0) {
+        return 2;
+    }
+    if ((lead & 0xF0) == 0xE0) {
+        return 3;
+    }
+    if ((lead & 0xF8) == 0xF0) {
+        return 4;
+    }
+    return -1;  // 0x80-0xBF 是续字节、0xF8 以上不存在，都不能当开头
+}
+
 }  // namespace
 
 Terminal::Terminal(QObject *parent)
@@ -260,17 +285,26 @@ void Terminal::flushPending()
     if (m_pending.isEmpty()) {
         return;
     }
-    const QString text = QString::fromUtf8(m_pending);
+    const QByteArray raw = m_pending;
     m_pending.clear();
-    if (text.isEmpty()) {
+    m_need = 0;
+
+    /*
+     * 走到这里说明这串字节被换行 / ASCII 字符打断了，本该是一个完整字符的
+     * 位置却没收满（比如某个程序把一个汉字拆成两次 write 吐出来）。
+     *
+     * 先按 UTF-8 解：解出替换符说明这段确实不是 UTF-8，再按本地编码试一次
+     * （一些只认 GBK 的老程序会这样）。**两种都不行就原样补替换符**，不要
+     * 像以前那样把 fromUtf8 的结果再 toUtf8 转一道 —— 那会把本来正确的
+     * 汉字变成一串方块。
+     */
+    const QString utf8 = QString::fromUtf8(raw);
+    if (!utf8.contains(QChar(0xFFFD))) {
+        appendText(utf8);
         return;
     }
-    // 解出替换字符说明这段不是合法 UTF-8，按本地编码再试一次
-    if (text.contains(QChar(0xFFFD))) {
-        appendText(QString::fromLocal8Bit(text.toUtf8()));
-    } else {
-        appendText(text);
-    }
+    const QString local = QString::fromLocal8Bit(raw);
+    appendText(local.contains(QChar(0xFFFD)) ? utf8 : local);
 }
 
 void Terminal::feed(const QByteArray &bytes)
@@ -278,15 +312,47 @@ void Terminal::feed(const QByteArray &bytes)
     for (int i = 0; i < bytes.size(); ++i) {
         const unsigned char uc = static_cast<unsigned char>(bytes.at(i));
         if (uc < 0x80) {
+            // ASCII 不可能出现在多字节序列中间，先把攒着的半个字符处理掉
             flushPending();
             handleAscii(char(uc));
         } else {
-            m_pending.append(char(uc));
-            // 4 字节是 UTF-8 的上限，攒够了就试着解一次
-            if (m_pending.size() >= 4) {
-                flushPending();
-            }
+            pushUtf8(uc);
         }
+    }
+}
+
+void Terminal::pushUtf8(unsigned char uc)
+{
+    if (m_pending.isEmpty()) {
+        const int need = utf8Need(uc);
+        if (need < 0) {
+            // 孤立的续字节：这段数据本身坏了，显示一个替换符就够，不必留状态
+            appendText(QString(QChar(0xFFFD)));
+            return;
+        }
+        m_pending.append(char(uc));
+        m_need = need;
+        return;
+    }
+
+    if ((uc & 0xC0) != 0x80) {
+        /*
+         * 前一个字符还没收满就来了个新首字节 —— 说明前面那个是坏的。
+         * 补一个替换符，然后把这个字节当成新字符的开头重新走一遍。
+         */
+        m_pending.clear();
+        m_need = 0;
+        appendText(QString(QChar(0xFFFD)));
+        pushUtf8(uc);
+        return;
+    }
+
+    m_pending.append(char(uc));
+    if (m_pending.size() >= m_need) {
+        // 收满了，一次解完。3 字节的中文到这里才交给 QString。
+        appendText(QString::fromUtf8(m_pending));
+        m_pending.clear();
+        m_need = 0;
     }
 }
 
