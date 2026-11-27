@@ -27,7 +27,7 @@ Item {
     // 浅色主题下反复用到的几个颜色，集中在这里改一处就够
     readonly property color ink: "#4A3B32"
     readonly property color body: "#7A6759"
-    readonly property color mute: "#9B8574"
+    readonly property color mute: "#8A7259"
     readonly property color line: "#E8D8C6"
     readonly property color accent: "#E2603D"
     readonly property color chipBg: "#FFFFFF"
@@ -556,7 +556,7 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 font.pixelSize: 12
-                color: "#A08B76"
+                color: "#8A7259"
                 text: "提交后立刻计入官网「反馈与问卷」页的公开统计；不收集身份信息，需要删除时发邮件到 2279125469@qq.com。"
             }
         }
